@@ -25,6 +25,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_cache.h"
+#include "cc/paint/paint_op.h"
 #include "cc/paint/paint_op_buffer.h"
 #include "cc/paint/transfer_cache_deserialize_helper.h"
 #include "cc/paint/transfer_cache_entry.h"
@@ -390,7 +391,6 @@ class RasterDecoderImpl final : public RasterDecoder,
                     const GpuPreferences& gpu_preferences,
                     MemoryTracker* memory_tracker,
                     SharedImageManager* shared_image_manager,
-                    ImageFactory* image_factory,
                     scoped_refptr<SharedContextState> shared_context_state,
                     bool is_privileged);
 
@@ -844,7 +844,6 @@ class RasterDecoderImpl final : public RasterDecoder,
 
   bool gpu_raster_enabled_ = false;
   bool use_gpu_raster_ = false;
-  bool texture_storage_image_enabled_ = false;
   bool use_passthrough_ = false;
 
   // The current decoder error communicates the decoder error through command
@@ -937,13 +936,12 @@ RasterDecoder* RasterDecoder::Create(
     const GpuPreferences& gpu_preferences,
     MemoryTracker* memory_tracker,
     SharedImageManager* shared_image_manager,
-    ImageFactory* image_factory,
     scoped_refptr<SharedContextState> shared_context_state,
     bool is_privileged) {
-  return new RasterDecoderImpl(
-      client, command_buffer_service, outputter, gpu_feature_info,
-      gpu_preferences, memory_tracker, shared_image_manager, image_factory,
-      std::move(shared_context_state), is_privileged);
+  return new RasterDecoderImpl(client, command_buffer_service, outputter,
+                               gpu_feature_info, gpu_preferences,
+                               memory_tracker, shared_image_manager,
+                               std::move(shared_context_state), is_privileged);
 }
 
 RasterDecoder::RasterDecoder(DecoderClient* client,
@@ -995,7 +993,6 @@ RasterDecoderImpl::RasterDecoderImpl(
     const GpuPreferences& gpu_preferences,
     MemoryTracker* memory_tracker,
     SharedImageManager* shared_image_manager,
-    ImageFactory* image_factory,
     scoped_refptr<SharedContextState> shared_context_state,
     bool is_privileged)
     : RasterDecoder(client, command_buffer_service, outputter),
@@ -1006,8 +1003,6 @@ RasterDecoderImpl::RasterDecoderImpl(
       gpu_raster_enabled_(
           gpu_feature_info.status_values[GPU_FEATURE_TYPE_GPU_RASTERIZATION] ==
           kGpuFeatureStatusEnabled),
-      texture_storage_image_enabled_(
-          image_factory && image_factory->SupportsCreateAnonymousImage()),
       use_passthrough_(gles2::PassthroughCommandDecoderSupported() &&
                        gpu_preferences.use_passthrough_cmd_decoder),
       gpu_preferences_(gpu_preferences),
@@ -1188,7 +1183,8 @@ Capabilities RasterDecoderImpl::GetCapabilities() {
       gpu_preferences_.texture_target_exception_list;
   caps.texture_format_bgra8888 =
       feature_info()->feature_flags().ext_texture_format_bgra8888;
-  caps.texture_storage_image = texture_storage_image_enabled_;
+  caps.supports_scanout_shared_images =
+      SharedImageManager::SupportsScanoutImages();
   // TODO(piman): have a consistent limit in shared image backings.
   // https://crbug.com/960588
   if (shared_context_state_->GrContextIsGL()) {
@@ -3341,7 +3337,7 @@ void RasterDecoderImpl::DoRasterCHROMIUM(GLuint raster_shm_id,
   }
 
   alignas(
-      cc::PaintOpBuffer::PaintOpAlign) char data[sizeof(cc::LargestPaintOp)];
+      cc::PaintOpBuffer::kPaintOpAlign) char data[sizeof(cc::LargestPaintOp)];
 
   size_t paint_buffer_size = raster_shm_size;
   gl::ScopedProgressReporter report_progress(

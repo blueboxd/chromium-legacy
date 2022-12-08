@@ -307,7 +307,6 @@
 <translation id="168693727862418163">इस नीति का मान अपनी स्कीमा के हिसाब से काम नहीं कर सका और इसे अनदेखा किया जाएगा.</translation>
 <translation id="168841957122794586">सर्वर प्रमाणपत्र में कमज़ोर क्रिप्टोग्राफ़िक कुंजी है.</translation>
 <translation id="1697532407822776718">आप बिलकुल तैयार हैं!</translation>
-<translation id="1699570257714336246">जानकारी मौजूद नहीं है</translation>
 <translation id="1702815194757674443">ROC 16K</translation>
 <translation id="1703835215927279855">लेटर</translation>
 <translation id="1706625117072057435">ज़ूम स्तर</translation>
@@ -1023,7 +1022,6 @@
 <translation id="3584299510153766161">नीचे की ओर ड्युएल पंच</translation>
 <translation id="3586931643579894722">विवरण छुपाएं</translation>
 <translation id="3587738293690942763">मिडल</translation>
-<translation id="3595645257662173296">इसकी पुष्टि करने वाला सबूत क्या है?</translation>
 <translation id="3595699422137460894">{NUM_DAYS,plural, =0{आप अपना पासवर्ड कभी भी रीसेट कर सकते हैं. नए ग्रुप से जुड़ने में करीब-करीब एक दिन लगता है.}=1{आप अपना पासवर्ड कभी भी रीसेट कर सकते हैं. नए ग्रुप से जुड़ने में करीब-करीब एक दिन लगता है.}one{आप अपना पासवर्ड कभी भी रीसेट कर सकते हैं. नए ग्रुप से जुड़ने में {NUM_DAYS} दिन लगता है.}other{आप अपना पासवर्ड कभी भी रीसेट कर सकते हैं. नए ग्रुप से जुड़ने में {NUM_DAYS} दिन लगते हैं.}}</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3603507503523709">आपके एडमिन ने ऐप्लिकेशन को ब्लॉक कर दिया है</translation>
@@ -1163,7 +1161,6 @@
 <translation id="3961148744525529027">पैसे चुकाने की हैंडलर शीट आधी स्क्रीन में खुली है</translation>
 <translation id="3962859241508114581">पिछला ट्रैक</translation>
 <translation id="3963721102035795474">रीडर मोड</translation>
-<translation id="3963837677003247395">क्या आप मैन्युअल तरीके से जारी रखना चाहते हैं?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{कुछ नहीं}=1{1 साइट से }one{# साइटों से }other{# साइटों से }}</translation>
 <translation id="3969052498612555048">क्या आपको ओटीपी कोड नहीं मिला? <ph name="BEGIN_LINK" />नया कोड पाएं<ph name="END_LINK" /></translation>
 <translation id="397105322502079400">गणना की जा रही है...</translation>
@@ -1363,7 +1360,6 @@
 <translation id="4434045419905280838">पॉप-अप और रीडायरेक्ट</translation>
 <translation id="443673843213245140">प्रॉक्‍सी का उपयोग अक्षम है लेकिन कोई स्‍पष्ट प्रॉक्‍सी कॉन्फ़िगरेशन दर्ज किया गया है.</translation>
 <translation id="4441832193888514600">अनदेखा किया गया है, क्योंकि इस नीति को सिर्फ़ क्लाउड की उपयोगकर्ता नीति के तौर पर सेट किया जा सकता है.</translation>
-<translation id="4450893287417543264">फिर से न दिखाएं</translation>
 <translation id="4451135742916150903">साइट, एचआईडी डिवाइसों से कनेक्ट करने की अनुमति मांग सकती है</translation>
 <translation id="4452328064229197696">आपने अभी जो पासवर्ड इस्तेमाल किया है वह लीक हो चुका है. Google के पासवर्ड मैनेजर का सुझाव है कि आप सेव किए गए पासवर्ड की जांच करें. इस तरह आपके खाते सुरक्षित रहेंगे.</translation>
 <translation id="4460315069258617173">तब तक अनुमति है, जब तक आप इस साइट के लिए टैब बंद नहीं कर देते</translation>
@@ -1506,7 +1502,6 @@
 <translation id="4813512666221746211">नेटवर्क गड़बड़ी</translation>
 <translation id="4816492930507672669">पेज में फ़िट करें</translation>
 <translation id="4819347708020428563">क्या आप डिफ़ॉल्ट व्यू में वीडियो के ऊपर टेक्स्ट, लिंक वगैरह में बदलाव करना चाहते हैं?</translation>
-<translation id="4823325221257637040">शुरू हो रहा है</translation>
 <translation id="4825496307559726072"><ph name="CREATE_GOOGLE_SHEET_FOCUSED_FRIENDLY_MATCH_TEXT" />, जल्दी से नई Google शीट बनाने के लिए, पहले Tab दबाएं और फिर Enter दबाएं</translation>
 <translation id="4825507807291741242">दमदार</translation>
 <translation id="483241715238664915">सुरक्षा चेतावनियां चालू करें</translation>
@@ -1940,7 +1935,6 @@
 <translation id="5937560539988385583">पेज का अनुवाद हो गया</translation>
 <translation id="5938153366081463283">वर्चुअल कार्ड जोड़ें</translation>
 <translation id="5938793338444039872">ट्रॉय</translation>
-<translation id="5946937721014915347"><ph name="SITE_NAME" /> को खोला जा रहा है…</translation>
 <translation id="5947508410139465809">अपलोड या अटैच की गई फ़ाइलों को विश्लेषण के लिए, Google Cloud या तीसरे पक्ष की कंपनियों को भेजा जाता है. उदाहरण के लिए, संवेदनशील डेटा या मैलवेयर का पता लगाने के लिए, फ़ाइलों को स्कैन किया जा सकता है. साथ ही, इन्हें कंपनी की नीतियों के हिसाब से सेव किया जा सकता है.</translation>
 <translation id="5951495562196540101">उपभोक्ता खाते (पैकेज किया गया लाइसेंस मौजूद है) के साथ नामांकन नहीं कर सकते.</translation>
 <translation id="5953516610448771166">इस मीडिया फ़ाइल के लिए, लाइव कैप्शन की सुविधा उपलब्ध नहीं है. यह सुविधा पाने के लिए, <ph name="CONTENT_SETTINGS" /> को इस साइट के लिए ब्लॉक करें.</translation>
@@ -1962,6 +1956,7 @@
 <translation id="5995727681868049093">Google खाते में अपनी जानकारी, निजता, और सुरक्षा को मैनेज करें</translation>
 <translation id="5997247540087773573">आपने अभी जो पासवर्ड इस्तेमाल किया है वह डेटा के गलत इस्तेमाल की वजह से लीक हो चुका है. Google Password Manager आपको यह सुझाव देता है कि आप तुरंत इस पासवर्ड को बदलें और सेव किए गए पासवर्ड की जांच करें. ऐसा करने से, आपके खाते सुरक्षित रहेंगे.</translation>
 <translation id="6000758707621254961">'<ph name="SEARCH_TEXT" />' के लिए <ph name="RESULT_COUNT" /> नतीजे मिले हैं</translation>
+<translation id="6005765687956866568">फ़ॉर्म में ऑटोमैटिक भरी गई जानकारी मिटा दी गई है</translation>
 <translation id="6006365096047131769">3 x 5 इंच</translation>
 <translation id="6006484371116297560">क्लासिक</translation>
 <translation id="6008122969617370890">N-से-1 के क्रम में</translation>
@@ -2031,7 +2026,6 @@
 <translation id="6165508094623778733">ज़्यादा जानें</translation>
 <translation id="6167577165590485365">पिछली बार फ़ेच करने का समय:</translation>
 <translation id="6169916984152623906">अब आप निजी रूप से ब्राउज़ कर सकते हैं और इस डिवाइस का उपयोग करने वाले दूसरे लोगों को आपकी गतिविधि दिखाई नहीं देगी. लेकिन डाउनलोड और बुकमार्क सेव होंगे.</translation>
-<translation id="6176716740821145453">कॉन्टेंट की विश्वसनीयता के बारे में सोचने के लिए थोड़ा समय निकालें</translation>
 <translation id="6177128806592000436">इस साइट से आपका कनेक्‍शन सुरक्षित नहीं है</translation>
 <translation id="6177531123306197852">C2 साइज़ का लिफ़ाफ़ा</translation>
 <translation id="6180316780098470077">बार-बार कोशिश किए जाने के बीच का समय</translation>
@@ -2077,7 +2071,6 @@
 <translation id="6295618774959045776">CVC:</translation>
 <translation id="6300452962057769623">{0,plural, =0{आपका डिवाइस अभी रीस्टार्ट होगा}=1{आपका डिवाइस 1 सेकंड में रीस्टार्ट होगा}one{आपका डिवाइस # सेकंड में रीस्टार्ट होगा}other{आपका डिवाइस # सेकंड में रीस्टार्ट होगा}}</translation>
 <translation id="6301104306974789820">आइटम की कीमत ट्रैक करने से जुड़ी सूचनाएं पाएं</translation>
-<translation id="6302269476990306341">'Chrome में Google Assistant' को रोका जा रहा है</translation>
 <translation id="6305205051461490394"><ph name="URL" /> तक नहीं पहुंचा जा सकता.</translation>
 <translation id="6311165245110979290">वर्चुअल कार्ड उपलब्ध है</translation>
 <translation id="6312113039770857350">वेबपेज उपलब्ध नहीं है</translation>
@@ -2271,6 +2264,7 @@
 <translation id="6826993739343257035">क्या आप एआर (ऑगमेंटेड रिएलिटी) के लिए अनुमति देना चाहते हैं?</translation>
 <translation id="6828866289116430505">आनुवंशिकी</translation>
 <translation id="6831043979455480757">Translate</translation>
+<translation id="6832753933931306326">फ़ॉर्म ऑटोमैटिक भरा हुआ है</translation>
 <translation id="6842196666980060516">184 x 260 मि॰मी॰</translation>
 <translation id="6846340164947227603">वर्चुअल कार्ड संख्या का इस्तेमाल करें...</translation>
 <translation id="6852204201400771460">ऐप्लिकेशन फिर लोड करें?</translation>
@@ -2331,7 +2325,6 @@
 <translation id="6971439137020188025">Slides में जल्दी से नई Google प्रज़ेंटेशन बनाएं</translation>
 <translation id="6972629891077993081">एचआईडी डिवाइस</translation>
 <translation id="6973656660372572881">फ़िक्‍स्‍ड प्रॉक्‍सी सर्वर और .pac स्‍क्रिप्‍ट URL दोनों ही बताए गए हैं.</translation>
-<translation id="6973932557599545801">माफ़ करें, मैं आपकी मदद नहीं कर सकती. कृपया खुद करने की कोशिश करें.</translation>
 <translation id="6973988895180423160">3.5 x 5 इंच</translation>
 <translation id="6978236010531171013">फिर भी शेयर करें</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -2527,7 +2520,6 @@
 <translation id="7451311239929941790">इस समस्या के बारे में <ph name="BEGIN_LINK" />ज़्यादा जानें<ph name="END_LINK" />.</translation>
 <translation id="7455133967321480974">वैश्विक डिफ़ॉल्ट का उपयोग करें (अवरोधित करें)</translation>
 <translation id="745640750744109667">A0x3</translation>
-<translation id="7460618730930299168">यह स्क्रीनिंग आपकी चुनी गई स्क्रीनिंग से अलग है. क्या आप जारी रखना चाहते हैं?</translation>
 <translation id="7461924472993315131">पिन करें</translation>
 <translation id="7463075493919226237">ऑस्ट्रेलियन फ़ुटबॉल</translation>
 <translation id="7465963048299965912">10 x 13 इंच</translation>
@@ -2536,7 +2528,6 @@
 <translation id="7481312909269577407">आगे जाएं</translation>
 <translation id="7481603210197454575">इटैलियन साइज़ का लिफ़ाफ़ा</translation>
 <translation id="7485870689360869515">कोई डेटा नहीं मिला</translation>
-<translation id="7485948220959728508">यह जानकारी किस स्रोत से मिली है?</translation>
 <translation id="748745328507845862">कॉन्सर्ट और म्यूज़िक फ़ेस्टिवल</translation>
 <translation id="7489473601138133813">करियर से जुड़े संसाधन और प्लानिंग</translation>
 <translation id="7495528107193238112">इस कॉन्टेंट को ब्लॉक कर दिया गया है. समस्या को ठीक करने के लिए, साइट के मालिक से संपर्क करें.</translation>
@@ -2642,7 +2633,6 @@
 <translation id="7682451652090915298">रग्बी</translation>
 <translation id="7687186412095877299">आपके सेव किए गए पैसे चुकाने के तरीकों से पेमेंट फ़ॉर्म भरा जाता है</translation>
 <translation id="7687305263118037187">दोबारा कोशिश करने का समय खत्म</translation>
-<translation id="7687451951329798396">किसी दूसरे सोर्स में क्या बताया गया है?</translation>
 <translation id="7690647519407127574">Oufuku Hagaki पोस्टकार्ड</translation>
 <translation id="7693583928066320343">पेज के लिए ऑर्डर मिला</translation>
 <translation id="7696089921647603491">पुराना रॉक म्यूज़िक और गाने</translation>
@@ -2727,6 +2717,7 @@
 <translation id="7950027195171824198">Chrome की सेटिंग में कुकी की सेटिंग मैनेज करें</translation>
 <translation id="7951415247503192394">(32-बिट)</translation>
 <translation id="7952192831285741665">यूरोपियन ईडीपी</translation>
+<translation id="7952804540472583406">नेटवर्क में <ph name="BEGIN_LINK" />साइन इन करना<ph name="END_LINK" />.</translation>
 <translation id="7953569069500808819">सबसे ऊपर एज़ स्टिच</translation>
 <translation id="7956713633345437162">मोबाइल बुकमार्क</translation>
 <translation id="7961015016161918242">कभी नहीं</translation>
@@ -2844,6 +2835,7 @@
 <translation id="8241707690549784388">आप जिस पेज को ढूंढ रहे हैं उसने आपकी डाली गई जानकारी का इस्तेमाल किया है. उस पेज पर वापस लौटने से आपकी कोई कार्रवाई दोहराई जा सकती है. क्या आप जारी रखना चाहते हैं?</translation>
 <translation id="8241712895048303527">इस साइट पर ब्लॉक करें</translation>
 <translation id="8242426110754782860">आगे बढ़ें</translation>
+<translation id="8245703462678310750">फ़ुल स्क्रीन से बाहर निकलने और डाउनलोड की गई फ़ाइलें देखने के लिए, |<ph name="ACCELERATOR" />| दबाकर रखें.</translation>
 <translation id="8249296373107784235">रद्द करें</translation>
 <translation id="8249463483885748674">मानक और प्रवेश परीक्षाएं</translation>
 <translation id="8252991034201168845">सुलभता सेटिंग के बटन को मैनेज करें. ChromeOS की सेटिंग में सुलभता टूल को अपने हिसाब से बनाने के लिए Enter दबाएं</translation>
@@ -3214,7 +3206,6 @@
 <translation id="937457230470581909">चिड़ियाघर, अक्वेरियम, और अभयारण्य</translation>
 <translation id="939736085109172342">नया फ़ोल्डर</translation>
 <translation id="940053046584497293">यात्रा और परिवहन</translation>
-<translation id="945522503751344254">फ़ीडबैक भेजें</translation>
 <translation id="945855313015696284">नीचे दी गई जानकारी देखें और सभी गलत कार्ड मिटाएं</translation>
 <translation id="947370374845726940"><ph name="CREATE_GOOGLE_SITE_FOCUSED_FRIENDLY_MATCH_TEXT" />, Google Sites में जल्दी से नई साइट बनाने के लिए, पहले Tab दबाएं और फिर Enter दबाएं</translation>
 <translation id="950736567201356821">सबसे ऊपर ट्रिपल पंच</translation>

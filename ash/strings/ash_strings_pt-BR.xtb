@@ -31,7 +31,6 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="1148499908455722006">Abrir a caixa de diálogo de informações da conta <ph name="USER_NAME" /></translation>
 <translation id="1150989369772528668">Agenda</translation>
 <translation id="1153356358378277386">Dispositivos pareados</translation>
-<translation id="1165712434476988950">É necessário reiniciar o dispositivo para aplicar a atualização.</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Seu cabo USB-C pode não se conectar a telas corretamente</translation>
 <translation id="1175572348579024023">Rolar</translation>
@@ -358,7 +357,6 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="296762781903199866">Não foi possível fazer o download dos arquivos de fala em <ph name="LANGUAGE" /></translation>
 <translation id="2970920913501714344">instalar apps, extensões e temas;</translation>
 <translation id="2977598380246111477">Próximo número</translation>
-<translation id="2981684127883932071">Exibindo sugestões</translation>
 <translation id="2985148236010982088">Ver todos os apps</translation>
 <translation id="2992327365391326550">O botão do microfone do dispositivo está desativado.</translation>
 <translation id="2996462380875591307">Lupa em área fixa ativada. Pressione Ctrl+Pesquisa+D novamente para desativá-la.</translation>
@@ -669,6 +667,7 @@ Conecte o dispositivo a uma fonte de energia.</translation>
 <translation id="4666082839192943839">Desative o acesso à câmera neste dispositivo para bloquear todas as câmeras o tempo todo.</translation>
 <translation id="4666911709726371538">Mais apps</translation>
 <translation id="4667099493359681081">Fazendo o download do arquivo <ph name="FILENAME" /></translation>
+<translation id="468293128311738995">Apps do smartphone</translation>
 <translation id="4690510401873698237">Estante na parte inferior</translation>
 <translation id="4696813013609194136">Desbloquear dispositivo usando o código de pai/mãe</translation>
 <translation id="4702647871202761252">A tela de privacidade está desativada</translation>
@@ -925,12 +924,10 @@ Conecte o dispositivo a uma fonte de energia.</translation>
 <translation id="6103838137565245112">sistema</translation>
 <translation id="6107292179555508368">Os acessos ao microfone e à câmera estão desativados neste dispositivo</translation>
 <translation id="6114505516289286752">Download de arquivos de fala em <ph name="LANGUAGE" /> concluído</translation>
-<translation id="6116825164611323644">O acesso à câmera está desativado neste dispositivo</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042">Confirmar o download de <ph name="FILENAME" /></translation>
 <translation id="612734058257491180">O Google Assistente não está disponível em uma sessão de visitante.</translation>
 <translation id="6129953537138746214">Espaço</translation>
-<translation id="6134259848159370930">Pesquise no dispositivo, em apps, nas configurações e na Web.</translation>
 <translation id="6137566720514957455">Abrir caixa de diálogo para a remoção de <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6141988275892716286">Confirmar download</translation>
 <translation id="6154006699632741460">Periférico não compatível</translation>
@@ -1291,6 +1288,7 @@ Nova instalação</translation>
 <translation id="8142441511840089262">Clicar duas vezes</translation>
 <translation id="8142699993796781067">Rede particular</translation>
 <translation id="8144760705599030999">Salve seu dispositivo <ph name="NAME" /> na conta <ph name="EMAIL" /> para agilizar o pareamento dele com outros dispositivos</translation>
+<translation id="8144914663975476336">Selecione o formato de gravação</translation>
 <translation id="8149413265954228307">Mostrar configurações do Bluetooth. <ph name="STATE_TEXT" />.</translation>
 <translation id="8152092012181020186">Pressione Ctrl + W para fechar.</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, preenchimento automático</translation>
@@ -1388,7 +1386,6 @@ Nova instalação</translation>
 <translation id="8666856788528804727">Abra <ph name="NAME" /> para configurar o dispositivo</translation>
 <translation id="8676770494376880701">Carregador de baixa potência conectado</translation>
 <translation id="8683506306463609433">Acompanhamento de desempenho ativo</translation>
-<translation id="8685326675965865247">Pesquise no seu dispositivo, em apps, nas configurações e na Web. Use as teclas de seta para navegar pelos seus apps.</translation>
 <translation id="8703634754197148428">Iniciar gravação. Depois que a gravação for iniciada, pressione Alt + Shift + L para ir até a estante e localizar o botão para "Parar de gravar"</translation>
 <translation id="8721053961083920564">Altere o volume. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">Captura de tela cheia</translation>
@@ -1397,7 +1394,6 @@ Nova instalação</translation>
 <translation id="8735678380411481005">Cor da luz de fundo do teclado</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />,
         <ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8752416742247198423">Conceda acesso à câmera para que apps e páginas da Web com permissão usem as câmeras conectadas a este dispositivo.</translation>
 <translation id="8755498163081687682">Verifique sua identidade: <ph name="ORIGIN_NAME" /> quer confirmar que é você</translation>
 <translation id="875593634123171288">Mostrar configurações de VPN</translation>
 <translation id="8759408218731716181">Não é possível configurar o login múltiplo</translation>
@@ -1464,7 +1460,6 @@ Nova instalação</translation>
 <translation id="9089416786594320554">Métodos de entrada</translation>
 <translation id="9091626656156419976">Tela <ph name="DISPLAY_NAME" /> removida</translation>
 <translation id="9098969848082897657">Silenciar smartphone</translation>
-<translation id="9099154003160514616">Atualização do Lacros disponível</translation>
 <translation id="9100887602489003640">Adicionando perfil. Aguarde alguns minutos.</translation>
 <translation id="9105450214093926548">Não é possível fazer login em um segundo usuário enquanto o navegador Lacros está aberto. Use um segundo perfil de navegador no Lacros ou feche-o e tente novamente.</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> ou <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>

@@ -4548,6 +4548,21 @@ TEST_P(CertVerifyProcConstraintsTest, PolicyConstraints3Intermediate) {
   EXPECT_THAT(Verify(), IsOk());
 }
 
+TEST_P(CertVerifyProcConstraintsTest, PolicyConstraints0Leaf) {
+  // Setting requireExplicitPolicy to 0 on the target certificate should make
+  // an explicit policy required for the chain. (Ref: RFC 5280 section 6.1.5.b
+  // and the final paragraph of 6.1.5)
+  chain_[0]->SetPolicyConstraints(
+      /*require_explicit_policy=*/0,
+      /*inhibit_policy_mapping=*/absl::nullopt);
+
+  if (verify_proc_type() == CERT_VERIFY_PROC_WIN) {
+    EXPECT_THAT(Verify(), IsOk());
+  } else {
+    EXPECT_THAT(Verify(), IsError(ExpectedIntermediateConstraintError()));
+  }
+}
+
 TEST_P(CertVerifyProcConstraintsTest, InhibitAnyPolicy0Root) {
   static const char kAnyPolicy[] = "2.5.29.32.0";
   static const char kPolicy1[] = "1.2.3.4";
@@ -4889,6 +4904,100 @@ TEST_P(CertVerifyProcConstraintsTrustedLeafTest, ValidityExpired) {
   }
 }
 
+TEST_P(CertVerifyProcConstraintsTrustedLeafTest, PolicyConstraints) {
+  static const char kPolicy1[] = "1.2.3.4";
+
+  for (bool leaf_has_policy : {false, true}) {
+    SCOPED_TRACE(leaf_has_policy);
+
+    chain_[0]->SetPolicyConstraints(
+        /*require_explicit_policy=*/0,
+        /*inhibit_policy_mapping=*/absl::nullopt);
+    if (leaf_has_policy) {
+      chain_[0]->SetCertificatePolicies({kPolicy1});
+    } else {
+      chain_[0]->SetCertificatePolicies({});
+    }
+
+    if (VerifyProcTypeIsBuiltin() ||
+        verify_proc_type() == CERT_VERIFY_PROC_WIN) {
+      // Fails since neither builtin nor win verifier handle the "directly
+      // trusted leaf" case, not because the constraint is being enforced.
+      EXPECT_THAT(Verify(), IsError(ERR_CERT_AUTHORITY_INVALID));
+    } else {
+      // Succeeds since the mac/ios/android verifiers appear to not enforce
+      // this constraint in the "directly trusted leaf" case.
+      EXPECT_THAT(Verify(), IsOk());
+    }
+  }
+}
+
+TEST_P(CertVerifyProcConstraintsTrustedLeafTest, InhibitAnyPolicy) {
+  static const char kAnyPolicy[] = "2.5.29.32.0";
+  chain_[0]->SetPolicyConstraints(
+      /*require_explicit_policy=*/0,
+      /*inhibit_policy_mapping=*/absl::nullopt);
+  chain_[0]->SetInhibitAnyPolicy(0);
+  chain_[0]->SetCertificatePolicies({kAnyPolicy});
+
+  if (VerifyProcTypeIsBuiltin() || verify_proc_type() == CERT_VERIFY_PROC_WIN) {
+    EXPECT_THAT(Verify(), IsError(ERR_CERT_AUTHORITY_INVALID));
+  } else {
+    EXPECT_THAT(Verify(), IsOk());
+  }
+}
+
+TEST_P(CertVerifyProcConstraintsTrustedLeafTest, KeyUsageNoDigitalSignature) {
+  // This test is mostly uninteresting since keyUsage on the end-entity is only
+  // checked at the TLS layer, not during cert verification.
+  chain_[0]->SetKeyUsages({KEY_USAGE_BIT_CRL_SIGN});
+
+  if (VerifyProcTypeIsBuiltin() || verify_proc_type() == CERT_VERIFY_PROC_WIN) {
+    EXPECT_THAT(Verify(), IsError(ERR_CERT_AUTHORITY_INVALID));
+  } else {
+    EXPECT_THAT(Verify(), IsOk());
+  }
+}
+
+TEST_P(CertVerifyProcConstraintsTrustedLeafTest, ExtendedKeyUsageNoServerAuth) {
+  chain_[0]->SetExtendedKeyUsages({der::Input(kCodeSigning)});
+
+  if (VerifyProcTypeIsBuiltin()) {
+    EXPECT_THAT(Verify(), IsError(ERR_CERT_AUTHORITY_INVALID));
+  } else {
+    EXPECT_THAT(Verify(), IsError(ERR_CERT_INVALID));
+  }
+}
+
+TEST_P(CertVerifyProcConstraintsTrustedLeafTest, UnknownSignatureAlgorithm) {
+  chain_[0]->SetSignatureAlgorithmTLV(TestOid0SignatureAlgorithmTLV());
+
+  if (VerifyProcTypeIsBuiltin() || verify_proc_type() == CERT_VERIFY_PROC_WIN) {
+    EXPECT_THAT(Verify(), IsError(ERR_CERT_INVALID));
+  } else {
+    EXPECT_THAT(Verify(), IsOk());
+  }
+}
+
+TEST_P(CertVerifyProcConstraintsTrustedLeafTest, UnknownExtension) {
+  for (bool critical : {true, false}) {
+    SCOPED_TRACE(critical);
+    chain_[0]->SetExtension(TestOid0(), "hello world", critical);
+
+    if (verify_proc_type() == CERT_VERIFY_PROC_WIN) {
+      if (critical) {
+        EXPECT_THAT(Verify(), IsError(ERR_CERT_INVALID));
+      } else {
+        EXPECT_THAT(Verify(), IsError(ERR_CERT_AUTHORITY_INVALID));
+      }
+    } else if (VerifyProcTypeIsBuiltin()) {
+      EXPECT_THAT(Verify(), IsError(ERR_CERT_AUTHORITY_INVALID));
+    } else {
+      EXPECT_THAT(Verify(), IsOk());
+    }
+  }
+}
+
 // A set of tests that check how various constraints are enforced when they
 // are applied to a directly trusted self-signed leaf certificate.
 class CertVerifyProcConstraintsTrustedSelfSignedTest
@@ -4976,6 +5085,86 @@ TEST_P(CertVerifyProcConstraintsTrustedSelfSignedTest, ValidityExpired) {
                      base::Time::Now() - base::Days(7));
 
   EXPECT_THAT(Verify(), IsError(ERR_CERT_DATE_INVALID));
+}
+
+TEST_P(CertVerifyProcConstraintsTrustedSelfSignedTest, PolicyConstraints) {
+  static const char kPolicy1[] = "1.2.3.4";
+
+  for (bool leaf_has_policy : {false, true}) {
+    SCOPED_TRACE(leaf_has_policy);
+
+    cert_->SetPolicyConstraints(
+        /*require_explicit_policy=*/0,
+        /*inhibit_policy_mapping=*/absl::nullopt);
+    if (leaf_has_policy) {
+      cert_->SetCertificatePolicies({kPolicy1});
+
+      EXPECT_THAT(Verify(), IsOk());
+    } else {
+      cert_->SetCertificatePolicies({});
+
+      if (VerifyProcTypeIsBuiltin()) {
+        EXPECT_THAT(Verify(), IsError(ERR_CERT_INVALID));
+      } else {
+        EXPECT_THAT(Verify(), IsOk());
+      }
+    }
+  }
+}
+
+TEST_P(CertVerifyProcConstraintsTrustedSelfSignedTest, InhibitAnyPolicy) {
+  static const char kAnyPolicy[] = "2.5.29.32.0";
+  cert_->SetPolicyConstraints(
+      /*require_explicit_policy=*/0,
+      /*inhibit_policy_mapping=*/absl::nullopt);
+  cert_->SetInhibitAnyPolicy(0);
+  cert_->SetCertificatePolicies({kAnyPolicy});
+
+  EXPECT_THAT(Verify(), IsOk());
+}
+
+TEST_P(CertVerifyProcConstraintsTrustedSelfSignedTest,
+       KeyUsageNoDigitalSignature) {
+  // This test is mostly uninteresting since keyUsage on the end-entity is only
+  // checked at the TLS layer, not during cert verification.
+  cert_->SetKeyUsages({KEY_USAGE_BIT_CRL_SIGN});
+
+  EXPECT_THAT(Verify(), IsOk());
+}
+
+TEST_P(CertVerifyProcConstraintsTrustedSelfSignedTest,
+       ExtendedKeyUsageNoServerAuth) {
+  cert_->SetExtendedKeyUsages({der::Input(kCodeSigning)});
+
+  EXPECT_THAT(Verify(), IsError(ERR_CERT_INVALID));
+}
+
+TEST_P(CertVerifyProcConstraintsTrustedSelfSignedTest,
+       UnknownSignatureAlgorithm) {
+  cert_->SetSignatureAlgorithmTLV(TestOid0SignatureAlgorithmTLV());
+  if (VerifyProcTypeIsBuiltin() || verify_proc_type() == CERT_VERIFY_PROC_WIN) {
+    EXPECT_THAT(Verify(), IsError(ERR_CERT_INVALID));
+  } else {
+    EXPECT_THAT(Verify(), IsOk());
+  }
+}
+
+TEST_P(CertVerifyProcConstraintsTrustedSelfSignedTest, UnknownExtension) {
+  for (bool critical : {true, false}) {
+    SCOPED_TRACE(critical);
+    cert_->SetExtension(TestOid0(), "hello world", critical);
+
+    if (critical) {
+      if (VerifyProcTypeIsBuiltin() ||
+          verify_proc_type() == CERT_VERIFY_PROC_WIN) {
+        EXPECT_THAT(Verify(), IsError(ERR_CERT_INVALID));
+      } else {
+        EXPECT_THAT(Verify(), IsOk());
+      }
+    } else {
+      EXPECT_THAT(Verify(), IsOk());
+    }
+  }
 }
 
 TEST(CertVerifyProcTest, RejectsPublicSHA1Leaves) {

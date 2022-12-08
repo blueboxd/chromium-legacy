@@ -9,7 +9,6 @@
 #include "base/test/simple_test_clock.h"
 #include "components/reading_list/core/fake_reading_list_model_storage.h"
 #include "components/reading_list/core/reading_list_model_impl.h"
-#include "components/reading_list/core/reading_list_sync_bridge_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -19,41 +18,37 @@ base::Time AdvanceAndGetTime(base::SimpleTestClock* clock) {
   return clock->Now();
 }
 
-ReadingListModelStorage::ReadingListEntries PopulateSampleEntries(
+std::vector<ReadingListEntry> PopulateSampleEntries(
     base::SimpleTestClock* clock) {
-  ReadingListModelStorage::ReadingListEntries entries;
+  std::vector<ReadingListEntry> entries;
   // Adds timer and interlace read/unread entry creation to avoid having two
   // entries with the same creation timestamp.
-  ReadingListEntry unread_a(GURL("http://unread_a.com"), "unread_a",
-                            AdvanceAndGetTime(clock));
-  entries.emplace(GURL("http://unread_a.com"), std::move(unread_a));
+  entries.emplace_back(GURL("http://unread_a.com"), "unread_a",
+                       AdvanceAndGetTime(clock));
 
   ReadingListEntry read_a(GURL("http://read_a.com"), "read_a",
                           AdvanceAndGetTime(clock));
   read_a.SetRead(true, AdvanceAndGetTime(clock));
-  entries.emplace(GURL("http://read_a.com"), std::move(read_a));
+  entries.push_back(std::move(read_a));
 
-  ReadingListEntry unread_b(GURL("http://unread_b.com"), "unread_b",
-                            AdvanceAndGetTime(clock));
-  entries.emplace(GURL("http://unread_b.com"), std::move(unread_b));
+  entries.emplace_back(GURL("http://unread_b.com"), "unread_b",
+                       AdvanceAndGetTime(clock));
 
   ReadingListEntry read_b(GURL("http://read_b.com"), "read_b",
                           AdvanceAndGetTime(clock));
   read_b.SetRead(true, AdvanceAndGetTime(clock));
-  entries.emplace(GURL("http://read_b.com"), std::move(read_b));
+  entries.push_back(std::move(read_b));
 
-  ReadingListEntry unread_c(GURL("http://unread_c.com"), "unread_c",
-                            AdvanceAndGetTime(clock));
-  entries.emplace(GURL("http://unread_c.com"), std::move(unread_c));
+  entries.emplace_back(GURL("http://unread_c.com"), "unread_c",
+                       AdvanceAndGetTime(clock));
 
   ReadingListEntry read_c(GURL("http://read_c.com"), "read_c",
                           AdvanceAndGetTime(clock));
   read_c.SetRead(true, AdvanceAndGetTime(clock));
-  entries.emplace(GURL("http://read_c.com"), std::move(read_c));
+  entries.push_back(std::move(read_c));
 
-  ReadingListEntry unread_d(GURL("http://unread_d.com"), "unread_d",
-                            AdvanceAndGetTime(clock));
-  entries.emplace(GURL("http://unread_d.com"), std::move(unread_d));
+  entries.emplace_back(GURL("http://unread_d.com"), "unread_d",
+                       AdvanceAndGetTime(clock));
 
   return entries;
 }
@@ -224,8 +219,7 @@ TEST_F(ReadingListModelTest, EmptyLoaded) {
 // Tests successful load model.
 TEST_F(ReadingListModelTest, ModelLoadSuccess) {
   ASSERT_TRUE(
-      ResetStorage()->TriggerLoadCompletion(ReadingListModelStorage::LoadResult{
-          PopulateSampleEntries(&clock_), /*metadata_batch=*/nullptr}));
+      ResetStorage()->TriggerLoadCompletion(PopulateSampleEntries(&clock_)));
 
   AssertObserverCount(1, 0, 0, 0, 0, 0, 0, 0, 0);
   std::map<GURL, std::string> loaded_entries;
@@ -252,9 +246,10 @@ TEST_F(ReadingListModelTest, ModelLoadFailure) {
 
   AssertObserverCount(0, 0, 0, 0, 0, 0, 0, 0, 0);
 
-  // TODO(crbug.com/1386158): Ideally it should be verified that the sync
-  // processor is in an error state. This isn't possible currently as these
-  // tests don't instantiate a bridge.
+  EXPECT_TRUE(model_->GetModelTypeSyncBridge()
+                  ->change_processor()
+                  ->GetError()
+                  .has_value());
 }
 
 // Tests adding entry.
@@ -271,7 +266,6 @@ TEST_F(ReadingListModelTest, AddEntry) {
   AssertStorageCount(1, 0);
   EXPECT_EQ(1ul, UnreadSize());
   EXPECT_EQ(0ul, ReadSize());
-  EXPECT_TRUE(model_->GetLocalUnseenFlag());
 
   const ReadingListEntry* other_entry =
       model_->GetEntryByURL(GURL("http://example.com"));
@@ -297,7 +291,6 @@ TEST_F(ReadingListModelTest, AddExistingEntry) {
   AssertStorageCount(1, 1);
   EXPECT_EQ(1ul, UnreadSize());
   EXPECT_EQ(0ul, ReadSize());
-  EXPECT_TRUE(model_->GetLocalUnseenFlag());
 
   const ReadingListEntry* other_entry =
       model_->GetEntryByURL(GURL("http://example.com"));
@@ -309,6 +302,9 @@ TEST_F(ReadingListModelTest, AddExistingEntry) {
 
 // Tests addin entry from sync.
 TEST_F(ReadingListModelTest, SyncAddEntry) {
+  // DCHECKs verify that sync updates are issued as batch updates.
+  auto token = model_->BeginBatchUpdates();
+
   auto entry = std::make_unique<ReadingListEntry>(
       GURL("http://example.com"), "sample", AdvanceAndGetTime(&clock_));
   entry->SetRead(true, AdvanceAndGetTime(&clock_));
@@ -316,7 +312,7 @@ TEST_F(ReadingListModelTest, SyncAddEntry) {
 
   model_->SyncAddEntry(std::move(entry));
   AssertObserverCount(0, 0, 0, 0, 0, 0, 1, 0, 1);
-  AssertStorageCount(0, 0);
+  AssertStorageCount(1, 0);
   EXPECT_EQ(0ul, UnreadSize());
   EXPECT_EQ(1ul, ReadSize());
   ClearCounts();
@@ -347,8 +343,11 @@ TEST_F(ReadingListModelTest, SyncMergeEntry) {
   EXPECT_EQ(1ul, UnreadSize());
   EXPECT_EQ(0ul, ReadSize());
 
+  // DCHECKs verify that sync updates are issued as batch updates.
+  auto token = model_->BeginBatchUpdates();
   ReadingListEntry* merged_entry =
       model_->SyncMergeEntry(std::move(sync_entry));
+
   EXPECT_EQ(0ul, UnreadSize());
   EXPECT_EQ(1ul, ReadSize());
   EXPECT_EQ(merged_entry->DistilledPath(),
@@ -391,6 +390,8 @@ TEST_F(ReadingListModelTest, RemoveEntryByUrl) {
 
 // Tests deleting entry from sync.
 TEST_F(ReadingListModelTest, RemoveSyncEntryByUrl) {
+  // DCHECKs verify that sync updates are issued as batch updates.
+  auto token = model_->BeginBatchUpdates();
   model_->AddEntry(GURL("http://example.com"), "sample",
                    reading_list::ADDED_VIA_CURRENT_APP);
   ClearCounts();
@@ -399,7 +400,7 @@ TEST_F(ReadingListModelTest, RemoveSyncEntryByUrl) {
   EXPECT_EQ(0ul, ReadSize());
   model_->SyncRemoveEntry(GURL("http://example.com"));
   AssertObserverCount(0, 0, 0, 0, 1, 0, 0, 0, 1);
-  AssertStorageCount(0, 0);
+  AssertStorageCount(0, 1);
   EXPECT_EQ(0ul, UnreadSize());
   EXPECT_EQ(0ul, ReadSize());
   EXPECT_EQ(model_->GetEntryByURL(GURL("http://example.com")), nullptr);
@@ -413,7 +414,7 @@ TEST_F(ReadingListModelTest, RemoveSyncEntryByUrl) {
   EXPECT_EQ(1ul, ReadSize());
   model_->SyncRemoveEntry(GURL("http://example.com"));
   AssertObserverCount(0, 0, 0, 0, 1, 0, 0, 0, 1);
-  AssertStorageCount(0, 0);
+  AssertStorageCount(0, 1);
   EXPECT_EQ(0ul, UnreadSize());
   EXPECT_EQ(0ul, ReadSize());
   EXPECT_EQ(model_->GetEntryByURL(GURL("http://example.com")), nullptr);
@@ -470,12 +471,10 @@ TEST_F(ReadingListModelTest, UnreadEntry) {
   // Setup.
   model_->AddEntry(GURL("http://example.com"), "sample",
                    reading_list::ADDED_VIA_CURRENT_APP);
-  EXPECT_TRUE(model_->GetLocalUnseenFlag());
   model_->SetReadStatus(GURL("http://example.com"), true);
   ClearCounts();
   EXPECT_EQ(0ul, UnreadSize());
   EXPECT_EQ(1ul, ReadSize());
-  EXPECT_FALSE(model_->GetLocalUnseenFlag());
 
   // Action.
   model_->SetReadStatus(GURL("http://example.com"), false);
@@ -484,7 +483,6 @@ TEST_F(ReadingListModelTest, UnreadEntry) {
   AssertObserverCount(0, 0, 0, 0, 0, 1, 0, 0, 1);
   EXPECT_EQ(1ul, UnreadSize());
   EXPECT_EQ(0ul, ReadSize());
-  EXPECT_FALSE(model_->GetLocalUnseenFlag());
 
   const ReadingListEntry* other_entry =
       model_->GetEntryByURL(GURL("http://example.com"));

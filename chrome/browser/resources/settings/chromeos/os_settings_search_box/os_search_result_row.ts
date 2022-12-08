@@ -13,7 +13,7 @@ import {getInstance as getAnnouncerInstance} from 'chrome://resources/cr_element
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
 import {FocusRowMixin} from 'chrome://resources/js/focus_row_mixin.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {SearchResult as PersonalizationSearchResult} from '../../mojom-webui/personalization/search.mojom-webui.js';
@@ -613,7 +613,7 @@ export class OsSearchResultRowElement extends OsSearchResultRowElementBase {
   onSearchResultSelected() {
     if (isPersonalizationSearchResult(this.searchResult)) {
       this.recordSearchResultMetrics_();
-      OpenWindowProxyImpl.getInstance().openURL(
+      OpenWindowProxyImpl.getInstance().openUrl(
           loadTimeData.getString('personalizationAppUrl') +
           this.searchResult.relativeUrl);
       return;

@@ -31,7 +31,6 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="1148499908455722006">Öppna dialogrutan med information om <ph name="USER_NAME" /></translation>
 <translation id="1150989369772528668">Kalender</translation>
 <translation id="1153356358378277386">Kopplade enheter</translation>
-<translation id="1165712434476988950">Enheten måste startas om för att uppdateringen ska tillämpas.</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Det kanske inte går att ansluta skärmar korrekt med den här USB-C-kabeln</translation>
 <translation id="1175572348579024023">Scrolla</translation>
@@ -358,7 +357,6 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="296762781903199866">Det gick inte att ladda ned filer för taligenkänning på <ph name="LANGUAGE" /></translation>
 <translation id="2970920913501714344">Installera appar, tillägg och teman</translation>
 <translation id="2977598380246111477">Nästa nummer</translation>
-<translation id="2981684127883932071">Visar förslag</translation>
 <translation id="2985148236010982088">Visa alla appar</translation>
 <translation id="2992327365391326550">Enhetens mikrofon är avstängd.</translation>
 <translation id="2996462380875591307">Dockad skärmförstoring har aktiverats. Tryck på Ctrl + Sök + D igen om du vill inaktivera funktionen.</translation>
@@ -669,6 +667,7 @@ Anslut enheten till en strömkälla.</translation>
 <translation id="4666082839192943839">Inaktivera kameraåtkomst på den här enheten om du vill blockera alla kameror hela tiden.</translation>
 <translation id="4666911709726371538">Fler appar</translation>
 <translation id="4667099493359681081"><ph name="FILENAME" /> laddas ned</translation>
+<translation id="468293128311738995">Appar från telefonen</translation>
 <translation id="4690510401873698237">Hyllan längst ned</translation>
 <translation id="4696813013609194136">Lås upp enheten med föräldrakod</translation>
 <translation id="4702647871202761252">Integritetsskärmen är inaktiverad</translation>
@@ -925,12 +924,10 @@ Anslut enheten till en strömkälla.</translation>
 <translation id="6103838137565245112">system</translation>
 <translation id="6107292179555508368">Mikrofon- och kameraåtkomster är inaktiverade på den här enheten</translation>
 <translation id="6114505516289286752">Filerna för taligenkänning på <ph name="LANGUAGE" /> har laddats ned</translation>
-<translation id="6116825164611323644">Kameraåtkomst är inaktiverad på den här enheten</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042">Bekräfta nedladdning <ph name="FILENAME" /></translation>
 <translation id="612734058257491180">Google-assistenten är inte tillgänglig i en gästsession.</translation>
 <translation id="6129953537138746214">Blanksteg</translation>
-<translation id="6134259848159370930">Sök på enheten, i appar, inställningar och på webben.</translation>
 <translation id="6137566720514957455">Öppna dialogrutan för borttagning av <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6141988275892716286">Bekräfta nedladdning</translation>
 <translation id="6154006699632741460">Tillbehöret stöds inte</translation>
@@ -1291,6 +1288,7 @@ Nyligen installerad</translation>
 <translation id="8142441511840089262">Dubbelklicka</translation>
 <translation id="8142699993796781067">Privat nätverk</translation>
 <translation id="8144760705599030999">Spara <ph name="NAME" /> i <ph name="EMAIL" /> för snabbare parkoppling med dina andra enheter</translation>
+<translation id="8144914663975476336">Välj inspelningsformat</translation>
 <translation id="8149413265954228307">Visa Bluetooth-inställningar. <ph name="STATE_TEXT" />.</translation>
 <translation id="8152092012181020186">Stäng genom att trycka på Ctrl. + W</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, autoslutför</translation>
@@ -1388,7 +1386,6 @@ Nyligen installerad</translation>
 <translation id="8666856788528804727">Öppna <ph name="NAME" /> och konfigurera enheten där</translation>
 <translation id="8676770494376880701">Laddare med låg effekt ansluten</translation>
 <translation id="8683506306463609433">Prestandaspårning är aktiv</translation>
-<translation id="8685326675965865247">Sök på enheten, i appar, inställningar och på webben. Flytta mellan apparna med piltangenterna.</translation>
 <translation id="8703634754197148428">Starta inspelning. När inspelningen har startats trycker du på Alt + Skift + L för att navigera till hyllan där du hittar knappen för att stoppa inspelningen</translation>
 <translation id="8721053961083920564">Ljud på/av. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">Skärmbild/skärminspelning av hela skärmen</translation>
@@ -1397,7 +1394,6 @@ Nyligen installerad</translation>
 <translation id="8735678380411481005">Färg på bakgrundsbelysning för tangentbord</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />,
         <ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8752416742247198423">Aktivera kameraåtkomst för att tillåta att appar och webbsidor med kamerabehörighet använder kameror som är anslutna till den här enheten.</translation>
 <translation id="8755498163081687682">Verifiera din identitet: <ph name="ORIGIN_NAME" /> vill kontrollera din identitet</translation>
 <translation id="875593634123171288">Visa VPN-inställningar</translation>
 <translation id="8759408218731716181">Det går inte att starta multiinloggning</translation>
@@ -1464,7 +1460,6 @@ Nyligen installerad</translation>
 <translation id="9089416786594320554">Inmatningsmetoder</translation>
 <translation id="9091626656156419976">Skärmen <ph name="DISPLAY_NAME" /> har tagits bort</translation>
 <translation id="9098969848082897657">Inga telefonljud</translation>
-<translation id="9099154003160514616">Det finns en uppdatering av Lacros</translation>
 <translation id="9100887602489003640">Lägger till profil. Vänta några minuter.</translation>
 <translation id="9105450214093926548">Det finns inte stöd för inloggning av en andra användare medan Lacros-webbläsaren körs. Använd i stället en annan webbläsarprofil i Lacros eller stäng Lacros och försök igen.</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> eller <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>

@@ -79,6 +79,7 @@ public class ChromeCachedFlags {
                 add(ChromeFeatureList.sAppMenuMobileSiteOption);
                 add(ChromeFeatureList.sBackGestureRefactorAndroid);
                 add(ChromeFeatureList.sCctBrandTransparency);
+                add(ChromeFeatureList.sCctFeatureUsage);
                 add(ChromeFeatureList.sCctIncognito);
                 add(ChromeFeatureList.sCctIncognitoAvailableToThirdParty);
                 add(ChromeFeatureList.sCctRemoveRemoteViewIds);
@@ -94,7 +95,6 @@ public class ChromeCachedFlags {
                 add(ChromeFeatureList.sCommandLineOnNonRooted);
                 add(ChromeFeatureList.sConditionalTabStripAndroid);
                 add(ChromeFeatureList.sCommerceCoupons);
-                add(ChromeFeatureList.sCreateSafebrowsingOnStartup);
                 add(ChromeFeatureList.sCriticalPersistedTabData);
                 add(ChromeFeatureList.sDiscoverMultiColumn);
                 add(ChromeFeatureList.sTabStripRedesign);
@@ -200,6 +200,7 @@ public class ChromeCachedFlags {
                         add(TabUiFeatureUtilities.GRID_TAB_SWITCHER_FOR_TABLETS_POLISH);
                         add(TabUiFeatureUtilities.TAB_STRIP_TAB_WIDTH);
                         add(TabUiFeatureUtilities.ENABLE_TAB_SELECTION_EDITOR_V2_SHARE);
+                        add(TabUiFeatureUtilities.ENABLE_TAB_SELECTION_EDITOR_V2_BOOKMARKS);
                         add(TabUiFeatureUtilities.TAB_STRIP_REDESIGN_ENABLE_FOLIO);
                         add(TabUiFeatureUtilities.TAB_STRIP_REDESIGN_ENABLE_DETACHED);
                         add(VersionNumberGetter.MIN_SDK_VERSION);

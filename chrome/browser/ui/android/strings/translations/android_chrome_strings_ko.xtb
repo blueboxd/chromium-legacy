@@ -22,6 +22,8 @@
 <translation id="1111673857033749125">다른 기기에서 저장한 북마크가 여기에 표시됩니다.</translation>
 <translation id="1113597929977215864">간단히 보기 표시</translation>
 <translation id="1123070903960493543">Chrome과 상호작용하는 방식, 선택한 설정, Chrome 비정상 종료 세부정보</translation>
+<translation id="1126013303640354461">Google Pay 결제 수단 및 주소는 암호화되지 않습니다. Chrome 방문 기록은 동기화되지 않습니다.
+암호를 아는 사람만 암호화된 데이터를 볼 수 있습니다. 암호는 Google로 전송되거나 Google에 저장되지 않습니다. 암호가 기억나지 않거나 이 설정을 변경하려면 동기화를 재설정해야 합니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="1126809382673880764">위험한 웹사이트, 다운로드 항목, 확장 프로그램으로부터 사용자를 보호하지 않습니다. Gmail, Google 검색과 같은 다른 Google 서비스에서는 가능한 경우 세이프 브라우징 보호가 계속 제공됩니다.</translation>
 <translation id="1129510026454351943">세부정보: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1142732900304639782">이 사이트 번역 옵션 제공 안 함</translation>
@@ -330,7 +332,6 @@
 <translation id="2840810876587895427">{TAB_COUNT,plural, =1{시크릿 탭 <ph name="TAB_COUNT_ONE" />개가 닫힙니다.}other{시크릿 탭 <ph name="TAB_COUNT_MANY" />개가 닫힙니다.}}</translation>
 <translation id="2841216154655874070">{NUM_DAYS,plural, =1{1일 전에 확인됨}other{#일 전에 확인됨}}</translation>
 <translation id="2842985007712546952">상위 폴더</translation>
-<translation id="2851291081585704741">오프라인 상태입니다</translation>
 <translation id="2856503607207334158">로그인 실패</translation>
 <translation id="2860954141821109167">이 기기에서 전화 앱이 사용 설정되어 있는지 확인하세요.</translation>
 <translation id="2861923151411510142">일부 Chrome 기능을 더 이상 사용할 수 없게 됩니다.</translation>
@@ -1105,6 +1106,7 @@
 <translation id="6903907808598579934">동기화 사용 설정</translation>
 <translation id="6908998565271542516">웹사이트 승인 또는 비승인 옵션이 전체 높이로 열림</translation>
 <translation id="6909589135458168665">페이지 미리 로드</translation>
+<translation id="692924882724759447">여기에서 내가 팔로우하는 사이트 보기</translation>
 <translation id="6942665639005891494">언제든지 설정 메뉴 옵션으로 기본 다운로드 위치 변경 가능</translation>
 <translation id="694267552845942083">현재 동기화 설정을 맞춤설정 중입니다. 동기화 사용 설정을 마무리하려면 화면 하단 근처에 있는 확인 버튼을 탭하세요. 위로 이동</translation>
 <translation id="6945221475159498467">선택</translation>
@@ -1409,7 +1411,7 @@
 <translation id="8497480609928300907">개인 정보 보호 가이드 설명</translation>
 <translation id="8497726226069778601">아직 표시할 내용 없음</translation>
 <translation id="8503559462189395349">Chrome 비밀번호</translation>
-<translation id="8503813439785031346">사용자이름</translation>
+<translation id="8503813439785031346">사용자 이름</translation>
 <translation id="8505766168025405649">알림에서 다운로드 상태를 확인하세요.</translation>
 <translation id="8514477925623180633">Chrome으로 저장한 비밀번호 내보내기</translation>
 <translation id="8516012719330875537">이미지 편집기</translation>
@@ -1506,7 +1508,6 @@
 <translation id="8998729206196772491"><ph name="MANAGED_DOMAIN" />에서 관리하는 계정으로 로그인합니다. 계정 관리자가 내 Chrome 데이터를 관리하게 되며 데이터는 이 계정에 영구적으로 연결됩니다. Chrome에서 로그아웃하면 데이터가 이 기기에서 삭제되지만 Google 계정에는 그대로 유지됩니다.</translation>
 <translation id="9022774213089566801">자주 방문한 웹사이트</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{동영상 #개}other{동영상 #개}}</translation>
-<translation id="9042827002460091668">인터넷 연결 상태를 확인하고 다시 시도해 주세요.</translation>
 <translation id="9042893549633094279">개인 정보 보호 및 보안</translation>
 <translation id="9050666287014529139">암호</translation>
 <translation id="9063523880881406963">데스크톱 버전으로 보기 사용 중지</translation>

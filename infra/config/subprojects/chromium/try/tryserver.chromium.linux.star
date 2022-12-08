@@ -85,10 +85,6 @@ try_.builder(
 )
 
 try_.builder(
-    name = "linux-autofill-assistant",
-)
-
-try_.builder(
     name = "linux-bfcache-rel",
     mirrors = [
         "ci/linux-bfcache-rel",
@@ -106,10 +102,6 @@ try_.builder(
 try_.builder(
     name = "linux-dcheck-off-rel",
     mirrors = builder_config.copy_from("linux-rel"),
-)
-
-try_.builder(
-    name = "linux-example-builder",
 )
 
 try_.builder(
@@ -159,10 +151,12 @@ try_.builder(
 
 try_.builder(
     name = "linux-lacros-fyi-rel",
+    goma_backend = None,
 )
 
 try_.builder(
     name = "linux-lacros-version-skew-fyi",
+    goma_backend = None,
 )
 
 try_.builder(
@@ -213,9 +207,6 @@ try_.orchestrator_builder(
     use_clang_coverage = True,
     coverage_test_types = ["unit", "overall"],
     tryjob = try_.job(),
-    experiments = {
-        "chromium_rts.inverted_rts": 100,
-    },
     # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
     # use_orchestrator_pool = True,
@@ -264,9 +255,6 @@ try_.orchestrator_builder(
     ),
     main_list_view = "try",
     tryjob = try_.job(),
-    experiments = {
-        "chromium_rts.inverted_rts": 100,
-    },
 )
 
 try_.compilator_builder(
@@ -372,9 +360,6 @@ try_.orchestrator_builder(
             condition = builder_config.rts_condition.QUICK_RUN_ONLY,
         ),
     ),
-    experiments = {
-        "chromium_rts.inverted_rts": 100,
-    },
     # TODO (crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
     # use_orchestrator_pool = True,
@@ -425,7 +410,8 @@ try_.builder(
         "ci/Linux Chromium OS ASan LSan Builder",
         "ci/Linux Chromium OS ASan LSan Tests (1)",
     ],
-    goma_jobs = goma.jobs.J150,
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     # TODO(crbug/1144484): Remove this timeout once we figure out the
     # regression in compiler or toolchain.
     execution_timeout = 7 * time.hour,
@@ -437,7 +423,8 @@ try_.builder(
     mirrors = [
         "ci/Linux ChromiumOS MSan Focal",
     ],
-    goma_jobs = goma.jobs.J150,
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     os = os.LINUX_FOCAL,
     execution_timeout = 16 * time.hour,
 )
@@ -448,7 +435,8 @@ try_.builder(
         "ci/Linux ChromiumOS MSan Builder",
         "ci/Linux ChromiumOS MSan Tests",
     ],
-    goma_jobs = goma.jobs.J150,
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     ssd = True,
     cores = 16,
 )
@@ -553,9 +541,6 @@ try_.orchestrator_builder(
     branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
     tryjob = try_.job(),
-    experiments = {
-        "chromium_rts.inverted_rts": 100,
-    },
     # TODO (crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
     # use_orchestrator_pool = True,
@@ -602,7 +587,8 @@ try_.builder(
     mirrors = [
         "ci/linux-lacros-asan-lsan-rel",
     ],
-    goma_jobs = goma.jobs.J150,
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     cores = 16,
     ssd = True,
 )

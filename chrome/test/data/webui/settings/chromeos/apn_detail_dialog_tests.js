@@ -6,6 +6,7 @@ import 'chrome://os-settings/strings.m.js';
 import 'chrome://resources/ash/common/network/apn_detail_dialog.js';
 
 import {ApnDetailDialog} from 'chrome://resources/ash/common/network/apn_detail_dialog.js';
+import {ApnDetailDialogMode} from 'chrome://resources/ash/common/network/cellular_utils.js';
 import {MojoInterfaceProviderImpl} from 'chrome://resources/ash/common/network/mojo_interface_provider.js';
 import {OncMojo} from 'chrome://resources/ash/common/network/onc_mojo.js';
 import {ApnAuthenticationType, ApnIpType, ApnProperties, ApnType} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-webui.js';
@@ -28,6 +29,7 @@ const TEST_APN = {
 suite('ApnDetailDialog', function() {
   /** @type {ApnDetailDialog} */
   let apnDetailDialog = null;
+
   let mojoApi_ = null;
 
   async function toggleAdvancedSettings() {
@@ -69,14 +71,16 @@ suite('ApnDetailDialog', function() {
     assertTrue(!!apnDetailDialog.shadowRoot.querySelector('#usernameInput'));
     assertTrue(!!apnDetailDialog.shadowRoot.querySelector('#passwordInput'));
 
-    assertTrue(!!apnDetailDialog.shadowRoot.querySelector(
-        '#authenticationTypeSelection'));
+    assertTrue(!!apnDetailDialog.shadowRoot.querySelector('#authTypeDropDown'));
     assertTrue(
         !!apnDetailDialog.shadowRoot.querySelector('#apnDefaultTypeCheckbox'));
     assertTrue(
         !!apnDetailDialog.shadowRoot.querySelector('#apnAttachTypeCheckbox'));
-    assertTrue(!!apnDetailDialog.shadowRoot.querySelector('#ipTypeSelection'));
-
+    assertTrue(!!apnDetailDialog.shadowRoot.querySelector('#ipTypeDropDown'));
+    assertTrue(
+        !!apnDetailDialog.shadowRoot.querySelector('#apnDetailCancelBtn'));
+    assertTrue(!!apnDetailDialog.shadowRoot.querySelector('#apnDetailAddBtn'));
+    assertFalse(!!apnDetailDialog.shadowRoot.querySelector('#apnDoneBtn'));
   });
 
   test('Clicking the cancel button fires the close event', async function() {
@@ -87,7 +91,7 @@ suite('ApnDetailDialog', function() {
 
     cancelBtn.click();
     await closeEventPromise;
-    assertFalse(!!apnDetailDialog.open);
+    assertFalse(!!apnDetailDialog.$.apnDetailDialog.open);
   });
 
   test(
@@ -139,15 +143,31 @@ suite('ApnDetailDialog', function() {
       });
 
   test('Clicking on the add button calls createCustomApn', async () => {
+    const assertFieldEnabled = (selector) => {
+      const element = apnDetailDialog.shadowRoot.querySelector(selector);
+      assertTrue(!!element);
+      assertFalse(element.disabled);
+    };
+    apnDetailDialog.$.apnInput.value = TEST_APN.accessPointName;
+    apnDetailDialog.$.usernameInput.value = TEST_APN.username;
+    apnDetailDialog.$.passwordInput.value = TEST_APN.password;
+
+    assertFieldEnabled('#apnInput');
+    assertFieldEnabled('#usernameInput');
+    assertFieldEnabled('#passwordInput');
+    assertFieldEnabled('#authTypeDropDown');
+    assertFieldEnabled('#apnDefaultTypeCheckbox');
+    assertFieldEnabled('#apnAttachTypeCheckbox');
+    assertFieldEnabled('#ipTypeDropDown');
+    assertFieldEnabled('#apnDetailCancelBtn');
+    assertFieldEnabled('#apnDetailAddBtn');
+
     // Add a network.
     const network = OncMojo.getDefaultManagedProperties(
         NetworkType.kCellular, apnDetailDialog.guid);
     mojoApi_.setManagedPropertiesForTest(network);
     await flushTasks();
 
-    apnDetailDialog.$.apnInput.value = TEST_APN.accessPointName;
-    apnDetailDialog.$.usernameInput.value = TEST_APN.username;
-    apnDetailDialog.$.passwordInput.value = TEST_APN.password;
     /**
      * @type {!ApnProperties}
      */
@@ -155,10 +175,11 @@ suite('ApnDetailDialog', function() {
         await mojoApi_.getManagedProperties(apnDetailDialog.guid);
     assertTrue(!!managedProp);
     assertFalse(!!managedProp.result.typeProperties.cellular.customApnList);
-    assertTrue(!!apnDetailDialog.$.apnDetailAddBtn);
-    apnDetailDialog.$.apnDetailAddBtn.click();
-    await flushTasks();
 
+    const addBtn = apnDetailDialog.shadowRoot.querySelector('#apnDetailAddBtn');
+    assertTrue(!!addBtn);
+    addBtn.click();
+    await flushTasks();
     await mojoApi_.whenCalled('createCustomApn');
 
     assertEquals(
@@ -172,5 +193,72 @@ suite('ApnDetailDialog', function() {
     assertEquals(TEST_APN.ipType, apn.ipType);
     assertEquals(TEST_APN.apnTypes.length, apn.apnTypes.length);
     assertEquals(TEST_APN.apnTypes[0], apn.apnTypes[0]);
+  });
+
+  test('Setting mode to view changes buttons and fields', async () => {
+    const assertFieldDisabled = (selector) => {
+      const element = apnDetailDialog.shadowRoot.querySelector(selector);
+      assertTrue(!!element);
+      assertTrue(element.disabled);
+    };
+    apnDetailDialog.mode = ApnDetailDialogMode.VIEW;
+    apnDetailDialog.apnProperties = TEST_APN;
+    await flushTasks();
+    assertEquals(
+        apnDetailDialog.i18n('apnDetailViewApnDialogTitle'),
+        apnDetailDialog.shadowRoot.querySelector('#apnDetailDialogTitle')
+            .innerText);
+    assertFalse(
+        !!apnDetailDialog.shadowRoot.querySelector('#apnDetailCancelBtn'));
+    assertFalse(!!apnDetailDialog.shadowRoot.querySelector('#apnDetailAddBtn'));
+    const doneBtn = apnDetailDialog.shadowRoot.querySelector('#apnDoneBtn');
+    assertTrue(!!doneBtn);
+    assertFalse(doneBtn.disabled);
+    assertFieldDisabled('#apnInput');
+    assertFieldDisabled('#usernameInput');
+    assertFieldDisabled('#passwordInput');
+    assertFieldDisabled('#authTypeDropDown');
+    assertFieldDisabled('#apnDefaultTypeCheckbox');
+    assertFieldDisabled('#apnAttachTypeCheckbox');
+    assertFieldDisabled('#ipTypeDropDown');
+  });
+
+  test('Dialog input fields are validated', async () => {
+    const apnInputField = apnDetailDialog.$.apnInput;
+    const addBtn = apnDetailDialog.shadowRoot.querySelector('#apnDetailAddBtn');
+    assertTrue(!!addBtn);
+    // Case: After opening dialog before user input
+    assertFalse(!!apnInputField.invalid);
+    assertTrue(!!addBtn.disabled);
+
+    // Case : After valid user input
+    apnInputField.value = 'test';
+    assertFalse(!!apnInputField.invalid);
+    assertFalse(!!addBtn.disabled);
+
+    // Case : After Removing all user input no error state but button disabled
+    apnInputField.value = '';
+    assertFalse(!!apnInputField.invalid);
+    assertTrue(!!addBtn.disabled);
+
+    // Case : Non ascii user input
+    apnInputField.value = 'testμ';
+    assertTrue(!!apnInputField.invalid);
+    assertTrue(!!addBtn.disabled);
+    assertTrue(apnInputField.value.includes('μ'));
+
+    // Case : longer than 63 characters then removing one character
+    apnInputField.value = 'a'.repeat(64);
+    assertTrue(!!apnInputField.invalid);
+    assertTrue(!!addBtn.disabled);
+    assertFalse(apnInputField.value.length > 63);
+    apnInputField.value = apnInputField.value.slice(0, -1);
+    assertFalse(!!apnInputField.invalid);
+    assertFalse(!!addBtn.disabled);
+
+    // Case : longer than 63 non-ASCII characters
+    apnInputField.value = 'μ'.repeat(64);
+    assertTrue(!!apnInputField.invalid);
+    assertTrue(!!addBtn.disabled);
   });
 });

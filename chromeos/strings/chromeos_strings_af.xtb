@@ -165,6 +165,7 @@
 <translation id="2380886658946992094">Wetlik</translation>
 <translation id="2391082728065870591">Stuur terugvoerverslag</translation>
 <translation id="2407209115954268704">SIM-slotstatus</translation>
+<translation id="241419523391571119">Maak die deksel weer oop om te toets</translation>
 <translation id="2414886740292270097">Donker</translation>
 <translation id="2418150275289244458">Maak in Instellings oop</translation>
 <translation id="2421798028054665193">Prent <ph name="CURRENT_PAGE" /> van <ph name="TOTAL_PAGES" /></translation>
@@ -175,6 +176,7 @@
 <translation id="2491955442992294626">Sleutels word nie getoets wanneer jy ’n ander venster gebruik nie</translation>
 <translation id="2493126929778606526">Jou beste foto's, outomaties gekies</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
+<translation id="2498950423397131220">Sweef</translation>
 <translation id="2505327257735685095">Herlaai die huidige muurpapierprent</translation>
 <translation id="2513396635448525189">Aanmeldprent</translation>
 <translation id="2517472476991765520">Skandeer</translation>
@@ -205,6 +207,7 @@
 <translation id="2878387241690264070">Het <ph name="RATE" /> ontlaai binne <ph name="NUM_SECONDS" /> sekondes.</translation>
 <translation id="2902312830803030883">Nog handelinge</translation>
 <translation id="2926057806159140518">Voer jou gebruikernaam en wagwoord in of skandeer jou QR-kode</translation>
+<translation id="2940811910881150316">Kan nie toestel toets nie. Maak die deksel weer oop om te toets.</translation>
 <translation id="3008341117444806826">HERLAAI</translation>
 <translation id="3009958530611748826">Kies 'n vouer om in te stoor</translation>
 <translation id="3017079585324758401">Agtergrond</translation>
@@ -285,6 +288,7 @@
 <translation id="3820172043799983114">Ongeldige PIN.</translation>
 <translation id="3824259034819781947">Heg lêers aan</translation>
 <translation id="3838338534323494292">Nuwe wagwoord</translation>
+<translation id="3845880861638660475">Druk <ph name="ALT_SHORTCUT_START" />alt<ph name="ALT_SHORTCUT_END" /> en <ph name="ESC_SHORTCUT_START" />esc<ph name="ESC_SHORTCUT_END" /> om die dialoog toe te maak.</translation>
 <translation id="385051799172605136">Terug</translation>
 <translation id="3858860766373142691">Naam</translation>
 <translation id="3862598938296403232">Beskrywing word vereis</translation>
@@ -292,6 +296,7 @@
 <translation id="3866249974567520381">Beskrywing</translation>
 <translation id="387301095347517405">Die aantal keer wat jou battery deur 'n volledige laaisiklus gegaan het</translation>
 <translation id="3885327323343477505">Verander sluimerskerm</translation>
+<translation id="391412459402535266">Kan nie toestel toets nie. Skakel oor na skootrekenaarmodus om te toets.</translation>
 <translation id="3923184630988645767">Datagebruik</translation>
 <translation id="3932043219784172185">Geen toestel is gekoppel nie</translation>
 <translation id="3941014780699102620">Kon nie gasheer bepaal nie</translation>
@@ -304,6 +309,7 @@
 <translation id="39823212440917567">Druktake ouer as <ph name="NUMBER_OF_DAYS" /> dae sal verwyder word</translation>
 <translation id="3993704782688964914">Jou <ph name="DEVICE_NAME" /> is nou bygewerk</translation>
 <translation id="4003384961948020559">Misluk – Uitvoer is vol</translation>
+<translation id="4021031199988160623">Skakel oor na skootrekenaarmodus om te toets</translation>
 <translation id="4034824040120875894">Drukker</translation>
 <translation id="4044093238444069296">Kan nie deurgang kontak nie</translation>
 <translation id="4046123991198612571">Volgende snit</translation>
@@ -336,6 +342,7 @@
 <translation id="4289849978083912975">Skyfievertoning</translation>
 <translation id="4297501883039923494">Gestop – onbekende fout</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> prente</translation>
+<translation id="4311195029067684288">Vol</translation>
 <translation id="4333390807948134856"><ph name="KEY_NAME" />-sleutel is gedruk</translation>
 <translation id="435692326371619097">Bestuur netwerk-APN-instellings. APN'e vestig ’n verbinding tussen ’n selnetwerk en die internet. <ph name="BEGIN_LINK" />Kom meer te wete<ph name="END_LINK" /></translation>
 <translation id="4378373042927530923">Nie laat loop nie</translation>
@@ -415,7 +422,9 @@
 <translation id="4921665434385737356">Het <ph name="RATE" /> gelaai binne <ph name="NUM_SECONDS" /> sekondes.</translation>
 <translation id="4930320165497208503">Gaan na <ph name="BEGIN_LINK" />Instellings<ph name="END_LINK" /> om 'n verbinding op te stel of op te dateer.</translation>
 <translation id="4932733599132424254">Datum</translation>
+<translation id="4937657825850660613">Half</translation>
 <translation id="4950314376641394653">Fermware <ph name="DEVICE_NAME" /> is opgedateer na weergawe <ph name="VERSION" /></translation>
+<translation id="4971925105143343452">Gedeeltelik</translation>
 <translation id="498186245079027698">Gaan die skandeerder na en probeer weer. Maak seker daar is genoeg plaaslike spasie om lêers wat geskandeer is, te stoor.</translation>
 <translation id="4985509611418653372">Laat loop</translation>
 <translation id="4987769320337599931">Brandmuur</translation>
@@ -680,6 +689,7 @@ Probeer die mikrofoon tik om my enigiets te vra.</translation>
 <translation id="7415801143053185905">Baie hoë HTTP-traagheid</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7435977162516949853">{NUMBER_OF_PAGES,plural, =1{Skandering is voltooi. 1 bladsy is geskandeer}other{Skandering is voltooi. {NUMBER_OF_PAGES} bladsye is geskandeer}}</translation>
+<translation id="7458970041932198923">Koppel asseblief aan ’n netwerk en herlaai die bladsy om avatars te bekyk en te stel.</translation>
 <translation id="7469648432129124067">Portaal is bespeur</translation>
 <translation id="7481312909269577407">Vorentoe</translation>
 <translation id="7487067081878637334">Tegnologie</translation>
@@ -834,6 +844,7 @@ Probeer die mikrofoon tik om my enigiets te vra.</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8987565828374052507">{NUMBER_OF_PAGES,plural, =0{Skandeer}=1{Skandeer bladsy {NUMBER_OF_PAGES}}other{Skandeer bladsy {NUMBER_OF_PAGES}}}</translation>
 <translation id="8997710128084572139">Toestel het <ph name="BATTERY_PERCENTAGE" />% batterykrag.</translation>
+<translation id="8998289560386111590">Nie op jou toestel beskikbaar nie</translation>
 <translation id="9003704114456258138">Frekwensie</translation>
 <translation id="9025198690966128418">Gebruik as ’n persoonlike toestel</translation>
 <translation id="9028832514430399253">Skakel die wisselaar aan om die sluimerskermopsies te kies</translation>

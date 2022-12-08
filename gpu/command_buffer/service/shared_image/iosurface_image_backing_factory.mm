@@ -44,10 +44,6 @@
 namespace gpu {
 
 namespace {
-
-using InitializeGLTextureParams =
-    GLTextureImageBackingHelper::InitializeGLTextureParams;
-
 base::scoped_nsprotocol<id<MTLTexture>> CreateMetalTexture(
     id<MTLDevice> mtl_device,
     IOSurfaceRef io_surface,
@@ -94,11 +90,13 @@ class DawnIOSurfaceRepresentation : public DawnImageRepresentation {
                               MemoryTypeTracker* tracker,
                               WGPUDevice device,
                               base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
-                              WGPUTextureFormat wgpu_format)
+                              WGPUTextureFormat wgpu_format,
+                              std::vector<WGPUTextureFormat> view_formats)
       : DawnImageRepresentation(manager, backing, tracker),
         io_surface_(std::move(io_surface)),
         device_(device),
         wgpu_format_(wgpu_format),
+        view_formats_(std::move(view_formats)),
         dawn_procs_(dawn::native::GetProcs()) {
     DCHECK(device_);
     DCHECK(io_surface_);
@@ -122,6 +120,9 @@ class DawnIOSurfaceRepresentation : public DawnImageRepresentation {
                                static_cast<uint32_t>(size().height()), 1};
     texture_descriptor.mipLevelCount = 1;
     texture_descriptor.sampleCount = 1;
+    texture_descriptor.viewFormatCount =
+        static_cast<uint32_t>(view_formats_.size());
+    texture_descriptor.viewFormats = view_formats_.data();
 
     // We need to have internal usages of CopySrc for copies. If texture is not
     // for video frame import, which has bi-planar format, we also need
@@ -229,6 +230,7 @@ class DawnIOSurfaceRepresentation : public DawnImageRepresentation {
   WGPUDevice device_;
   WGPUTexture texture_ = nullptr;
   WGPUTextureFormat wgpu_format_;
+  std::vector<WGPUTextureFormat> view_formats_;
 
   // TODO(cwallez@chromium.org): Load procs only once when the factory is
   // created and pass a pointer to them around?
@@ -262,12 +264,14 @@ IOSurfaceImageBackingFactory::ProduceSkiaPromiseTextureMetal(
 
 // static
 std::unique_ptr<DawnImageRepresentation>
-IOSurfaceImageBackingFactory::ProduceDawn(SharedImageManager* manager,
-                                          SharedImageBacking* backing,
-                                          MemoryTypeTracker* tracker,
-                                          WGPUDevice device,
-                                          gfx::ScopedIOSurface io_surface,
-                                          uint32_t io_surface_plane) {
+IOSurfaceImageBackingFactory::ProduceDawn(
+    SharedImageManager* manager,
+    SharedImageBacking* backing,
+    MemoryTypeTracker* tracker,
+    WGPUDevice device,
+    std::vector<WGPUTextureFormat> view_formats,
+    gfx::ScopedIOSurface io_surface,
+    uint32_t io_surface_plane) {
   DCHECK(!io_surface_plane);
 #if BUILDFLAG(USE_DAWN)
   // See comments in IOSurfaceImageBackingFactory::CreateSharedImage
@@ -288,7 +292,8 @@ IOSurfaceImageBackingFactory::ProduceDawn(SharedImageManager* manager,
     return nullptr;
 
   return std::make_unique<DawnIOSurfaceRepresentation>(
-      manager, backing, tracker, device, io_surface, wgpu_format.value());
+      manager, backing, tracker, device, io_surface, wgpu_format.value(),
+      std::move(view_formats));
 #else   // BUILDFLAG(USE_DAWN)
   return nullptr;
 #endif  // BUILDFLAG(USE_DAWN)
@@ -338,10 +343,7 @@ IOSurfaceImageBackingFactory::IOSurfaceImageBackingFactory(
       image_factory_(image_factory) {
   gpu_memory_buffer_formats_ =
       feature_info->feature_flags().gpu_memory_buffer_formats;
-  // Return if scanout images are not supported
-  if (!(image_factory_ && image_factory_->SupportsCreateAnonymousImage())) {
-    return;
-  }
+
   for (int i = 0; i <= viz::RESOURCE_FORMAT_MAX; ++i) {
     auto format = static_cast<viz::ResourceFormat>(i);
     FormatInfo& info = format_info_[i];
@@ -488,13 +490,7 @@ IOSurfaceImageBackingFactory::CreateSharedImage(
       (usage & (SHARED_IMAGE_USAGE_RASTER |
                 SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT)) != 0;
 
-  InitializeGLTextureParams params;
-  params.target = target;
-  params.internal_format = image->GetInternalFormat();
-  params.format = image->GetDataFormat();
-  params.type = image->GetDataType();
-  params.is_cleared = true;
-  params.framebuffer_attachment_angle =
+  const bool framebuffer_attachment_angle =
       for_framebuffer_attachment && texture_usage_angle_;
 
   auto si_format = viz::SharedImageFormat::SinglePlane(plane_format);
@@ -503,7 +499,7 @@ IOSurfaceImageBackingFactory::CreateSharedImage(
       image_io_surface->io_surface(), image_io_surface->io_surface_plane(),
       image_io_surface->format(), image_io_surface->io_surface_id(), mailbox,
       si_format, plane_size, color_space, surface_origin, alpha_type, usage,
-      params);
+      target, framebuffer_attachment_angle, /*is_cleared=*/true);
 }
 
 scoped_refptr<gl::GLImage> IOSurfaceImageBackingFactory::MakeGLImage(
@@ -530,6 +526,9 @@ bool IOSurfaceImageBackingFactory::IsSupported(
     gfx::GpuMemoryBufferType gmb_type,
     GrContextType gr_context_type,
     base::span<const uint8_t> pixel_data) {
+  if (format.is_multi_plane()) {
+    return false;
+  }
   if (!pixel_data.empty() && gr_context_type != GrContextType::kGL) {
     return false;
   }
@@ -623,22 +622,16 @@ IOSurfaceImageBackingFactory::CreateSharedImageInternal(
       IOSurfaceSetColorSpace(io_surface, color_space);
   }
 
-  InitializeGLTextureParams params;
-  params.target = target;
-  params.internal_format =
-      gl::BufferFormatToGLInternalFormat(io_surface_format);
-  params.format = format_info.gl_format;
-  params.type = format_info.gl_type;
-  params.is_cleared = !pixel_data.empty();
-  params.has_immutable_storage = false;
-  params.framebuffer_attachment_angle =
+  const bool is_cleared = !pixel_data.empty();
+  const bool framebuffer_attachment_angle =
       for_framebuffer_attachment && texture_usage_angle_;
 
   DCHECK(!format_info.swizzle);
   DCHECK(use_passthrough_);
   auto result = std::make_unique<IOSurfaceImageBacking>(
       io_surface, io_surface_plane, io_surface_format, io_surface_id, mailbox,
-      format, size, color_space, surface_origin, alpha_type, usage, params);
+      format, size, color_space, surface_origin, alpha_type, usage, target,
+      framebuffer_attachment_angle, is_cleared);
   if (!pixel_data.empty()) {
     gl::ScopedProgressReporter scoped_progress_reporter(progress_reporter_);
     result->InitializePixels(format_info.adjusted_format, format_info.gl_type,

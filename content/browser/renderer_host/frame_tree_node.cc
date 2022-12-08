@@ -138,12 +138,12 @@ FrameTreeNode* FrameTreeNode::From(RenderFrameHost* rfh) {
 }
 
 FrameTreeNode::FencedFrameStatus ComputeFencedFrameStatus(
-    FrameTree* frame_tree,
+    const FrameTree& frame_tree,
     RenderFrameHostImpl* parent,
     const blink::FramePolicy& frame_policy) {
   using FencedFrameStatus = FrameTreeNode::FencedFrameStatus;
   if (blink::features::IsFencedFramesEnabled() &&
-      frame_tree->type() == FrameTree::Type::kFencedFrame) {
+      frame_tree.type() == FrameTree::Type::kFencedFrame) {
     if (!parent)
       return FencedFrameStatus::kFencedFrameRoot;
     return FencedFrameStatus::kIframeNestedWithinFencedFrame;
@@ -153,7 +153,7 @@ FrameTreeNode::FencedFrameStatus ComputeFencedFrameStatus(
 }
 
 FrameTreeNode::FrameTreeNode(
-    FrameTree* frame_tree,
+    FrameTree& frame_tree,
     RenderFrameHostImpl* parent,
     blink::mojom::TreeScopeType tree_scope_type,
     bool is_created_by_script,
@@ -170,8 +170,8 @@ FrameTreeNode::FrameTreeNode(
       frame_owner_properties_(frame_owner_properties),
       attributes_(blink::mojom::IframeAttributes::New()),
       fenced_frame_status_(
-          ComputeFencedFrameStatus(frame_tree_, parent_, frame_policy)),
-      render_manager_(this, frame_tree->manager_delegate()) {
+          ComputeFencedFrameStatus(frame_tree, parent_, frame_policy)),
+      render_manager_(this, frame_tree.manager_delegate()) {
   TRACE_EVENT_BEGIN("navigation", "FrameTreeNode",
                     perfetto::Track::FromPointer(this),
                     "frame_tree_node_when_created", this);
@@ -323,7 +323,7 @@ bool FrameTreeNode::IsMainFrame() const {
 }
 
 Navigator& FrameTreeNode::navigator() {
-  return frame_tree()->navigator();
+  return frame_tree().navigator();
 }
 
 bool FrameTreeNode::IsOutermostMainFrame() {
@@ -377,7 +377,7 @@ FrameType FrameTreeNode::GetFrameType() const {
   if (!IsMainFrame())
     return FrameType::kSubframe;
 
-  switch (frame_tree()->type()) {
+  switch (frame_tree().type()) {
     case FrameTree::Type::kPrimary:
       return FrameType::kPrimaryMainFrame;
     case FrameTree::Type::kPrerender:
@@ -440,7 +440,7 @@ void FrameTreeNode::SetCollapsed(bool collapsed) {
 }
 
 void FrameTreeNode::SetFrameTree(FrameTree& frame_tree) {
-  frame_tree_ = &frame_tree;
+  frame_tree_ = frame_tree;
   DCHECK(current_frame_host());
   current_frame_host()->SetFrameTree(frame_tree);
   RenderFrameHostImpl* speculative_frame_host =
@@ -542,7 +542,7 @@ void FrameTreeNode::TransferNavigationRequestOwnership(
   render_frame_host->SetNavigationRequest(std::move(navigation_request_));
 }
 
-void FrameTreeNode::CreatedNavigationRequest(
+void FrameTreeNode::TakeNavigationRequest(
     std::unique_ptr<NavigationRequest> navigation_request) {
   // This is never called when navigating to a Javascript URL. For the loading
   // state, this matches what Blink is doing: Blink doesn't send throbber
@@ -551,7 +551,7 @@ void FrameTreeNode::CreatedNavigationRequest(
       url::kJavaScriptScheme));
 
   bool was_previously_loading =
-      frame_tree()->LoadingTree()->IsLoadingIncludingInnerFrameTrees();
+      frame_tree().LoadingTree()->IsLoadingIncludingInnerFrameTrees();
 
   // Reset the previous NavigationRequest owned by `this`. However, there's no
   // need to reset the state: there's still an ongoing load, and the
@@ -605,8 +605,8 @@ void FrameTreeNode::DidStartLoading(bool should_show_loading_ui,
                "should_show_loading_ui ", should_show_loading_ui);
   base::ElapsedTimer timer;
 
-  frame_tree()->LoadingTree()->DidStartLoadingNode(
-      *this, should_show_loading_ui, was_previously_loading);
+  frame_tree().LoadingTree()->DidStartLoadingNode(*this, should_show_loading_ui,
+                                                  was_previously_loading);
 
   // Set initial load progress and update overall progress. This will notify
   // the WebContents of the load progress change.
@@ -614,7 +614,7 @@ void FrameTreeNode::DidStartLoading(bool should_show_loading_ui,
   // Only notify when the load is triggered from primary/prerender main frame as
   // we only update load progress for these nodes which happens when the frame
   // tree matches the loading tree.
-  if (frame_tree() == frame_tree()->LoadingTree())
+  if (&frame_tree() == frame_tree().LoadingTree())
     DidChangeLoadProgress(blink::kInitialLoadProgress);
 
   // Notify the proxies of the event.
@@ -634,13 +634,13 @@ void FrameTreeNode::DidStopLoading() {
   // Only notify when the load is triggered from primary/prerender main frame as
   // we only update load progress for these nodes which happens when the frame
   // tree matches the loading tree.
-  if (frame_tree() == frame_tree()->LoadingTree())
+  if (&frame_tree() == frame_tree().LoadingTree())
     DidChangeLoadProgress(blink::kFinalLoadProgress);
 
   // Notify the proxies of the event.
   current_frame_host()->browsing_context_state()->OnDidStopLoading();
 
-  FrameTree* loading_tree = frame_tree()->LoadingTree();
+  FrameTree* loading_tree = frame_tree().LoadingTree();
   // When loading tree is null, ignore invoking DidStopLoadingNode as the frame
   // tree is already deleted. This can happen when prerendering gets cancelled
   // and DidStopLoading is called during FrameTree destruction.
@@ -718,7 +718,7 @@ bool FrameTreeNode::NotifyUserActivation(
           features::kUserActivationSameOriginVisibility)) {
     const url::Origin& current_origin =
         this->current_frame_host()->GetLastCommittedOrigin();
-    for (FrameTreeNode* node : frame_tree()->Nodes()) {
+    for (FrameTreeNode* node : frame_tree().Nodes()) {
       if (node->current_frame_host()->GetLastCommittedOrigin().IsSameOriginWith(
               current_origin)) {
         node->current_frame_host()->ActivateUserActivation(notification_type);
@@ -734,7 +734,7 @@ bool FrameTreeNode::NotifyUserActivation(
 
 bool FrameTreeNode::ConsumeTransientUserActivation() {
   bool was_active = current_frame_host()->IsActiveUserActivation();
-  for (FrameTreeNode* node : frame_tree()->Nodes()) {
+  for (FrameTreeNode* node : frame_tree().Nodes()) {
     node->current_frame_host()->ConsumeTransientUserActivation();
   }
   current_frame_host()->browsing_context_state()->set_has_active_user_gesture(
@@ -743,7 +743,7 @@ bool FrameTreeNode::ConsumeTransientUserActivation() {
 }
 
 bool FrameTreeNode::ClearUserActivation() {
-  for (FrameTreeNode* node : frame_tree()->SubtreeNodes(this))
+  for (FrameTreeNode* node : frame_tree().SubtreeNodes(this))
     node->current_frame_host()->ClearUserActivation();
   current_frame_host()->browsing_context_state()->set_has_active_user_gesture(
       false);
@@ -854,7 +854,7 @@ bool FrameTreeNode::IsInFencedFrameTree() const {
   return fenced_frame_status_ != FencedFrameStatus::kNotNestedInFencedFrame;
 }
 
-const absl::optional<FencedFrameURLMapping::FencedFrameProperties>&
+const absl::optional<FencedFrameProperties>&
 FrameTreeNode::GetFencedFrameProperties() {
   if (!IsInFencedFrameTree()) {
     // If we might be in a urn iframe, try to find the "urn iframe root"
@@ -874,10 +874,8 @@ FrameTreeNode::GetFencedFrameProperties() {
 
   // Because we already confirmed we're in a fenced frame tree, we know
   // there must be a fenced frame root with properties stored.
-  CHECK(frame_tree());
-  CHECK(frame_tree()->root());
-  CHECK(frame_tree()->root()->fenced_frame_properties_.has_value());
-  return frame_tree()->root()->fenced_frame_properties_;
+  CHECK(frame_tree().root()->fenced_frame_properties_.has_value());
+  return frame_tree().root()->fenced_frame_properties_;
 }
 
 size_t FrameTreeNode::GetFencedFrameDepth() {
@@ -905,7 +903,15 @@ absl::optional<base::UnguessableToken> FrameTreeNode::GetFencedFrameNonce() {
   if (!root_fenced_frame_properties.has_value()) {
     return absl::nullopt;
   }
-  return root_fenced_frame_properties->partition_nonce;
+  if (root_fenced_frame_properties->partition_nonce_.has_value()) {
+    return root_fenced_frame_properties->partition_nonce_
+        ->GetValueIgnoringVisibility();
+  }
+  // It is only possible for there to be `FencedFrameProperties` but no
+  // partition nonce in urn iframes (when not nested inside a fenced frame).
+  CHECK(blink::features::IsAllowURNsInIframeEnabled());
+  CHECK(!IsInFencedFrameTree());
+  return absl::nullopt;
 }
 
 void FrameTreeNode::SetFencedFramePropertiesIfNeeded() {
@@ -915,7 +921,7 @@ void FrameTreeNode::SetFencedFramePropertiesIfNeeded() {
 
   // The fenced frame properties are set only on the fenced frame root.
   // In the future, they will be set on the FrameTree instead.
-  fenced_frame_properties_ = FencedFrameURLMapping::FencedFrameProperties();
+  fenced_frame_properties_ = FencedFrameProperties();
 }
 
 absl::optional<blink::mojom::FencedFrameMode>
@@ -946,23 +952,24 @@ void FrameTreeNode::SetSrcdocValue(const std::string& srcdoc_value) {
   srcdoc_value_ = srcdoc_value;
 }
 
-std::vector<const FencedFrameURLMapping::SharedStorageBudgetMetadata*>
+std::vector<const SharedStorageBudgetMetadata*>
 FrameTreeNode::FindSharedStorageBudgetMetadata() {
-  std::vector<const FencedFrameURLMapping::SharedStorageBudgetMetadata*> result;
+  std::vector<const SharedStorageBudgetMetadata*> result;
   FrameTreeNode* node = this;
 
   while (true) {
     if (node->fenced_frame_properties_ &&
-        node->fenced_frame_properties_->shared_storage_budget_metadata) {
-      result.emplace_back(node->fenced_frame_properties_
-                              ->shared_storage_budget_metadata.value());
+        node->fenced_frame_properties_->shared_storage_budget_metadata_) {
+      result.emplace_back(
+          node->fenced_frame_properties_->shared_storage_budget_metadata_
+              ->GetValueIgnoringVisibility());
     }
 
-    if (node->GetParentOrOuterDocument()) {
-      node = node->GetParentOrOuterDocument()->frame_tree_node();
-    } else {
+    if (!node->GetParentOrOuterDocument()) {
       break;
     }
+
+    node = node->GetParentOrOuterDocument()->frame_tree_node();
   }
 
   return result;
@@ -991,6 +998,10 @@ bool FrameTreeNode::AncestorOrSelfHasCSPEE() const {
 void FrameTreeNode::RestartNavigationAsCrossDocument(
     std::unique_ptr<NavigationRequest> navigation_request) {
   navigator().RestartNavigationAsCrossDocument(std::move(navigation_request));
+}
+
+bool FrameTreeNode::Reload() {
+  return navigator().controller().ReloadFrame(this);
 }
 
 Navigator& FrameTreeNode::GetCurrentNavigator() {

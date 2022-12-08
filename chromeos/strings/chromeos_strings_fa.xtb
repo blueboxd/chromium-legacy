@@ -165,6 +165,7 @@
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2391082728065870591">ارسال گزارش بازخورد</translation>
 <translation id="2407209115954268704">وضعیت قفل سیم‌کارت</translation>
+<translation id="241419523391571119">برای آزمایش کردن، در دستگاه را دوباره باز کنید</translation>
 <translation id="2414886740292270097">تاریک</translation>
 <translation id="2418150275289244458">باز کردن در تنظیمات</translation>
 <translation id="2421798028054665193">تصویر <ph name="CURRENT_PAGE" /> از <ph name="TOTAL_PAGES" /></translation>
@@ -175,6 +176,7 @@
 <translation id="2491955442992294626">وقتی درحال استفاده از پنجره دیگری هستید، کلیدها آزمایش نمی‌شوند</translation>
 <translation id="2493126929778606526">بهترین عکس‌هایتان که به‌طور خودکار انتخاب شده‌اند</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
+<translation id="2498950423397131220">شناور</translation>
 <translation id="2505327257735685095">بازآوری کاغذدیواری کنونی</translation>
 <translation id="2513396635448525189">تصویر ورود به سیستم</translation>
 <translation id="2517472476991765520">اسکن</translation>
@@ -205,6 +207,7 @@
 <translation id="2878387241690264070"><ph name="RATE" /> در <ph name="NUM_SECONDS" /> ثانیه تخلیه شد.</translation>
 <translation id="2902312830803030883">کنش‌های بیشتر</translation>
 <translation id="2926057806159140518">نام کاربری و گذرواژه‌تان را وارد کنید یا رمزینه پاسخ‌سریع را اسکن کنید</translation>
+<translation id="2940811910881150316">نمی‌توان دستگاه را آزمایش کرد. برای آزمایش کردن، در دستگاه را دوباره باز کنید.</translation>
 <translation id="3008341117444806826">بازآوری</translation>
 <translation id="3009958530611748826">پوشه‌ای را برای ذخیره در آن انتخاب کنید</translation>
 <translation id="3017079585324758401">پس‌زمینه</translation>
@@ -285,6 +288,7 @@
 <translation id="3820172043799983114">پین نامعتبر است.</translation>
 <translation id="3824259034819781947">پیوست فایل</translation>
 <translation id="3838338534323494292">گذرواژه جدید</translation>
+<translation id="3845880861638660475">برای بستن کادر گفتگو، کلیدهای <ph name="ALT_SHORTCUT_START" />دگرساز<ph name="ALT_SHORTCUT_END" /> + <ph name="ESC_SHORTCUT_START" />گریز<ph name="ESC_SHORTCUT_END" /> را فشار دهید.</translation>
 <translation id="385051799172605136">بازگشت</translation>
 <translation id="3858860766373142691">نام</translation>
 <translation id="3862598938296403232">شرح الزامی است</translation>
@@ -292,6 +296,7 @@
 <translation id="3866249974567520381">توضیح</translation>
 <translation id="387301095347517405">تعداد دفعاتی که باتری‌تان یک دوره شارژ کامل را گذرانده است</translation>
 <translation id="3885327323343477505">تغییر محافظ صفحه‌نمایش</translation>
+<translation id="391412459402535266">نمی‌توان دستگاه را آزمایش کرد. برای آزمایش کردن، به حالت رایانه کیفی بروید.</translation>
 <translation id="3923184630988645767">مصرف داده</translation>
 <translation id="3932043219784172185">دستگاهی متصل نیست</translation>
 <translation id="3941014780699102620">حل کردن میزبان انجام نشد</translation>
@@ -304,6 +309,7 @@
 <translation id="39823212440917567">کارهای چاپ قدیمی‌تر از <ph name="NUMBER_OF_DAYS" /> روز برداشته می‌شوند</translation>
 <translation id="3993704782688964914">اکنون <ph name="DEVICE_NAME" /> شما به‌روز است</translation>
 <translation id="4003384961948020559">انجام نشد - خروجی پُر است</translation>
+<translation id="4021031199988160623">برای آزمایش کردن، به حالت رایانه کیفی بروید</translation>
 <translation id="4034824040120875894">چاپگر</translation>
 <translation id="4044093238444069296">نمی‌توان با دروازه تماس گرفت</translation>
 <translation id="4046123991198612571">آهنگ بعدی</translation>
@@ -336,6 +342,7 @@
 <translation id="4289849978083912975">نمایش اسلاید</translation>
 <translation id="4297501883039923494">متوقف شد - خطای نامشخص</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> تصویر</translation>
+<translation id="4311195029067684288">پر</translation>
 <translation id="4333390807948134856">کلید <ph name="KEY_NAME" /> فشار داده شد</translation>
 <translation id="435692326371619097">‏مدیریت تنظیمات APN شبکه. APN اتصالی میان شبکه تلفن همراه و اینترنت برقرار می‌کند. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 <translation id="4378373042927530923">اجرا نشد</translation>
@@ -415,7 +422,9 @@
 <translation id="4921665434385737356">در <ph name="NUM_SECONDS" /> ثانیه <ph name="RATE" /> شارژ شد.</translation>
 <translation id="4930320165497208503">برای راه‌اندازی یا به‌روزرسانی اتصال، به <ph name="BEGIN_LINK" />تنظیمات<ph name="END_LINK" /> بروید.</translation>
 <translation id="4932733599132424254">تاریخ</translation>
+<translation id="4937657825850660613">نیمه</translation>
 <translation id="4950314376641394653">سفت‌افزار <ph name="DEVICE_NAME" /> به نسخه <ph name="VERSION" /> به‌روزرسانی شد</translation>
+<translation id="4971925105143343452">عمودی</translation>
 <translation id="498186245079027698">اسکنر را بررسی کنید و دوباره امتحان کنید. مطمئن شوید فضای کافی برای ذخیره کردن فایل‌های اسکن‌شده در دستگاه وجود داشته باشد.</translation>
 <translation id="4985509611418653372">اجرا</translation>
 <translation id="4987769320337599931">دیوار آتش</translation>
@@ -680,6 +689,7 @@
 <translation id="7415801143053185905">‏تأخیر خیلی زیاد HTTP</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7435977162516949853">{NUMBER_OF_PAGES,plural, =1{اسکن کامل شد. ۱ صفحه اسکن شد}one{اسکن کامل شد. {NUMBER_OF_PAGES} صفحه اسکن شد}other{اسکن کامل شد. {NUMBER_OF_PAGES} صفحه اسکن شد}}</translation>
+<translation id="7458970041932198923">لطفاً برای مشاهده و تنظیم چهره‌نماها، به شبکه متصل شوید و صفحه را مجدداً بار کنید.</translation>
 <translation id="7469648432129124067">درگاهی شناسایی شد</translation>
 <translation id="7481312909269577407">ارسال کردن</translation>
 <translation id="7487067081878637334">فناوری</translation>
@@ -834,6 +844,7 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8987565828374052507">{NUMBER_OF_PAGES,plural, =0{اسکن}=1{اسکن کردن صفحه {NUMBER_OF_PAGES}}one{اسکن کردن صفحه {NUMBER_OF_PAGES}}other{اسکن کردن صفحه {NUMBER_OF_PAGES}}}</translation>
 <translation id="8997710128084572139">باتری دستگاه <ph name="BATTERY_PERCENTAGE" />٪ شارژ دارد.</translation>
+<translation id="8998289560386111590">در دستگاهتان دردسترس نیست</translation>
 <translation id="9003704114456258138">فرکانس</translation>
 <translation id="9025198690966128418">استفاده به‌عنوان دستگاه شخصی</translation>
 <translation id="9028832514430399253">برای انتخاب گزینه‌های محافظ صفحه‌نمایش، کلید تغییر وضعیت را روشن کنید</translation>

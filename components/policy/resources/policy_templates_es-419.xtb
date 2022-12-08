@@ -687,6 +687,7 @@ Si la inhabilitas, se inhabilitará el desplazamiento de la página web a fragme
 <translation id="1634989431648355062">Permitir el complemento <ph name="FLASH_PLUGIN_NAME" /> en estos sitios</translation>
 <translation id="1635748761015837179">Permitir la escritura en los dispositivos de almacenamiento externo</translation>
 <translation id="1639468541408865385">Habilitar la caché de autenticación de HTTP con alcance global</translation>
+<translation id="1641117061932613266">Habilitar el servicio de <ph name="PRODUCT_NAME" /> V2</translation>
 <translation id="1641394008743444477">Permite establecer una lista de funciones de <ph name="PRODUCT_OS_NAME" /> para que se inhabiliten.
 
       Si se inhabilita alguna de estas funciones, el usuario no podrá acceder a ella desde la IU y la verá como "inhabilitada por el administrador". <ph name="SYSTEM_FEATURES_DISABLE_MODE" /> determina la experiencia del usuario de las funciones inhabilitadas.
@@ -1413,6 +1414,9 @@ Esta política no tiene efecto si la opción para conservar los datos de navegac
 <translation id="2354439478396602136">Mostrar recomendaciones de apps en el selector de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="2355876547176311490">Inhabilitar el uso de servidores de retransmisión por parte del host de acceso remoto</translation>
 <translation id="2358176879566587521">Se quita esta política. No es compatible con esta versión de <ph name="PRODUCT_NAME" />. Obtén más información en https://support.google.com/chrome/a/answer/7643500</translation>
+<translation id="235987002603620567">NewBaseUrlInheritanceBehavior es una función de <ph name="PRODUCT_NAME" /> que hace que los marcos <ph name="ABOUT_BLANK_PAGE" /> y <ph name="ABOUT_SRCDOC_PAGE" /> hereden sistemáticamente sus valores de url base a través de instantáneas de la url base de su iniciador. Para obtener más información, consulta https://chromestatus.com/feature/5161101671530496.
+
+Si inhabilitas la política, no se permitirá que los usuarios ni las variaciones de <ph name="PRODUCT_NAME" /> habiliten NewBaseUrlInheritanceBehavior en caso de que se detecten problemas de compatibilidad. Si habilitas la política o no la estableces, se permitirá habilitar NewBaseUrlInheritanceBehavior.</translation>
 <translation id="2362469626417133796">Lapso para el reinicio</translation>
 <translation id="2362539163677485510">El token de inscripción de la política de nube</translation>
 <translation id="2363928351203698966">Si estableces la política en un valor válido, <ph name="PRODUCT_NAME" /> no usará versiones de SSL/TLS anteriores a las especificadas. Se ignorarán los valores que no se reconozcan.
@@ -1782,9 +1786,6 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
       Para obtener información detallada sobre los patrones de URL de sitios válidos, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns. Se permite el uso de caracteres comodín (<ph name="WILDCARD_VALUE" />). Esta política solo establece coincidencias basadas en el origen; por lo tanto, se ignoran todas las rutas de acceso que se incluyan en el patrón de URL.
 
       Si no estableces esta política para un sitio, se aplicará la política de <ph name="DEFAULT_LOCAL_FONTS_SETTING_POLICY_NAME" /> al sitio, si se establece. De lo contrario, el permiso seguirá la configuración predeterminada del navegador y permitirá a los usuarios elegir este permiso para cada sitio.</translation>
-<translation id="2725855586003209701">Si habilitas la política o no la estableces, los dispositivos inscritos informarán la lista de usuarios que accedieron recientemente.
-
-      Si inhabilitas la política, los dispositivos inscritos no informarán la lista de usuarios.</translation>
 <translation id="2730200383593984228">Permitir que los usuarios no afiliados utilicen apps para Android</translation>
 <translation id="2730419309754848345">Imprimir PDF como imagen de forma predeterminada</translation>
 <translation id="2731299561202635374">Esta política controla la verificación de URL en tiempo real para identificar URL no seguras.
@@ -2280,6 +2281,7 @@ Esta política es temporal y se quitará en el futuro.</translation>
 <translation id="3144173889708944482">Si eliges <ph name="PRINTERS_BLOCKLIST" /> para <ph name="DEVICE_PRINTERS_ACCESS_MODE_POLICY_NAME" />, la configuración de <ph name="DEVICE_PRINTERS_BLOCKLIST_POLICY_NAME" /> especificará las impresoras que no podrán utilizar los usuarios. Los usuarios podrán acceder a todas las impresoras, excepto aquellas con los ID mencionados en esta política. Los ID deben coincidir con los valores de los campos <ph name="ID_FIELD" /> o <ph name="GUID_FIELD" /> en el archivo que se especifica en <ph name="DEVICE_PRINTERS_POLICY_NAME" />.</translation>
 <translation id="3146711617256415776">No permitir las voces de texto a voz de la red mejorada cuando se utiliza Seleccionar para pronunciar</translation>
 <translation id="3150351525324499342">No mostrar el ícono de <ph name="PRODUCT_NAME" /> en la barra de herramientas de forma predeterminada, pero permitir que los usuarios elijan</translation>
+<translation id="3152135410085709340">Permitir el acceso de archivo local a las URLs de file:// para estos sitios en el Lector de PDF</translation>
 <translation id="3152425128389603870">Habilitar el modo de escritorio unificado y activarlo de forma predeterminada</translation>
 <translation id="3157857846231611820">Lista de parámetros de configuración para los servicios de Chrome Enterprise Connectors que se aplicarán al Enterprise Connector <ph name="ON_FILE_ATTACHED_ENTERPRISE_CONNECTOR" />, el cual se activa cuando se adjunta un archivo a Chrome.
 
@@ -2697,6 +2699,7 @@ Si no se establece, se usará el comportamiento nuevo al igual que en el resto d
       Si esta política se configura como falsa, el dispositivo no intentará comunicarse con Quirks Server para descargar archivos de configuración.
 
       Si la política se configura como verdadera o no se configura, <ph name="PRODUCT_OS_NAME" /> se comunicará automáticamente con Quirks Server, descargará archivos de configuración, si están disponibles, y los guardará en el dispositivo.  Estos archivos pueden usarse, por ejemplo, para mejorar la calidad de visualización de los monitores conectados.</translation>
+<translation id="3515196503924273265">Permitir que se habilite la función NewBaseUrlInheritanceBehavior</translation>
 <translation id="351654132746710200">Después de inhabilitar <ph name="LACROS_NAME" />, no se realizará la migración de datos. Se quitará la carpeta <ph name="LACROS_NAME" /> y los usuarios seguirán usando los datos restantes.</translation>
 <translation id="3522257170445891912">Según el valor que se establezca para esta política, el flujo de autenticación de acceso será una de las siguientes opciones:
 
@@ -3820,6 +3823,7 @@ Para obtener información detallada sobre los patrones válidos de <ph name="URL
 <translation id="4611983465824842867">No mostrar advertencias ni inhabilitar la opción Autocompletar en los formularios poco seguros</translation>
 <translation id="4615003180013429835">Modo de análisis de la lista de sitios</translation>
 <translation id="4617338332148204752">Omitir la comprobación de metaetiquetas en <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="461901491675418689">Hacer que la función NewBaseUrlInheritanceBehavior esté disponible</translation>
 <translation id="4624006912948309924">Si estableces la política, se determinarán los identificadores de aplicación que <ph name="PRODUCT_OS_NAME" /> mostrará como apps fijas en la barra del selector; los usuarios no podrán cambiarlos.
 
 Especifica las apps de Chrome por ID, como pjkljhegncpnkpknbcohdijeoejaedia;
@@ -4444,6 +4448,9 @@ Si la estableces como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificac
 
       Si no la estableces, los usuario no podrán jugar al juego en el <ph name="PRODUCT_OS_NAME" /> registrado, pero podrán hacerlo en otras circunstancias.</translation>
 <translation id="5293285950307241933">Borrar todos los datos locales del usuario</translation>
+<translation id="5293875928467750789">Si estableces la política con un valor, se usará ese porcentaje predeterminado
+
+para el brillo del teclado del dispositivo cuando acceda el usuario.</translation>
 <translation id="529457411593078576">Habilita las Condiciones del Servicio en la primera ejecución para CCT</translation>
 <translation id="5297948043665200363">Permitir que el usuario permanezca conectado después de que se anule la autenticación de su cuenta</translation>
 <translation id="5298949392804966105">No hay restricciones en las cuentas administradas</translation>
@@ -4615,6 +4622,9 @@ Si la estableces como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificac
 <translation id="5448022937220253000">Elegir qué sucede con los datos del usuario después de inhabilitar <ph name="LACROS_NAME" /></translation>
 <translation id="5449690328792750354">La API de Event.path estará disponible.</translation>
 <translation id="5452024130413254050">Controla si las VMs que usan esta configuración tienen acceso a un vTPM. El valor predeterminado es falso y <ph name="FORCE_SHUTDOWN_IF_MORE_RESTRICTED" /> si no se establece.</translation>
+<translation id="5454128917282602937">Cuando un usuario alterna entre dispositivos con <ph name="PRODUCT_OS_NAME" />, el servicio de <ph name="PRODUCT_NAME" /> V2 abrirá las ventanas del navegador y de las apps del dispositivo anterior en el nuevo dispositivo.
+Si habilitas la política, se abrirán automáticamente las ventanas del navegador y de las apps del último dispositivo con <ph name="PRODUCT_OS_NAME" /> que utilizó el usuario actual al acceder.
+Si la inhabilitas o no la estableces, el restablecimiento completo de la configuración determinará qué se abrirá al acceder.</translation>
 <translation id="5455609857202311243">Ignorar la aprobación de la política de KDC durante la autenticación de HTTP</translation>
 <translation id="5455888515928026628">Durante el acceso mediante la pantalla de bloqueo, <ph name="PRODUCT_OS_NAME" /> podrá realizar la autenticación a través de un servidor (en línea) o de una contraseña almacenada en caché (sin conexión).
 
@@ -4745,6 +4755,10 @@ Si la estableces como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificac
       Si no se configura esta política, la acción predeterminada no se permite para los usuarios administrados por empresas y sí se permite para los usuarios no administrados.</translation>
 <translation id="5584132346604748282">Controla los servicios de ubicación de Google para Android</translation>
 <translation id="5584609869321980122">Iniciar los tiempos de espera para la administración de la energía y los límites de la extensión de la sesión después de la actividad inicial del usuario</translation>
+<translation id="5585298198686067735">Si estableces esta política, los dominios que aparecen en la lista podrán acceder a las URLs de file:// en el Lector de PDF.
+Si agregas un dominio a la política, este podrá acceder a las URLs de file:// en el Lector de PDF.
+Si lo quitas de la política, no se permitirá que el dominio acceda a las URLs de file:// en el Lector de PDF.
+Si no estableces la política, ningún dominio podrá acceder a las URLs de file:// en el Lector de PDF.</translation>
 <translation id="5586942249556966598">No hacer nada</translation>
 <translation id="5598417829613725146">Canvas (compatible a partir de la versión 90)</translation>
 <translation id="5599461642204007579">Configuración de la administración de <ph name="MS_AD_NAME" /></translation>
@@ -6586,6 +6600,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Esta política suele estar inhabilitada para ofrecer protección frente a la suplantación de identidad (phishing).</translation>
 <translation id="7403217961820363141">Mostrar exploraciones en la página del historial de Chrome</translation>
 <translation id="7406039009275722824">Si inhabilitas <ph name="CHROME_SYNC_NAME" />, el servicio Copia de seguridad y restablecimiento de Android dejará de funcionar de manera adecuada.</translation>
+<translation id="7406276857470642718">Controla la configuración para los usuarios autenticados mediante SAML con un IdP externo</translation>
 <translation id="7407441173422042771">Esta política controla la predicción de red en <ph name="PRODUCT_NAME" />. Controla la precarga de DNS, la preconexión a TCP y SSL, y la representación previa de páginas web.
 
       Si estableces la política, los usuarios no podrán cambiarla. Si no la estableces, se activará la predicción de red, pero el usuario podrá cambiarla.</translation>
@@ -7008,6 +7023,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="7832225468415136704">Impedir que Limpiar Chrome escanee el sistema de forma periódica y, luego, inhabilitar los escaneos manuales</translation>
 <translation id="7833148823006528332">Identificador de la app para Android, p. ej., "com.google.android.gm" para Gmail.</translation>
 <translation id="7835218570504220753">Inhabilitar el clic automático</translation>
+<translation id="7837834961221899821">Brillo predeterminado del teclado</translation>
 <translation id="7839180815400079700">Si habilitas <ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_POLICY_NAME" /> y estableces <ph name="DEVICE_POWER_PEAK_SHIFT_DAY_CONFIG_POLICY_NAME" />, se establecerá la configuración diurna de la carga fuera del horario de mayor consumo.
 
       Si no estableces la política, la carga fuera del horario de mayor consumo permanecerá desactivada.
@@ -8089,6 +8105,7 @@ VM. Se pueden instalar varias VMs desde la misma configuración en el mismo disp
       Si la inhabilitas, el proceso del servicio de red se ejecutará fuera de una zona de pruebas. Esta acción deja a los usuarios desprotegidos ante riesgos de seguridad adicionales relacionados con la ejecución del servicio de red fuera de una zona de pruebas.
       Si no estableces esta política, se utilizará la configuración predeterminada para la zona de pruebas de la red. Esta configuración predeterminada puede variar según la versión de <ph name="PRODUCT_NAME" />, las pruebas de campo actualmente en ejecución y la plataforma.
       Esta política permite que las empresas inhabiliten la zona de pruebas de la red si utilizan software de terceros que interfiere con la zona de pruebas del servicio de red.</translation>
+<translation id="8840243776706727185">Inhabilitar la función NewBaseUrlInheritanceBehavior</translation>
 <translation id="8842208363354615697">Permitir que se habilite el modo solo HTTPS</translation>
 <translation id="885147810817138322">Muestra recomendaciones de contenido multimedia para el usuario</translation>
 <translation id="8852579753940989645">Habilitar la integridad del código del renderizador</translation>
@@ -8127,6 +8144,7 @@ VM. Se pueden instalar varias VMs desde la misma configuración en el mismo disp
 <translation id="8882006618241293596">Bloquear el complemento <ph name="FLASH_PLUGIN_NAME" /> en estos sitios</translation>
 <translation id="8882255181490012651">No permitir el acceso de los usuarios que habilitaron Phone Hub a las fotos y los videos tomados recientemente del teléfono</translation>
 <translation id="8882307005437314052">Habilitar el teclado en pantalla en la pantalla de acceso y permitir que el usuario lo inhabilite temporalmente</translation>
+<translation id="8883577480680089760">Inhabilitar el servicio de <ph name="PRODUCT_NAME" /> V2 y no abrir el escritorio remoto al acceder</translation>
 <translation id="8887709920496070892">El período sin intervención del usuario después del cual se muestra un diálogo de advertencia (en milisegundos).</translation>
 <translation id="8890438048579188548">Oculta las advertencias de baja de <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="8891334958985336685">Inhabilitar los informes del sistema del dispositivo</translation>
@@ -8269,6 +8287,7 @@ Si no se establece, se usará el comportamiento nuevo al igual que en el resto d
 <translation id="9015952763003753868">Hacer que las coincidencias de <ph name="ACAM_HEADER_NAME" /> en la especificación de solicitud preliminar <ph name="CORS" /> sean compatibles</translation>
 <translation id="9020630127193895800">Color índigo para la retroiluminación del teclado</translation>
 <translation id="9031831501689819108">Habilitar la Compatibilidad con navegadores heredados</translation>
+<translation id="9032595854515551464">Habilitar el servicio de <ph name="PRODUCT_NAME" /> V2 y abrir el escritorio remoto al acceder</translation>
 <translation id="9035086760683255833">Habilita la función de accesibilidad para destacar el cursor del teclado.
 
           Esta función destaca el elemento donde está el cursor del teclado.

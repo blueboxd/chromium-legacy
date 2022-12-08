@@ -134,6 +134,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/privacy_sandbox/privacy_sandbox_prefs.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
+#include "components/reading_list/core/reading_list_pref_names.h"
 #include "components/safe_browsing/content/common/file_type_policies_prefs.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
@@ -309,6 +310,7 @@
 #include "chrome/browser/apps/app_service/webapk/webapk_prefs.h"
 #include "chrome/browser/ash/account_manager/account_apps_availability.h"
 #include "chrome/browser/ash/account_manager/account_manager_edu_coexistence_controller.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ash/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_cryptohome_remover.h"
@@ -396,7 +398,6 @@
 #include "chrome/browser/media/protected_media_identifier_permission_context.h"
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_prefs.h"
 #include "chrome/browser/ui/webui/ash/login/enable_debugging_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/signin_screen_handler.h"
@@ -2041,6 +2042,7 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
     }
   };
 
+  // These settings will also need to be deleted from ChromePreferenceKeys.java.
   migrate_shared_pref(kDeprecatedAutofillAssistantConsent,
                       kAutofillAssistantConsent);
   migrate_shared_pref(kDeprecatedAutofillAssistantEnabled,
@@ -2088,6 +2090,10 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   profile_prefs->ClearPref(kAutofillAssistantConsent);
   profile_prefs->ClearPref(kAutofillAssistantTriggerScriptsEnabled);
   profile_prefs->ClearPref(kAutofillAssistantTriggerScriptsIsFirstTimeUser);
+
+  // Added 12/2022.
+  profile_prefs->ClearPref(
+      reading_list::prefs::kDeprecatedReadingListHasUnseenEntries);
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_PROFILE_PREFS

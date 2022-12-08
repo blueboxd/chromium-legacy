@@ -11,6 +11,9 @@
 # Tests that fail in legacy but pass in NG
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/fullscreen/api/document-exit-fullscreen-nested-in-iframe.html [ Timeout ]
+crbug.com/626703 external/wpt/css/css-sizing/aspect-ratio/replaced-element-039.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-sizing/aspect-ratio/replaced-element-040.html [ Failure ]
 crbug.com/626703 external/wpt/dom/events/scrolling/scrollend-event-fired-to-element-with-overscroll-behavior.html [ Timeout ]
 crbug.com/626703 external/wpt/geolocation-API/enabled-by-permission-policy-attribute-redirect-on-load.https.sub.html [ Timeout ]
 crbug.com/626703 external/wpt/geolocation-API/enabled-by-permission-policy-attribute.https.sub.html [ Timeout ]
@@ -1262,8 +1265,6 @@ crbug.com/626703 external/wpt/css/css-flexbox/flexbox-definite-cross-size-constr
 crbug.com/626703 external/wpt/css/css-contain/content-visibility/content-visibility-fieldset-size.html [ Failure ]
 crbug.com/626703 virtual/offsetparent-old-behavior/external/wpt/css/css-contain/content-visibility/content-visibility-fieldset-size.html [ Failure ]
 crbug.com/626703 external/wpt/page-visibility/visibility-state-entry.tentative.html [ Timeout ]
-crbug.com/626703 external/wpt/css/filter-effects/filter-invalid.html [ Failure ]
-crbug.com/626703 virtual/scalefactor200/external/wpt/css/filter-effects/filter-invalid.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-sizing/svg-intrinsic-size-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-sizing/svg-intrinsic-size-003.html [ Failure ]
 crbug.com/626703 external/wpt/dom/nodes/NodeList-static-length-getter-tampered-indexOf-1.html [ Timeout ]
@@ -1284,7 +1285,6 @@ crbug.com/626703 external/wpt/css/css-sizing/aspect-ratio/block-aspect-ratio-040
 crbug.com/626703 external/wpt/service-workers/cache-storage/crashtests/cache-response-clone.https.html [ Timeout ]
 crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/service-workers/cache-storage/crashtests/cache-response-clone.https.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-sizing/aspect-ratio/floats-aspect-ratio-001.html [ Failure ]
-crbug.com/626703 external/wpt/html/semantics/embedded-content/the-img-element/image-loading-lazy-move-into-script-disabled-iframe.html [ Timeout ]
 crbug.com/626703 external/wpt/content-security-policy/wasm-unsafe-eval/postMessage-wasm-module.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-writing-modes/abs-pos-border-offset-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/abs-pos-border-offset-002.html [ Failure ]
@@ -3411,6 +3411,8 @@ crbug.com/1303102 virtual/view-transition/external/wpt/css/css-view-transitions/
 crbug.com/1303102 virtual/view-transition/external/wpt/css/css-view-transitions/old-content-captures-different-size.html [ Skip ]
 crbug.com/1377777 virtual/view-transition/external/wpt/css/css-view-transitions/content-with-inline-child.html [ Skip ]
 crbug.com/1321217 virtual/view-transition-wide-gamut/external/wpt/css/css-view-transitions/element-with-overflow.html [ Skip ]
+crbug.com/1321217 virtual/view-transition/external/wpt/css/css-view-transitions/inline-child-with-filter.html [ Skip ]
+crbug.com/1321217 virtual/view-transition-wide-gamut/external/wpt/css/css-view-transitions/inline-child-with-filter.html [ Skip ]
 crbug.com/1321217 virtual/view-transition/external/wpt/css/css-view-transitions/element-with-overflow.html [ Skip ]
 
 crbug.com/1303102 virtual/view-transition-wide-gamut/external/wpt/css/css-view-transitions/old-content-captures-different-size.html [ Skip ]

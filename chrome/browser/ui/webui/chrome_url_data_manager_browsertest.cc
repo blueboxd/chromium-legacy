@@ -31,6 +31,7 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/media_switches.h"
+#include "ui/accessibility/accessibility_features.h"
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/signin/signin_features.h"
@@ -156,10 +157,13 @@ class ChromeURLDataManagerWebUITrustedTypesTest
  public:
   ChromeURLDataManagerWebUITrustedTypesTest() {
     std::vector<base::test::FeatureRef> enabled_features;
+    enabled_features.push_back(features::kChromeWhatsNewUI);
     enabled_features.push_back(features::kSidePanelJourneys);
     enabled_features.push_back(features::kSupportTool);
     enabled_features.push_back(
         password_manager::features::kPasswordManagerRedesign);
+    enabled_features.push_back(features::kReadAnything);
+
 #if !BUILDFLAG(IS_CHROMEOS)
     if (GetParam() == std::string("chrome://welcome"))
       enabled_features.push_back(welcome::kForceEnabled);
@@ -273,6 +277,8 @@ static constexpr const char* const kChromeUrls[] = {
     "chrome://connection-monitoring-detected",
     "chrome://crashes",
     "chrome://credits",
+    // TODO(crbug/1396866): Enable when bug is fixed.
+    // "chrome://customize-chrome-side-panel.top-chrome",
     "chrome://device-log",
     // "chrome://dino",
     // TODO(crbug.com/1113446): Test failure due to excessive output.
@@ -305,7 +311,7 @@ static constexpr const char* const kChromeUrls[] = {
     // TODO(crbug.com/1217395): DCHECK failure
     // "chrome://memory-internals",
     "chrome://net-export",
-    // "chrome://net-internals",
+    "chrome://net-internals",
     // "chrome://network-error",
     "chrome://network-errors",
     "chrome://new-tab-page",
@@ -319,8 +325,11 @@ static constexpr const char* const kChromeUrls[] = {
     "chrome://predictors",
     "chrome://prefs-internals",
     "chrome://print",
+    "chrome://privacy-sandbox-dialog/?debug",
     "chrome://process-internals",
     "chrome://quota-internals",
+    "chrome://read-anything-side-panel.top-chrome",
+    "chrome://read-later.top-chrome",
     "chrome://reset-password",
     "chrome://safe-browsing",
     "chrome://serviceworker-internals",
@@ -346,11 +355,18 @@ static constexpr const char* const kChromeUrls[] = {
     "chrome://ukm",
     "chrome://usb-internals",
     "chrome://user-actions",
+    "chrome://user-notes-side-panel.top-chrome",
     "chrome://version",
     "chrome://web-app-internals",
     "chrome://webrtc-internals",
     "chrome://webrtc-logs",
     "chrome://webui-gallery",
+    "chrome://whats-new",
+
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+    "chrome://cast-feedback",
+#endif
+
 #if BUILDFLAG(IS_ANDROID)
     "chrome://explore-sites-internals",
     "chrome://internals/notifications",
@@ -359,6 +375,7 @@ static constexpr const char* const kChromeUrls[] = {
     "chrome://snippets-internals",
     "chrome://webapks",
 #endif
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     // "chrome://account-manager-error",
     // "chrome://account-migration-welcome",
@@ -396,8 +413,9 @@ static constexpr const char* const kChromeUrls[] = {
 #if !BUILDFLAG(IS_CHROMEOS)
     "chrome://apps",
     "chrome://browser-switch",
+    "chrome://browser-switch/internals",
     "chrome://profile-picker",
-    // "chrome://welcome",
+    "chrome://welcome",
 #endif
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
     // Note: Disabled because a DCHECK fires when directly visiting the URL.

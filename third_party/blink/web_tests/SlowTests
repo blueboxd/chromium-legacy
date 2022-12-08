@@ -579,7 +579,6 @@ crbug.com/1142023 [ Win10.20h2 ] http/tests/security/document-domain-canonicaliz
 
 # crbug.com/1095379: These were all added here in an attempt to reduce flakiness.
 crbug.com/983788 http/tests/cookies/same-site/popup-cross-site.https.html [ Slow ]
-crbug.com/1081237 [ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/events/overscroll-event-fired-to-element-with-overscroll-behavior.html [ Slow ]
 crbug.com/1049641 http/tests/devtools/sources/debugger/debugger-disable-enable.js [ Slow ]
 crbug.com/947951 [ Win ] external/wpt/pointerevents/pointerevent_touch-action-inherit_child-auto-child-none_touch.html [ Slow ]
 crbug.com/626703 [ Mac ] external/wpt/preload/preload-with-type.html [ Slow ]
@@ -595,8 +594,6 @@ crbug.com/799619 [ Debug ] http/tests/devtools/profiler/heap-snapshot-inspect-do
 ###crbug.com/849979 media/video-layer-crash.html [ Slow ]
 crbug.com/831673 http/tests/devtools/reveal-objects.js [ Slow ]
 crbug.com/829952 fast/webgl/texImage-imageBitmap-from-image-resize.html [ Slow ]
-crbug.com/855816 [ Win ] virtual/stable/http/tests/navigation/rename-subframe-goback.html [ Slow ]
-crbug.com/1066178 external/wpt/html/user-activation/consumption-crossorigin.sub.html [ Slow ]
 crbug.com/1064522 external/wpt/html/user-activation/propagation-crossorigin.sub.html [ Slow ]
 crbug.com/863599 [ Debug ] external/wpt/requestidlecallback/callback-iframe.html [ Slow ]
 crbug.com/869364 http/tests/devtools/console/console-correct-suggestions.js [ Slow ]
@@ -608,7 +605,6 @@ crbug.com/946714 [ Release ] http/tests/devtools/elements/styles-4/styles-live-l
 crbug.com/947383 inspector-protocol/css/reattach-after-editing-styles.js [ Slow ]
 crbug.com/949167 external/wpt/html/semantics/links/links-created-by-a-and-area-elements/target_blank_implicit_noopener.html [ Slow ]
 crbug.com/949207 external/wpt/html/semantics/links/links-created-by-a-and-area-elements/target_blank_implicit_noopener_base.html [ Slow ]
-#crbug.com/959002 crbug.com/959042 http/tests/devtools/elements/styles-1/color-aware-property-value-edit.js [ Slow ]
 crbug.com/959002 crbug.com/959042 http/tests/devtools/elements/styles-3/style-autocomplete.js [ Slow ]
 crbug.com/959002 crbug.com/959042 http/tests/devtools/elements/styles-4/styles-keyframes.js [ Slow ]
 crbug.com/959002 crbug.com/959042 http/tests/devtools/elements/styles-4/undo-add-new-rule.js [ Slow ]
@@ -725,7 +721,6 @@ crbug.com/1176802 [ Debug ] external/wpt/feature-policy/feature-policy-frame-pol
 crbug.com/1176802 [ Debug ] external/wpt/permissions-policy/permissions-policy-frame-policy-timing.https.sub.html [ Slow ]
 crbug.com/1044825 http/tests/devtools/network/resource-priority.js [ Slow ]
 crbug.com/1105270 [ Mac10.15 ] fast/events/open-window-from-another-frame.html [ Slow ]
-crbug.com/1046784 http/tests/devtools/sources/source-frame-toolbar-items.js [ Slow ]
 crbug.com/1046784 http/tests/devtools/profiler/cpu-profiler-bottom-up-large-tree-search.js [ Slow ]
 crbug.com/1108423 external/wpt/referrer-policy/gen/worker-classic.http-rp/unset/worker-classic.http.html [ Slow ]
 crbug.com/1135978 [ Linux Release ] fast/dom/css-delete-doc.html [ Slow ]

@@ -7,10 +7,16 @@
 #include <errno.h>
 #include <stddef.h>
 #include <stdlib.h>
+#ifdef __SSE2__
+#include <immintrin.h>
+#elif defined(__aarch64__)
+#include <arm_neon.h>
+#endif
 
 #include <cstdio>
 #include <string>
 
+#include "base/bits.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/utf_string_conversion_utils.h"
 
@@ -18,12 +24,62 @@ namespace url {
 
 namespace {
 
+// Find the initial segment of the given string that consists solely
+// of characters valid for CHAR_QUERY. (We can have false negatives in
+// one specific case, namely the exclamation mark 0x21, but false negatives
+// are fine, and it's not worth adding a separate test for.) This is
+// a fast path to speed up checking of very long query strings that are
+// already valid, which happen on some web pages.
+//
+// This has some startup cost to load the constants and such, so it's
+// usually not worth it for short strings.
+size_t FindInitialQuerySafeString(const char* source, size_t length) {
+#if defined(__SSE2__) || defined(__aarch64__)
+  constexpr size_t kChunkSize = 16;
+  size_t i;
+  for (i = 0; i < base::bits::AlignDown(length, kChunkSize); i += kChunkSize) {
+    char b __attribute__((vector_size(16)));
+    memcpy(&b, source + i, sizeof(b));
+
+    // Compare each element with the ranges for CHAR_QUERY
+    // (see kSharedCharTypeTable), vectorized so that it creates
+    // a mask of which elements match. For completeness, we could
+    // have had (...) | b == 0x21 here, but exclamation marks are
+    // rare and the extra test costs us some time.
+    auto mask = b >= 0x24 && b <= 0x7e && b != 0x27 && b != 0x3c && b != 0x3e;
+
+#ifdef __SSE2__
+    if (_mm_movemask_epi8(mask) != 0xffff) {
+      return i;
+    }
+#else
+    if (vminvq_u8(mask) == 0) {
+      return i;
+    }
+#endif
+  }
+  return i;
+#else
+  // Need SIMD support (with fast reductions) for this to be efficient.
+  return 0;
+#endif
+}
+
 template <typename CHAR, typename UCHAR>
 void DoAppendStringOfType(const CHAR* source,
                           size_t length,
                           SharedCharTypes type,
                           CanonOutput* output) {
-  for (size_t i = 0; i < length; i++) {
+  size_t i = 0;
+  // We only instantiate this for char, to avoid a Clang crash
+  // (and because Append() does not support converting).
+  if constexpr (sizeof(CHAR) == 1) {
+    if (type == CHAR_QUERY && length >= kMinimumLengthForSIMD) {
+      i = FindInitialQuerySafeString(source, length);
+      output->Append(source, i);
+    }
+  }
+  for (; i < length; i++) {
     if (static_cast<UCHAR>(source[i]) >= 0x80) {
       // ReadChar will fill the code point with kUnicodeReplacementCharacter
       // when the input is invalid, which is what we want.
@@ -113,6 +169,7 @@ bool PrepareUTF16OverrideComponent(const char16_t* override_source,
 }  // namespace
 
 // See the header file for this array's declaration.
+// clang-format off
 const unsigned char kSharedCharTypeTable[0x100] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 0x00 - 0x0f
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 0x10 - 0x1f
@@ -221,6 +278,7 @@ const unsigned char kSharedCharTypeTable[0x100] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 0xe0 - 0xef
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 0xf0 - 0xff
 };
+// clang-format on
 
 const char kHexCharLookup[0x10] = {
     '0', '1', '2', '3', '4', '5', '6', '7',
@@ -324,27 +382,27 @@ void SetupOverrideComponents(const char* base,
   const URLComponentSource<char>& repl_source = repl.sources();
   const Parsed& repl_parsed = repl.components();
 
-  DoOverrideComponent(repl_source.scheme, repl_parsed.scheme,
-                      &source->scheme, &parsed->scheme);
+  DoOverrideComponent(repl_source.scheme, repl_parsed.scheme, &source->scheme,
+                      &parsed->scheme);
   DoOverrideComponent(repl_source.username, repl_parsed.username,
                       &source->username, &parsed->username);
   DoOverrideComponent(repl_source.password, repl_parsed.password,
                       &source->password, &parsed->password);
 
   // Our host should be empty if not present, so override the default setup.
-  DoOverrideComponent(repl_source.host, repl_parsed.host,
-                      &source->host, &parsed->host);
+  DoOverrideComponent(repl_source.host, repl_parsed.host, &source->host,
+                      &parsed->host);
   if (parsed->host.len == -1)
     parsed->host.len = 0;
 
-  DoOverrideComponent(repl_source.port, repl_parsed.port,
-                      &source->port, &parsed->port);
-  DoOverrideComponent(repl_source.path, repl_parsed.path,
-                      &source->path, &parsed->path);
-  DoOverrideComponent(repl_source.query, repl_parsed.query,
-                      &source->query, &parsed->query);
-  DoOverrideComponent(repl_source.ref, repl_parsed.ref,
-                      &source->ref, &parsed->ref);
+  DoOverrideComponent(repl_source.port, repl_parsed.port, &source->port,
+                      &parsed->port);
+  DoOverrideComponent(repl_source.path, repl_parsed.path, &source->path,
+                      &parsed->path);
+  DoOverrideComponent(repl_source.query, repl_parsed.query, &source->query,
+                      &parsed->query);
+  DoOverrideComponent(repl_source.ref, repl_parsed.ref, &source->ref,
+                      &parsed->ref);
 }
 
 bool SetupUTF16OverrideComponents(const char* base,
@@ -359,41 +417,43 @@ bool SetupUTF16OverrideComponents(const char* base,
   const Parsed& repl_parsed = repl.components();
 
   success &= PrepareUTF16OverrideComponent(
-      repl_source.scheme, repl_parsed.scheme,
-      utf8_buffer, &parsed->scheme);
-  success &= PrepareUTF16OverrideComponent(
-      repl_source.username, repl_parsed.username,
-      utf8_buffer, &parsed->username);
-  success &= PrepareUTF16OverrideComponent(
-      repl_source.password, repl_parsed.password,
-      utf8_buffer, &parsed->password);
-  success &= PrepareUTF16OverrideComponent(
-      repl_source.host, repl_parsed.host,
-      utf8_buffer, &parsed->host);
-  success &= PrepareUTF16OverrideComponent(
-      repl_source.port, repl_parsed.port,
-      utf8_buffer, &parsed->port);
-  success &= PrepareUTF16OverrideComponent(
-      repl_source.path, repl_parsed.path,
-      utf8_buffer, &parsed->path);
-  success &= PrepareUTF16OverrideComponent(
-      repl_source.query, repl_parsed.query,
-      utf8_buffer, &parsed->query);
-  success &= PrepareUTF16OverrideComponent(
-      repl_source.ref, repl_parsed.ref,
-      utf8_buffer, &parsed->ref);
+      repl_source.scheme, repl_parsed.scheme, utf8_buffer, &parsed->scheme);
+  success &=
+      PrepareUTF16OverrideComponent(repl_source.username, repl_parsed.username,
+                                    utf8_buffer, &parsed->username);
+  success &=
+      PrepareUTF16OverrideComponent(repl_source.password, repl_parsed.password,
+                                    utf8_buffer, &parsed->password);
+  success &= PrepareUTF16OverrideComponent(repl_source.host, repl_parsed.host,
+                                           utf8_buffer, &parsed->host);
+  success &= PrepareUTF16OverrideComponent(repl_source.port, repl_parsed.port,
+                                           utf8_buffer, &parsed->port);
+  success &= PrepareUTF16OverrideComponent(repl_source.path, repl_parsed.path,
+                                           utf8_buffer, &parsed->path);
+  success &= PrepareUTF16OverrideComponent(repl_source.query, repl_parsed.query,
+                                           utf8_buffer, &parsed->query);
+  success &= PrepareUTF16OverrideComponent(repl_source.ref, repl_parsed.ref,
+                                           utf8_buffer, &parsed->ref);
 
   // PrepareUTF16OverrideComponent will not have set the data pointer since the
   // buffer could be resized, invalidating the pointers. We set the data
   // pointers for affected components now that the buffer is finalized.
-  if (repl_source.scheme)   source->scheme = utf8_buffer->data();
-  if (repl_source.username) source->username = utf8_buffer->data();
-  if (repl_source.password) source->password = utf8_buffer->data();
-  if (repl_source.host)     source->host = utf8_buffer->data();
-  if (repl_source.port)     source->port = utf8_buffer->data();
-  if (repl_source.path)     source->path = utf8_buffer->data();
-  if (repl_source.query)    source->query = utf8_buffer->data();
-  if (repl_source.ref)      source->ref = utf8_buffer->data();
+  if (repl_source.scheme)
+    source->scheme = utf8_buffer->data();
+  if (repl_source.username)
+    source->username = utf8_buffer->data();
+  if (repl_source.password)
+    source->password = utf8_buffer->data();
+  if (repl_source.host)
+    source->host = utf8_buffer->data();
+  if (repl_source.port)
+    source->port = utf8_buffer->data();
+  if (repl_source.path)
+    source->path = utf8_buffer->data();
+  if (repl_source.query)
+    source->query = utf8_buffer->data();
+  if (repl_source.ref)
+    source->ref = utf8_buffer->data();
 
   return success;
 }

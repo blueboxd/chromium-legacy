@@ -19,6 +19,7 @@
 #include "chrome/grit/password_manager_resources_map.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/password_manager/content/common/web_ui_constants.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -41,9 +42,12 @@ content::WebUIDataSource* CreatePasswordsUIHTMLSource(Profile* profile,
       source,
       base::make_span(kPasswordManagerResources, kPasswordManagerResourcesSize),
       IDR_PASSWORD_MANAGER_PASSWORD_MANAGER_HTML);
-  webui::EnableTrustedTypesCSP(source);
 
   static constexpr webui::LocalizedString kStrings[] = {
+      {"usernameCopiedToClipboard",
+       IDS_PASSWORD_MANAGER_UI_USERNAME_COPIED_TO_CLIPBOARD},
+      {"passwordCopiedToClipboard",
+       IDS_PASSWORD_MANAGER_UI_PASSWORD_COPIED_TO_CLIPBOARD},
       {"addPassword", IDS_PASSWORD_MANAGER_UI_ADD_PASSWORD_BUTTON},
       {"addShortcut", IDS_PASSWORD_MANAGER_UI_ADD_SHORTCUT_TITLE},
       {"addShortcutDescription",
@@ -55,9 +59,11 @@ content::WebUIDataSource* CreatePasswordsUIHTMLSource(Profile* profile,
       {"blockedSitesEmptyDescription",
        IDS_PASSWORD_MANAGER_UI_NO_BLOCKED_SITES_DESCRIPTION},
       {"blockedSitesTitle", IDS_PASSWORD_MANAGER_UI_BLOCKED_SITES_TITLE},
+      {"cancel", IDS_CANCEL},
       {"checkup", IDS_PASSWORD_MANAGER_UI_CHECKUP},
       {"checkupTitle", IDS_PASSWORD_MANAGER_UI_CHECKUP_TITLE},
       {"clearSearch", IDS_CLEAR_SEARCH},
+      {"close", IDS_CLOSE},
       {"compromisedPasswordsEmpty",
        IDS_PASSWORD_MANAGER_UI_NO_COMPROMISED_PASSWORDS},
       {"compromisedPasswordsTitle",
@@ -67,9 +73,11 @@ content::WebUIDataSource* CreatePasswordsUIHTMLSource(Profile* profile,
       {"deletePassword", IDS_DELETE},
       {"editPassword", IDS_EDIT},
       {"emptyNote", IDS_PASSWORD_MANAGER_UI_NO_NOTE_SAVED},
-      {"exportPasswords", IDS_PASSWORD_MANAGER_UI_EXPORT_BANNER_TITLE},
+      {"exportPasswords", IDS_PASSWORD_MANAGER_UI_EXPORT_TITLE},
       {"exportPasswordsDescription",
        IDS_PASSWORD_MANAGER_UI_EXPORT_BANNER_DESCRIPTION},
+      {"exportPasswordsDialogBody", IDS_PASSWORD_MANAGER_UI_EXPORT_DIALOG_BODY},
+      {"federationLabel", IDS_PASSWORD_MANAGER_UI_FEDERATION_LABEL},
       {"hidePassword", IDS_PASSWORD_MANAGER_UI_HIDE_PASSWORD},
       {"importPasswords", IDS_PASSWORD_MANAGER_UI_IMPORT_BANNER_TITLE},
       {"importPasswordsDescription",

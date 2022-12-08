@@ -6,10 +6,9 @@ import 'chrome://webui-test/mojo_webui_test_support.js';
 import 'chrome://new-tab-page/new_tab_page.js';
 
 import {$$, decodeString16, mojoString16, RealboxBrowserProxy, RealboxElement, RealboxIconElement, RealboxMatchElement} from 'chrome://new-tab-page/new_tab_page.js';
-import {NavigationPredictor} from 'chrome://new-tab-page/omnibox.mojom-webui.js';
-import {AutocompleteMatch} from 'chrome://new-tab-page/realbox.mojom-webui.js';
+import {AutocompleteMatch, NavigationPredictor} from 'chrome://new-tab-page/omnibox.mojom-webui.js';
 import {getFaviconForPageURL} from 'chrome://resources/js/icon.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {getDeepActiveElement} from 'chrome://resources/js/util_ts.js';
 import {assertEquals, assertFalse, assertNotEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {eventToPromise} from 'chrome://webui-test/test_util.js';

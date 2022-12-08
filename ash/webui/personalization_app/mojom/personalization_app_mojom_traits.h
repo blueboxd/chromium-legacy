@@ -9,10 +9,12 @@
 #include <vector>
 
 #include "ash/constants/ambient_animation_theme.h"
+#include "ash/public/cpp/ambient/ambient_ui_model.h"
 #include "ash/public/cpp/ambient/common/ambient_settings.h"
 #include "ash/public/cpp/default_user_image.h"
 #include "ash/public/cpp/personalization_app/user_display_info.h"
 #include "ash/public/cpp/wallpaper/wallpaper_types.h"
+#include "ash/style/color_palette_controller.h"
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom-forward.h"
 #include "ash/webui/personalization_app/proto/backdrop_wallpaper.pb.h"
 #include "base/unguessable_token.h"
@@ -148,6 +150,24 @@ struct EnumTraits<ash::personalization_app::mojom::TemperatureUnit,
   static MojomTemperatureUnit ToMojom(ash::AmbientModeTemperatureUnit input);
   static bool FromMojom(MojomTemperatureUnit input,
                         ash::AmbientModeTemperatureUnit* output);
+};
+
+template <>
+struct EnumTraits<ash::personalization_app::mojom::AmbientUiVisibility,
+                  ash::AmbientUiVisibility> {
+  using MojomAmbientUiVisibility =
+      ::ash::personalization_app::mojom::AmbientUiVisibility;
+  static MojomAmbientUiVisibility ToMojom(ash::AmbientUiVisibility input);
+  static bool FromMojom(MojomAmbientUiVisibility input,
+                        ash::AmbientUiVisibility* output);
+};
+
+template <>
+struct EnumTraits<ash::personalization_app::mojom::ColorScheme,
+                  ash::ColorScheme> {
+  using MojomColorScheme = ::ash::personalization_app::mojom::ColorScheme;
+  static MojomColorScheme ToMojom(ash::ColorScheme input);
+  static bool FromMojom(MojomColorScheme input, ash::ColorScheme* output);
 };
 
 }  // namespace mojo

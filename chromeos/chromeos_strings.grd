@@ -301,6 +301,26 @@
         Report this query
       </message>
 
+      <!-- Multitask Menu -->
+      <message name="IDS_MULTITASK_MENU_HALF_BUTTON_NAME" desc="Title and and accessible name of the half button on the multitask menu.">
+        Half
+      </message>
+      <message name="IDS_MULTITASK_MENU_PARTIAL_BUTTON_NAME" desc="Title and and accessible name of the partial button on the multitask menu.">
+        Partial
+      </message>
+      <message name="IDS_MULTITASK_MENU_FULLSCREEN_BUTTON_NAME" desc="Title and and accessible name of the fullscreen button on the multitask menu, when the window is not in fullscreen state.">
+        Full
+      </message>
+      <message name="IDS_MULTITASK_MENU_EXIT_FULLSCREEN_BUTTON_NAME" desc="Title and and accessible name of the fullscreen button on the multitask menu, when the window is in fullscreen state.">
+        Exit full
+      </message>
+      <message name="IDS_MULTITASK_MENU_FLOAT_BUTTON_NAME" desc="Title and and accessible name of the float button on the multitask menu, when the window is not in float state.">
+        Float
+      </message>
+      <message name="IDS_MULTITASK_MENU_EXIT_FLOAT_BUTTON_NAME" desc="Title and and accessible name of the float button on the multitask menu, when the window is in float state.">
+        Exit float
+      </message>
+
       <if expr="chromeos_ash">
       <message name="IDS_ASSISTANT_SCREEN_CONTEXT_QUERY_FALLBACK_TEXT" desc="Message shown in Assistant UI when a query for content related to the screen context returns no results.">
         I can't find anything on your screen I can help with.
@@ -3142,7 +3162,10 @@ Try tapping the mic to ask me anything.
         Saved to "<ph name="FILE_LOCATION">$1<ex>/USB/Home/MyFiles</ex></ph>"
       </message>
       <message name="IDS_SHIMLESS_RMA_LOGS_SAVE_FAIL" translateable="false" desc="The text telling the user that saving the logs to a external USB failed. The expectation would be for the user to try a different external storage device.">
-        File couldn't be saved. Try plugging in a different external storage, or try again later.
+        Can't save file. Plug in a different external storage or try again later.
+      </message>
+      <message name="IDS_SHIMLESS_RMA_LOGS_SAVE_USB_NOT_FOUND" translateable="false" desc="The text telling the user that saving the logs to a external USB failed because an external USB was not plugged in.">
+        Can't save file. Plug in external storage and try again.
       </message>
       <!-- Powerwash dialog -->
       <message name="IDS_SHIMLESS_RMA_POWERWASH_DIALOG_TITLE" translateable="false" desc="Title for the powerwash dialog displayed on the repair complete page and on the restock page">
@@ -3640,6 +3663,15 @@ Try tapping the mic to ask me anything.
       <message name="IDS_SHORTCUT_CUSTOMIZATION_KEYBOARD_SETTINGS" desc="Label for link to open keyboard settings in the Settings app." translateable="false">
         Keyboard settings
       </message>
+      <message name="IDS_SHORTCUT_CUSTOMIZATION_CATEGORY_SYSTEM" desc="Category named 'System' shown on the navigation sidebar" translateable="false">System</message>
+      <message name="IDS_SHORTCUT_CUSTOMIZATION_CATEGORY_WINDOWS_AND_DESK" desc="Category named 'Windows and Desk' shown on the navigation sidebar" translateable="false">Windows &#38; Desk</message>
+      <message name="IDS_SHORTCUT_CUSTOMIZATION_CATEGORY_TABS_AND_PAGES" desc="Category named 'Tabs and Pages' shown on the navigation sidebar" translateable="false">Tabs &#38; Pages</message>
+      <message name="IDS_SHORTCUT_CUSTOMIZATION_CATEGORY_TEXT_AND_INPUT" desc="Category named 'Text and Input' shown on the navigation sidebar" translateable="false">Text &#38; Input</message>
+      <message name="IDS_SHORTCUT_CUSTOMIZATION_CATEGORY_DEBUG" desc="Category named 'Debug' shown on the navigation sidebar" translateable="false">Debug</message>
+      <message name="IDS_SHORTCUT_CUSTOMIZATION_CATEGORY_DEVELOPER" desc="Category named 'Developer' shown on the navigation sidebar" translateable="false">Developer</message>
+      <message name="IDS_SHORTCUT_CUSTOMIZATION_SUBCATEGORY_GENERAL" desc="Subcategory named 'General' shown within main shortcuts section" translateable="false">General</message>
+      <message name="IDS_SHORTCUT_CUSTOMIZATION_SUBCATEGORY_SYSTEM_APPS" desc="Subcategory named 'System Apps' shown within main shortcuts section" translateable="false">System Apps</message>
+      <message name="IDS_SHORTCUT_CUSTOMIZATION_SUBCATEGORY_SYSTEM_CONTROLS" desc="Subcategory named 'System Controls' shown within main shortcuts section" translateable="false">System Controls</message>
       <!-- End of Shortcut Customization -->
 
       <!-- APN -->
@@ -3673,8 +3705,11 @@ Try tapping the mic to ask me anything.
       <message name="IDS_SETTINGS_ADD_APN_DIALOG_TITLE" desc="Title for the dialog that creates a new custom APN">
         Add a new APN
       </message>
-      <message name="IDS_SETTINGS_APN_INPUT_LABEL" desc="Label for the input field where the APN is specified">
-        APN
+      <message name="IDS_SETTINGS_VIEW_APN_DIALOG_TITLE" desc="Title for the dialog for viewing an APN">
+        APN details
+      </message>
+      <message name="IDS_SETTINGS_APN_INPUT_LABEL" desc="Label for the input field where the APN is specified, the asterisk indicates that this is required">
+        APN*
       </message>
       <message name="IDS_SETTINGS_APN_DIALOG_ADVANCED_SETTING" desc="Title for the button which toggles the advanced settings section">
         Advanced settings

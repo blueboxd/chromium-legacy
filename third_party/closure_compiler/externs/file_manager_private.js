@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(crbug.com/1086381): Disable automatic extern generation until fixed.
+
 /**
  * @fileoverview Externs generated from namespace: fileManagerPrivate
  * @externs
@@ -230,6 +232,7 @@ chrome.fileManagerPrivate.EntryPropertyName = {
   IS_EXTERNAL_MEDIA: 'isExternalMedia',
   IS_ARBITRARY_SYNC_FOLDER: 'isArbitrarySyncFolder',
   SYNC_STATUS: 'syncStatus',
+  PROGRESS: 'progress',
 };
 
 /** @enum {string} */
@@ -401,7 +404,9 @@ chrome.fileManagerPrivate.ResultingTasks;
  *   canPin: (boolean|undefined),
  *   isMachineRoot: (boolean|undefined),
  *   isExternalMedia: (boolean|undefined),
- *   isArbitrarySyncFolder: (boolean|undefined)
+ *   isArbitrarySyncFolder: (boolean|undefined),
+ *   syncStatus: (string|undefined),
+ *   progress: (number|undefined)
  * }}
  */
 chrome.fileManagerPrivate.EntryProperties;
@@ -768,6 +773,7 @@ chrome.fileManagerPrivate.DlpLevel = {
 /** @enum {string} */
 chrome.fileManagerPrivate.SyncStatus = {
   NOT_FOUND: 'not_found',
+  QUEUED: 'queued',
   IN_PROGRESS: 'in_progress',
   ERROR: 'error'
 };

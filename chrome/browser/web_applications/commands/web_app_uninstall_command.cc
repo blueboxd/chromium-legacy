@@ -42,7 +42,8 @@ bool CanUninstallAllManagementSources(
          uninstall_source == webapps::WebappUninstallSource::kAppList ||
          uninstall_source == webapps::WebappUninstallSource::kShelf ||
          uninstall_source == webapps::WebappUninstallSource::kSync ||
-         uninstall_source == webapps::WebappUninstallSource::kStartupCleanup;
+         uninstall_source == webapps::WebappUninstallSource::kStartupCleanup ||
+         uninstall_source == webapps::WebappUninstallSource::kTestCleanup;
 }
 
 auto StreamableToString = [](const auto& value) {
@@ -59,7 +60,8 @@ WebAppUninstallCommand::WebAppUninstallCommand(
     webapps::WebappUninstallSource uninstall_source,
     UninstallWebAppCallback callback,
     Profile* profile)
-    : lock_description_(std::make_unique<FullSystemLockDescription>()),
+    : WebAppCommandTemplate<FullSystemLock>("WebAppUninstallCommand"),
+      lock_description_(std::make_unique<FullSystemLockDescription>()),
       app_id_(app_id),
       callback_(std::move(callback)),
       profile_prefs_(profile->GetPrefs()) {
@@ -164,7 +166,6 @@ LockDescription& WebAppUninstallCommand::lock_description() const {
 
 base::Value WebAppUninstallCommand::ToDebugValue() const {
   base::Value::Dict uninstall_info;
-  uninstall_info.Set("type", "WebAppUninstallCommand");
   uninstall_info.Set("command_data", debug_log_.Clone());
   return base::Value(std::move(uninstall_info));
 }

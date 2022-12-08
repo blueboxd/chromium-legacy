@@ -31,9 +31,9 @@
 #include "chrome/browser/apps/app_service/launch_result_type.h"
 #include "chrome/browser/apps/app_service/paused_apps.h"
 #include "chrome/browser/apps/app_service/publishers/app_publisher.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ash/arc/app_shortcuts/arc_app_shortcuts_request.h"
 #include "chrome/browser/ash/arc/privacy_items/arc_privacy_items_bridge.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/intent_helper/arc_intent_helper_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -150,10 +150,6 @@ class ArcApps : public KeyedService,
   void PauseApp(const std::string& app_id) override;
   void UnpauseApp(const std::string& app_id) override;
   void StopApp(const std::string& app_id) override;
-  void GetMenuModel(const std::string& app_id,
-                    apps::mojom::MenuType menu_type,
-                    int64_t display_id,
-                    GetMenuModelCallback callback) override;
   void ExecuteContextMenuCommand(const std::string& app_id,
                                  int command_id,
                                  const std::string& shortcut_id,

@@ -31,7 +31,6 @@ Iată câteva lucruri pe care le poți încerca pentru început.</translation>
 <translation id="1148499908455722006">Deschide fereastra de dialog cu informații pentru <ph name="USER_NAME" /></translation>
 <translation id="1150989369772528668">Calendar</translation>
 <translation id="1153356358378277386">Dispozitive asociate</translation>
-<translation id="1165712434476988950">Pentru aplicarea actualizării este necesară repornirea dispozitivului.</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" /> <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Cablul USB-C poate să nu se conecteze corespunzător la ecrane</translation>
 <translation id="1175572348579024023">Derulează</translation>
@@ -358,7 +357,6 @@ Iată câteva lucruri pe care le poți încerca pentru început.</translation>
 <translation id="296762781903199866">Nu s-au putut descărca fișierele de redare în scris a vorbirii în <ph name="LANGUAGE" /></translation>
 <translation id="2970920913501714344">să instaleze aplicații, extensii și teme;</translation>
 <translation id="2977598380246111477">Următorul număr</translation>
-<translation id="2981684127883932071">Se afișează sugestiile</translation>
 <translation id="2985148236010982088">Vezi toate aplicațiile</translation>
 <translation id="2992327365391326550">Butonul pentru microfonul dispozitivului este dezactivat.</translation>
 <translation id="2996462380875591307">Lupa andocată este activată. Apasă din nou pe Ctrl + tasta de căutare + D pentru a o dezactiva.</translation>
@@ -669,6 +667,7 @@ Conectează dispozitivul la o sursă de alimentare.</translation>
 <translation id="4666082839192943839">Dezactivează accesul la camera foto al acestui dispozitiv pentru a bloca întotdeauna toate camerele.</translation>
 <translation id="4666911709726371538">Mai multe aplicații</translation>
 <translation id="4667099493359681081">Se descarcă <ph name="FILENAME" /></translation>
+<translation id="468293128311738995">Aplicații de pe telefon</translation>
 <translation id="4690510401873698237">Raft în partea de jos</translation>
 <translation id="4696813013609194136">Deblochează dispozitivul cu codul părintelui</translation>
 <translation id="4702647871202761252">Ecranul de confidențialitate este dezactivat</translation>
@@ -925,12 +924,10 @@ Conectează dispozitivul la o sursă de alimentare.</translation>
 <translation id="6103838137565245112">sistem</translation>
 <translation id="6107292179555508368">Accesul la microfon și la camera foto este dezactivat pe acest dispozitiv</translation>
 <translation id="6114505516289286752">Fișierele de redare în scris a vorbirii în <ph name="LANGUAGE" /> s-au descărcat</translation>
-<translation id="6116825164611323644">Accesul la camera foto este dezactivat pe acest dispozitiv</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042">Confirmă descărcarea fișierului <ph name="FILENAME" /></translation>
 <translation id="612734058257491180">Asistentul Google nu este disponibil într-o sesiune pentru invitați.</translation>
 <translation id="6129953537138746214">Spațiu</translation>
-<translation id="6134259848159370930">Caută pe dispozitiv, în aplicații, în setări și pe web.</translation>
 <translation id="6137566720514957455">Deschide fereastra de dialog Elimină pentru <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6141988275892716286">Confirmă descărcarea</translation>
 <translation id="6154006699632741460">Dispozitivul periferic nu este acceptat</translation>
@@ -1291,6 +1288,7 @@ Instalare nouă</translation>
 <translation id="8142441511840089262">Dublu clic</translation>
 <translation id="8142699993796781067">Rețea privată</translation>
 <translation id="8144760705599030999">Salvează <ph name="NAME" /> în <ph name="EMAIL" /> pentru asocierea mai rapidă cu celelalte dispozitive</translation>
+<translation id="8144914663975476336">Selectează formatul înregistrării</translation>
 <translation id="8149413265954228307">Afișează setările Bluetooth. <ph name="STATE_TEXT" />.</translation>
 <translation id="8152092012181020186">Apasă Ctrl + W pentru a închide.</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, completare automată</translation>
@@ -1388,7 +1386,6 @@ Instalare nouă</translation>
 <translation id="8666856788528804727">Deschide <ph name="NAME" /> pentru a configura dispozitivul</translation>
 <translation id="8676770494376880701">A fost conectat un încărcător de putere joasă</translation>
 <translation id="8683506306463609433">Urmărirea performanțelor este activă</translation>
-<translation id="8685326675965865247">Caută pe dispozitiv, în aplicații, în setări și pe web. Folosește tastele săgeată ca să navighezi în aplicațiile tale.</translation>
 <translation id="8703634754197148428">Pornește înregistrarea. După ce a început înregistrarea, apasă pe Alt + Shift + L pentru a naviga la raft și caută butonul de oprire a înregistrării</translation>
 <translation id="8721053961083920564">Activează sau dezactivează volumul: <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">Captură pe ecran complet</translation>
@@ -1397,7 +1394,6 @@ Instalare nouă</translation>
 <translation id="8735678380411481005">Culoarea retroiluminării tastaturii</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />,
         <ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8752416742247198423">Activează accesul la camera foto pentru a permite aplicațiilor și paginilor web cu permisiunea pentru cameră să utilizeze camerele foto conectate la acest dispozitiv.</translation>
 <translation id="8755498163081687682">Confirmă-ți identitatea: <ph name="ORIGIN_NAME" /> solicită să îți confirmi identitatea</translation>
 <translation id="875593634123171288">Afișează setările VPN</translation>
 <translation id="8759408218731716181">Nu se poate configura conectarea multiplă</translation>
@@ -1464,7 +1460,6 @@ Instalare nouă</translation>
 <translation id="9089416786594320554">Introducere</translation>
 <translation id="9091626656156419976">S-a eliminat afișajul <ph name="DISPLAY_NAME" /></translation>
 <translation id="9098969848082897657">Dezactivează sunetul telefonului</translation>
-<translation id="9099154003160514616">Este disponibilă o actualizare pentru Lacros</translation>
 <translation id="9100887602489003640">Se adaugă profilul. Așteaptă câteva minute.</translation>
 <translation id="9105450214093926548">Nu este acceptată conectarea unui al doilea utilizator în timp ce browserul Lacros rulează. Folosește un al doilea profil de browser în Lacros sau închide Lacros și încearcă din nou.</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> sau <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>

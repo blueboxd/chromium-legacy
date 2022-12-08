@@ -31,7 +31,6 @@
 <translation id="1148499908455722006">打开“<ph name="USER_NAME" />”的信息对话框</translation>
 <translation id="1150989369772528668">日历</translation>
 <translation id="1153356358378277386">已配对的设备</translation>
-<translation id="1165712434476988950">必须重启设备，才能应用这项更新。</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />，<ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">您的 USB-C 数据线可能没有正确连接到显示屏</translation>
 <translation id="1175572348579024023">滚动</translation>
@@ -358,7 +357,6 @@
 <translation id="296762781903199866">无法下载<ph name="LANGUAGE" />语音识别结果文件</translation>
 <translation id="2970920913501714344">安装应用、扩展程序和主题背景</translation>
 <translation id="2977598380246111477">下一个代码</translation>
-<translation id="2981684127883932071">显示了建议</translation>
 <translation id="2985148236010982088">查看所有应用</translation>
 <translation id="2992327365391326550">设备的麦克风按钮已关闭。</translation>
 <translation id="2996462380875591307">已启用停靠的放大镜。再按一次 Ctrl+搜索键+D 组合键即可将其停用。</translation>
@@ -669,6 +667,7 @@
 <translation id="4666082839192943839">如果您这样做，系统便会始终禁止使用所有摄像头。</translation>
 <translation id="4666911709726371538">更多应用</translation>
 <translation id="4667099493359681081">正在下载 <ph name="FILENAME" /></translation>
+<translation id="468293128311738995">您手机中的应用</translation>
 <translation id="4690510401873698237">任务栏位于屏幕底部</translation>
 <translation id="4696813013609194136">使用家长访问代码解锁设备</translation>
 <translation id="4702647871202761252">已关闭隐私保护屏</translation>
@@ -925,12 +924,10 @@
 <translation id="6103838137565245112">系统</translation>
 <translation id="6107292179555508368">此设备上的麦克风使用权限和摄像头使用权限都处于关闭状态</translation>
 <translation id="6114505516289286752"><ph name="LANGUAGE" />语音识别结果文件已下载完毕</translation>
-<translation id="6116825164611323644">此设备上的摄像头使用权限处于关闭状态</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />。<ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042">确认下载“<ph name="FILENAME" />”</translation>
 <translation id="612734058257491180">无法在访客会话中使用 Google 助理。</translation>
 <translation id="6129953537138746214">空格</translation>
-<translation id="6134259848159370930">搜索您的设备、应用、设置和网站。</translation>
 <translation id="6137566720514957455">打开与 <ph name="USER_EMAIL_ADDRESS" /> 对应的“移除帐号”对话框</translation>
 <translation id="6141988275892716286">确认下载</translation>
 <translation id="6154006699632741460">不支持外围设备</translation>
@@ -1288,6 +1285,7 @@
 <translation id="8142441511840089262">双击</translation>
 <translation id="8142699993796781067">专用网络</translation>
 <translation id="8144760705599030999">将您的“<ph name="NAME" />”保存到 <ph name="EMAIL" />，即可更快速地与您的其他设备配对</translation>
+<translation id="8144914663975476336">选择录制格式</translation>
 <translation id="8149413265954228307">显示蓝牙设置。<ph name="STATE_TEXT" />。</translation>
 <translation id="8152092012181020186">按 Ctrl + W 即可关闭。</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />，自动填充</translation>
@@ -1385,7 +1383,6 @@
 <translation id="8666856788528804727">请打开“<ph name="NAME" />”以设置您的设备</translation>
 <translation id="8676770494376880701">已连接低功率充电器</translation>
 <translation id="8683506306463609433">正在跟踪性能</translation>
-<translation id="8685326675965865247">搜索您的设备、应用、设置和网站。使用箭头键可浏览各个应用。</translation>
 <translation id="8703634754197148428">开始录制。录制开始后，使用 Alt + Shift + L 可转到任务栏并从中找到“停止录制”按钮</translation>
 <translation id="8721053961083920564">开启/关闭声音。<ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">截取整个屏幕</translation>
@@ -1394,7 +1391,6 @@
 <translation id="8735678380411481005">键盘背光颜色</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />，
         <ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8752416742247198423">开启摄像头使用权限，以允许具有摄像头权限的应用和网页使用连接到此设备的摄像头。</translation>
 <translation id="8755498163081687682">验证您的身份：<ph name="ORIGIN_NAME" /> 想确认您的身份</translation>
 <translation id="875593634123171288">显示 VPN 设置</translation>
 <translation id="8759408218731716181">无法设置多帐号登录</translation>
@@ -1461,7 +1457,6 @@
 <translation id="9089416786594320554">输入法</translation>
 <translation id="9091626656156419976">已移除显示器“<ph name="DISPLAY_NAME" />”</translation>
 <translation id="9098969848082897657">将手机设为静音</translation>
-<translation id="9099154003160514616">有可用的 Lacros 更新</translation>
 <translation id="9100887602489003640">正在添加配置文件。请稍等几分钟。</translation>
 <translation id="9105450214093926548">当 Lacros 浏览器正在运行时，不支持多用户登录。请在 Lacros 中改用另一浏览器配置文件，或者关闭 Lacros 并重试。</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> 或 <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>

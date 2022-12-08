@@ -31,7 +31,6 @@
 <translation id="1148499908455722006"><ph name="USER_NAME" /> සඳහා තතු සංවාදය විවෘත කරන්න</translation>
 <translation id="1150989369772528668">දින දර්ශනය</translation>
 <translation id="1153356358378277386">යුගලිත උපාංග</translation>
-<translation id="1165712434476988950">යාවත්කාලීනය යෙදීම සඳහා උපාංග නැවත ආරම්භ කිරීම අවශ්‍ය වේ.</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">ඔබගේ USB-C කේබලය සංදර්ශකවලට නිසි ලෙස සම්බන්ධ නොවිය හැකිය</translation>
 <translation id="1175572348579024023">අනුචලන කරන්න</translation>
@@ -358,7 +357,6 @@
 <translation id="296762781903199866"><ph name="LANGUAGE" /> කථන ගොනු බාගැනීමට නොහැකි විය</translation>
 <translation id="2970920913501714344">යෙදුම්, දිගු, සහ තේමා ස්ථාපනය කරන්න</translation>
 <translation id="2977598380246111477">මීළඟ අංකය</translation>
-<translation id="2981684127883932071">යෝජනා දැක්වීම</translation>
 <translation id="2985148236010982088">සියලු යෙදුම් බලන්න</translation>
 <translation id="2992327365391326550">උපාංගයේ මයික්‍රෆෝන බොත්තම ක්‍රියාවිරහිතයි.</translation>
 <translation id="2996462380875591307">ඈඳන ලද විශාලකය සබලයි. එය ක්‍රියාවිරහිත කිරීම ටොගල කිරීමට නැවත Ctrl+Search+H ඔබන්න.</translation>
@@ -669,6 +667,7 @@
 <translation id="4666082839192943839">සියලු කැමරා සෑම විටම අවහිර කිරීමට මෙම උපාංගයේ කැමරා ප්‍රවේශය ක්‍රියාවිරහිත කරන්න.</translation>
 <translation id="4666911709726371538">තවත් යෙදුම්</translation>
 <translation id="4667099493359681081"><ph name="FILENAME" /> බාගනිමින්</translation>
+<translation id="468293128311738995">ඔබේ දුරකථනය වෙතින් යෙදුම්</translation>
 <translation id="4690510401873698237">පහළ ඇති රාක්කය</translation>
 <translation id="4696813013609194136">මාපිය කේතය සමඟ උපාංගය අඟුලු අරින්න</translation>
 <translation id="4702647871202761252">පෞද්ගලිකත්ව තිරය අක්‍රියයි</translation>
@@ -925,12 +924,10 @@
 <translation id="6103838137565245112">පද්ධතිය</translation>
 <translation id="6107292179555508368">මෙම උපාංගයෙහි මයික්‍රෆෝන සහ කැමරා ප්‍රවේශ ක්‍රියා විරහිතයි</translation>
 <translation id="6114505516289286752"><ph name="LANGUAGE" /> කථන ගොනු බාගන්නා ලදී</translation>
-<translation id="6116825164611323644">මෙම උපාංගයෙහි කැමරා ප්‍රවේශය ක්‍රියා විරහිතයි</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042"><ph name="FILENAME" /> බාගැනීම තහවුරු කරන්න</translation>
 <translation id="612734058257491180">ආගන්තුක සැසියකදී Google සහකරු නොලැබේ.</translation>
 <translation id="6129953537138746214">හිඩස</translation>
-<translation id="6134259848159370930">ඔබේ උපාංගය, යෙදුම්, සැකසීම් සහ වෙබය තුළ සොයන්න.</translation>
 <translation id="6137566720514957455"><ph name="USER_EMAIL_ADDRESS" /> සඳහා සංවාදය ඉවත් කරන්න විවෘත කරන්න</translation>
 <translation id="6141988275892716286">බාගැනීම තහවුරු කරන්න</translation>
 <translation id="6154006699632741460">උපාංග සහාය නොදක්වයි</translation>
@@ -1291,6 +1288,7 @@
 <translation id="8142441511840089262">ද්විත්ව ක්ලික් කරන්න</translation>
 <translation id="8142699993796781067">පුද්ගලික ජාලය</translation>
 <translation id="8144760705599030999">වඩා වේගයෙන් ඔබගේ අනෙකුත් උපාංගවලට යුගල කිරීම සඳහා <ph name="NAME" /> <ph name="EMAIL" /> වෙත සුරකින්න</translation>
+<translation id="8144914663975476336">පටිගත කිරීමේ ආකෘතිය තෝරන්න</translation>
 <translation id="8149413265954228307">බ්ලූටූත් සැකසීම් පෙන්වන්න. <ph name="STATE_TEXT" />.</translation>
 <translation id="8152092012181020186">වැසීමට Ctrl + W ඔබන්න.</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, ස්වයං සම්පූර්ණය</translation>
@@ -1388,7 +1386,6 @@
 <translation id="8666856788528804727">ඔබගේ උපාංගය පිහිටුවීමට <ph name="NAME" /> විවෘත කරන්න</translation>
 <translation id="8676770494376880701">අඩු-බල ආරෝපකය සමබන්ධ කර ඇත</translation>
 <translation id="8683506306463609433">කාර්ය සාධන අනුරේඛනය සක්‍රියයි</translation>
-<translation id="8685326675965865247">ඔබගේ උපාංගය, යෙදුම්, සැකසීම් සහ වෙබය තුළ සොයන්න. ඔබගේ යෙදුම් සංචලන කිරීමට ඊතල යතුරු භාවිත කරන්න.</translation>
 <translation id="8703634754197148428">පටිගත කිරීම ආරම්භ කරන්න. පටිගත කිරීම ආරම්භ වූ පසුව රාක්කයට සංචාලනය කිරීම සහ පටිගත කිරීම නවත්වන්න බොත්තම සොයා ගැනීම සඳහා Alt + Shift + L භාවිත කරන්න</translation>
 <translation id="8721053961083920564">හඬ ටොගල් කරන්න. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">පූර්ණ තිර ග්‍රහණය</translation>
@@ -1397,7 +1394,6 @@
 <translation id="8735678380411481005">යතුරුපුවරු පසුබිම් වර්ණය</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />,
         <ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8752416742247198423">මෙම උපාංගයට සම්බන්ධ කර ඇති කැමරාව(න්) භාවිතා කිරීමට කැමරා අවසරය සහිත යෙදුම් සහ වෙබ් පිටුවලට ඉඩ දීමට කැමරා ප්‍රවේශය ක්‍රියාත්මක කරන්න.</translation>
 <translation id="8755498163081687682">ඔබගේ අනන්‍යතාව සත්‍යාපනය කරන්න: <ph name="ORIGIN_NAME" /> ඒ ඔබ බව තහවුරු කිරීමට කැමතියි</translation>
 <translation id="875593634123171288">VPN සැකසීම් පෙන්වන්න</translation>
 <translation id="8759408218731716181">බහු පිවිසුම් සැකසිය නොහැක</translation>
@@ -1464,7 +1460,6 @@
 <translation id="9089416786594320554">ආදාන ක්‍රම</translation>
 <translation id="9091626656156419976">සංදර්ශකය <ph name="DISPLAY_NAME" /> ඉවත් කරන්න</translation>
 <translation id="9098969848082897657">දුරකථනය නිහඬ කරන්න</translation>
-<translation id="9099154003160514616">Lacros යාවත්කාලීනය ලබා ගත හැකිය</translation>
 <translation id="9100887602489003640">පැතිකඩ එක් කිරීම. මිනිත්තු කිහිපයක් රැඳී සිටින්න.</translation>
 <translation id="9105450214093926548">Lacros බ්‍රව්සරය ධාවනය වන විට දෙවන පරිශීලකයෙකු පිරීමට සහාය නොදක්වයි. කරුණාකර ඒ වෙනුවට Lacros හි දෙවන බ්‍රව්සර පැතිකඩක් භාවිත කරන්න හෝ Lacros වසා නැවත උත්සාහ කරන්න.</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> හෝ <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>

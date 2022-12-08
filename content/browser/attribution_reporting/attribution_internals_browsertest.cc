@@ -145,12 +145,12 @@ class AttributionInternalsWebUiBrowserTest : public ContentBrowserTest {
         .shadowRoot.querySelector('tbody');
     let obs = new MutationObserver((_, obs) => {
       if (table.children.length === 1 &&
-          table.children[0].children[0].innerText === "No sent or pending reports.") {
+          table.children[0].children[0]?.innerText === "No sent or pending reports.") {
         obs.disconnect();
         document.title = $1;
       }
     });
-    obs.observe(table, {'childList': true});)";
+    obs.observe(table, {childList: true, subtree: true, characterData: true});)";
     ASSERT_TRUE(
         ExecJsInWebUI(JsReplace(kObserveEmptyReportsTableScript, title)));
   }
@@ -194,7 +194,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
         document.title = $1;
       }
     });
-    obs.observe(status, {'childList': true, 'characterData': true});)";
+    obs.observe(status, {childList: true, characterData: true});)";
   ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
 
   TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
@@ -225,7 +225,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
         document.title = $1;
       }
     });
-    obs.observe(status, {'childList': true, 'characterData': true});)";
+    obs.observe(status, {childList: true, characterData: true});)";
   ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
 
   TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
@@ -243,13 +243,12 @@ IN_PROC_BROWSER_TEST_F(
         .shadowRoot.querySelector('tbody');
     let obs = new MutationObserver((_, obs) => {
       if (table.children.length === 1 &&
-          table.children[0].children[0].innerText ===
-          "No sources.") {
+          table.children[0].children[0]?.innerText === "No sources.") {
         obs.disconnect();
         document.title = $1;
       }
     });
-    obs.observe(table, {'childList': true});)";
+    obs.observe(table, {childList: true, subtree: true, characterData: true});)";
   ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
 
   TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
@@ -315,37 +314,37 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
         .shadowRoot.querySelector('tbody');
     let obs = new MutationObserver((_, obs) => {
       if (table.children.length === 7 &&
-          table.children[0].children[0].innerText === $1 &&
-          table.children[0].children[9].innerText === "Navigation" &&
-          table.children[1].children[9].innerText === "Event" &&
-          table.children[0].children[10].innerText === "0" &&
-          table.children[1].children[10].innerText === $2 &&
-          table.children[0].children[11].innerText === "{}" &&
-          table.children[1].children[11].innerText === '{\n "a": [\n  "b",\n  "c"\n ]\n}' &&
-          table.children[0].children[12].innerText === "{}" &&
-          table.children[1].children[12].innerText === '{\n "a": "0x1"\n}' &&
-          table.children[0].children[13].innerText === "0 / 65536" &&
-          table.children[1].children[13].innerText === "1300 / 65536" &&
-          table.children[0].children[14].innerText === "19" &&
-          table.children[1].children[14].innerText === "" &&
-          table.children[0].children[15].innerText === "" &&
-          table.children[1].children[15].innerText === "13, 17" &&
-          table.children[0].children[16].innerText === "" &&
-          table.children[1].children[16].innerText === "14, 18" &&
-          table.children[0].children[1].innerText === "Unattributable: noised" &&
-          table.children[1].children[1].innerText === "Attributable" &&
-          table.children[2].children[1].innerText === "Attributable: reached event-level attribution limit" &&
-          table.children[3].children[1].innerText === "Rejected: internal error" &&
-          table.children[4].children[1].innerText === "Rejected: insufficient source capacity" &&
-          table.children[5].children[1].innerText === "Rejected: insufficient unique destination capacity" &&
-          table.children[6].children[1].innerText === "Rejected: excessive reporting origins" &&
-          table.children[5].children[17].innerText === "disabled" &&
-          table.children[6].children[17].innerText === "enabled") {
+          table.children[0].children[0]?.innerText === $1 &&
+          table.children[0].children[9]?.innerText === "Navigation" &&
+          table.children[1].children[9]?.innerText === "Event" &&
+          table.children[0].children[10]?.innerText === "0" &&
+          table.children[1].children[10]?.innerText === $2 &&
+          table.children[0].children[11]?.innerText === "{}" &&
+          table.children[1].children[11]?.innerText === '{\n "a": [\n  "b",\n  "c"\n ]\n}' &&
+          table.children[0].children[12]?.innerText === "{}" &&
+          table.children[1].children[12]?.innerText === '{\n "a": "0x1"\n}' &&
+          table.children[0].children[13]?.innerText === "0 / 65536" &&
+          table.children[1].children[13]?.innerText === "1300 / 65536" &&
+          table.children[0].children[14]?.innerText === "19" &&
+          table.children[1].children[14]?.innerText === "" &&
+          table.children[0].children[15]?.innerText === "" &&
+          table.children[1].children[15]?.innerText === "13, 17" &&
+          table.children[0].children[16]?.innerText === "" &&
+          table.children[1].children[16]?.innerText === "14, 18" &&
+          table.children[0].children[1]?.innerText === "Unattributable: noised" &&
+          table.children[1].children[1]?.innerText === "Attributable" &&
+          table.children[2].children[1]?.innerText === "Attributable: reached event-level attribution limit" &&
+          table.children[3].children[1]?.innerText === "Rejected: internal error" &&
+          table.children[4].children[1]?.innerText === "Rejected: insufficient source capacity" &&
+          table.children[5].children[1]?.innerText === "Rejected: insufficient unique destination capacity" &&
+          table.children[6].children[1]?.innerText === "Rejected: excessive reporting origins" &&
+          table.children[5].children[17]?.innerText === "disabled" &&
+          table.children[6].children[17]?.innerText === "enabled") {
         obs.disconnect();
         document.title = $3;
       }
     });
-    obs.observe(table, {'childList': true});)";
+    obs.observe(table, {childList: true, subtree: true, characterData: true});)";
   ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kMaxUint64String,
                                       kMaxInt64String, kCompleteTitle)));
 
@@ -367,21 +366,20 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                         'sources" target="_blank">Failed Source Registration' +
                         '</a>';
     const metadata = '<dl><dt>Failure Reason</dt><dd>invalid JSON</dd>' +
-                     '<dt>Report To</dt><dd>https://a.test</dd>' +
+                     '<dt>Reporting Origin</dt><dd>https://a.test</dd>' +
                      '<dt>Attribution-Reporting-Register-Source Header</dt>'+
                      '<dd><pre><code>!</code></pre></dd></dl>';
 
     let obs = new MutationObserver((_, obs) => {
       if (table.children.length === 1 &&
-          table.children[0].children.length >= 3 &&
-          table.children[0].children[1].innerHTML === description &&
-          table.children[0].children[2].innerHTML === metadata
-      )  {
+          table.children[0].children[1]?.innerHTML === description &&
+          table.children[0].children[2]?.innerHTML === metadata
+      ) {
         obs.disconnect();
         document.title = $1;
       }
     });
-    obs.observe(table, {'childList': true});)";
+    obs.observe(table, {childList: true, subtree: true, characterData: true});)";
 
   ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
 
@@ -406,19 +404,18 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                     'reports" target="_blank">Cleared Debug Key</a>';
     const metadata = '<dl><dt>Cleared Debug Key</dt><dd>1234</dd>' +
                      '<dt>From</dt><dd>Source</dd>'+
-                     '<dt>Report To</dt><dd>https://report.test</dd></dl>';
+                     '<dt>Reporting Origin</dt><dd>https://report.test</dd></dl>';
 
     let obs = new MutationObserver((_, obs) => {
       if (table.children.length === 1 &&
-          table.children[0].children.length >= 3 &&
-          table.children[0].children[1].innerHTML === description &&
-          table.children[0].children[2].innerHTML === metadata
-      )  {
+          table.children[0].children[1]?.innerHTML === description &&
+          table.children[0].children[2]?.innerHTML === metadata
+      ) {
         obs.disconnect();
         document.title = $1;
       }
     });
-    obs.observe(table, {'childList': true});)";
+    obs.observe(table, {childList: true, subtree: true, characterData: true});)";
 
   ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
 
@@ -444,19 +441,18 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                     'reports" target="_blank">Cleared Debug Key</a>';
     const metadata = '<dl><dt>Cleared Debug Key</dt><dd>1234</dd>' +
                      '<dt>From</dt><dd>Trigger</dd>'+
-                     '<dt>Report To</dt><dd>https://report.test</dd></dl>';
+                     '<dt>Reporting Origin</dt><dd>https://report.test</dd></dl>';
 
     let obs = new MutationObserver((_, obs) => {
       if (table.children.length === 1 &&
-          table.children[0].children.length >= 3 &&
-          table.children[0].children[1].innerHTML === description &&
-          table.children[0].children[2].innerHTML === metadata
-      )  {
+          table.children[0].children[1]?.innerHTML === description &&
+          table.children[0].children[2]?.innerHTML === metadata
+      ) {
         obs.disconnect();
         document.title = $1;
       }
     });
-    obs.observe(table, {'childList': true});)";
+    obs.observe(table, {childList: true, subtree: true, characterData: true});)";
 
   ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
 
@@ -503,7 +499,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
         document.title = $1;
       }
     });
-    obs.observe(status, {'childList': true, 'characterData': true});)";
+    obs.observe(status, {childList: true, subtree: true, characterData: true});)";
   ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
 
   TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
@@ -529,7 +525,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
         document.title = $1;
       }
     });
-    obs.observe(status, {'childList': true, 'characterData': true});)";
+    obs.observe(status, {childList: true, subtree: true, characterData: true});)";
   ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
 
   TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
@@ -609,30 +605,35 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
           .shadowRoot.querySelector('tbody');
       let obs = new MutationObserver((_, obs) => {
         if (table.children.length === 6 &&
-            table.children[0].children[3].innerText ===
+            table.children[0].children[3]?.innerText ===
               "https://report.test/.well-known/attribution-reporting/report-event-attribution" &&
-            table.children[0].children[6].innerText === "13" &&
-            table.children[0].children[7].innerText === "yes" &&
-            table.children[0].children[2].innerText === "Pending" &&
-            table.children[1].children[6].innerText === "11" &&
-            table.children[1].children[2].innerText ===
+            table.children[0].children[6]?.innerText === "13" &&
+            table.children[0].children[7]?.innerText === "yes" &&
+            table.children[0].children[2]?.innerText === "Pending" &&
+            table.children[1].children[6]?.innerText === "11" &&
+            table.children[1].children[2]?.innerText ===
               "Replaced by higher-priority report: 21abd97f-73e8-4b88-9389-a9fee6abda5e" &&
-            table.children[2].children[6].innerText === "0" &&
-            table.children[2].children[7].innerText === "no" &&
-            table.children[2].children[2].innerText === "Sent: HTTP 200" &&
+            table.children[2].children[6]?.innerText === "0" &&
+            table.children[2].children[7]?.innerText === "no" &&
+            table.children[2].children[2]?.innerText === "Sent: HTTP 200" &&
             !table.children[2].classList.contains('send-error') &&
-            table.children[3].children[2].innerText === "Prohibited by browser policy" &&
+            table.children[3].children[2]?.innerText === "Prohibited by browser policy" &&
             !table.children[3].classList.contains('send-error') &&
-            table.children[4].children[2].innerText === "Network error: ERR_METHOD_NOT_SUPPORTED" &&
+            table.children[4].children[2]?.innerText === "Network error: ERR_METHOD_NOT_SUPPORTED" &&
             table.children[4].classList.contains('send-error') &&
-            table.children[5].children[2].innerText === "Network error: ERR_TIMED_OUT" &&
-            table.children[5].children[3].innerText ===
+            table.children[5].children[2]?.innerText === "Network error: ERR_TIMED_OUT" &&
+            table.children[5].children[3]?.innerText ===
               "https://report.test/.well-known/attribution-reporting/debug/report-event-attribution") {
           obs.disconnect();
           document.title = $1;
         }
       });
-      obs.observe(table, {'childList': true});)";
+      obs.observe(table, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+        attributes: true,
+      });)";
     ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
 
     TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
@@ -646,27 +647,27 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
           .shadowRoot.querySelector('tbody');
       let obs = new MutationObserver((_, obs) => {
         if (table.children.length === 6 &&
-            table.children[5].children[3].innerText ===
+            table.children[5].children[3]?.innerText ===
               "https://report.test/.well-known/attribution-reporting/report-event-attribution" &&
-            table.children[5].children[6].innerText === "13" &&
-            table.children[5].children[7].innerText === "yes" &&
-            table.children[5].children[2].innerText === "Pending" &&
-            table.children[4].children[6].innerText === "11" &&
-            table.children[4].children[2].innerText ===
+            table.children[5].children[6]?.innerText === "13" &&
+            table.children[5].children[7]?.innerText === "yes" &&
+            table.children[5].children[2]?.innerText === "Pending" &&
+            table.children[4].children[6]?.innerText === "11" &&
+            table.children[4].children[2]?.innerText ===
               "Replaced by higher-priority report: 21abd97f-73e8-4b88-9389-a9fee6abda5e" &&
-            table.children[3].children[6].innerText === "0" &&
-            table.children[3].children[7].innerText === "no" &&
-            table.children[3].children[2].innerText === "Sent: HTTP 200" &&
-            table.children[2].children[2].innerText === "Prohibited by browser policy" &&
-            table.children[1].children[2].innerText === "Network error: ERR_METHOD_NOT_SUPPORTED" &&
-            table.children[0].children[2].innerText === "Network error: ERR_TIMED_OUT" &&
-            table.children[0].children[3].innerText ===
+            table.children[3].children[6]?.innerText === "0" &&
+            table.children[3].children[7]?.innerText === "no" &&
+            table.children[3].children[2]?.innerText === "Sent: HTTP 200" &&
+            table.children[2].children[2]?.innerText === "Prohibited by browser policy" &&
+            table.children[1].children[2]?.innerText === "Network error: ERR_METHOD_NOT_SUPPORTED" &&
+            table.children[0].children[2]?.innerText === "Network error: ERR_TIMED_OUT" &&
+            table.children[0].children[3]?.innerText ===
               "https://report.test/.well-known/attribution-reporting/debug/report-event-attribution") {
           obs.disconnect();
           document.title = $1;
         }
       });
-      obs.observe(table, {'childList': true});)";
+      obs.observe(table, {childList: true, subtree: true, characterData: true});)";
     ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle2)));
 
     TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle2);
@@ -683,27 +684,27 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
           .shadowRoot.querySelector('tbody');
       let obs = new MutationObserver((_, obs) => {
         if (table.children.length === 6 &&
-            table.children[0].children[3].innerText ===
+            table.children[0].children[3]?.innerText ===
               "https://report.test/.well-known/attribution-reporting/report-event-attribution" &&
-            table.children[0].children[6].innerText === "13" &&
-            table.children[0].children[7].innerText === "yes" &&
-            table.children[0].children[2].innerText === "Pending" &&
-            table.children[1].children[6].innerText === "11" &&
-            table.children[1].children[2].innerText ===
+            table.children[0].children[6]?.innerText === "13" &&
+            table.children[0].children[7]?.innerText === "yes" &&
+            table.children[0].children[2]?.innerText === "Pending" &&
+            table.children[1].children[6]?.innerText === "11" &&
+            table.children[1].children[2]?.innerText ===
               "Replaced by higher-priority report: 21abd97f-73e8-4b88-9389-a9fee6abda5e" &&
-            table.children[2].children[6].innerText === "0" &&
-            table.children[2].children[7].innerText === "no" &&
-            table.children[2].children[2].innerText === "Sent: HTTP 200" &&
-            table.children[3].children[2].innerText === "Prohibited by browser policy" &&
-            table.children[4].children[2].innerText === "Network error: ERR_METHOD_NOT_SUPPORTED" &&
-            table.children[5].children[2].innerText === "Network error: ERR_TIMED_OUT" &&
-            table.children[5].children[3].innerText ===
+            table.children[2].children[6]?.innerText === "0" &&
+            table.children[2].children[7]?.innerText === "no" &&
+            table.children[2].children[2]?.innerText === "Sent: HTTP 200" &&
+            table.children[3].children[2]?.innerText === "Prohibited by browser policy" &&
+            table.children[4].children[2]?.innerText === "Network error: ERR_METHOD_NOT_SUPPORTED" &&
+            table.children[5].children[2]?.innerText === "Network error: ERR_TIMED_OUT" &&
+            table.children[5].children[3]?.innerText ===
               "https://report.test/.well-known/attribution-reporting/debug/report-event-attribution") {
           obs.disconnect();
           document.title = $1;
         }
       });
-      obs.observe(table, {'childList': true});)";
+      obs.observe(table, {childList: true, subtree: true, characterData: true});)";
     ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle3)));
 
     TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle3);
@@ -728,9 +729,16 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
           .SetReportTime(now)
           .SetPriority(7)
           .Build();
+
+  std::vector<AttributionReport> stored_reports;
+  stored_reports.push_back(report);
+
   EXPECT_CALL(*manager(), GetPendingReportsForInternalUse)
-      .WillOnce(InvokeCallback({report}))
-      .WillOnce(InvokeCallback(std::vector<AttributionReport>{}));
+      .WillRepeatedly(
+          [&](AttributionReport::Types, int limit,
+              base::OnceCallback<void(std::vector<AttributionReport>)>
+                  callback) { std::move(callback).Run(stored_reports); });
+
   report.set_report_time(report.report_time() + base::Hours(1));
   manager()->NotifyReportSent(report,
                               /*is_debug_report=*/false,
@@ -738,31 +746,42 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                                          /*http_response_code=*/200));
 
   EXPECT_CALL(*manager(), ClearData)
-      .WillOnce([](base::Time delete_begin, base::Time delete_end,
-                   StoragePartition::StorageKeyMatcherFunction filter,
-                   BrowsingDataFilterBuilder* filter_builder,
-                   bool delete_rate_limit_data,
-                   base::OnceClosure done) { std::move(done).Run(); });
+      .WillOnce([&](base::Time delete_begin, base::Time delete_end,
+                    StoragePartition::StorageKeyMatcherFunction filter,
+                    BrowsingDataFilterBuilder* filter_builder,
+                    bool delete_rate_limit_data, base::OnceClosure done) {
+        stored_reports.clear();
+        std::move(done).Run();
+      });
 
   // Verify both rows get rendered.
   static constexpr char wait_script[] = R"(
     let table = document.querySelector('#reportTable')
         .shadowRoot.querySelector('tbody');
-    let obs = new MutationObserver((_, obs) => {
+
+    const setTitleIfDone = (_, obs) => {
       if (table.children.length === 2 &&
-          table.children[0].children[6].innerText === "7" &&
-          table.children[1].children[2].innerText === "Sent: HTTP 200") {
-        obs.disconnect();
+          table.children[0].children[6]?.innerText === "7" &&
+          table.children[1].children[2]?.innerText === "Sent: HTTP 200") {
+        if (obs) {
+          obs.disconnect();
+        }
         document.title = $1;
+        return true;
       }
-    });
-    obs.observe(table, {'childList': true});)";
+      return false;
+    };
+
+    if (!setTitleIfDone()) {
+      let obs = new MutationObserver(setTitleIfDone);
+      obs.observe(table, {childList: true, subtree: true, characterData: true});
+    })";
   ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
 
   // Wait for the table to rendered.
   TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
   ClickRefreshButton();
-  EXPECT_EQ(kCompleteTitle, title_watcher.WaitAndGetTitle());
+  ASSERT_EQ(kCompleteTitle, title_watcher.WaitAndGetTitle());
 
   // Click the clear storage button and expect that the report table is emptied.
   const std::u16string kDeleteTitle = u"Delete";
@@ -771,7 +790,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
 
   // Click the button.
   ASSERT_TRUE(ExecJsInWebUI("document.getElementById('clear-data').click();"));
-  EXPECT_EQ(kDeleteTitle, delete_title_watcher.WaitAndGetTitle());
+  ASSERT_EQ(kDeleteTitle, delete_title_watcher.WaitAndGetTitle());
 }
 
 IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
@@ -802,13 +821,13 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
         .shadowRoot.querySelector('tbody');
     let obs = new MutationObserver((_, obs) => {
       if (table.children.length === 2 &&
-          table.children[0].children[0].innerText === "5" &&
-          table.children[1].children[0].innerText === "6") {
+          table.children[0].children[0]?.innerText === "5" &&
+          table.children[1].children[0]?.innerText === "6") {
         obs.disconnect();
         document.title = $1;
       }
     });
-    obs.observe(table, {'childList': true});)";
+    obs.observe(table, {childList: true, subtree: true, characterData: true});)";
   ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
 
   // Wait for the table to rendered.
@@ -824,12 +843,12 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
         .shadowRoot.querySelector('tbody');
     let obs = new MutationObserver((_, obs) => {
       if (table.children.length === 1 &&
-          table.children[0].children[0].innerText === "No sources.") {
+          table.children[0].children[0]?.innerText === "No sources.") {
         obs.disconnect();
         document.title = $1;
       }
     });
-    obs.observe(table, {'childList': true});)";
+    obs.observe(table, {childList: true, subtree: true, characterData: true});)";
   ASSERT_TRUE(
       ExecJsInWebUI(JsReplace(kObserveEmptySourcesTableScript, kDeleteTitle)));
 
@@ -866,8 +885,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
         .shadowRoot.querySelector('tbody');
     const setTitleIfDone = (_, obs) => {
       if (table.children.length === 1 &&
-          table.children[0].children.length >= 7 &&
-          table.children[0].children[6].innerText === "7") {
+          table.children[0].children[6]?.innerText === "7") {
           if (obs) {
             obs.disconnect();
           }
@@ -878,7 +896,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
     };
     if (!setTitleIfDone()) {
       let obs = new MutationObserver(setTitleIfDone);
-      obs.observe(table, {'childList': true});
+      obs.observe(table, {childList: true, subtree: true, characterData: true});
     })";
   ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
 
@@ -995,22 +1013,22 @@ IN_PROC_BROWSER_TEST_F(
           .shadowRoot.querySelector('tbody');
       let obs = new MutationObserver((_, obs) => {
         if (table.children.length === 6 &&
-            table.children[0].children[3].innerText ===
+            table.children[0].children[3]?.innerText ===
               "https://report.test/.well-known/attribution-reporting/report-aggregate-attribution" &&
-            table.children[0].children[2].innerText === "Pending" &&
-            table.children[0].children[6].innerText === '[ {  "key": "0x1",  "value": 2 }]' &&
-            table.children[1].children[2].innerText === "Sent: HTTP 200" &&
-            table.children[2].children[2].innerText === "Prohibited by browser policy" &&
-            table.children[3].children[2].innerText === "Dropped due to assembly failure" &&
-            table.children[4].children[2].innerText === "Network error: ERR_INVALID_REDIRECT" &&
-            table.children[5].children[2].innerText === "Network error: ERR_INTERNET_DISCONNECTED" &&
-            table.children[5].children[3].innerText ===
+            table.children[0].children[2]?.innerText === "Pending" &&
+            table.children[0].children[6]?.innerText === '[ {  "key": "0x1",  "value": 2 }]' &&
+            table.children[1].children[2]?.innerText === "Sent: HTTP 200" &&
+            table.children[2].children[2]?.innerText === "Prohibited by browser policy" &&
+            table.children[3].children[2]?.innerText === "Dropped due to assembly failure" &&
+            table.children[4].children[2]?.innerText === "Network error: ERR_INVALID_REDIRECT" &&
+            table.children[5].children[2]?.innerText === "Network error: ERR_INTERNET_DISCONNECTED" &&
+            table.children[5].children[3]?.innerText ===
               "https://report.test/.well-known/attribution-reporting/debug/report-aggregate-attribution") {
           obs.disconnect();
           document.title = $1;
         }
       });
-      obs.observe(table, {'childList': true});)";
+      obs.observe(table, {childList: true, subtree: true, characterData: true});)";
     ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
 
     TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
@@ -1071,37 +1089,22 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
       *SuitableOrigin::Deserialize("https://d.test"),
       /*is_within_fenced_frame=*/false);
 
-  static constexpr char kWantEventTriggerJSON[] =
-      R"json([ {  "data": "2",  "priority": "3",  "filters": {   "c": [    "d"   ]  } }, {  "data": "4",  "priority": "5",  "deduplication_key": "6",  "not_filters": {   "e": [    "f"   ]  } }])json";
-
-  static constexpr char kWantAggregatableTriggerJSON[] =
-      R"json([ {  "key_piece": "0x159",  "source_keys": [   "a"  ],  "filters": {   "c": [    "d"   ]  } }, {  "key_piece": "0x2a6",  "source_keys": [   "b"  ],  "not_filters": {   "e": [    "f"   ]  } }])json";
-
   static constexpr char wait_script[] = R"(
       let table = document.querySelector('#triggerTable')
           .shadowRoot.querySelector('tbody');
       let obs = new MutationObserver((_, obs) => {
         if (table.children.length === 1 &&
-            table.children[0].children[1].innerText === "Success: Report stored" &&
-            table.children[0].children[2].innerText === "Success: Report stored" &&
-            table.children[0].children[3].innerText === "https://d.test" &&
-            table.children[0].children[4].innerText === "https://r.test" &&
-            table.children[0].children[5].innerText === "1" &&
-            table.children[0].children[6].innerText === '{ "a": [  "b" ]}' &&
-            table.children[0].children[7].innerText === '{ "g": [  "h" ]}' &&
-            table.children[0].children[8].innerText === $2 &&
-            table.children[0].children[9].innerText === $3 &&
-            table.children[0].children[10].innerText === '{ "a": 123, "b": 456}' &&
-            table.children[0].children[11].innerText === "18" &&
-            table.children[0].children[12].innerText === "disabled") {
+            table.children[0].children[1]?.innerText === "Success: Report stored" &&
+            table.children[0].children[2]?.innerText === "Success: Report stored" &&
+            table.children[0].children[3]?.innerText === "https://d.test" &&
+            table.children[0].children[4]?.innerText === "https://r.test" &&
+            table.children[0].children[5]?.innerText.includes('{')) {
           obs.disconnect();
           document.title = $1;
         }
       });
-      obs.observe(table, {'childList': true});)";
-  ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle,
-                                      kWantEventTriggerJSON,
-                                      kWantAggregatableTriggerJSON)));
+      obs.observe(table, {childList: true, subtree: true, characterData: true});)";
+  ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
 
   auto notify_trigger_handled =
       [&](AttributionTrigger::EventLevelResult event_status,
@@ -1163,7 +1166,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
         document.title = $1;
       }
     });
-    obs.observe(table, {'childList': true});)";
+    obs.observe(table, {childList: true});)";
   ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
 
   // Wait for the table to rendered.
@@ -1180,12 +1183,12 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
         .shadowRoot.querySelector('tbody');
     let obs = new MutationObserver((_, obs) => {
       if (table.children.length === 1 &&
-          table.children[0].children[0].innerText === "No sent or pending reports.") {
+          table.children[0].children[0]?.innerText === "No sent or pending reports.") {
         obs.disconnect();
         document.title = $1;
       }
     });
-    obs.observe(table, {'childList': true});)";
+    obs.observe(table, {childList: true, subtree: true, characterData: true});)";
   ASSERT_TRUE(
       ExecJsInWebUI(JsReplace(kObserveEmptyReportsTableScript, kSentTitle)));
 
@@ -1235,15 +1238,15 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
       let label = document.querySelector('#show-debug-event-reports span');
       let obs = new MutationObserver((_, obs) => {
         if (table.children.length === 2 &&
-            table.children[0].children[6].innerText === "1" &&
-            table.children[1].children[6].innerText === "2" &&
+            table.children[0].children[6]?.innerText === "1" &&
+            table.children[1].children[6]?.innerText === "2" &&
             label.innerText === '') {
           obs.disconnect();
           document.title = $1;
         }
       });
-      obs.observe(table, {'childList': true});
-      obs.observe(label, {'characterData': true});)";
+      obs.observe(table, {childList: true, subtree: true, characterData: true});
+      obs.observe(label, {childList: true, characterData: true});)";
     ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
 
     TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
@@ -1274,14 +1277,14 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
       let label = document.querySelector('#show-debug-event-reports span');
       let obs = new MutationObserver((_, obs) => {
         if (table.children.length === 1 &&
-            table.children[0].children[6].innerText === "2" &&
+            table.children[0].children[6]?.innerText === "2" &&
             label.innerText === ' (2 hidden)') {
           obs.disconnect();
           document.title = $1;
         }
       });
-      obs.observe(table, {'childList': true});
-      obs.observe(label, {'characterData': true});)";
+      obs.observe(table, {childList: true, subtree: true, characterData: true});
+      obs.observe(label, {childList: true, characterData: true});)";
     ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle2)));
 
     TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle2);
@@ -1302,16 +1305,16 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
       let label = document.querySelector('#show-debug-event-reports span');
       let obs = new MutationObserver((_, obs) => {
         if (table.children.length === 3 &&
-            table.children[0].children[6].innerText === "1" &&
-            table.children[1].children[6].innerText === "2" &&
-            table.children[2].children[6].innerText === "3" &&
+            table.children[0].children[6]?.innerText === "1" &&
+            table.children[1].children[6]?.innerText === "2" &&
+            table.children[2].children[6]?.innerText === "3" &&
             label.innerText === '') {
           obs.disconnect();
           document.title = $1;
         }
       });
-      obs.observe(table, {'childList': true});
-      obs.observe(label, {'characterData': true});)";
+      obs.observe(table, {childList: true, subtree: true, characterData: true});
+      obs.observe(label, {childList: true, characterData: true});)";
     ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle3)));
 
     TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle3);
@@ -1340,16 +1343,15 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
 
     let obs = new MutationObserver((_, obs) => {
       if (table.children.length === 1 &&
-          table.children[0].children.length >= 4 &&
-          table.children[0].children[1].innerText === url &&
-          table.children[0].children[2].innerText === 'HTTP 200' &&
-          table.children[0].children[3].innerText.includes('source-unknown-error')
+          table.children[0].children[1]?.innerText === url &&
+          table.children[0].children[2]?.innerText === 'HTTP 200' &&
+          table.children[0].children[3]?.innerText.includes('source-unknown-error')
       ) {
         obs.disconnect();
         document.title = $1;
       }
     });
-    obs.observe(table, {'childList': true});)";
+    obs.observe(table, {childList: true, subtree: true, characterData: true});)";
 
   ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
 

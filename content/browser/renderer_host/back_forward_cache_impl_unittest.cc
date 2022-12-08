@@ -95,9 +95,12 @@ class BackForwardCacheActiveSizeTest : public ::testing::Test {
  protected:
   void SetUp() override {
     feature_list_.InitWithFeaturesAndParameters(
+        /*enabled_features=*/
         {{features::kBackForwardCache,
           {{"cache_size", "6"}, {"foreground_cache_size", "2"}}}},
-        {});
+        /*disabled_features=*/
+        // Allow BackForwardCache for all devices regardless of their memory.
+        {{features::kBackForwardCacheMemoryControls}});
   }
 
  private:
@@ -118,11 +121,14 @@ class BackForwardCacheOverwriteSizeTest : public ::testing::Test {
  protected:
   void SetUp() override {
     feature_list_.InitWithFeaturesAndParameters(
+        /*enabled_features=*/
         {{kBackForwardCacheSize,
           {{"cache_size", "8"}, {"foreground_cache_size", "4"}}},
          {features::kBackForwardCache,
           {{"cache_size", "6"}, {"foreground_cache_size", "2"}}}},
-        {});
+        /*disabled_features=*/
+        // Allow BackForwardCache for all devices regardless of their memory.
+        {{features::kBackForwardCacheMemoryControls}});
   }
 
  private:

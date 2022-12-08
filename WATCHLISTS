@@ -126,7 +126,7 @@
     },
     'app_service': {
       'filepath': 'chrome/browser/apps/app_service/'\
-                  '|chrome/browser/ui/app_list/app_service/'\
+                  '|chrome/browser/ash/app_list/app_service/'\
                   '|chrome/browser/ui/ash/shelf/app_service/'\
                   '|chrome/browser/ui/views/apps/app_dialog/' \
                   '|components/services/app_service/',
@@ -221,11 +221,6 @@
         '|content/browser/renderer_host/render_widget_host_view_browsertest' \
         '|content/browser/renderer_host/delegated' \
         '|content/common/gpu/client/' \
-    },
-    'autofill_assistant': {
-      'filepath': 'chrome/android/features/autofill_assistant/|'\
-                  'chrome/browser/android/autofill_assistant/|'\
-                  'components/autofill_assistant/',
     },
     'autofill_payments': {
       'filepath': 'chrome/browser/ui/autofill/chrome_autofill_client|'\
@@ -713,6 +708,7 @@
     },
     'chrome_intelligence': {
       'filepath': 'history_clusters'\
+                  '|image_service'\
                   '|ios/chrome/browser/text_selection'\
                   '|optimization_guide'\
                   '|optimization_hints'\
@@ -1558,12 +1554,12 @@
                   '|chrome/android/java/src/org/chromium/chrome/browser/offlinepages/'
     },
     'omnibox_desktop': {
-      'filepath': '^chrome/browser/autocomplete/|'\
+      'filepath': '^chrome/browser/ash/app_list/search/omnibox/|'\
+                  '^chrome/browser/autocomplete/|'\
                   '^chrome/browser/resources/new_tab_page/realbox/|'\
                   '^chrome/browser/resources/omnibox|'\
                   '^chrome/browser/ui/location_bar/|'\
                   '^chrome/browser/ui/omnibox/|'\
-                  '^chrome/browser/ui/app_list/search/omnibox/|'\
                   '^chrome/browser/ui/views/location_bar/|'\
                   '^chrome/browser/ui/views/omnibox/|'\
                   '^chrome/browser/ui/webui/omnibox/|'\
@@ -2292,8 +2288,7 @@
              'webappwatch@microsoft.com'],
     'apps_intent_helper': ['dominickn+watch-intent_helper@chromium.org',
                            'mxcai+watch-intent-helper@chromium.org'],
-    'arc': ['elijahtaylor+arcwatch@chromium.org',
-            'hidehiko+watch@chromium.org',
+    'arc': ['hidehiko+watch@chromium.org',
             'arc-reviews+chromium@google.com'],
     'arc_auth': ['khmel+watch@chromium.org'],
     'arc_ime': ['yhanada+watch@chromium.org'],
@@ -2317,7 +2312,6 @@
                        'owenzhang+audio-settings-watch@google.com'],
     'aura': ['sadrul@chromium.org'],
     'aura_compositor': ['jbauman+watch@chromium.org'],
-    'autofill_assistant': ['autofill_assistant+watch@google.com'],
     'autofill_payments': ['armalhotra+autofillwatch@google.com',
                           'jsaul+autofillwatch@google.com',
                           'shgar+autofillwatch@google.com',

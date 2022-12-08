@@ -50,9 +50,7 @@ class MockAutofillAgent : public mojom::AutofillAgent {
   MOCK_METHOD(void, TriggerReparse, (), (override));
   MOCK_METHOD(void,
               FillOrPreviewForm,
-              (int32_t query_id,
-               const FormData& form,
-               mojom::RendererFormDataAction action),
+              (const FormData& form, mojom::RendererFormDataAction action),
               (override));
   MOCK_METHOD(void,
               FieldTypePredictionsAvailable,
@@ -85,6 +83,10 @@ class MockAutofillAgent : public mojom::AutofillAgent {
               PreviewPasswordSuggestion,
               (const ::std::u16string& username,
                const ::std::u16string& password),
+              (override));
+  MOCK_METHOD(void,
+              PreviewPasswordGenerationSuggestion,
+              (const ::std::u16string& password),
               (override));
   MOCK_METHOD(void, SetUserGestureRequired, (bool required), (override));
   MOCK_METHOD(void, SetSecureContextRequired, (bool required), (override));

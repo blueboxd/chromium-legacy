@@ -433,11 +433,6 @@
           'shards': 1,
         },
       },
-      'linux-autofill-assistant': {
-        'args': [
-          '--release',
-        ],
-      },
       'linux-blink-animation-use-time-delta': {
         'args': [
           '--debug',
@@ -742,11 +737,6 @@
         'swarming': {
           'shards': 1,
         },
-      },
-      'linux-autofill-assistant': {
-        'args': [
-          '--release',
-        ],
       },
       'linux-bfcache-rel': {
         'args': [
@@ -1104,7 +1094,6 @@
         },
       },
       'mac11-arm64-rel-tests': {
-        'ci_only': False,  # https://crbug.com/1234525
         'args': [
           # crbug.com/1262402
           '--test-launcher-filter-file=../../testing/buildbot/filters/mac.mac11-arm64-rel.browser_tests.filter',
@@ -2548,6 +2537,16 @@
     'modifications': {
       'lacros-arm-generic-chrome': {
         'experiment_percentage': 100,
+      },
+      'lacros-arm-generic-rel': {
+        'ci_only': True,
+      },
+    },
+  },
+  'lacros_cq_tast_tests_jacuzzi jacuzzi': {
+    'modifications': {
+      'lacros-arm-generic-rel': {
+        'ci_only': True,
       },
     },
   },

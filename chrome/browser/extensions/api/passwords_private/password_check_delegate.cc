@@ -38,7 +38,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/content/browser/password_change_success_tracker_factory.h"
-#include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
+#include "components/password_manager/core/browser/affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/bulk_leak_check_service.h"
 #include "components/password_manager/core/browser/leak_detection/bulk_leak_check.h"
 #include "components/password_manager/core/browser/leak_detection/encryption_utils.h"
@@ -56,8 +56,6 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "components/url_formatter/elide_url.h"
-#include "components/url_formatter/url_formatter.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
@@ -248,9 +246,7 @@ api::passwords_private::CompromisedInfo CreateCompromiseInfo(
 PasswordCheckDelegate::PasswordCheckDelegate(
     Profile* profile,
     password_manager::SavedPasswordsPresenter* presenter,
-    IdGenerator<password_manager::CredentialUIEntry,
-                int,
-                password_manager::CredentialUIEntry::Less>* id_generator)
+    IdGenerator* id_generator)
     : profile_(profile),
       saved_passwords_presenter_(presenter),
       insecure_credentials_manager_(presenter,
@@ -284,7 +280,7 @@ PasswordCheckDelegate::GetInsecureCredentials() {
   insecure_credentials.reserve(credentials.size());
   for (auto& credential : credentials) {
     insecure_credentials.push_back(
-        ConstructInsecureCredentialUiEntry(credential));
+        ConstructInsecureCredentialUiEntry(std::move(credential)));
   }
 
   return insecure_credentials;
@@ -527,7 +523,7 @@ void PasswordCheckDelegate::NotifyPasswordCheckStatusChanged() {
 
 api::passwords_private::PasswordUiEntry
 PasswordCheckDelegate::ConstructInsecureCredentialUiEntry(
-    const CredentialUIEntry& entry) {
+    CredentialUIEntry entry) {
   api::passwords_private::PasswordUiEntry api_credential;
   api_credential.is_android_credential =
       password_manager::IsValidAndroidFacetURI(entry.GetFirstSignonRealm());
@@ -535,15 +531,6 @@ PasswordCheckDelegate::ConstructInsecureCredentialUiEntry(
   api_credential.urls = CreateUrlCollectionFromCredential(entry);
   api_credential.stored_in = StoreSetFromCredential(entry);
   api_credential.compromised_info = CreateCompromiseInfo(entry);
-  CredentialUIEntry copy = entry;
-  // Weak and reused flags should be cleaned before obtaining id. Otherwise
-  // weak or reused flag will be saved to the database whenever credential is
-  // modified.
-  // TODO(crbug.com/1369650): Update this once saving weak and reused issues is
-  // supported.
-  copy.password_issues.erase(InsecureType::kWeak);
-  copy.password_issues.erase(InsecureType::kReused);
-  api_credential.id = id_generator_->GenerateId(copy);
   if (api_credential.is_android_credential) {
     // |change_password_url| need special handling for Android. Here we use
     // affiliation information instead of the origin.
@@ -554,6 +541,15 @@ PasswordCheckDelegate::ConstructInsecureCredentialUiEntry(
   } else {
     api_credential.change_password_url = GetChangePasswordUrl(entry.GetURL());
   }
+  CredentialUIEntry copy(std::move(entry));
+  // Weak and reused flags should be cleaned before obtaining id. Otherwise
+  // weak or reused flag will be saved to the database whenever credential is
+  // modified.
+  // TODO(crbug.com/1369650): Update this once saving weak and reused issues is
+  // supported.
+  copy.password_issues.erase(InsecureType::kWeak);
+  copy.password_issues.erase(InsecureType::kReused);
+  api_credential.id = id_generator_->GenerateId(std::move(copy));
 
   return api_credential;
 }

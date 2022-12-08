@@ -27,13 +27,13 @@
 #include "chrome/common/mac/launchd.h"
 #include "chrome/updater/constants.h"
 #include "chrome/updater/external_constants_builder.h"
-#include "chrome/updater/launchd_util.h"
 #include "chrome/updater/mac/xpc_service_names.h"
 #include "chrome/updater/persisted_data.h"
 #include "chrome/updater/prefs.h"
 #include "chrome/updater/test/integration_tests_impl.h"
 #include "chrome/updater/updater_branding.h"
 #include "chrome/updater/updater_scope.h"
+#include "chrome/updater/util/launchd_util.h"
 #import "chrome/updater/util/mac_util.h"
 #include "chrome/updater/util/util.h"
 #include "components/crx_file/crx_verifier.h"
@@ -151,9 +151,6 @@ void Clean(UpdaterScope scope) {
       launchd_domain, launchd_type, updater::CopyWakeLaunchdName(scope)));
   EXPECT_TRUE(Launchd::GetInstance()->DeletePlist(
       launchd_domain, launchd_type,
-      updater::CopyUpdateServiceInternalLaunchdName(scope)));
-  EXPECT_TRUE(Launchd::GetInstance()->DeletePlist(
-      launchd_domain, launchd_type,
       updater::CopyUpdateServiceLaunchdName(scope)));
 
   path = GetDataDirPath(scope);
@@ -171,8 +168,6 @@ void Clean(UpdaterScope scope) {
                          CopyWakeLaunchdName(scope));
     RemoveJobFromLaunchd(scope, launchd_domain, launchd_type,
                          CopyUpdateServiceLaunchdName(scope));
-    RemoveJobFromLaunchd(scope, launchd_domain, launchd_type,
-                         CopyUpdateServiceInternalLaunchdName(scope));
   }
 
   // Also clean up any other versions of the updater that are around.
@@ -208,9 +203,6 @@ void ExpectClean(UpdaterScope scope) {
       launchd_domain, launchd_type, updater::CopyWakeLaunchdName(scope)));
   EXPECT_FALSE(Launchd::GetInstance()->PlistExists(
       launchd_domain, launchd_type,
-      updater::CopyUpdateServiceInternalLaunchdName(scope)));
-  EXPECT_FALSE(Launchd::GetInstance()->PlistExists(
-      launchd_domain, launchd_type,
       updater::CopyUpdateServiceLaunchdName(scope)));
 
   path = GetDataDirPath(scope);
@@ -229,7 +221,6 @@ void ExpectClean(UpdaterScope scope) {
     EXPECT_FALSE(base::PathExists(*keystone_path));
 
   ExpectServiceAbsent(scope, GetUpdateServiceLaunchdName(scope));
-  ExpectServiceAbsent(scope, GetUpdateServiceInternalLaunchdName(scope));
 }
 
 void ExpectInstalled(UpdaterScope scope) {
@@ -244,9 +235,6 @@ void ExpectInstalled(UpdaterScope scope) {
 
   EXPECT_TRUE(Launchd::GetInstance()->PlistExists(launchd_domain, launchd_type,
                                                   CopyWakeLaunchdName(scope)));
-  EXPECT_TRUE(Launchd::GetInstance()->PlistExists(
-      launchd_domain, launchd_type,
-      CopyUpdateServiceInternalLaunchdName(scope)));
 }
 
 void ExpectActiveUpdater(UpdaterScope scope) {
@@ -268,18 +256,10 @@ absl::optional<base::FilePath> GetInstalledExecutablePath(UpdaterScope scope) {
 }
 
 void ExpectCandidateUninstalled(UpdaterScope scope) {
-  Launchd::Domain launchd_domain = LaunchdDomain(scope);
-  Launchd::Type launchd_type = LaunchdType(scope);
-
   absl::optional<base::FilePath> versioned_folder_path =
       GetVersionedInstallDirectory(scope);
-  EXPECT_TRUE(versioned_folder_path);
-  if (versioned_folder_path)
-    EXPECT_FALSE(base::PathExists(*versioned_folder_path));
-
-  EXPECT_FALSE(Launchd::GetInstance()->PlistExists(
-      launchd_domain, launchd_type,
-      CopyUpdateServiceInternalLaunchdName(scope)));
+  ASSERT_TRUE(versioned_folder_path);
+  EXPECT_FALSE(base::PathExists(*versioned_folder_path));
 }
 
 void Uninstall(UpdaterScope scope) {

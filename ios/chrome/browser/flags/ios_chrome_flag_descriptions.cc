@@ -414,6 +414,10 @@ const char kIOSEnablePasswordManagerBrandingUpdateName[] =
 const char kIOSEnablePasswordManagerBrandingUpdateDescription[] =
     "Updates icons, strings, and views for Google Password Manager.";
 
+const char kIOSForceTranslateEnabledName[] = "Allow force translate on iOS.";
+const char kIOSForceTranslateEnabledDescription[] =
+    "Enable the translate feature when language detection failed.";
+
 const char kIOSNewPostRestoreExperienceName[] = "New Post Restore Experience";
 const char kIOSNewPostRestoreExperienceDescription[] =
     "When enabled, a prompt will be presented after a device restore to "
@@ -791,7 +795,7 @@ const char kUseLensToSearchForImageName[] =
     "Use Google Lens to Search for images";
 const char kUseLensToSearchForImageDescription[] =
     "When enabled, use Lens to search for images from the long press context "
-    "menu when Google is the selected search engine.";
+    "menu when Google is the selected search engine. iPhone only.";
 
 const char kEnableLensInHomeScreenWidgetName[] =
     "Enable Google Lens in the Home Screen Widget";

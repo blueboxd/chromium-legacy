@@ -85,7 +85,7 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
   // Callers are are expected to initialize sandbox flags separately after
   // calling the constructor.
   FrameTreeNode(
-      FrameTree* frame_tree,
+      FrameTree& frame_tree,
       RenderFrameHostImpl* parent,
       blink::mojom::TreeScopeType tree_scope_type,
       bool is_created_by_script,
@@ -118,7 +118,7 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
   // left temporarily with lax state.
   void ResetForNavigation();
 
-  FrameTree* frame_tree() const { return frame_tree_; }
+  FrameTree& frame_tree() const { return frame_tree_.get(); }
   Navigator& navigator();
 
   RenderFrameHostManager* render_manager() { return &render_manager_; }
@@ -316,7 +316,7 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
   // NavigationRequest of this frame. This corresponds to the start of a new
   // navigation. If there was an ongoing navigation request before calling this
   // function, it is canceled. |navigation_request| should not be null.
-  void CreatedNavigationRequest(
+  void TakeNavigationRequest(
       std::unique_ptr<NavigationRequest> navigation_request);
 
   // Resets the navigation request owned by `this` (which shouldn't have reached
@@ -330,20 +330,6 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
   // Similar to `ResetNavigationRequest()`, but keeps the state created by the
   // NavigationRequest (e.g. speculative RenderFrameHost, loading state).
   void ResetNavigationRequestButKeepState();
-
-  // A RenderFrameHost in this node started loading.
-  // |should_show_loading_ui| indicates whether this navigation should be
-  // visible in the UI. True for cross-document navigations and navigations
-  // intercepted by the navigation API's intercept().
-  // |was_previously_loading| is false if the FrameTree was not loading before.
-  // The caller is required to provide this boolean as the delegate should only
-  // be notified if the FrameTree went from non-loading to loading state.
-  // However, when it is called, the FrameTree should be in a loading state.
-  void DidStartLoading(bool should_show_loading_ui,
-                       bool was_previously_loading);
-
-  // A RenderFrameHost in this node stopped loading.
-  void DidStopLoading();
 
   // The load progress for a RenderFrameHost in this node was updated to
   // |load_progress|. This will notify the FrameTree which will in turn notify
@@ -536,8 +522,7 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
   const std::string& srcdoc_value() const { return srcdoc_value_; }
 
   void set_fenced_frame_properties(
-      absl::optional<FencedFrameURLMapping::FencedFrameProperties>&
-          fenced_frame_properties) {
+      const absl::optional<FencedFrameProperties>& fenced_frame_properties) {
     // TODO(crbug.com/1262022): Reenable this DCHECK once ShadowDOM and
     // loading urns in iframes (for FLEDGE OT) are gone.
     // DCHECK_EQ(fenced_frame_status_,
@@ -549,8 +534,7 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
   // That is to say, this function returns the `fenced_frame_properties_`
   // variable attached to the fenced frame root FrameTreeNode, which may be
   // either this node or an ancestor of it.
-  const absl::optional<FencedFrameURLMapping::FencedFrameProperties>&
-  GetFencedFrameProperties();
+  const absl::optional<FencedFrameProperties>& GetFencedFrameProperties();
 
   // Return the number of fenced frame boundaries above this frame. The
   // outermost main frame's frame tree has fenced frame depth 0, a topmost
@@ -566,7 +550,7 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
   // possibly be associated with a fenced frame root, unless when
   // `kAllowURNsInIframes` is enabled in which case they could be be associated
   // with any node.
-  std::vector<const FencedFrameURLMapping::SharedStorageBudgetMetadata*>
+  std::vector<const SharedStorageBudgetMetadata*>
   FindSharedStorageBudgetMetadata();
 
   // Accessor to BrowsingContextState for subframes only. Only main frame
@@ -591,8 +575,12 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
   bool AncestorOrSelfHasCSPEE() const;
 
   // RenderFrameHostOwner implementation:
+  void DidStartLoading(bool should_show_loading_ui,
+                       bool was_previously_loading) override;
+  void DidStopLoading() override;
   void RestartNavigationAsCrossDocument(
       std::unique_ptr<NavigationRequest> navigation_request) override;
+  bool Reload() override;
   Navigator& GetCurrentNavigator() override;
   RenderFrameHostManager& GetRenderFrameHostManager() override;
   void SetFocusedFrame(SiteInstanceGroup* source) override;
@@ -672,8 +660,9 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
   // The next available browser-global FrameTreeNode ID.
   static int next_frame_tree_node_id_;
 
-  // The FrameTree that owns us.
-  raw_ptr<FrameTree> frame_tree_;  // not owned.
+  // The FrameTree owning |this|. It can change with Prerender2 during
+  // activation.
+  raw_ref<FrameTree> frame_tree_;
 
   // A browser-global identifier for the frame in the page, which stays stable
   // even if the frame does a cross-process navigation.
@@ -786,8 +775,7 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
   // contains all the metadata specifying the resulting context.
   // TODO(crbug.com/1262022): Move this into the FrameTree once ShadowDOM
   // and urn iframes are gone.
-  absl::optional<FencedFrameURLMapping::FencedFrameProperties>
-      fenced_frame_properties_;
+  absl::optional<FencedFrameProperties> fenced_frame_properties_;
 
   // Manages creation and swapping of RenderFrameHosts for this frame.
   //

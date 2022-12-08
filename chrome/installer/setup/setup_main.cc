@@ -586,10 +586,12 @@ installer::InstallStatus RenameChromeExecutables(
       google_update::kRegCriticalVersionField);
   installer::AppCommand(installer::kCmdRenameChromeExe, {})
       .AddDeleteAppCommandWorkItems(reg_root, install_list.get());
+  installer::AppCommand(installer::kCmdAlternateRenameChromeExe, {})
+      .AddDeleteAppCommandWorkItems(reg_root, install_list.get());
 
   if (!installer_state->system_install()) {
     install_list->AddDeleteRegValueWorkItem(
-        reg_root, clients_key, KEY_WOW64_32KEY, installer::kRegLegacyRenameCmd);
+        reg_root, clients_key, KEY_WOW64_32KEY, installer::kCmdRenameChromeExe);
   }
 
   // If a channel was specified by policy, update the "channel" registry value

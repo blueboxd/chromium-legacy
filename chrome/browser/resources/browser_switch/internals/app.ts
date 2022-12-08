@@ -7,7 +7,7 @@ import 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar.js';
 
 import {addWebUiListener} from 'chrome://resources/js/cr.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './app.html.js';
@@ -257,7 +257,7 @@ class BrowserSwitchInternalsAppElement extends
    * Section: XML configuration source
    * Shows information about the last time XML sitelists were downloaded.
    */
-  private getXMLSitelistsLastDownloadLabel(): string {
+  private getXmlSitelistsLastDownloadLabel(): string {
     return this.i18n('xmlSitelistLastDownloadDate', this.lastFetch_);
   }
 
@@ -265,7 +265,7 @@ class BrowserSwitchInternalsAppElement extends
    * Section: XML configuration source
    * Shows information about the next download time of XML sitelists.
    */
-  private getXMLSitelistsNextDownloadLabel(): string {
+  private getXmlSitelistsNextDownloadLabel(): string {
     return this.i18n('xmlSitelistNextDownloadDate', this.nextFetch_);
   }
 
@@ -275,7 +275,7 @@ class BrowserSwitchInternalsAppElement extends
    * BrowserSwitcherExternalGreylistUrl and BrowserSwitcherUrlGreylist
    * will not trigger a browser switch.
    */
-  private getIgnoreURLMatchingLabel(): string {
+  private getIgnoreUrlMatchingLabel(): string {
     return this.i18n('ignoreParagraph2', getBrowserName(), getAltBrowserName());
   }
 }

@@ -165,6 +165,7 @@
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2391082728065870591">发送反馈报告</translation>
 <translation id="2407209115954268704">SIM 卡锁定状态</translation>
+<translation id="241419523391571119">重新打开设备的盖子即可进行测试</translation>
 <translation id="2414886740292270097">深色调</translation>
 <translation id="2418150275289244458">在“设置”中打开</translation>
 <translation id="2421798028054665193">第 <ph name="CURRENT_PAGE" /> 张图片，共 <ph name="TOTAL_PAGES" /> 张</translation>
@@ -175,6 +176,7 @@
 <translation id="2491955442992294626">不再测试按键，因为您正在使用另一个窗口</translation>
 <translation id="2493126929778606526">您的最佳照片，由系统自动挑选</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
+<translation id="2498950423397131220">悬浮</translation>
 <translation id="2505327257735685095">刷新当前壁纸图片</translation>
 <translation id="2513396635448525189">登录图片</translation>
 <translation id="2517472476991765520">扫描</translation>
@@ -205,6 +207,7 @@
 <translation id="2878387241690264070"><ph name="NUM_SECONDS" /> 秒内释放了 <ph name="RATE" /> 的电量。</translation>
 <translation id="2902312830803030883">更多操作</translation>
 <translation id="2926057806159140518">输入您的用户名和密码，或扫描您的二维码</translation>
+<translation id="2940811910881150316">无法测试设备。重新打开设备的盖子即可进行测试。</translation>
 <translation id="3008341117444806826">刷新</translation>
 <translation id="3009958530611748826">选择要保存到的文件夹</translation>
 <translation id="3017079585324758401">背景</translation>
@@ -285,6 +288,7 @@
 <translation id="3820172043799983114">PIN 码无效。</translation>
 <translation id="3824259034819781947">附加文件</translation>
 <translation id="3838338534323494292">新密码</translation>
+<translation id="3845880861638660475">按 <ph name="ALT_SHORTCUT_START" />Alt<ph name="ALT_SHORTCUT_END" /> + <ph name="ESC_SHORTCUT_START" />Esc<ph name="ESC_SHORTCUT_END" /> 即可关闭对话框。</translation>
 <translation id="385051799172605136">返回</translation>
 <translation id="3858860766373142691">名称</translation>
 <translation id="3862598938296403232">必须提供说明</translation>
@@ -292,6 +296,7 @@
 <translation id="3866249974567520381">说明</translation>
 <translation id="387301095347517405">您的电池已经历的完整充电循环次数</translation>
 <translation id="3885327323343477505">更换屏保</translation>
+<translation id="391412459402535266">无法测试设备。切换到笔记本电脑模式即可进行测试。</translation>
 <translation id="3923184630988645767">流量使用</translation>
 <translation id="3932043219784172185">未连接任何设备</translation>
 <translation id="3941014780699102620">未能解析主机</translation>
@@ -304,6 +309,7 @@
 <translation id="39823212440917567">系统会自动移除存在时长已超过 <ph name="NUMBER_OF_DAYS" /> 天的打印任务</translation>
 <translation id="3993704782688964914">您的<ph name="DEVICE_NAME" />目前已是最新版本</translation>
 <translation id="4003384961948020559">失败 - 出纸盘已满</translation>
+<translation id="4021031199988160623">切换到笔记本电脑模式即可进行测试</translation>
 <translation id="4034824040120875894">打印机</translation>
 <translation id="4044093238444069296">无法连接网关</translation>
 <translation id="4046123991198612571">下一曲</translation>
@@ -336,6 +342,7 @@
 <translation id="4289849978083912975">幻灯片</translation>
 <translation id="4297501883039923494">已停止 - 未知错误</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> 张图片</translation>
+<translation id="4311195029067684288">全屏</translation>
 <translation id="4333390807948134856">已按下<ph name="KEY_NAME" />键</translation>
 <translation id="435692326371619097">管理网络 APN 设置。APN 会在移动网络和互联网之间建立连接。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="4378373042927530923">未运行</translation>
@@ -415,7 +422,9 @@
 <translation id="4921665434385737356"><ph name="NUM_SECONDS" /> 秒内充了 <ph name="RATE" /> 的电量。</translation>
 <translation id="4930320165497208503">若要设置或更新连接，请转到<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />。</translation>
 <translation id="4932733599132424254">日期</translation>
+<translation id="4937657825850660613">分成两半</translation>
 <translation id="4950314376641394653">固件“<ph name="DEVICE_NAME" />”已更新到版本 <ph name="VERSION" /></translation>
+<translation id="4971925105143343452">局部</translation>
 <translation id="498186245079027698">请检查扫描仪，然后重试。另请确保有足够的本地空间来保存扫描版文件。</translation>
 <translation id="4985509611418653372">运行</translation>
 <translation id="4987769320337599931">防火墙</translation>
@@ -769,6 +778,7 @@
 <translation id="8372477600026034341">多余的主机</translation>
 <translation id="8395584934117017006">此 <ph name="DEVICE_TYPE" /> 由企业管理</translation>
 <translation id="8398927464629426868">设备当前的充电或放电速度</translation>
+<translation id="8410244574650205435">已自动检测</translation>
 <translation id="8420955526972171689">运行硬件测试以排查硬件问题</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8431300646573772016">Chrome 操作系统的新变化</translation>

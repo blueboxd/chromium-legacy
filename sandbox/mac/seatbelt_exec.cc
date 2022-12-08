@@ -89,33 +89,16 @@ SeatbeltExecClient::~SeatbeltExecClient() {
     IGNORE_EINTR(close(pipe_[1]));
 }
 
-bool SeatbeltExecClient::SetBooleanParameter(const std::string& key,
-                                             bool value) {
-  google::protobuf::MapPair<std::string, std::string> pair(
-      key, value ? "TRUE" : "FALSE");
-  return policy_.mutable_params()->insert(pair).second;
-}
-
-bool SeatbeltExecClient::SetParameter(const std::string& key,
-                                      const std::string& value) {
-  google::protobuf::MapPair<std::string, std::string> pair(key, value);
-  return policy_.mutable_params()->insert(pair).second;
-}
-
-void SeatbeltExecClient::SetProfile(const std::string& policy) {
-  policy_.set_profile(policy);
-}
-
 int SeatbeltExecClient::GetReadFD() {
   return pipe_[0];
 }
 
-bool SeatbeltExecClient::SendProfile() {
+bool SeatbeltExecClient::SendPolicy(const mac::SandboxPolicy& policy) {
   IGNORE_EINTR(close(pipe_[0]));
   pipe_[0] = -1;
 
   std::string serialized_protobuf;
-  if (!policy_.SerializeToString(&serialized_protobuf)) {
+  if (!policy.SerializeToString(&serialized_protobuf)) {
     logging::Error("SeatbeltExecClient: Serializing the profile failed.");
     return false;
   }
@@ -207,16 +190,24 @@ bool SeatbeltExecServer::InitializeSandbox() {
 }
 
 bool SeatbeltExecServer::ApplySandboxProfile(const mac::SandboxPolicy& policy) {
-  std::vector<const char*> weak_params;
-  for (const auto& pair : policy.params()) {
-    weak_params.push_back(pair.first.c_str());
-    weak_params.push_back(pair.second.c_str());
-  }
-  weak_params.push_back(nullptr);
-
   std::string error;
-  bool ok = Seatbelt::InitWithParams(policy.profile().c_str(), 0,
-                                     weak_params.data(), &error);
+  bool ok = false;
+
+  if (policy.has_compiled()) {
+    ok = Seatbelt::ApplyCompiledProfile(policy.compiled().data(), &error);
+  } else {
+    const mac::SourcePolicy& source_policy = policy.source();
+
+    std::vector<const char*> weak_params;
+    for (const auto& pair : source_policy.params()) {
+      weak_params.push_back(pair.first.c_str());
+      weak_params.push_back(pair.second.c_str());
+    }
+    weak_params.push_back(nullptr);
+
+    ok = Seatbelt::InitWithParams(source_policy.profile().c_str(), 0,
+                                  weak_params.data(), &error);
+  }
   if (!ok) {
     logging::Error("SeatbeltExecServer: Failed to initialize sandbox: %s",
                    error.c_str());

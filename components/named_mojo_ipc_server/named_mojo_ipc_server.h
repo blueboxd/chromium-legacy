@@ -41,9 +41,6 @@ namespace named_mojo_ipc_server {
 // see MojoIpcServer.
 class NamedMojoIpcServerBase : public IpcServer {
  public:
-  using IsTrustedMojoEndpointCallback =
-      base::RepeatingCallback<bool(base::ProcessId)>;
-
   // DEPRECATED: New callers should not use an isolated connection. Pass a
   // valid message pipe ID instead.
   static constexpr absl::optional<uint64_t> kUseIsolatedConnection =
@@ -67,15 +64,15 @@ class NamedMojoIpcServerBase : public IpcServer {
   NamedMojoIpcServerBase(
       const mojo::NamedPlatformChannel::ServerName& server_name,
       absl::optional<uint64_t> message_pipe_id,
-      IsTrustedMojoEndpointCallback is_trusted_endpoint_callback);
+      base::RepeatingCallback<void*(std::unique_ptr<ConnectionInfo>)>
+          impl_provider);
   ~NamedMojoIpcServerBase() override;
-
-  void CreateServerEndpoint();
 
   void OnIpcDisconnected();
 
   virtual mojo::ReceiverId TrackMessagePipe(
       mojo::ScopedMessagePipeHandle message_pipe,
+      void* impl,
       base::ProcessId peer_pid) = 0;
 
   virtual void UntrackMessagePipe(mojo::ReceiverId id) = 0;
@@ -96,22 +93,19 @@ class NamedMojoIpcServerBase : public IpcServer {
     ~DelegateProxy() override;
 
     // Overrides for NamedMojoServerEndpointConnector::Delegate
-    void OnServerEndpointConnected(mojo::PlatformChannelEndpoint endpoint,
-                                   base::ProcessId peer_pid) override;
-    void OnServerEndpointConnectionFailed() override;
+    void OnClientConnected(mojo::PlatformChannelEndpoint endpoint,
+                           std::unique_ptr<ConnectionInfo> info) override;
+    void OnServerEndpointCreated() override;
 
    private:
     base::WeakPtr<NamedMojoIpcServerBase> server_;
   };
 
-  void OnServerEndpointCreated(mojo::PlatformChannelServerEndpoint endpoint);
-
-  void OnServerEndpointConnected(mojo::PlatformChannelEndpoint endpoint,
-                                 base::ProcessId peer_pid);
-  void OnServerEndpointConnectionFailed();
-
-  void PassAndTrackMessagePipe(mojo::PlatformChannelEndpoint endpoint,
-                               base::ProcessId peer_pid);
+  void OnEndpointConnectorStarted(
+      base::SequenceBound<NamedMojoServerEndpointConnector> endpoint_connector);
+  void OnClientConnected(mojo::PlatformChannelEndpoint endpoint,
+                         std::unique_ptr<ConnectionInfo> info);
+  void OnServerEndpointCreated();
 
   using ActiveConnectionMap =
       base::flat_map<mojo::ReceiverId,
@@ -119,7 +113,8 @@ class NamedMojoIpcServerBase : public IpcServer {
 
   mojo::NamedPlatformChannel::ServerName server_name_;
   absl::optional<uint64_t> message_pipe_id_;
-  IsTrustedMojoEndpointCallback is_trusted_endpoint_callback_;
+  base::RepeatingCallback<void*(std::unique_ptr<ConnectionInfo>)>
+      impl_provider_;
 
   bool server_started_ = false;
 
@@ -131,10 +126,9 @@ class NamedMojoIpcServerBase : public IpcServer {
   // This is only populated if the server uses isolated connections.
   ActiveConnectionMap active_connections_;
 
-  base::OneShotTimer resend_invitation_on_error_timer_;
+  base::OneShotTimer restart_endpoint_timer_;
 
-  base::RepeatingClosure on_server_endpoint_created_callback_for_testing_ =
-      base::DoNothing();
+  base::RepeatingClosure on_server_endpoint_created_callback_for_testing_;
 
   base::WeakPtrFactory<NamedMojoIpcServerBase> weak_factory_{this};
 };
@@ -152,16 +146,21 @@ class NamedMojoIpcServer final : public NamedMojoIpcServerBase {
   //     kUseIsolatedConnection is used), the client must connect using an
   //     isolated connection. Note that using an isolated connection is
   //     DEPRECATED and new callers should always pass a valid message pipe ID.
-  // is_trusted_endpoint_callback: A predicate which returns true if the process
-  // referred to by the caller PID is a trusted mojo endpoint.
-  NamedMojoIpcServer(const mojo::NamedPlatformChannel::ServerName& server_name,
-                     absl::optional<uint64_t> message_pipe_id,
-                     Interface* interface_impl,
-                     IsTrustedMojoEndpointCallback is_trusted_endpoint_callback)
-      : NamedMojoIpcServerBase(server_name,
-                               message_pipe_id,
-                               std::move(is_trusted_endpoint_callback)),
-        interface_impl_(interface_impl) {
+  // impl_provider: A function that returns a pointer to an implementation,
+  //     or nullptr if the connecting endpoint should be rejected.
+  NamedMojoIpcServer(
+      const mojo::NamedPlatformChannel::ServerName& server_name,
+      absl::optional<uint64_t> message_pipe_id,
+      base::RepeatingCallback<Interface*(std::unique_ptr<ConnectionInfo>)>
+          impl_provider)
+      : NamedMojoIpcServerBase(
+            server_name,
+            message_pipe_id,
+            impl_provider.Then(base::BindRepeating([](Interface* impl) {
+              // Opacify the type for the base class, which takes no template
+              // parameters.
+              return reinterpret_cast<void*>(impl);
+            }))) {
     receiver_set_.set_disconnect_handler(base::BindRepeating(
         &NamedMojoIpcServer::OnIpcDisconnected, base::Unretained(this)));
   }
@@ -190,11 +189,12 @@ class NamedMojoIpcServer final : public NamedMojoIpcServerBase {
  private:
   // NamedMojoIpcServerBase implementation.
   mojo::ReceiverId TrackMessagePipe(mojo::ScopedMessagePipeHandle message_pipe,
+                                    void* impl,
                                     base::ProcessId peer_pid) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
     return receiver_set_.Add(
-        interface_impl_,
+        reinterpret_cast<Interface*>(impl),
         mojo::PendingReceiver<Interface>(std::move(message_pipe)), peer_pid);
   }
 
@@ -206,7 +206,6 @@ class NamedMojoIpcServer final : public NamedMojoIpcServerBase {
 
   void UntrackAllMessagePipes() override { receiver_set_.Clear(); }
 
-  raw_ptr<Interface> interface_impl_;
   mojo::ReceiverSet<Interface, base::ProcessId> receiver_set_;
 };
 

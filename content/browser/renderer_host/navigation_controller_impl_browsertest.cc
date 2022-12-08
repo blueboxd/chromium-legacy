@@ -16256,7 +16256,7 @@ IN_PROC_BROWSER_TEST_P(
     url2_capturer.Wait();
     EXPECT_TRUE(url2_capturer.has_user_gesture());
     EXPECT_TRUE(root->current_frame_host()
-                    ->last_navigation_started_with_transient_activation());
+                    ->last_committed_common_params_has_user_gesture());
   }
 
   {
@@ -16266,7 +16266,7 @@ IN_PROC_BROWSER_TEST_P(
     url3_capturer.Wait();
     EXPECT_FALSE(url3_capturer.has_user_gesture());
     EXPECT_FALSE(root->current_frame_host()
-                     ->last_navigation_started_with_transient_activation());
+                     ->last_committed_common_params_has_user_gesture());
   }
 }
 
@@ -16291,7 +16291,7 @@ IN_PROC_BROWSER_TEST_P(
     url2_capturer.Wait();
     EXPECT_TRUE(url2_capturer.has_user_gesture());
     EXPECT_TRUE(root->current_frame_host()
-                    ->last_navigation_started_with_transient_activation());
+                    ->last_committed_common_params_has_user_gesture());
   }
 
   {
@@ -16301,7 +16301,7 @@ IN_PROC_BROWSER_TEST_P(
     url3_capturer.Wait();
     EXPECT_FALSE(url3_capturer.has_user_gesture());
     EXPECT_FALSE(root->current_frame_host()
-                     ->last_navigation_started_with_transient_activation());
+                     ->last_committed_common_params_has_user_gesture());
   }
 }
 
@@ -16326,7 +16326,7 @@ IN_PROC_BROWSER_TEST_P(
     url2_capturer.Wait();
     EXPECT_TRUE(url2_capturer.has_user_gesture());
     EXPECT_TRUE(root->current_frame_host()
-                    ->last_navigation_started_with_transient_activation());
+                    ->last_committed_common_params_has_user_gesture());
   }
 
   {
@@ -16336,7 +16336,7 @@ IN_PROC_BROWSER_TEST_P(
     url3_capturer.Wait();
     EXPECT_FALSE(url3_capturer.has_user_gesture());
     EXPECT_FALSE(root->current_frame_host()
-                     ->last_navigation_started_with_transient_activation());
+                     ->last_committed_common_params_has_user_gesture());
   }
 }
 
@@ -16361,7 +16361,7 @@ IN_PROC_BROWSER_TEST_P(
     url2_capturer.Wait();
     EXPECT_TRUE(url2_capturer.has_user_gesture());
     EXPECT_TRUE(root->current_frame_host()
-                    ->last_navigation_started_with_transient_activation());
+                    ->last_committed_common_params_has_user_gesture());
   }
 
   {
@@ -16371,7 +16371,7 @@ IN_PROC_BROWSER_TEST_P(
     url3_capturer.Wait();
     EXPECT_FALSE(url3_capturer.has_user_gesture());
     EXPECT_FALSE(root->current_frame_host()
-                     ->last_navigation_started_with_transient_activation());
+                     ->last_committed_common_params_has_user_gesture());
   }
 }
 
@@ -16397,7 +16397,7 @@ IN_PROC_BROWSER_TEST_P(
     url1_capturer.Wait();
     EXPECT_FALSE(url1_capturer.has_user_gesture());
     EXPECT_FALSE(root->current_frame_host()
-                     ->last_navigation_started_with_transient_activation());
+                     ->last_committed_common_params_has_user_gesture());
   }
 
   {
@@ -16407,7 +16407,7 @@ IN_PROC_BROWSER_TEST_P(
     url2_capturer.Wait();
     EXPECT_FALSE(url2_capturer.has_user_gesture());
     EXPECT_FALSE(root->current_frame_host()
-                     ->last_navigation_started_with_transient_activation());
+                     ->last_committed_common_params_has_user_gesture());
   }
 
   {
@@ -16417,7 +16417,7 @@ IN_PROC_BROWSER_TEST_P(
     url3_capturer.Wait();
     EXPECT_TRUE(url3_capturer.has_user_gesture());
     EXPECT_TRUE(root->current_frame_host()
-                    ->last_navigation_started_with_transient_activation());
+                    ->last_committed_common_params_has_user_gesture());
   }
 
   {
@@ -16427,7 +16427,7 @@ IN_PROC_BROWSER_TEST_P(
     url4_capturer.Wait();
     EXPECT_FALSE(url4_capturer.has_user_gesture());
     EXPECT_FALSE(root->current_frame_host()
-                     ->last_navigation_started_with_transient_activation());
+                     ->last_committed_common_params_has_user_gesture());
   }
 
   {
@@ -16444,7 +16444,7 @@ IN_PROC_BROWSER_TEST_P(
     url5_capturer.Wait();
     EXPECT_TRUE(url5_capturer.has_user_gesture());
     EXPECT_TRUE(root->current_frame_host()
-                    ->last_navigation_started_with_transient_activation());
+                    ->last_committed_common_params_has_user_gesture());
   }
 }
 
@@ -16476,7 +16476,7 @@ IN_PROC_BROWSER_TEST_P(
     url1_capturer.Wait();
     EXPECT_TRUE(url1_capturer.has_user_gesture());
     EXPECT_TRUE(root->current_frame_host()
-                    ->last_navigation_started_with_transient_activation());
+                    ->last_committed_common_params_has_user_gesture());
   }
 
   {
@@ -16486,7 +16486,7 @@ IN_PROC_BROWSER_TEST_P(
     url2_capturer.Wait();
     EXPECT_FALSE(url2_capturer.has_user_gesture());
     EXPECT_FALSE(root->current_frame_host()
-                     ->last_navigation_started_with_transient_activation());
+                     ->last_committed_common_params_has_user_gesture());
   }
 
   {
@@ -16496,7 +16496,7 @@ IN_PROC_BROWSER_TEST_P(
     url3_capturer.Wait();
     EXPECT_FALSE(url3_capturer.has_user_gesture());
     EXPECT_FALSE(root->current_frame_host()
-                     ->last_navigation_started_with_transient_activation());
+                     ->last_committed_common_params_has_user_gesture());
   }
 
   {
@@ -16513,7 +16513,7 @@ IN_PROC_BROWSER_TEST_P(
     url4_capturer.Wait();
     EXPECT_TRUE(url4_capturer.has_user_gesture());
     EXPECT_TRUE(root->current_frame_host()
-                    ->last_navigation_started_with_transient_activation());
+                    ->last_committed_common_params_has_user_gesture());
   }
 }
 
@@ -22240,6 +22240,78 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   EXPECT_TRUE(root->render_manager()->speculative_frame_host());
   EXPECT_EQ(b1_nav.GetNavigationHandle()->GetRenderFrameHost(),
             root->render_manager()->speculative_frame_host());
+}
+
+// Tests that when a RenderFrameHost gets into the "pending deletion" state due
+// to another RenderFrameHost committing in the same FrameTreeNode, it won't
+// cancel other navigations happening in the same FrameTreeNode.
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
+                       UnloadingPreviousRFHOnCommitWontCancelNavigation) {
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b1(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  GURL url_b2(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  // Load `main_url`.
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetPrimaryFrameTree()
+                            .root();
+  RenderFrameHostImplWrapper rfh_a(current_main_frame_host());
+
+  // Start the cross-site navigation to `url_b1`, then start the cross-site
+  // navigation to `url_b2` just before the navigation to `url_b1` processes its
+  // DidCommitNavigation message, so that both navigation can exist at the same
+  // time (the previous NavigationRequest has already been moved to the pending
+  // commit speculative RFH, and they both use the same speculative RFH because
+  // they use the same SiteInstance).
+  TestNavigationManager b1_nav(shell()->web_contents(), url_b1);
+  TestNavigationManager b2_nav(shell()->web_contents(), url_b2);
+  NavigationStarterBeforeDidCommitNavigation urlb2_navigation_starter(
+      contents(), shell(), url_b1, url_b2);
+  shell()->LoadURL(url_b1);
+
+  // Check the navigation to `url_b1` started.
+  EXPECT_TRUE(b1_nav.WaitForResponse());
+  EXPECT_EQ(b1_nav.GetNavigationHandle(), root->navigation_request());
+  b1_nav.ResumeNavigation();
+
+  // Check the navigation to `url_b2` started.
+  EXPECT_TRUE(b2_nav.WaitForRequestStart());
+  EXPECT_EQ(b2_nav.GetNavigationHandle(), root->navigation_request());
+
+  // Wait for the `url_b1` navigation to finish.
+  b1_nav.WaitForNavigationFinished();
+  EXPECT_TRUE(b1_nav.was_successful());
+
+  // The RenderFrameHost had changed, which means we have started to unload the
+  // previous RenderFrameHost or saved it in BFCache.
+  RenderFrameHostImplWrapper rfh_b(current_main_frame_host());
+  EXPECT_NE(rfh_b.get(), rfh_a.get());
+  EXPECT_TRUE(!rfh_a.get() || !rfh_a->IsActive());
+
+  // Check that the `url_b2` navigation didn't get cancelled and its associate
+  // RFH type is set to NONE.
+  EXPECT_NE(nullptr, root->navigation_request());
+  EXPECT_EQ(b2_nav.GetNavigationHandle(), root->navigation_request());
+  EXPECT_EQ(root->navigation_request()->GetAssociatedRFHType(),
+            NavigationRequest::AssociatedRenderFrameHostType::NONE);
+
+  // Check that the `url_b2` navigation's associated RFH type gets updated when
+  // it gets its final RenderFrameHost.
+  b2_nav.ResumeNavigation();
+  EXPECT_TRUE(b2_nav.WaitForResponse());
+  if (IsBackForwardCacheEnabled() || ShouldCreateNewHostForAllFrames()) {
+    // When BFCache or RenderDocument is enabled, the `url_b2` navigation won't
+    // reuse the current RFH.
+    EXPECT_EQ(root->navigation_request()->GetAssociatedRFHType(),
+              NavigationRequest::AssociatedRenderFrameHostType::SPECULATIVE);
+  } else {
+    EXPECT_EQ(root->navigation_request()->GetAssociatedRFHType(),
+              NavigationRequest::AssociatedRenderFrameHostType::CURRENT);
+  }
+
+  // Assert that the `url_b2` navigation committed successfully.
+  b2_nav.WaitForNavigationFinished();
+  EXPECT_TRUE(b2_nav.was_successful());
 }
 
 INSTANTIATE_TEST_SUITE_P(

@@ -329,7 +329,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       assertWithMatcher:grey_notNil()];
 }
 
-#pragma mark helpers for dialogs
+#pragma mark - Helpers for Dialogs
 
 // Checks that the QRScannerViewController is presenting a UIAlertController and
 // that the title of this alert corresponds to `state`.
@@ -351,8 +351,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       assertWithMatcher:grey_nil()];
 }
 
-#pragma mark -
-#pragma mark Helpers for mocks
+#pragma mark - Helpers for mocks
 
 // Swizzles the QRScannerViewController property cameraController: to return
 // `cameraControllerMock` instead of a new instance of CameraController.
@@ -408,18 +407,11 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   GREYAssertTrue(modalViewDismissed, errorString);
 }
 
-#pragma mark -
-#pragma mark Tests
+#pragma mark - Appearance Tests
 
 // Tests that the close button, camera preview, viewport caption, and the torch
 // button are visible if the camera is available. The preview is delayed.
-// TODO(crbug.com/1320518): Flaky on iOS device.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testQRScannerUIIsShown testQRScannerUIIsShown
-#else
-#define MAYBE_testQRScannerUIIsShown DISABLED_testQRScannerUIIsShown
-#endif
-- (void)MAYBE_testQRScannerUIIsShown {
+- (void)testQRScannerUIIsShown {
   id cameraControllerMock =
       [QRScannerAppInterface cameraControllerMockWithAuthorizationStatus:
                                  AVAuthorizationStatusAuthorized];
@@ -514,15 +506,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
 // Tests that the torch button is disabled when the camera reports that torch
 // became unavailable.
-// TODO(crbug.com/1320518): Flaky on iOS device.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testTorchButtonIsDisabledWhenTorchBecomesUnavailable \
-  testTorchButtonIsDisabledWhenTorchBecomesUnavailable
-#else
-#define MAYBE_testTorchButtonIsDisabledWhenTorchBecomesUnavailable \
-  DISABLED_testTorchButtonIsDisabledWhenTorchBecomesUnavailable
-#endif
-- (void)MAYBE_testTorchButtonIsDisabledWhenTorchBecomesUnavailable {
+- (void)testTorchButtonIsDisabledWhenTorchBecomesUnavailable {
   id cameraControllerMock =
       [QRScannerAppInterface cameraControllerMockWithAuthorizationStatus:
                                  AVAuthorizationStatusAuthorized];
@@ -544,17 +528,11 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [cameraControllerMock verify];
 }
 
-#pragma mark dialogs
+#pragma mark - Dialogs Tests
 
 // Tests that a UIAlertController is presented instead of the
 // QRScannerViewController if the camera is unavailable.
-// TODO(crbug.com/1320518): Flaky on iOS device.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testCameraUnavailableDialog testCameraUnavailableDialog
-#else
-#define MAYBE_testCameraUnavailableDialog DISABLED_testCameraUnavailableDialog
-#endif
-- (void)MAYBE_testCameraUnavailableDialog {
+- (void)testCameraUnavailableDialog {
   UIViewController* bvc = QRScannerAppInterface.currentBrowserViewController;
   NSError* error =
       [QRScannerAppInterface assertModalOfClass:@"QRScannerViewController"
@@ -581,15 +559,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
 // Tests that a UIAlertController is presented by the QRScannerViewController if
 // the camera state changes after the QRScannerViewController is presented.
-// TODO(crbug.com/1320518): Flaky on iOS device.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testDialogIsDisplayedIfCameraStateChanges \
-  testDialogIsDisplayedIfCameraStateChanges
-#else
-#define MAYBE_testDialogIsDisplayedIfCameraStateChanges \
-  DISABLED_testDialogIsDisplayedIfCameraStateChanges
-#endif
-- (void)MAYBE_testDialogIsDisplayedIfCameraStateChanges {
+- (void)testDialogIsDisplayedIfCameraStateChanges {
   id cameraControllerMock =
       [QRScannerAppInterface cameraControllerMockWithAuthorizationStatus:
                                  AVAuthorizationStatusAuthorized];
@@ -669,15 +639,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 }
 
 // Tests that an error dialog is dismissed if the camera becomes available.
-// TODO(crbug.com/1320518): Flaky on iOS device.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testDialogDismissedIfCameraBecomesAvailable \
-  testDialogDismissedIfCameraBecomesAvailable
-#else
-#define MAYBE_testDialogDismissedIfCameraBecomesAvailable \
-  DISABLED_testDialogDismissedIfCameraBecomesAvailable
-#endif
-- (void)MAYBE_testDialogDismissedIfCameraBecomesAvailable {
+- (void)testDialogDismissedIfCameraBecomesAvailable {
   id cameraControllerMock =
       [QRScannerAppInterface cameraControllerMockWithAuthorizationStatus:
                                  AVAuthorizationStatusAuthorized];
@@ -702,7 +664,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [cameraControllerMock verify];
 }
 
-#pragma mark scanned result
+#pragma mark - Scanned Result Tests
 
 // A helper function for testing that the view controller correctly passes the
 // received results to its delegate and that pages can be loaded. The result
@@ -763,15 +725,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
 // Test that the correct page is loaded if the scanner result is a URL which is
 // then manually edited when VoiceOver is enabled.
-// TODO(crbug.com/1320518): Flaky on iOS device.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testReceivingQRScannerURLResultWithVoiceOver \
-  testReceivingQRScannerURLResultWithVoiceOver
-#else
-#define MAYBE_testReceivingQRScannerURLResultWithVoiceOver \
-  DISABLED_testReceivingQRScannerURLResultWithVoiceOver
-#endif
-- (void)MAYBE_testReceivingQRScannerURLResultWithVoiceOver {
+- (void)testReceivingQRScannerURLResultWithVoiceOver {
   id cameraControllerMock =
       [QRScannerAppInterface cameraControllerMockWithAuthorizationStatus:
                                  AVAuthorizationStatusAuthorized];
@@ -807,14 +761,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 }
 
 // Test that the correct page is loaded if the scanner result is a URL.
-// TODO(crbug.com/1320518): Flaky on iOS device.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testReceivingQRScannerURLResult testReceivingQRScannerURLResult
-#else
-#define MAYBE_testReceivingQRScannerURLResult \
-  DISABLED_testReceivingQRScannerURLResult
-#endif
-- (void)MAYBE_testReceivingQRScannerURLResult {
+- (void)testReceivingQRScannerURLResult {
   [self doTestReceivingResult:_testURL.GetContent()
                      response:kTestURLResponse
                          edit:nil];
@@ -822,14 +769,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
 // Test that the URL is sanitized and the correct page is loaded if the scanner
 // result is a URL with forbidden characters.
-// TODO(crbug.com/1320518): Flaky on iOS device.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testForbiddenCharactersRemoved testForbiddenCharactersRemoved
-#else
-#define MAYBE_testForbiddenCharactersRemoved \
-  DISABLED_testForbiddenCharactersRemoved
-#endif
-- (void)MAYBE_testForbiddenCharactersRemoved {
+- (void)testForbiddenCharactersRemoved {
   [self doTestReceivingResult:self.testServer->base_url().GetContent() +
                               kTestURLForbiddenCharacters
               sanitizedResult:_testURL.GetContent()
@@ -839,44 +779,20 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
 // Test that the correct page is loaded if the scanner result is a URL which is
 // then manually edited.
-// TODO(crbug.com/1320518): Flaky on iOS device.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testReceivingQRScannerURLResultAndEditingTheURL \
-  testReceivingQRScannerURLResultAndEditingTheURL
-#else
-#define MAYBE_testReceivingQRScannerURLResultAndEditingTheURL \
-  DISABLED_testReceivingQRScannerURLResultAndEditingTheURL
-#endif
-- (void)MAYBE_testReceivingQRScannerURLResultAndEditingTheURL {
+- (void)testReceivingQRScannerURLResultAndEditingTheURL {
   [self doTestReceivingResult:_testURL.GetContent()
                      response:kTestURLEditedResponse
                          edit:@"\bedited/"];
 }
 
 // Test that the correct page is loaded if the scanner result is a search query.
-// TODO(crbug.com/1320518): Flaky on iOS device.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testReceivingQRScannerSearchQueryResult \
-  testReceivingQRScannerSearchQueryResult
-#else
-#define MAYBE_testReceivingQRScannerSearchQueryResult \
-  DISABLED_testReceivingQRScannerSearchQueryResult
-#endif
-- (void)MAYBE_testReceivingQRScannerSearchQueryResult {
+- (void)testReceivingQRScannerSearchQueryResult {
   [self doTestReceivingResult:kTestQuery response:kTestQueryResponse edit:nil];
 }
 
 // Test that the correct page is loaded if the scanner result is a search query
 // which is then manually edited.
-// TODO(crbug.com/1320518): Flaky on iOS device.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testReceivingQRScannerSearchQueryResultAndEditingTheQuery \
-  testReceivingQRScannerSearchQueryResultAndEditingTheQuery
-#else
-#define MAYBE_testReceivingQRScannerSearchQueryResultAndEditingTheQuery \
-  DISABLED_testReceivingQRScannerSearchQueryResultAndEditingTheQuery
-#endif
-- (void)MAYBE_testReceivingQRScannerSearchQueryResultAndEditingTheQuery {
+- (void)testReceivingQRScannerSearchQueryResultAndEditingTheQuery {
   [self doTestReceivingResult:kTestQuery
                      response:kTestQueryEditedResponse
                          edit:@"\bedited"];
@@ -884,15 +800,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
 // Test that the correct page is loaded if the scanner result is a not supported
 // URL.
-// TODO(crbug.com/1320518): Flaky on iOS device.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testReceivingQRScannerLoadDataResult \
-  testReceivingQRScannerLoadDataResult
-#else
-#define MAYBE_testReceivingQRScannerLoadDataResult \
-  DISABLED_testReceivingQRScannerLoadDataResult
-#endif
-- (void)MAYBE_testReceivingQRScannerLoadDataResult {
+- (void)testReceivingQRScannerLoadDataResult {
   [self doTestReceivingResult:kTestDataURL
               sanitizedResult:kTestSanitizedDataURL
                      response:kTestDataURLResponse

@@ -165,6 +165,7 @@
 <translation id="2380886658946992094">કાનૂની</translation>
 <translation id="2391082728065870591">પ્રતિસાદ રિપોર્ટ મોકલો</translation>
 <translation id="2407209115954268704">સિમ કાર્ડનું લૉક સ્ટેટસ</translation>
+<translation id="241419523391571119">પરીક્ષણ કરવા માટે ઢાંકણ ફરી ખોલો</translation>
 <translation id="2414886740292270097">ઘાટું</translation>
 <translation id="2418150275289244458">સેટિંગમાં ખોલો</translation>
 <translation id="2421798028054665193"><ph name="TOTAL_PAGES" />માંથી <ph name="CURRENT_PAGE" />ની છબી</translation>
@@ -175,6 +176,7 @@
 <translation id="2491955442992294626">જ્યારે તમે અન્ય વિન્ડોનો ઉપયોગ કરી રહ્યાં હો, ત્યારે કીનું પરીક્ષણ કરવામાં આવતું નથી</translation>
 <translation id="2493126929778606526">ઑટોમૅટિક રીતે પસંદ કરવામાં આવેલા તમારા શ્રેષ્ઠ ફોટા</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
+<translation id="2498950423397131220">ફ્લોટ</translation>
 <translation id="2505327257735685095">હાલની વૉલપેપર છબી રિફ્રેશ કરો</translation>
 <translation id="2513396635448525189">લૉગ ઇન છબી</translation>
 <translation id="2517472476991765520">સ્કૅન કરો</translation>
@@ -205,6 +207,7 @@
 <translation id="2878387241690264070"><ph name="NUM_SECONDS" /> સેકન્ડમાં <ph name="RATE" /> ડિસ્ચાર્જ.</translation>
 <translation id="2902312830803030883">વધુ ક્રિયાઓ</translation>
 <translation id="2926057806159140518">તમારું વપરાશકર્તા નામ અને પાસવર્ડ દાખલ કરો અથવા તમારો QR કોડ સ્કૅન કરો</translation>
+<translation id="2940811910881150316">ડિવાઇસનું પરીક્ષણ કરી શકતા નથી. પરીક્ષણ કરવા માટે ઢાંકણ ફરી ખોલો.</translation>
 <translation id="3008341117444806826">રિફ્રેશ કરો</translation>
 <translation id="3009958530611748826">સ્કૅન જેમાં સાચવવાના છે તે ફોલ્ડર પસંદ કરો</translation>
 <translation id="3017079585324758401">બૅકગ્રાઉન્ડ</translation>
@@ -285,6 +288,7 @@
 <translation id="3820172043799983114">અમાન્ય PIN.</translation>
 <translation id="3824259034819781947">ફાઇલ જોડો</translation>
 <translation id="3838338534323494292">નવો પાસવર્ડ</translation>
+<translation id="3845880861638660475">સંવાદ બંધ કરવા માટે <ph name="ALT_SHORTCUT_START" />Alt<ph name="ALT_SHORTCUT_END" /> + <ph name="ESC_SHORTCUT_START" />Esc<ph name="ESC_SHORTCUT_END" /> દબાવો.</translation>
 <translation id="385051799172605136">પાછળ</translation>
 <translation id="3858860766373142691">નામ</translation>
 <translation id="3862598938296403232">વર્ણન આવશ્યક છે</translation>
@@ -292,6 +296,7 @@
 <translation id="3866249974567520381">વર્ણન</translation>
 <translation id="387301095347517405">તમારી બૅટરી પૂર્ણ ચાર્જિંગ સાયકલમાંથી પસાર થયાની સંખ્યા</translation>
 <translation id="3885327323343477505">સ્ક્રીન સેવર બદલો</translation>
+<translation id="391412459402535266">ડિવાઇસનું પરીક્ષણ કરી શકતા નથી. પરીક્ષણ કરવા માટે લૅપટૉપ મોડ પર સ્વિચ કરો.</translation>
 <translation id="3923184630988645767">ડેટા વપરાશ</translation>
 <translation id="3932043219784172185">કોઈ ડિવાઇસ કનેક્ટ કરેલું નથી</translation>
 <translation id="3941014780699102620">હોસ્ટ રિઝોલ્વ કરવામાં નિષ્ફળ રહ્યાં</translation>
@@ -304,6 +309,7 @@
 <translation id="39823212440917567"><ph name="NUMBER_OF_DAYS" /> દિવસ કરતાં જૂના પ્રિન્ટ કાર્યો કાઢી નાખવામાં આવશે</translation>
 <translation id="3993704782688964914">તમારું <ph name="DEVICE_NAME" /> હવે અપ ટૂ ડેટ છે</translation>
 <translation id="4003384961948020559">નિષ્ફળ થયું - પ્રિન્ટરનું આઉટપુટ ભરાઈ ગયું છે</translation>
+<translation id="4021031199988160623">પરીક્ષણ કરવા માટે લૅપટૉપ મોડ પર સ્વિચ કરો</translation>
 <translation id="4034824040120875894">પ્રિન્ટર</translation>
 <translation id="4044093238444069296">ગેટવે સાથે સંપર્ક કરી શકતા નથી</translation>
 <translation id="4046123991198612571">આગલો ટ્રૅક</translation>
@@ -336,6 +342,7 @@
 <translation id="4289849978083912975">સ્લાઇડ શો</translation>
 <translation id="4297501883039923494">બંધ - અજાણી ભૂલ</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> છબી</translation>
+<translation id="4311195029067684288">પૂર્ણ</translation>
 <translation id="4333390807948134856"><ph name="KEY_NAME" /> કી દબાવી</translation>
 <translation id="435692326371619097">નેટવર્ક APN સેટિંગ મેનેજ કરો. APN સેલ્યુલર નેટવર્ક અને ઇન્ટરનેટ વચ્ચે કનેક્શન સ્થાપિત કરે છે. <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /></translation>
 <translation id="4378373042927530923">ચલાવ્યું નથી</translation>
@@ -415,7 +422,9 @@
 <translation id="4921665434385737356"><ph name="NUM_SECONDS" /> સેકન્ડમાં <ph name="RATE" /> ચાર્જ કરી.</translation>
 <translation id="4930320165497208503">કનેક્શનનું સેટઅપ કરવા અથવા તેને અપડેટ કરવા માટે, <ph name="BEGIN_LINK" />સેટિંગ<ph name="END_LINK" />માં જાઓ.</translation>
 <translation id="4932733599132424254">તારીખ</translation>
+<translation id="4937657825850660613">અડધી</translation>
 <translation id="4950314376641394653"><ph name="DEVICE_NAME" /> ફર્મવેયર વર્ઝન <ph name="VERSION" /> પર અપડેટ કરાયું</translation>
+<translation id="4971925105143343452">આંશિક</translation>
 <translation id="498186245079027698">તમારું સ્કૅનર ચેક કરો અને ફરી પ્રયાસ કરો. ખાતરી કરો કે સ્કૅન કરેલી ફાઇલોને સાચવવા માટે પૂરતી સ્થાનિક સ્પેસ હોય.</translation>
 <translation id="4985509611418653372">ચલાવો</translation>
 <translation id="4987769320337599931">ફાયરવૉલ</translation>
@@ -679,6 +688,7 @@
 <translation id="7415801143053185905">HTTPની અતિ ઉચ્ચ વિલંબતા</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7435977162516949853">{NUMBER_OF_PAGES,plural, =1{સ્કૅન કરવાનું પૂર્ણ થયું. 1 પેજ સ્કૅન કર્યું}one{સ્કૅન કરવાનું પૂર્ણ થયું. {NUMBER_OF_PAGES} પેજ સ્કૅન કર્યું}other{સ્કૅન કરવાનું પૂર્ણ થયું. {NUMBER_OF_PAGES} પેજ સ્કૅન કર્યા}}</translation>
+<translation id="7458970041932198923">અવતાર જોવા તેમજ તેમને સેટ કરવા માટે, કૃપા કરીને નેટવર્ક સાથે કનેક્ટ કરો અને પેજને ફરીથી લોડ કરો.</translation>
 <translation id="7469648432129124067">પોર્ટલની જાણકારી મળી</translation>
 <translation id="7481312909269577407">ફોર્વર્ડ કરો</translation>
 <translation id="7487067081878637334">તકનીક</translation>
@@ -768,6 +778,7 @@
 <translation id="8372477600026034341">અતિરિક્ત હોસ્ટ</translation>
 <translation id="8395584934117017006">આ <ph name="DEVICE_TYPE" /> એન્ટરપ્રાઇઝ દ્વારા મેનેજ થાય છે</translation>
 <translation id="8398927464629426868">ડિવાઇસ હાલમાં જે ઝડપથી ચાર્જ કે ડિસ્ચાર્જ થઈ રહ્યું છે તે ઝડપ</translation>
+<translation id="8410244574650205435">ઑટોમૅટિક રીતે શોધાયેલું</translation>
 <translation id="8420955526972171689">હાર્ડવેર સંબંધિત સમસ્યાઓ માટે, પરીક્ષણો અને સમસ્યા નિવારણ ચલાવો</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8431300646573772016">ChromeOSમાં નવું શું છે</translation>
@@ -832,6 +843,7 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8987565828374052507">{NUMBER_OF_PAGES,plural, =0{સ્કૅન કરો}=1{{NUMBER_OF_PAGES} પેજ સ્કૅન કરો}one{{NUMBER_OF_PAGES} પેજ સ્કૅન કરો}other{{NUMBER_OF_PAGES} પેજ સ્કૅન કરો}}</translation>
 <translation id="8997710128084572139">ડિવાઇસમાં <ph name="BATTERY_PERCENTAGE" />% બૅટરી છે.</translation>
+<translation id="8998289560386111590">તમારા ડિવાઇસ પર ઉપલબ્ધ નથી</translation>
 <translation id="9003704114456258138">આવર્તન</translation>
 <translation id="9025198690966128418">વ્યક્તિગત ડિવાઇસ તરીકે ઉપયોગ કરો</translation>
 <translation id="9028832514430399253">સ્ક્રીન સેવરના વિકલ્પો પસંદ કરવા માટે ટૉગલને ચાલુ કરો</translation>

@@ -47,6 +47,16 @@ TEST(SourceRegistrationTest, Parse) {
     base::expected<SourceRegistration, SourceRegistrationError> expected;
   } kTestCases[] = {
       {
+          "invalid_json",
+          "!",
+          base::unexpected(SourceRegistrationError::kInvalidJson),
+      },
+      {
+          "root_wrong_type",
+          "3",
+          base::unexpected(SourceRegistrationError::kRootWrongType),
+      },
+      {
           "required_fields_only",
           R"json({"destination":"https://d.example"})json",
           SourceRegistration(destination_origin, reporting_origin),
@@ -227,13 +237,64 @@ TEST(SourceRegistrationTest, Parse) {
   };
 
   for (const auto& test_case : kTestCases) {
-    base::Value value = base::test::ParseJson(test_case.json);
-    ASSERT_TRUE(value.is_dict()) << test_case.desc;
-
     EXPECT_EQ(test_case.expected,
-              SourceRegistration::Parse(std::move(*value.GetIfDict()),
-                                        reporting_origin))
+              SourceRegistration::Parse(test_case.json, reporting_origin))
         << test_case.desc;
+  }
+}
+
+TEST(SourceRegistrationTest, ToJson) {
+  const auto reporting_origin =
+      *SuitableOrigin::Deserialize("https://r.example");
+
+  const auto destination_origin =
+      *SuitableOrigin::Deserialize("https://d.example");
+
+  const struct {
+    SourceRegistration input;
+    const char* expected_json;
+  } kTestCases[] = {
+      {
+          SourceRegistration(destination_origin, reporting_origin),
+          R"json({
+            "debug_reporting": false,
+            "destination":"https://d.example",
+            "priority": "0",
+            "source_event_id": "0"
+          })json",
+      },
+      {
+          SourceRegistrationWith(
+              destination_origin, reporting_origin,
+              [](auto& r) {
+                r.aggregatable_report_window = base::Seconds(1);
+                r.aggregation_keys = *AggregationKeys::FromKeys({{"a", 2}});
+                r.debug_key = 3;
+                r.debug_reporting = true;
+                r.event_report_window = base::Seconds(4);
+                r.expiry = base::Seconds(5);
+                r.filter_data = *FilterData::Create({{"b", {}}});
+                r.priority = -6;
+                r.source_event_id = 7;
+              }),
+          R"json({
+            "aggregatable_report_window": "1",
+            "aggregation_keys": {"a": "0x2"},
+            "debug_key": "3",
+            "debug_reporting": true,
+            "destination":"https://d.example",
+            "event_report_window": "4",
+            "expiry": "5",
+            "filter_data": {"b": []},
+            "priority": "-6",
+            "source_event_id": "7",
+          })json",
+      },
+  };
+
+  for (const auto& test_case : kTestCases) {
+    EXPECT_THAT(test_case.input.ToJson(),
+                base::test::IsJson(test_case.expected_json));
   }
 }
 

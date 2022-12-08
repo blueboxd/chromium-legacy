@@ -57,6 +57,7 @@
 #include "content/public/common/url_constants.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_request_headers.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/rect.h"
 
 using content::BrowserThread;
@@ -214,6 +215,8 @@ NoStatePrefetchManager::StartPrefetchingFromLinkRelPrerender(
   }
 
   SessionStorageNamespace* session_storage_namespace = nullptr;
+  PreloadingAttempt* attempt = nullptr;
+
   // Unit tests pass in a process_id == -1.
   if (process_id != -1) {
     RenderViewHost* source_render_view_host =
@@ -231,10 +234,26 @@ NoStatePrefetchManager::StartPrefetchingFromLinkRelPrerender(
     // TODO(ajwong): This does not correctly handle storage for isolated apps.
     session_storage_namespace = source_web_contents->GetController()
                                     .GetDefaultSessionStorageNamespace();
+    // Create new PreloadingPrediction class and pass all the fields.
+    content::PreloadingURLMatchCallback same_url_matcher =
+        content::PreloadingData::GetSameURLMatcher(url);
+
+    auto* preloading_data =
+        content::PreloadingData::GetOrCreateForWebContents(source_web_contents);
+    // In case of link-rel, the confidence is set as 100 as the URL
+    // was not predicted and confidence in this case is not defined.
+    int64_t confidence = 100;
+
+    // Create PreloadingPrediction and PreloadingAttempt for NoStatePrefetch.
+    preloading_data->AddPreloadingPrediction(
+        content::PreloadingPredictor::kLinkRel, confidence, same_url_matcher);
+    attempt = preloading_data->AddPreloadingAttempt(
+        content::PreloadingPredictor::kLinkRel,
+        content::PreloadingType::kNoStatePrefetch, same_url_matcher);
   }
   return StartPrefetchingWithPreconnectFallback(
       origin, url, referrer, initiator_origin, gfx::Rect(size),
-      session_storage_namespace);
+      session_storage_namespace, attempt);
 }
 
 std::unique_ptr<NoStatePrefetchHandle>
@@ -390,23 +409,16 @@ bool NoStatePrefetchManager::HasRecentlyBeenNavigatedTo(Origin origin,
 
   return false;
 }
-
-std::unique_ptr<base::DictionaryValue> NoStatePrefetchManager::CopyAsValue()
-    const {
+base::Value::Dict NoStatePrefetchManager::CopyAsDict() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  auto dict_value = std::make_unique<base::DictionaryValue>();
-  dict_value->GetDict().Set("history",
-                            prerender_history_->CopyEntriesAsValue());
-  dict_value->SetKey(
-      "active", base::Value::FromUniquePtrValue(GetActivePrerendersAsValue()));
-  dict_value->SetBoolKey("enabled",
-                         delegate_->IsNetworkPredictionPreferenceEnabled());
-  dict_value->SetStringKey("disabled_note",
-                           delegate_->GetReasonForDisablingPrediction());
+  base::Value::Dict dict_value;
+  dict_value.Set("history", prerender_history_->CopyEntriesAsValue());
+  dict_value.Set("active", GetActivePrerenders());
+  dict_value.Set("enabled", delegate_->IsNetworkPredictionPreferenceEnabled());
+  dict_value.Set("disabled_note", delegate_->GetReasonForDisablingPrediction());
   // If prerender is disabled via a flag this method is not even called.
-  std::string enabled_note;
-  dict_value->SetStringKey("enabled_note", enabled_note);
+  dict_value.Set("enabled_note", std::string());
   return dict_value;
 }
 
@@ -987,16 +999,15 @@ void NoStatePrefetchManager::AddToHistory(NoStatePrefetchContents* contents) {
   prerender_history_->AddEntry(entry);
 }
 
-std::unique_ptr<base::ListValue>
-NoStatePrefetchManager::GetActivePrerendersAsValue() const {
-  auto list_value = std::make_unique<base::ListValue>();
+base::Value::List NoStatePrefetchManager::GetActivePrerenders() const {
+  base::Value::List list;
   for (const auto& prefetch : active_prefetches_) {
-    auto prefetch_value = prefetch->contents()->GetAsValue();
-    if (prefetch_value)
-      list_value->GetList().Append(
-          base::Value::FromUniquePtrValue(std::move(prefetch_value)));
+    if (absl::optional<base::Value::Dict> prefetch_value =
+            prefetch->contents()->GetAsDict()) {
+      list.Append(std::move(*prefetch_value));
+    }
   }
-  return list_value;
+  return list;
 }
 
 void NoStatePrefetchManager::SkipNoStatePrefetchContentsAndMaybePreconnect(

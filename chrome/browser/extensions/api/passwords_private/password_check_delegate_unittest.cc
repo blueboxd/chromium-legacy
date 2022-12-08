@@ -33,6 +33,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/password_manager/content/browser/password_change_success_tracker_factory.h"
+#include "components/password_manager/core/browser/affiliation/mock_affiliation_service.h"
 #include "components/password_manager/core/browser/bulk_leak_check_service.h"
 #include "components/password_manager/core/browser/leak_detection/bulk_leak_check.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_delegate_interface.h"
@@ -41,7 +42,6 @@
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
-#include "components/password_manager/core/browser/site_affiliation/mock_affiliation_service.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
 #include "components/password_manager/core/browser/well_known_change_password_util.h"
@@ -326,10 +326,7 @@ class PasswordCheckDelegateTest : public ::testing::Test {
       CreateAndUsePasswordChangeSuccessTracker(&profile_);
   raw_ptr<syncer::TestSyncService> sync_service_ =
       CreateAndUseSyncService(&profile_);
-  IdGenerator<password_manager::CredentialUIEntry,
-              int,
-              password_manager::CredentialUIEntry::Less>
-      credential_id_generator_;
+  IdGenerator credential_id_generator_;
   password_manager::MockAffiliationService affiliation_service_;
   SavedPasswordsPresenter presenter_{&affiliation_service_, store_,
                                      account_store_};

@@ -31,7 +31,6 @@
 <translation id="1148499908455722006">باز کردن کادر گفتگوی اطلاعات برای <ph name="USER_NAME" /></translation>
 <translation id="1150989369772528668">تقویم</translation>
 <translation id="1153356358378277386">دستگاه‌های مرتبط‌شده</translation>
-<translation id="1165712434476988950">دستگاه باید برای اعمال به‌روزرسانی بازراه‌اندازی شود.</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />،<ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">‏کابل USB-C شما ممکن است نتواند درست به نمایشگرها وصل شود</translation>
 <translation id="1175572348579024023">پیمایش</translation>
@@ -358,7 +357,6 @@
 <translation id="296762781903199866">فایل‌های گفتار <ph name="LANGUAGE" /> بارگیری نشد</translation>
 <translation id="2970920913501714344">نصب برنامه‌ها، افزونه‌ها و طرح‌های زمینه</translation>
 <translation id="2977598380246111477">عدد بعدی</translation>
-<translation id="2981684127883932071">نمایش پیشنهادها</translation>
 <translation id="2985148236010982088">دیدن همه برنامه‌ها</translation>
 <translation id="2992327365391326550">دکمه میکروفون دستگاه خاموش است.</translation>
 <translation id="2996462380875591307">‏«ذره‌بین متصل» فعال شد. برای خاموش کردن آن، Ctrl+Search+D را دوباره فشار دهید.</translation>
@@ -668,6 +666,7 @@
 <translation id="4666082839192943839">برای اینکه همه دوربین‌ها همیشه مسدود شوند، دسترسی دوربین را در این دستگاه خاموش کنید.</translation>
 <translation id="4666911709726371538">برنامه‌های بیشتر</translation>
 <translation id="4667099493359681081">درحال بارگیری <ph name="FILENAME" /></translation>
+<translation id="468293128311738995">برنامه‌های تلفن شما</translation>
 <translation id="4690510401873698237">قفسه در پایین است</translation>
 <translation id="4696813013609194136">باز کردن قفل دستگاه با کد والدین</translation>
 <translation id="4702647871202761252">صفحه حریم خصوصی خاموش است</translation>
@@ -924,12 +923,10 @@
 <translation id="6103838137565245112">سیستم</translation>
 <translation id="6107292179555508368">دسترسی میکروفون و دوربین در این دستگاه خاموش است</translation>
 <translation id="6114505516289286752">فایل‌های گفتار <ph name="LANGUAGE" /> بارگیری شد</translation>
-<translation id="6116825164611323644">دسترسی به دوربین در این دستگاه خاموش است</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042">تأیید بارگیری <ph name="FILENAME" /></translation>
 <translation id="612734058257491180">‏«دستیار Google» در جلسه مهمان دردسترس نیست.</translation>
 <translation id="6129953537138746214">فاصله</translation>
-<translation id="6134259848159370930">دستگاه، برنامه‌ها، تنظیمات، و وب را جستجو کنید.</translation>
 <translation id="6137566720514957455">باز کردن کادر گفتگوی برداشتن <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6141988275892716286">تأیید بارگیری</translation>
 <translation id="6154006699632741460">از دستگاه‌های جانبی پشتیبانی نمی‌شود</translation>
@@ -1290,6 +1287,7 @@
 <translation id="8142441511840089262">دوبار کلیک کردن</translation>
 <translation id="8142699993796781067">شبکه‌های خصوصی</translation>
 <translation id="8144760705599030999">برای مرتبط‌سازی سریع‌تر با دستگاه‌های دیگر، <ph name="NAME" /> را در <ph name="EMAIL" /> ذخیره کنید</translation>
+<translation id="8144914663975476336">انتخاب قالب ضبط</translation>
 <translation id="8149413265954228307">نمایش تنظیمات بلوتوث. <ph name="STATE_TEXT" />.</translation>
 <translation id="8152092012181020186">‏برای بستن برگه، Ctrl + W را فشار دهید.</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />، تکمیل خودکار</translation>
@@ -1387,7 +1385,6 @@
 <translation id="8666856788528804727">برای راه‌اندازی دستگاه، <ph name="NAME" /> را باز کنید</translation>
 <translation id="8676770494376880701">شارژر برق متصل شده ضعیف است</translation>
 <translation id="8683506306463609433">ردیابی عملکرد فعال است</translation>
-<translation id="8685326675965865247">دستگاه، برنامه‌ها، تنظیمات، و وب را جستجو کنید. با کلیدهای پیکانی، برنامه‌هایتان را پیمایش کنید.</translation>
 <translation id="8703634754197148428">شروع ضبط. هروقت ضبط شروع شد، بااستفاده از کلیدهای «دگرساز + تبدیل + م» به قفسه پیمایش کنید و دکمه متوقف کردن ضبط را پیدا کنید</translation>
 <translation id="8721053961083920564">تغییر وضعیت میزان صدا. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">ضبط تمام صفحه‌نمایش</translation>
@@ -1395,7 +1392,6 @@
 <translation id="8734991477317290293">ممکن است تلاش کند ضربه‌کلیدهای شما را به سرقت ببرد</translation>
 <translation id="8735678380411481005">رنگ نور پس‌زمینه صفحه‌کلید</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />، <ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8752416742247198423">دسترسی به دوربین را روشن کنید تا برنامه‌ها و صفحه‌های وب دارای اجازه دوربین بتوانند از دوربین(های) متصل به این دستگاه استفاده کنند.</translation>
 <translation id="8755498163081687682">هویتتان را به‌تأیید برسانید: <ph name="ORIGIN_NAME" /> می‌خواهید تأیید کند این فرد شما هستید</translation>
 <translation id="875593634123171288">‏نمایش تنظیمات VPN</translation>
 <translation id="8759408218731716181">تنظیم ورود چندگانه به سیستم ممکن نیست</translation>
@@ -1462,7 +1458,6 @@
 <translation id="9089416786594320554">روش‌های ورودی</translation>
 <translation id="9091626656156419976">نمایشگر <ph name="DISPLAY_NAME" /> برداشته شد</translation>
 <translation id="9098969848082897657">بی‌صدا کردن تلفن</translation>
-<translation id="9099154003160514616">‏به‌روزرسانی Lacros موجود است</translation>
 <translation id="9100887602489003640">درحال افزودن نمایه. چند دقیقه صبر کنید.</translation>
 <translation id="9105450214093926548">‏درحین اجرای مرورگر Lacros، از ورود به سیستم کاربر دوم پشتیبانی نمی‌شود. لطفاً درعوض از نمایه مرورگر دیگری در Lacros استفاده کنید یا Lacros را ببندید و دوباره امتحان کنید.</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> یا <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>

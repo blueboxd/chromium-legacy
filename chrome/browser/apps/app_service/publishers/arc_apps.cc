@@ -34,13 +34,13 @@
 #include "chrome/browser/apps/app_service/menu_util.h"
 #include "chrome/browser/apps/app_service/publishers/arc_apps_factory.h"
 #include "chrome/browser/apps/app_service/webapk/webapk_manager.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_icon.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ash/apps/apk_web_app_service.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/component_extension_resources.h"
@@ -1133,14 +1133,6 @@ void ArcApps::UnpauseApp(const std::string& app_id) {
 
 void ArcApps::StopApp(const std::string& app_id) {
   CloseTasks(app_id);
-}
-
-void ArcApps::GetMenuModel(const std::string& app_id,
-                           apps::mojom::MenuType menu_type,
-                           int64_t display_id,
-                           GetMenuModelCallback callback) {
-  GetMenuModel(app_id, ConvertMojomMenuTypeToMenuType(menu_type), display_id,
-               MenuItemsToMojomMenuItemsCallback(std::move(callback)));
 }
 
 void ArcApps::ExecuteContextMenuCommand(const std::string& app_id,

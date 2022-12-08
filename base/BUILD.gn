@@ -243,7 +243,6 @@ component("base") {
     "containers/adapters.h",
     "containers/buffer_iterator.h",
     "containers/checked_iterators.h",
-    "containers/checked_range.h",
     "containers/circular_deque.h",
     "containers/contains.h",
     "containers/contiguous_iterator.h",
@@ -815,7 +814,6 @@ component("base") {
     "task/task_observer.h",
     "task/task_runner.cc",
     "task/task_runner.h",
-    "task/task_runner_util.h",
     "task/task_traits.cc",
     "task/task_traits.h",
     "task/task_traits_extension.h",
@@ -1129,6 +1127,8 @@ component("base") {
       "threading/platform_thread_win.h",
       "threading/thread_local_storage_win.cc",
       "timer/hi_res_timer_manager_win.cc",
+      "win/access_control_list.cc",
+      "win/access_control_list.h",
       "win/access_token.cc",
       "win/access_token.h",
       "win/async_operation.h",
@@ -1210,6 +1210,8 @@ component("base") {
       "win/scoped_windows_thread_environment.h",
       "win/scoped_winrt_initializer.cc",
       "win/scoped_winrt_initializer.h",
+      "win/security_descriptor.cc",
+      "win/security_descriptor.h",
       "win/security_util.cc",
       "win/security_util.h",
       "win/shlwapi.h",
@@ -1474,7 +1476,13 @@ component("base") {
   }
 
   all_dependent_configs = []
-  defines = [ "BASE_IMPLEMENTATION" ]
+  defines = [
+    "BASE_IMPLEMENTATION",
+
+    # Temporary placement for `raw_ptr` using PA's `component_export.h`;
+    # will be moved: crbug.com/1371729
+    "IS_RAW_PTR_IMPL",
+  ]
   data = []
   data_deps = []
   libs = []
@@ -3096,7 +3104,6 @@ test("base_unittests") {
     "containers/adapters_unittest.cc",
     "containers/buffer_iterator_unittest.cc",
     "containers/checked_iterators_unittest.cc",
-    "containers/checked_range_unittest.cc",
     "containers/circular_deque_unittest.cc",
     "containers/contains_unittest.cc",
     "containers/contiguous_iterator_unittest.cc",
@@ -3333,7 +3340,6 @@ test("base_unittests") {
     "task/single_thread_task_executor_unittest.cc",
     "task/single_thread_task_runner_unittest.cc",
     "task/task_runner_unittest.cc",
-    "task/task_runner_util_unittest.cc",
     "task/task_traits_extension_unittest.cc",
     "task/task_traits_unittest.cc",
     "task/thread_pool/can_run_policy_test.h",
@@ -3497,6 +3503,7 @@ test("base_unittests") {
       "test/test_reg_util_win_unittest.cc",
       "threading/platform_thread_win_unittest.cc",
       "time/time_win_unittest.cc",
+      "win/access_control_list_unittest.cc",
       "win/access_token_unittest.cc",
       "win/async_operation_unittest.cc",
       "win/com_init_balancer_unittest.cc",
@@ -3531,6 +3538,7 @@ test("base_unittests") {
       "win/scoped_safearray_unittest.cc",
       "win/scoped_variant_unittest.cc",
       "win/scoped_winrt_initializer_unittest.cc",
+      "win/security_descriptor_unittest.cc",
       "win/security_util_unittest.cc",
       "win/shortcut_unittest.cc",
       "win/sid_unittest.cc",
@@ -3951,7 +3959,6 @@ test("base_unittests") {
   if (enable_base_tracing) {
     sources += [
       "test/trace_event_analyzer_unittest.cc",
-      "trace_event/heap_profiler_allocation_context_tracker_unittest.cc",
       "trace_event/memory_allocator_dump_unittest.cc",
       "trace_event/memory_dump_manager_unittest.cc",
       "trace_event/memory_dump_scheduler_unittest.cc",

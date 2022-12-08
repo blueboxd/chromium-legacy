@@ -31,7 +31,6 @@
 <translation id="1148499908455722006"><ph name="USER_NAME" />-н мэдээллийн харилцах цонхыг нээх</translation>
 <translation id="1150989369772528668">Календарь</translation>
 <translation id="1153356358378277386">Хослуулсан төхөөрөмж</translation>
-<translation id="1165712434476988950">Шинэчлэлтийг ашиглахын тулд төхөөрөмжөө дахин эхлүүлэх шаардлагатай.</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Таны USB-C кабель дэлгэцүүдэд зохих ёсоор холбогдохгүй байж магадгүй</translation>
 <translation id="1175572348579024023">Гүйлгэх</translation>
@@ -358,7 +357,6 @@
 <translation id="296762781903199866"><ph name="LANGUAGE" /> дээрх ярианы файлуудыг татаж чадсангүй</translation>
 <translation id="2970920913501714344">Аппууд, өргөтгөлүүд болон загваруудыг суулгах</translation>
 <translation id="2977598380246111477">Дараагийн тоо</translation>
-<translation id="2981684127883932071">Зөвлөмжийг үзүүлж байна</translation>
 <translation id="2985148236010982088">Бүх аппыг харах</translation>
 <translation id="2992327365391326550">Төхөөрөмжийн микрофоны товчлуур унтраалттай байна.</translation>
 <translation id="2996462380875591307">Суурилуулсан томруулагчийг идэвхжүүлсэн. Үүнийг асаах/унтраахын тулд Ctrl+Search+D-г дахин дарна уу.</translation>
@@ -670,6 +668,7 @@
 <translation id="4666082839192943839">Бүх камерыг үргэлж блоклохын тулд энэ төхөөрөмж дээр камерын хандалтыг унтраана уу.</translation>
 <translation id="4666911709726371538">Бусад апп</translation>
 <translation id="4667099493359681081"><ph name="FILENAME" />-г татаж байна</translation>
+<translation id="468293128311738995">Таны утасны аппууд</translation>
 <translation id="4690510401873698237">Доор байгаа shelf</translation>
 <translation id="4696813013609194136">Төхөөрөмжийн түгжээг эцэг эхийн кодоор тайлна уу</translation>
 <translation id="4702647871202761252">Нууцлалын дэлгэц унтраалттай байна</translation>
@@ -926,12 +925,10 @@
 <translation id="6103838137565245112">систем</translation>
 <translation id="6107292179555508368">Энэ төхөөрөмж дээр микрофон болон камерын хандалтууд унтраалттай байна</translation>
 <translation id="6114505516289286752"><ph name="LANGUAGE" /> дээрх ярианы файлуудыг татсан</translation>
-<translation id="6116825164611323644">Энэ төхөөрөмж дээр камерын хандалтыг унтраасан</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042"><ph name="FILENAME" />-н таталтыг баталгаажуулах</translation>
 <translation id="612734058257491180">Зочны сургалтад Google Туслах боломжгүй байна.</translation>
 <translation id="6129953537138746214">Space</translation>
-<translation id="6134259848159370930">Төхөөрөмж, апп, тохиргоо, вебээс хайна уу.</translation>
 <translation id="6137566720514957455"><ph name="USER_EMAIL_ADDRESS" />-н хасах харилцах цонхыг нээнэ үү</translation>
 <translation id="6141988275892716286">Таталтыг баталгаажуулах</translation>
 <translation id="6154006699632741460">Нэмэлтийг дэмждэггүй</translation>
@@ -1292,6 +1289,7 @@
 <translation id="8142441511840089262">2 товших</translation>
 <translation id="8142699993796781067">Хувийн сүлжээ</translation>
 <translation id="8144760705599030999">Бусад төхөөрөмжтэйгээ илүү хурдан хослуулахын тулд өөрийн <ph name="NAME" />-г <ph name="EMAIL" />-д хадгална уу</translation>
+<translation id="8144914663975476336">Бичлэгийн форматыг сонгоно уу</translation>
 <translation id="8149413265954228307">Bluetooth-н тохиргоог харуулна уу. <ph name="STATE_TEXT" />.</translation>
 <translation id="8152092012181020186">Хаахын тулд Ctrl + W дээр дарна уу.</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, Автоматаар гүйцээх</translation>
@@ -1390,7 +1388,6 @@
 <translation id="8666856788528804727">Төхөөрөмжөө тохируулахын тулд <ph name="NAME" />-г нээнэ үү</translation>
 <translation id="8676770494376880701">Цэнэглэгчийг холбосон байна</translation>
 <translation id="8683506306463609433">Гүйцэтгэлийн хяналт идэвхтэй байна</translation>
-<translation id="8685326675965865247">Төхөөрөмж, апп, тохиргоо, вебээ хайна уу. Аппуудын хооронд шилжихийн тулд сумтай товчлууруудыг ашиглана уу.</translation>
 <translation id="8703634754197148428">Бичиж эхэлнэ үү. Бичиж эхэлсэн үед Alt + Shift + L-г ашиглан тавиур луу шилжиж, бичлэгийг зогсоох товчлуурыг олно уу</translation>
 <translation id="8721053961083920564">Дууг хаах/нээх. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">Бүтэн дэлгэцийн зураг авах</translation>
@@ -1399,7 +1396,6 @@
 <translation id="8735678380411481005">Гарын арын гэрлийн өнгө</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />,
         <ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8752416742247198423">Камерын зөвшөөрөлтэй аппууд болон веб хуудаснуудад энэ төхөөрөмжтэй холбогдсон камеруудыг ашиглахыг зөвшөөрөхийн тулд камерын хандалтыг асаана уу.</translation>
 <translation id="8755498163081687682">Өөрийгөө баталгаажуулах: <ph name="ORIGIN_NAME" /> таныг мөн болохыг баталгаажуулахыг хүсэж байна</translation>
 <translation id="875593634123171288">VPN тохиргоог харуулах</translation>
 <translation id="8759408218731716181">Олон хэрэглэгчтэй нэвтрэх эрхийг суулгаж чадахгүй байна</translation>
@@ -1466,7 +1462,6 @@
 <translation id="9089416786594320554">Оролтын аргууд</translation>
 <translation id="9091626656156419976"><ph name="DISPLAY_NAME" /> дэлгэцийг хассан</translation>
 <translation id="9098969848082897657">Утасны дууг хаах</translation>
-<translation id="9099154003160514616">Lacros-н шинэчлэлт боломжтой байна</translation>
 <translation id="9100887602489003640">Профайл нэмж байна. Цөөн хэдэн минут хүлээнэ үү.</translation>
 <translation id="9105450214093926548">Lacros хөтчийг ажиллуулж байх үед хоёр дахь хэрэглэгч нэвтрэхийг дэмждэггүй. Оронд нь Lacros-н хоёр дахь хөтчийн профайлыг ашиглах эсвэл Lacros-г хаагаад дахин оролдоно уу.</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> эсвэл <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>

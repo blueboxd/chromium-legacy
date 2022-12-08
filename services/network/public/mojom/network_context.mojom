@@ -438,11 +438,6 @@ struct NetworkContextParams {
   [EnableIf=is_ct_supported]
   bool enforce_chrome_ct_policy = false;
 
-  // Enables Expect CT reporting, which sends reports for opted-in sites that
-  // don't serve sufficient Certificate Transparency information.
-  [EnableIf=is_ct_supported]
-  bool enable_expect_ct_reporting = false;
-
   // The SCT auditing mode. SCT auditing sends reports for SCTs found in
   // connections made by this network context. Can also be dynamically
   // configured via NetworkContext::SetSCTAuditingMode().
@@ -825,15 +820,6 @@ interface NetworkContextClient {
   [EnableIf=is_chromeos]
   OnTrustAnchorUsed();
 
-  // If it's supported by the implementation, attempts to provide a response to
-  // the given Trust Tokens issuance request through some kind of local
-  // mediation---i.e., probably by a method other than sending a web request
-  // directly to the issuer's server. In situations where it's not possible to
-  // answer the request, returns a status of kNotFound (see the request and
-  // response structs' comments for more information).
-  OnTrustTokenIssuanceDivertedToSystem(FulfillTrustTokenIssuanceRequest request)
-    => (FulfillTrustTokenIssuanceAnswer response);
-
   // Checks if a new SCT Auditing report can be sent. The browser maintains a
   // maximum report count cap for Hashdance clients -- this returns whether the
   // cap has been exceeded or not (i.e., whether another report can be sent from
@@ -1127,25 +1113,6 @@ interface NetworkContext {
   // of the network service.
   [EnableIf=is_ct_supported]
   SetCTPolicy(CTPolicy ct_policy);
-
-  // Adds explicitly-specified data as if it was processed from an Expect-CT
-  // header.
-  [EnableIf=is_ct_supported]
-  AddExpectCT(string host, mojo_base.mojom.Time expiry,
-              bool enforce, url.mojom.Url report_uri,
-              NetworkAnonymizationKey network_anonymization_key)
-              => (bool success);
-
-  // Send a test CT report with dummy data for test purposes.
-  [EnableIf=is_ct_supported]
-  SetExpectCTTestReport(url.mojom.Url report_uri) => (bool success);
-
-  // Retrieves the expect CT state from the associated network context
-  // transport security state.
-  [EnableIf=is_ct_supported]
-  GetExpectCTState(string domain,
-                   NetworkAnonymizationKey network_anonymization_key)
-                   => (mojo_base.mojom.DictionaryValue state);
 
   // Creates a UDP socket. Caller can supply a |listener| interface pointer
   // to listen for incoming datagrams. A null |listener| is acceptable if caller

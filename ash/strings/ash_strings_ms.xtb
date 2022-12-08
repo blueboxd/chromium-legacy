@@ -31,7 +31,6 @@ Berikut ialah beberapa perkara yang boleh anda cuba untuk bermula.</translation>
 <translation id="1148499908455722006">Buka dialog maklumat untuk <ph name="USER_NAME" /></translation>
 <translation id="1150989369772528668">Kalendar</translation>
 <translation id="1153356358378277386">Peranti digandingkan</translation>
-<translation id="1165712434476988950">Peranti perlu dimulakan semula untuk memasang kemaskinian.</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Kabel USB-C anda mungkin tidak bersambung ke paparan dengan betul</translation>
 <translation id="1175572348579024023">Tatal</translation>
@@ -358,7 +357,6 @@ Berikut ialah beberapa perkara yang boleh anda cuba untuk bermula.</translation>
 <translation id="296762781903199866">Tidak dapat memuat turun fail pertuturan <ph name="LANGUAGE" /></translation>
 <translation id="2970920913501714344">Pasang apl, sambungan dan tema</translation>
 <translation id="2977598380246111477">Nombor seterusnya</translation>
-<translation id="2981684127883932071">Memaparkan cadangan</translation>
 <translation id="2985148236010982088">Lihat semua apl</translation>
 <translation id="2992327365391326550">Butang mikrofon peranti dimatikan.</translation>
 <translation id="2996462380875591307">Penggadang Didok didayakan. Tekan Ctrl+Cari+D semula untuk mematikannya.</translation>
@@ -670,6 +668,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="4666082839192943839">Matikan akses kamera pada peranti ini untuk menyekat semua kamera pada setiap masa.</translation>
 <translation id="4666911709726371538">Lagi apl</translation>
 <translation id="4667099493359681081">Memuat turun <ph name="FILENAME" /></translation>
+<translation id="468293128311738995">Apl daripada telefon anda</translation>
 <translation id="4690510401873698237">Rak di bahagian bawah</translation>
 <translation id="4696813013609194136">Buka kunci peranti menggunakan kod ibu bapa</translation>
 <translation id="4702647871202761252">Skrin privasi dimatikan</translation>
@@ -926,12 +925,10 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="6103838137565245112">sistem</translation>
 <translation id="6107292179555508368">Akses mikrofon dan kamera dimatikan pada peranti ini</translation>
 <translation id="6114505516289286752">Fail pertuturan <ph name="LANGUAGE" /> dimuat turun</translation>
-<translation id="6116825164611323644">Akses kamera dimatikan pada peranti ini</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042">Sahkan muat turun <ph name="FILENAME" /></translation>
 <translation id="612734058257491180">Google Assistant tidak tersedia dalam sesi tetamu.</translation>
 <translation id="6129953537138746214">Ruang</translation>
-<translation id="6134259848159370930">Cari dalam peranti anda, apl, tetapan dan web.</translation>
 <translation id="6137566720514957455">Buka dialog alih keluar untuk <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6141988275892716286">Sahkan muat turun</translation>
 <translation id="6154006699632741460">Peranti persisian tidak disokong</translation>
@@ -1292,6 +1289,7 @@ Pemasangan baharu</translation>
 <translation id="8142441511840089262">Klik dua kali</translation>
 <translation id="8142699993796781067">Rangkaian persendirian</translation>
 <translation id="8144760705599030999">Simpan <ph name="NAME" /> anda pada <ph name="EMAIL" /> untuk penggandingan yang lebih pantas dengan peranti anda yang lain</translation>
+<translation id="8144914663975476336">Pilih format rakaman</translation>
 <translation id="8149413265954228307">Tunjukkan tetapan Bluetooth. <ph name="STATE_TEXT" />.</translation>
 <translation id="8152092012181020186">Tekan Ctrl + W untuk tutup.</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, Autolengkap</translation>
@@ -1389,7 +1387,6 @@ Pemasangan baharu</translation>
 <translation id="8666856788528804727">Buka <ph name="NAME" /> untuk menyediakan peranti anda</translation>
 <translation id="8676770494376880701">Pengecas berkuasa rendah disambungkan</translation>
 <translation id="8683506306463609433">Pengesanan prestasi aktif</translation>
-<translation id="8685326675965865247">Cari dalam peranti anda, apl, tetapan dan web. Gunakan kekunci anak panah untuk menavigasi apl anda.</translation>
 <translation id="8703634754197148428">Mulakan rakaman. Sebaik sahaja rakaman dimulakan, gunakan Alt + Shift + L untuk menavigasi ke rak dan cari butang hentikan rakaman</translation>
 <translation id="8721053961083920564">Togol Kelantangan. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">Tangkapan skrin penuh</translation>
@@ -1398,7 +1395,6 @@ Pemasangan baharu</translation>
 <translation id="8735678380411481005">Warna cahaya belakang papan kekunci</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />,
         <ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8752416742247198423">Hidupkan akses kamera untuk membenarkan apl dan halaman web yang mempunyai kebenaran kamera menggunakan kamera yang disambungkan kepada peranti ini.</translation>
 <translation id="8755498163081687682">Sahkan identiti anda: <ph name="ORIGIN_NAME" /> ingin mengesahkan orang itu ialah anda</translation>
 <translation id="875593634123171288">Tunjukkan tetapan VPN</translation>
 <translation id="8759408218731716181">Tidak dapat menyediakan berbilang log masuk</translation>
@@ -1465,7 +1461,6 @@ Pemasangan baharu</translation>
 <translation id="9089416786594320554">Kaedah input</translation>
 <translation id="9091626656156419976">Paparan <ph name="DISPLAY_NAME" /> dialih keluar</translation>
 <translation id="9098969848082897657">Senyapkan telefon</translation>
-<translation id="9099154003160514616">Kemaskinian Lacros tersedia</translation>
 <translation id="9100887602489003640">Menambah profil. Tunggu beberapa minit.</translation>
 <translation id="9105450214093926548">Log masuk pengguna kedua tidak disokong semasa penyemak imbas Lacros dijalankan. Sila gunakan profil penyemak imbas kedua dalam Lacros atau tutup Lacros dan cuba lagi.</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> atau <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>

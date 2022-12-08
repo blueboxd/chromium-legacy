@@ -31,7 +31,6 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="1148499908455722006">Mở hộp thoại thông tin cho <ph name="USER_NAME" /></translation>
 <translation id="1150989369772528668">Lịch</translation>
 <translation id="1153356358378277386">Thiết bị đã ghép nối</translation>
-<translation id="1165712434476988950">Bạn cần phải khởi động lại thiết bị để áp dụng bản cập nhật.</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Có thể cáp USB-C của bạn chưa kết nối đúng cách với màn hình</translation>
 <translation id="1175572348579024023">Cuộn</translation>
@@ -358,7 +357,6 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="296762781903199866">Không thể tải các tệp mã chuyển lời nói thành văn bản <ph name="LANGUAGE" /> xuống</translation>
 <translation id="2970920913501714344">Cài đặt ứng dụng, tiện ích và chủ đề</translation>
 <translation id="2977598380246111477">Số tiếp theo</translation>
-<translation id="2981684127883932071">Đang hiển thị mục đề xuất</translation>
 <translation id="2985148236010982088">Xem tất cả ứng dụng</translation>
 <translation id="2992327365391326550">Nút micrô trên thiết bị đang tắt.</translation>
 <translation id="2996462380875591307">Đã bật tính năng Phóng to ở vị trí cố định. Hãy nhấn lại tổ hợp phím Ctrl+Search+D để tắt tính năng này.</translation>
@@ -669,6 +667,7 @@ Hãy sạc thiết bị.</translation>
 <translation id="4666082839192943839">Tắt quyền truy cập vào máy ảnh trên thiết bị này để luôn chặn tất cả máy ảnh.</translation>
 <translation id="4666911709726371538">Hiện thêm ứng dụng</translation>
 <translation id="4667099493359681081">Đang tải <ph name="FILENAME" /> xuống</translation>
+<translation id="468293128311738995">Ứng dụng từ điện thoại của bạn</translation>
 <translation id="4690510401873698237">Giá ở dưới cùng</translation>
 <translation id="4696813013609194136">Mở khóa thiết bị bằng mã dành cho cha mẹ</translation>
 <translation id="4702647871202761252">Màn hình bảo vệ quyền riêng tư đang tắt</translation>
@@ -925,12 +924,10 @@ Hãy sạc thiết bị.</translation>
 <translation id="6103838137565245112">hệ thống</translation>
 <translation id="6107292179555508368">Quyền truy cập vào micrô và máy ảnh trên thiết bị này đều đang tắt</translation>
 <translation id="6114505516289286752">Đã tải tệp mã chuyển lời nói thành văn bản <ph name="LANGUAGE" /> xuống</translation>
-<translation id="6116825164611323644">Quyền truy cập vào máy ảnh đang tắt trên thiết bị này</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042">Xác nhận tải <ph name="FILENAME" /> xuống</translation>
 <translation id="612734058257491180">Bạn không thể dùng Trợ lý Google trong phiên khách.</translation>
 <translation id="6129953537138746214">Dấu cách</translation>
-<translation id="6134259848159370930">Tìm kiếm trong thiết bị, ứng dụng, tùy chọn cài đặt và trên web.</translation>
 <translation id="6137566720514957455">Mở hộp thoại xóa tài khoản cho <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6141988275892716286">Xác nhận tải xuống</translation>
 <translation id="6154006699632741460">Không hỗ trợ thiết bị ngoại vi</translation>
@@ -1291,6 +1288,7 @@ Mới cài đặt</translation>
 <translation id="8142441511840089262">Nhấp đúp</translation>
 <translation id="8142699993796781067">Mạng riêng</translation>
 <translation id="8144760705599030999">Lưu <ph name="NAME" /> vào <ph name="EMAIL" /> để ghép nối nhanh hơn với các thiết bị khác</translation>
+<translation id="8144914663975476336">Chọn định dạng ghi âm/quay video</translation>
 <translation id="8149413265954228307">Hiện chế độ cài đặt Bluetooth. <ph name="STATE_TEXT" />.</translation>
 <translation id="8152092012181020186">Nhấn tổ hợp phím Ctrl + W để đóng.</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, Tự động hoàn thành</translation>
@@ -1388,7 +1386,6 @@ Mới cài đặt</translation>
 <translation id="8666856788528804727">Mở <ph name="NAME" /> để thiết lập thiết bị của bạn</translation>
 <translation id="8676770494376880701">Đã kết nối bộ sạc công suất thấp</translation>
 <translation id="8683506306463609433">Tính năng theo dõi hiệu suất đang hoạt động</translation>
-<translation id="8685326675965865247">Tìm kiếm trong thiết bị, ứng dụng, phần thông tin cài đặt và trên Internet. Hãy sử dụng các phím mũi tên để di chuyển đến các ứng dụng.</translation>
 <translation id="8703634754197148428">Bắt đầu ghi. Sau khi quá trình ghi bắt đầu, hãy nhấn tổ hợp phím Alt + Shift + L để chuyển đến kệ rồi tìm nút dừng ghi</translation>
 <translation id="8721053961083920564">Bật/tắt tiếng. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">Chụp toàn màn hình</translation>
@@ -1397,7 +1394,6 @@ Mới cài đặt</translation>
 <translation id="8735678380411481005">Màu đèn nền bàn phím</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />,
         <ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8752416742247198423">Bật quyền truy cập vào máy ảnh để cho phép các ứng dụng và trang web có quyền này dùng (các) máy ảnh được kết nối với thiết bị.</translation>
 <translation id="8755498163081687682">Xác minh danh tính của bạn: <ph name="ORIGIN_NAME" /> muốn xác nhận đó là bạn</translation>
 <translation id="875593634123171288">Hiển thị các tùy chọn cài đặt VPN</translation>
 <translation id="8759408218731716181">Không thể thiết lập đăng nhập nhiều tài khoản</translation>
@@ -1464,7 +1460,6 @@ Mới cài đặt</translation>
 <translation id="9089416786594320554">Phương thức nhập</translation>
 <translation id="9091626656156419976">Đã xóa màn hình <ph name="DISPLAY_NAME" /></translation>
 <translation id="9098969848082897657">Tắt tiếng điện thoại</translation>
-<translation id="9099154003160514616">Đã có bản cập nhật dành cho trình duyệt Lacros</translation>
 <translation id="9100887602489003640">Đang thêm hồ sơ. Hãy chờ ít phút.</translation>
 <translation id="9105450214093926548">Không đăng nhập được người dùng thứ hai khi trình duyệt Lacros đang chạy. Vui lòng dùng một hồ sơ trình duyệt thứ hai trong Lacros hoặc đóng Lacros rồi thử lại.</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> hoặc <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>

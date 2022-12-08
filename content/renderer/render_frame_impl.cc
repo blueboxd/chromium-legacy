@@ -758,10 +758,6 @@ class MHTMLPartsGenerationDelegate
     return params_.mhtml_popup_overlay_removal;
   }
 
-  bool UsePageProblemDetectors() override {
-    return params_.mhtml_problem_detection;
-  }
-
  private:
   const mojom::SerializeAsMHTMLParams& params_;
   std::unordered_set<std::string>* serialized_resources_uri_digests_;
@@ -1036,28 +1032,41 @@ void FillMiscNavigationParams(
         NavigationApiHistoryEntryPtrToWebHistoryItem(*entry));
   }
 
-  if (commit_params.ad_auction_components) {
-    DCHECK_EQ(blink::kMaxAdAuctionAdComponents,
-              commit_params.ad_auction_components->size());
-    navigation_params->ad_auction_components.emplace();
-    for (const GURL& urn : *commit_params.ad_auction_components) {
-      // `ad_auction_components` must be a list of URNs, to avoid leaking data.
-      DCHECK(urn.SchemeIs(url::kUrnScheme));
-      navigation_params->ad_auction_components->push_back(blink::WebURL(urn));
-    }
-  }
-
-  if (commit_params.fenced_frame_reporting_metadata) {
-    navigation_params->fenced_frame_reporting.emplace();
-    for (const auto& [destination, metadata] :
-         commit_params.fenced_frame_reporting_metadata->metadata) {
-      base::flat_map<blink::WebString, blink::WebURL> data;
-      for (const auto& [event_type, url] : metadata) {
-        data.emplace(blink::WebString::FromUTF8(event_type),
-                     blink::WebURL(url));
+  if (commit_params.fenced_frame_properties) {
+    if (commit_params.fenced_frame_properties->nested_urn_config_pairs() &&
+        commit_params.fenced_frame_properties->nested_urn_config_pairs()
+            ->potentially_opaque_value.has_value()) {
+      const auto& nested_urn_config_pairs_value =
+          commit_params.fenced_frame_properties->nested_urn_config_pairs()
+              ->potentially_opaque_value.value();
+      DCHECK_EQ(blink::kMaxAdAuctionAdComponents,
+                nested_urn_config_pairs_value.size());
+      navigation_params->ad_auction_components.emplace();
+      for (const auto& nested_urn_config_pair : nested_urn_config_pairs_value) {
+        const GURL& urn = nested_urn_config_pair.first;
+        DCHECK(urn.SchemeIs(url::kUrnScheme));
+        navigation_params->ad_auction_components->push_back(blink::WebURL(urn));
       }
-      navigation_params->fenced_frame_reporting->metadata.emplace(
-          destination, std::move(data));
+    }
+
+    if (commit_params.fenced_frame_properties->reporting_metadata() &&
+        commit_params.fenced_frame_properties->reporting_metadata()
+            ->potentially_opaque_value.has_value()) {
+      const auto& reporting_metadata_value =
+          commit_params.fenced_frame_properties->reporting_metadata()
+              ->potentially_opaque_value.value();
+
+      navigation_params->fenced_frame_reporting.emplace();
+      for (const auto& [destination, metadata] :
+           reporting_metadata_value.metadata) {
+        base::flat_map<blink::WebString, blink::WebURL> data;
+        for (const auto& [event_type, url] : metadata) {
+          data.emplace(blink::WebString::FromUTF8(event_type),
+                       blink::WebURL(url));
+        }
+        navigation_params->fenced_frame_reporting->metadata.emplace(
+            destination, std::move(data));
+      }
     }
   }
 
@@ -1937,10 +1946,6 @@ void RenderFrameImpl::Initialize(blink::WebFrame* parent) {
                                   GetBrowserInterfaceBroker());
   }
 
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kDomAutomationController))
-    enabled_bindings_ |= BINDINGS_POLICY_DOM_AUTOMATION;
   frame_request_blocker_ = blink::WebFrameRequestBlocker::Create();
 
   // Bind this class to mojom::Frame and to the message router for legacy IPC.
@@ -2582,7 +2587,6 @@ void RenderFrameImpl::CommitNavigation(
     mojo::PendingRemote<blink::mojom::CodeCacheHost> code_cache_host,
     mojom::CookieManagerInfoPtr cookie_manager_info,
     mojom::StorageInfoPtr storage_info,
-    blink::mojom::BackForwardCacheNotRestoredReasonsPtr not_restored_reasons,
     mojom::NavigationClient::CommitNavigationCallback commit_callback) {
   DCHECK(navigation_client_impl_);
   DCHECK(!blink::IsRendererDebugURL(common_params->url));
@@ -2638,7 +2642,7 @@ void RenderFrameImpl::CommitNavigation(
       std::move(controller_service_worker_info), std::move(container_info),
       std::move(prefetch_loader_factory), std::move(code_cache_host),
       std::move(cookie_manager_info), std::move(storage_info),
-      std::move(document_state), std::move(not_restored_reasons));
+      std::move(document_state));
 
   // Handle a navigation that has a non-empty `data_url_as_string`, or perform
   // a "loadDataWithBaseURL" navigation, which is different from a normal data:
@@ -2759,7 +2763,6 @@ void RenderFrameImpl::CommitNavigationWithParams(
     mojom::CookieManagerInfoPtr cookie_manager_info,
     mojom::StorageInfoPtr storage_info,
     std::unique_ptr<DocumentState> document_state,
-    blink::mojom::BackForwardCacheNotRestoredReasonsPtr not_restored_reasons,
     std::unique_ptr<WebNavigationParams> navigation_params) {
   if (common_params->url.IsAboutSrcdoc()) {
     WebNavigationParams::FillStaticResponse(navigation_params.get(),
@@ -2780,10 +2783,11 @@ void RenderFrameImpl::CommitNavigationWithParams(
   if (commit_params->is_view_source)
     frame_->EnableViewSourceMode(true);
 
-  if (not_restored_reasons) {
+  if (commit_params->not_restored_reasons) {
     // Save the Back/Forward Cache NotRestoredReasons struct to WebLocalFrame to
     // report for PerformanceNavigationTiming API.
-    frame_->SetNotRestoredReasons(std::move(not_restored_reasons));
+    frame_->SetNotRestoredReasons(
+        std::move(commit_params->not_restored_reasons));
   }
 
   // Note: this intentionally does not call |Detach()| before |reset()|. If
@@ -3841,7 +3845,11 @@ void RenderFrameImpl::DidClearWindowObject() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
-  if (enabled_bindings_ & BINDINGS_POLICY_DOM_AUTOMATION)
+  // DOM automation bindings that allows the JS content to send JSON-encoded
+  // data back to automation in the browser process. By default this isn't
+  // allowed unless the process has been started up with the --dom-automation
+  // switch.
+  if (command_line.HasSwitch(switches::kDomAutomationController))
     DomAutomationController::Install(this, frame_);
 
   // Bindings that allows the JS content to retrieve a variety of internal
@@ -4217,7 +4225,6 @@ void RenderFrameImpl::WillSendRequestInternal(
     }
   }
 
-  WebDocument frame_document = frame_->GetDocument();
   if (!request.GetURLRequestExtraData())
     request.SetURLRequestExtraData(
         base::MakeRefCounted<blink::WebURLRequestExtraData>());
@@ -5662,14 +5669,14 @@ void RenderFrameImpl::BeginNavigationInternal(
     observer.DidStartNavigation(info->url_request.Url(), info->navigation_type);
   browser_side_navigation_pending_ = true;
 
-  blink::WebURLRequest& request = info->url_request;
-
   // Set SiteForCookies.
   WebDocument frame_document = frame_->GetDocument();
-  if (info->frame_type == blink::mojom::RequestContextFrameType::kTopLevel)
-    request.SetSiteForCookies(net::SiteForCookies::FromUrl(request.Url()));
-  else
-    request.SetSiteForCookies(frame_document.SiteForCookies());
+  if (info->frame_type == blink::mojom::RequestContextFrameType::kTopLevel) {
+    info->url_request.SetSiteForCookies(
+        net::SiteForCookies::FromUrl(info->url_request.Url()));
+  } else {
+    info->url_request.SetSiteForCookies(frame_document.SiteForCookies());
+  }
 
   ui::PageTransition transition_type = GetTransitionType(
       ui::PAGE_TRANSITION_LINK,
@@ -5691,8 +5698,8 @@ void RenderFrameImpl::BeginNavigationInternal(
   // TODO(clamy): Make sure that navigation requests are not modified somewhere
   // else in blink.
   bool for_outermost_main_frame = frame_->IsOutermostMainFrame();
-  WillSendRequestInternal(request, for_outermost_main_frame, transition_type,
-                          ForRedirect(false));
+  WillSendRequestInternal(info->url_request, for_outermost_main_frame,
+                          transition_type, ForRedirect(false));
 
   if (!info->url_request.GetURLRequestExtraData()) {
     info->url_request.SetURLRequestExtraData(

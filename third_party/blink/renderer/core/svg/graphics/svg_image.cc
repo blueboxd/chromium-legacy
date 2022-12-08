@@ -82,6 +82,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/main_thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/main_thread_scheduler.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/skia_conversions.h"
 
@@ -929,6 +930,11 @@ bool SVGImage::IsSizeAvailable() {
 
 String SVGImage::FilenameExtension() const {
   return "svg";
+}
+
+const AtomicString& SVGImage::MimeType() const {
+  DEFINE_STATIC_LOCAL(const AtomicString, svg_mime_type, ("image/svg+xml"));
+  return svg_mime_type;
 }
 
 }  // namespace blink

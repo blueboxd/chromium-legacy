@@ -8,11 +8,9 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.graphics.drawable.Icon;
-import android.os.Build;
 import android.webkit.WebViewFactory;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
@@ -43,11 +41,8 @@ public final class WebLayerNotificationWrapperBuilder extends NotificationWrappe
     public NotificationWrapperBuilder setSmallIcon(int icon) {
         if (WebLayerImpl.isAndroidResource(icon)) {
             super.setSmallIcon(icon);
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            super.setSmallIcon(createIcon(icon));
         } else {
-            // Some fallback is required, or the notification won't appear.
-            super.setSmallIcon(getFallbackAndroidResource(icon));
+            super.setSmallIcon(createIcon(icon));
         }
         return this;
     }
@@ -58,16 +53,13 @@ public final class WebLayerNotificationWrapperBuilder extends NotificationWrappe
             int icon, CharSequence title, PendingIntent intent) {
         if (WebLayerImpl.isAndroidResource(icon)) {
             super.addAction(icon, title, intent);
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        } else {
             super.addAction(
                     new Notification.Action.Builder(createIcon(icon), title, intent).build());
-        } else {
-            super.addAction(getFallbackAndroidResource(icon), title, intent);
         }
         return this;
     }
 
-    @RequiresApi(Build.VERSION_CODES.M)
     private Icon createIcon(int resId) {
         return Icon.createWithResource(WebViewFactory.getLoadedPackageInfo().packageName,
                 WebLayerImpl.getResourceIdForSystemUi(resId));

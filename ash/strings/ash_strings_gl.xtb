@@ -31,7 +31,6 @@ Para comezar, podes probar o seguinte.</translation>
 <translation id="1148499908455722006">Abrir cadro de diálogo de información para <ph name="USER_NAME" /></translation>
 <translation id="1150989369772528668">Calendario</translation>
 <translation id="1153356358378277386">Dispositivos sincronizados</translation>
-<translation id="1165712434476988950">É necesario reiniciar o dispositivo para que se aplique a actualización.</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">O teu cable USB-C non pode conectarse a pantallas de maneira adecuada</translation>
 <translation id="1175572348579024023">Desprazarse</translation>
@@ -358,7 +357,6 @@ Para comezar, podes probar o seguinte.</translation>
 <translation id="296762781903199866">Non se puideron descargar os ficheiros de voz en <ph name="LANGUAGE" /></translation>
 <translation id="2970920913501714344">Instalar aplicacións, extensións e temas</translation>
 <translation id="2977598380246111477">Número seguinte</translation>
-<translation id="2981684127883932071">Mostrando suxestións</translation>
 <translation id="2985148236010982088">Ver todas as aplicacións</translation>
 <translation id="2992327365391326550">O botón do micrófono do dispositivo está desactivado.</translation>
 <translation id="2996462380875591307">Activouse a Lupa ancorada. Preme Ctrl+Buscar+D de novo para desactivala.</translation>
@@ -670,6 +668,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="4666082839192943839">Para bloquear todas as cámaras continuamente, desactiva o acceso ás cámaras neste dispositivo.</translation>
 <translation id="4666911709726371538">Máis aplicacións</translation>
 <translation id="4667099493359681081">Descargando <ph name="FILENAME" /></translation>
+<translation id="468293128311738995">Aplicacións do teu teléfono</translation>
 <translation id="4690510401873698237">O estante está na parte inferior</translation>
 <translation id="4696813013609194136">Desbloquea o dispositivo co código parental</translation>
 <translation id="4702647871202761252">A pantalla de privacidade está desactivada</translation>
@@ -926,12 +925,10 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="6103838137565245112">sistema</translation>
 <translation id="6107292179555508368">Os accesos ao micrófono e á cámara están desactivados neste dispositivo</translation>
 <translation id="6114505516289286752">Descargáronse os ficheiros de voz en <ph name="LANGUAGE" /></translation>
-<translation id="6116825164611323644">O acceso á cámara está desactivado neste dispositivo</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042">Confirmar descarga de <ph name="FILENAME" /></translation>
 <translation id="612734058257491180">O Asistente de Google non está dispoñible cando se utiliza unha sesión de convidado.</translation>
 <translation id="6129953537138746214">Espazo</translation>
-<translation id="6134259848159370930">Realiza buscas no teu dispositivo, nas aplicacións, nas opcións de configuración e na Web.</translation>
 <translation id="6137566720514957455">Abrir cadro de diálogo de eliminación para <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6141988275892716286">Confirma a descarga</translation>
 <translation id="6154006699632741460">O periférico non é compatible</translation>
@@ -1292,6 +1289,7 @@ Nova instalación</translation>
 <translation id="8142441511840089262">Dobre clic</translation>
 <translation id="8142699993796781067">Rede privada</translation>
 <translation id="8144760705599030999">Garda o dispositivo (<ph name="NAME" />) en <ph name="EMAIL" /> para vinculalo máis rápido aos teus outros dispositivos</translation>
+<translation id="8144914663975476336">Selecciona o formato de gravación</translation>
 <translation id="8149413265954228307">Mostrar a configuración do Bluetooth. <ph name="STATE_TEXT" />.</translation>
 <translation id="8152092012181020186">Preme Ctrl+W para pechar.</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, autocompletar</translation>
@@ -1389,7 +1387,6 @@ Nova instalación</translation>
 <translation id="8666856788528804727">Abre <ph name="NAME" /> para configurar o teu dispositivo</translation>
 <translation id="8676770494376880701">Cargador de baixa potencia conectado</translation>
 <translation id="8683506306463609433">O rastrexo do seguimento está activo</translation>
-<translation id="8685326675965865247">Realiza buscas no teu dispositivo, nas aplicacións, nas opcións de configuración e na Web. Utiliza as teclas das frechas para navegar polas aplicacións.</translation>
 <translation id="8703634754197148428">Iniciar gravación. Unha vez iniciada a gravación, utilizar Alt + Maiúsculas + L para ir ao estante e buscar o botón Deter gravación</translation>
 <translation id="8721053961083920564">Activar ou desactivar o volume. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">Captura de pantalla completa</translation>
@@ -1398,7 +1395,6 @@ Nova instalación</translation>
 <translation id="8735678380411481005">Cor de retroiluminación do teclado</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />,
         <ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8752416742247198423">Activa o acceso á cámara para que as aplicacións e páxinas web que teñan permiso poidan usar as cámaras conectadas a este dispositivo.</translation>
 <translation id="8755498163081687682">Verificar identidade: <ph name="ORIGIN_NAME" /> quere confirmar a túa identidade</translation>
 <translation id="875593634123171288">Mostrar a configuración da VPN</translation>
 <translation id="8759408218731716181">Erro ao configurar o inicio de sesión múltiple</translation>
@@ -1465,7 +1461,6 @@ Nova instalación</translation>
 <translation id="9089416786594320554">Métodos de entrada</translation>
 <translation id="9091626656156419976">Quitouse a pantalla <ph name="DISPLAY_NAME" /></translation>
 <translation id="9098969848082897657">Silenciar teléfono</translation>
-<translation id="9099154003160514616">Hai unha actualización de Lacros dispoñible</translation>
 <translation id="9100887602489003640">Engadindo perfil. Agarda uns minutos.</translation>
 <translation id="9105450214093926548">Non se pode iniciar sesión cun segundo usuario mentres se executa o navegador Lacros. Utiliza un segundo perfil de navegador en Lacros ou ben pecha o navegador e téntao de novo.</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> ou <ph name="CTRL" /> <ph name="SEPARATOR1" /> <ph name="SHIFT" /> <ph name="SEPARATOR2" /> <ph name="OVERVIEW" /></translation>

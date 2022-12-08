@@ -24,9 +24,6 @@ namespace autofill {
 
 namespace {
 
-// A constant value to use as a suggestions query ID.
-const int kQueryId = 1;
-
 class MockAutofillDriver : public TestAutofillDriver {
  public:
   MockAutofillDriver() = default;
@@ -49,6 +46,10 @@ class MockAutofillClient : public TestAutofillClient {
               (CreditCardScanCallback callback),
               (override));
   MOCK_METHOD(bool, IsTouchToFillCreditCardSupported, (), (override));
+  MOCK_METHOD(void,
+              ShowAutofillSettings,
+              (bool show_credit_card_settings),
+              (override));
   MOCK_METHOD(bool,
               ShowTouchToFillCreditCard,
               (base::WeakPtr<autofill::TouchToFillDelegate> delegate,
@@ -93,9 +94,14 @@ class MockBrowserAutofillManager : public TestBrowserAutofillManager {
               (const FormData& form,
                const FormFieldData& field,
                const CreditCard& credit_card,
-               const std::u16string& cvc,
-               int query_id),
+               const std::u16string& cvc),
               (override));
+  MOCK_METHOD(void,
+              FillOrPreviewCreditCardForm,
+              (mojom::RendererFormDataAction action,
+               const FormData& form,
+               const FormFieldData& field,
+               const CreditCard* credit_card));
 };
 
 }  // namespace
@@ -138,8 +144,8 @@ class TouchToFillDelegateImplUnitTest : public testing::Test {
                 HideAutofillPopup(
                     PopupHidingReason::kOverlappingWithTouchToFillSurface))
         .Times(expected_success ? 1 : 0);
-    EXPECT_EQ(expected_success, touch_to_fill_delegate_->TryToShowTouchToFill(
-                                    kQueryId, form_, field_));
+    EXPECT_EQ(expected_success,
+              touch_to_fill_delegate_->TryToShowTouchToFill(form_, field_));
     EXPECT_EQ(expected_success,
               touch_to_fill_delegate_->IsShowingTouchToFill());
   }
@@ -208,8 +214,7 @@ TEST_F(TouchToFillDelegateImplUnitTest,
       autofill_client_,
       HideAutofillPopup(PopupHidingReason::kOverlappingWithTouchToFillSurface))
       .Times(0);
-  EXPECT_FALSE(
-      touch_to_fill_delegate_->TryToShowTouchToFill(kQueryId, form_, field_));
+  EXPECT_FALSE(touch_to_fill_delegate_->TryToShowTouchToFill(form_, field_));
   EXPECT_TRUE(touch_to_fill_delegate_->IsShowingTouchToFill());
 }
 
@@ -381,6 +386,16 @@ TEST_F(TouchToFillDelegateImplUnitTest, ScanCreditCardIsCalled) {
   CreditCard credit_card = autofill::test::GetCreditCard();
   EXPECT_CALL(*browser_autofill_manager_, FillCreditCardFormImpl);
   touch_to_fill_delegate_->OnCreditCardScanned(credit_card);
+  EXPECT_EQ(touch_to_fill_delegate_->IsShowingTouchToFill(), false);
+}
+
+TEST_F(TouchToFillDelegateImplUnitTest, ShowCreditCardSettingsIsCalled) {
+  TryToShowTouchToFill(/*expected_success=*/true);
+
+  EXPECT_CALL(autofill_client_, ShowAutofillSettings(testing::Eq(true)));
+  touch_to_fill_delegate_->ShowCreditCardSettings();
+
+  ASSERT_EQ(touch_to_fill_delegate_->IsShowingTouchToFill(), false);
 }
 
 TEST_F(TouchToFillDelegateImplUnitTest, CardSelectionClosesTheSheet) {
@@ -391,6 +406,17 @@ TEST_F(TouchToFillDelegateImplUnitTest, CardSelectionClosesTheSheet) {
   TryToShowTouchToFill(/*expected_success=*/true);
 
   EXPECT_CALL(autofill_client_, HideTouchToFillCreditCard).Times(1);
+  touch_to_fill_delegate_->SuggestionSelected(credit_card.server_id());
+}
+
+TEST_F(TouchToFillDelegateImplUnitTest, CardSelectionFillsCardForm) {
+  autofill_client_.GetPersonalDataManager()->ClearCreditCards();
+  CreditCard credit_card = autofill::test::GetCreditCard();
+  autofill_client_.GetPersonalDataManager()->AddCreditCard(credit_card);
+
+  TryToShowTouchToFill(/*expected_success=*/true);
+
+  EXPECT_CALL(*browser_autofill_manager_, FillOrPreviewCreditCardForm);
   touch_to_fill_delegate_->SuggestionSelected(credit_card.server_id());
 }
 

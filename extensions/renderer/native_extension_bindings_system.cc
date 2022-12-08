@@ -850,8 +850,7 @@ void NativeExtensionBindingsSystem::SendRequest(
 
   auto params = mojom::RequestParams::New();
   params->name = request->method_name;
-  base::Value::List args = std::move(*request->arguments_list).TakeList();
-  params->arguments = std::move(args);
+  params->arguments = std::move(*request->arguments_list);
   params->extension_id = script_context->GetExtensionID();
   params->source_url = url;
   params->request_id = request->request_id;
@@ -868,7 +867,7 @@ void NativeExtensionBindingsSystem::SendRequest(
 void NativeExtensionBindingsSystem::OnEventListenerChanged(
     const std::string& event_name,
     binding::EventListenersChanged change,
-    const base::DictionaryValue* filter,
+    const base::Value::Dict* filter,
     bool update_lazy_listeners,
     v8::Local<v8::Context> context) {
   ScriptContext* script_context = GetScriptContextFromV8ContextChecked(context);

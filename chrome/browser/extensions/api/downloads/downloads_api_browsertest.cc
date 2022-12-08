@@ -684,7 +684,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
   const Extension* extension() { return extension_; }
 
  private:
-  void SetUpExtensionFunction(const raw_ptr<const Extension>& extension,
+  void SetUpExtensionFunction(const Extension* extension,
                               scoped_refptr<ExtensionFunction> function) {
     if (extension) {
       const GURL url = current_browser_ == incognito_browser_ &&
@@ -699,14 +699,14 @@ class DownloadExtensionTest : public ExtensionApiTest {
       content::WebContents* tab = chrome::AddSelectedTabWithURL(
           current_browser(), url, ui::PAGE_TRANSITION_LINK);
       observer->WaitForNavigationFinished();
-      function->set_extension(extension.get());
+      function->set_extension(extension);
       function->SetRenderFrameHost(tab->GetPrimaryMainFrame());
       function->set_source_process_id(
           tab->GetPrimaryMainFrame()->GetProcess()->GetID());
     }
   }
 
-  bool RunFunctionInternal(const raw_ptr<const Extension>& extension,
+  bool RunFunctionInternal(const Extension* extension,
                            scoped_refptr<ExtensionFunction> function,
                            const std::string& args) {
     scoped_refptr<ExtensionFunction> delete_function(function);
@@ -747,8 +747,8 @@ class DownloadExtensionTest : public ExtensionApiTest {
     return extension;
   }
 
-  raw_ptr<const Extension> extension_;
-  raw_ptr<const Extension> second_extension_;
+  raw_ptr<const Extension, DanglingUntriaged> extension_;
+  raw_ptr<const Extension, DanglingUntriaged> second_extension_;
   raw_ptr<Browser, DanglingUntriaged> incognito_browser_;
   raw_ptr<Browser, DanglingUntriaged> current_browser_;
   std::unique_ptr<DownloadsEventsListener> events_listener_;
@@ -2051,6 +2051,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       "oRiGiN",
       "Access-Control-Request-Headers",
       "Access-Control-Request-Method",
+      "Access-Control-Request-Private-Network",
   };
 
   for (size_t index = 0; index < std::size(kUnsafeHeaders); ++index) {

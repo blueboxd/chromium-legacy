@@ -31,7 +31,6 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="1148499908455722006">Åbn dialogboks med oplysninger om <ph name="USER_NAME" /></translation>
 <translation id="1150989369772528668">Kalender</translation>
 <translation id="1153356358378277386">Parrede enheder</translation>
-<translation id="1165712434476988950">Enheden skal genstartes, før opdateringen anvendes.</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" /> <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Dit USB-C-kabel kan muligvis ikke sluttes korrekt til skærmene</translation>
 <translation id="1175572348579024023">Rul</translation>
@@ -358,7 +357,6 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="296762781903199866"><ph name="LANGUAGE" /> talefiler kunne ikke downloades</translation>
 <translation id="2970920913501714344">Installer apps, udvidelser og temaer</translation>
 <translation id="2977598380246111477">Næste tal</translation>
-<translation id="2981684127883932071">Viser forslag</translation>
 <translation id="2985148236010982088">Se alle apps</translation>
 <translation id="2992327365391326550">Enhedens mikrofonknap er slået fra.</translation>
 <translation id="2996462380875591307">Fastgjort lupvindue er aktiveret. Tryk på Ctrl+Søg+D igen for at deaktivere tilstanden.</translation>
@@ -669,6 +667,7 @@ Slut din enhed til en strømkilde.</translation>
 <translation id="4666082839192943839">Deaktiver kameraadgangen på denne enhed for altid at blokere alle kameraer.</translation>
 <translation id="4666911709726371538">Flere apps</translation>
 <translation id="4667099493359681081">Downloader <ph name="FILENAME" /></translation>
+<translation id="468293128311738995">Apps fra din telefon</translation>
 <translation id="4690510401873698237">Hylden er i bunden</translation>
 <translation id="4696813013609194136">Lås enheden op med forældrekode</translation>
 <translation id="4702647871202761252">Privatlivsskærmen er slået fra</translation>
@@ -925,12 +924,10 @@ Slut din enhed til en strømkilde.</translation>
 <translation id="6103838137565245112">systemet</translation>
 <translation id="6107292179555508368">Adgang til mikrofon og kamera er deaktiveret på denne enhed</translation>
 <translation id="6114505516289286752"><ph name="LANGUAGE" /> talefiler blev downloadet</translation>
-<translation id="6116825164611323644">Kameraadgang er deaktiveret på denne enhed</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042">Bekræft download af <ph name="FILENAME" /></translation>
 <translation id="612734058257491180">Google Assistent er ikke tilgængelig i en gæstesession.</translation>
 <translation id="6129953537138746214">Mellemrum</translation>
-<translation id="6134259848159370930">Søg på din enhed, i dine apps, i indstillingerne og på nettet.</translation>
 <translation id="6137566720514957455">Åbn dialogboksen til fjernelse for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6141988275892716286">Bekræft download</translation>
 <translation id="6154006699632741460">Den eksterne enhed understøttes ikke</translation>
@@ -1291,6 +1288,7 @@ Installeret for nylig</translation>
 <translation id="8142441511840089262">Dobbeltklik</translation>
 <translation id="8142699993796781067">Privat netværk</translation>
 <translation id="8144760705599030999">Gem dine <ph name="NAME" /> under <ph name="EMAIL" />, så du hurtigere kan parre dem med andre enheder</translation>
+<translation id="8144914663975476336">Vælg optagelsesformat</translation>
 <translation id="8149413265954228307">Vis Bluetooth-indstillinger. <ph name="STATE_TEXT" />.</translation>
 <translation id="8152092012181020186">Tryk på Ctrl+W for at lukke.</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, autofuldfør</translation>
@@ -1388,7 +1386,6 @@ Installeret for nylig</translation>
 <translation id="8666856788528804727">Åbn <ph name="NAME" /> for at konfigurere din enhed</translation>
 <translation id="8676770494376880701">Oplader med lav kraft er tilsluttet</translation>
 <translation id="8683506306463609433">Sporing af effektivitet er aktiv</translation>
-<translation id="8685326675965865247">Søg på din enhed, i dine apps, i indstillingerne og på nettet. Brug piletasterne til at navigere i dine apps.</translation>
 <translation id="8703634754197148428">Start optagelse. Når optagelsen er startet, kan du bruge Alt+Shift+L til at gå til hylden, hvor du finder den knap, der stopper optagelsen</translation>
 <translation id="8721053961083920564">Slå lyden til/fra. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">Screenshot af hel skærm</translation>
@@ -1397,7 +1394,6 @@ Installeret for nylig</translation>
 <translation id="8735678380411481005">Farve på tastaturets baggrundslys</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />,
         <ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8752416742247198423">Aktivér kameraadgang for at tillade, at apps og websider med kameratilladelsen kan bruge de kameraer, der er knyttet til denne enhed.</translation>
 <translation id="8755498163081687682">Bekræft din identitet: <ph name="ORIGIN_NAME" /> ønsker, at du bekræfter din identitet</translation>
 <translation id="875593634123171288">Vis VPN-indstillinger</translation>
 <translation id="8759408218731716181">Samlet login fra flere konti kan ikke konfigureres</translation>
@@ -1464,7 +1460,6 @@ Installeret for nylig</translation>
 <translation id="9089416786594320554">Inputmetoder</translation>
 <translation id="9091626656156419976">Skærmen <ph name="DISPLAY_NAME" /> blev fjernet</translation>
 <translation id="9098969848082897657">Sæt telefonen på lydløs</translation>
-<translation id="9099154003160514616">Der er en Lacros-opdatering</translation>
 <translation id="9100887602489003640">Profilen tilføjes. Vent et par minutter.</translation>
 <translation id="9105450214093926548">Det er ikke muligt at logge ind med en yderligere bruger, mens Lacros-browseren kører. Du skal i stedet bruge en yderligere browserprofil i Lacros, eller du kan lukke Lacros og prøve igen.</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> eller <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>

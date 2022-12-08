@@ -147,7 +147,7 @@ bool DisallowPromises(v8::Local<v8::Context> context) {
 
 void OnEventListenersChanged(const std::string& event_name,
                              binding::EventListenersChanged change,
-                             const base::DictionaryValue* filter,
+                             const base::Value::Dict* filter,
                              bool was_manual,
                              v8::Local<v8::Context> context) {}
 
@@ -1821,7 +1821,7 @@ TEST_F(APIBindingUnittest, TestSendingRequestsAndSilentRequestsWithHooks) {
          const APITypeReferenceMap& map) {
         handler->StartRequest(
             context, "test.handleAndSendRequest",
-            std::make_unique<base::ListValue>(),
+            std::make_unique<base::Value::List>(),
             binding::AsyncResponseType::kNone, v8::Local<v8::Function>(),
             v8::Local<v8::Function>(), binding::ResultModifierFunction());
         return RequestResult(RequestResult::HANDLED);

@@ -19,11 +19,12 @@ import 'chrome://resources/cr_components/localized_link/localized_link.js';
 
 import {I18nMixin, I18nMixinInterface} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {WebUiListenerMixin, WebUiListenerMixinInterface} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {SettingsToggleButtonElement} from '../../controls/settings_toggle_button.js';
 import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
+import {PrefsMixin, PrefsMixinInterface} from '../../prefs/prefs_mixin.js';
 import {Route, Router} from '../../router.js';
 import {cast} from '../assert_extras.js';
 import {DeepLinkingBehavior, DeepLinkingBehaviorInterface} from '../deep_linking_behavior.js';
@@ -47,10 +48,10 @@ const SettingsKeyboardAndTextInputPageElementBase =
           DeepLinkingBehavior,
           RouteOriginBehavior,
         ],
-        WebUiListenerMixin(I18nMixin(PolymerElement))) as {
+        PrefsMixin(WebUiListenerMixin(I18nMixin(PolymerElement)))) as {
       new (): PolymerElement & I18nMixinInterface &
-          WebUiListenerMixinInterface & DeepLinkingBehaviorInterface &
-          RouteOriginBehaviorInterface,
+          WebUiListenerMixinInterface & PrefsMixinInterface &
+          DeepLinkingBehaviorInterface & RouteOriginBehaviorInterface,
     };
 
 class SettingsKeyboardAndTextInputPageElement extends
@@ -65,14 +66,6 @@ class SettingsKeyboardAndTextInputPageElement extends
 
   static get properties() {
     return {
-      /**
-       * Preferences state.
-       */
-      prefs: {
-        type: Object,
-        notify: true,
-      },
-
       /**
        * Whether the user is in kiosk mode.
        */
@@ -132,7 +125,6 @@ class SettingsKeyboardAndTextInputPageElement extends
     };
   }
 
-  prefs: {[key: string]: any};
   private dictationLearnMoreUrl_: string;
   private dictationLocaleMenuSubtitle_: string;
   private dictationLocaleOptions_: LocaleInfo[];

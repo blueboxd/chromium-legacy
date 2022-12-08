@@ -176,6 +176,7 @@
 <translation id="2491955442992294626">Пока активно другое окно, проверка клавиатуры не выполняется</translation>
 <translation id="2493126929778606526">Ваши лучшие фото, отобранные автоматически</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
+<translation id="2498950423397131220">Плавающая</translation>
 <translation id="2505327257735685095">Обновить обои</translation>
 <translation id="2513396635448525189">Изображение на экране входа</translation>
 <translation id="2517472476991765520">Сканировать</translation>
@@ -341,6 +342,7 @@
 <translation id="4289849978083912975">Слайд-шоу</translation>
 <translation id="4297501883039923494">Печать прервана: неизвестная ошибка</translation>
 <translation id="4300073214558989">Изображений: <ph name="IMAGE_COUNT" /></translation>
+<translation id="4311195029067684288">Максимальное увеличение</translation>
 <translation id="4333390807948134856">Клавиша <ph name="KEY_NAME" /> нажата</translation>
 <translation id="435692326371619097">Управление настройками точки доступа. С помощью точек доступа устанавливается подключение между мобильной сетью и интернетом. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="4378373042927530923">Не проверено</translation>
@@ -420,7 +422,9 @@
 <translation id="4921665434385737356">Батарея зарядилась на <ph name="RATE" /> за <ph name="NUM_SECONDS" /> сек.</translation>
 <translation id="4930320165497208503">Чтобы задать или изменить параметры подключения, перейдите в <ph name="BEGIN_LINK" />настройки<ph name="END_LINK" />.</translation>
 <translation id="4932733599132424254">Дата</translation>
+<translation id="4937657825850660613">Разделить экран</translation>
 <translation id="4950314376641394653">Встроенное ПО для устройства "<ph name="DEVICE_NAME" />" было обновлено до версии <ph name="VERSION" />.</translation>
+<translation id="4971925105143343452">Частичное увеличение</translation>
 <translation id="498186245079027698">Проверьте сканер и повторите попытку. Убедитесь, что на диске достаточно свободного места для хранения отсканированных файлов.</translation>
 <translation id="4985509611418653372">Проверить</translation>
 <translation id="4987769320337599931">Брандмауэр</translation>
@@ -557,6 +561,7 @@
 <translation id="6189418609903030344">Емкость батареи со временем уменьшается</translation>
 <translation id="6191293864534840972">Некорректно указаны серверы доменных имен.</translation>
 <translation id="6213737986933151570">CDMA1XRTT</translation>
+<translation id="6223066887782788441">Выйти из полноэкранного режима</translation>
 <translation id="6223752125779001553">Нет доступных сканеров.</translation>
 <translation id="6232017090690406397">Батарея</translation>
 <translation id="6235460611964961764">Выполнять сброс показателя вручную</translation>
@@ -685,10 +690,12 @@
 <translation id="7415801143053185905">очень большое время ожидания HTTP</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7435977162516949853">{NUMBER_OF_PAGES,plural, =1{Сканирование завершено. Отсканирована 1 страница.}one{Сканирование завершено. Отсканирована {NUMBER_OF_PAGES} страница.}few{Сканирование завершено. Отсканировано {NUMBER_OF_PAGES} страницы.}many{Сканирование завершено. Отсканировано {NUMBER_OF_PAGES} страниц.}other{Сканирование завершено. Отсканировано {NUMBER_OF_PAGES} страницы.}}</translation>
+<translation id="7458970041932198923">Чтобы просматривать и настраивать аватары, подключитесь к сети и обновите страницу.</translation>
 <translation id="7469648432129124067">Обнаружен сетевой портал.</translation>
 <translation id="7481312909269577407">Вперед</translation>
 <translation id="7487067081878637334">Технологии</translation>
 <translation id="7490813197707563893">MAC-адрес</translation>
+<translation id="7491478667760509108">Выйти из плавающего режима</translation>
 <translation id="7497215489070763236">Серверный сертификат ЦС</translation>
 <translation id="7502658306369382406">Адрес IPv6</translation>
 <translation id="7515998400212163428">Android</translation>
@@ -839,6 +846,7 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8987565828374052507">{NUMBER_OF_PAGES,plural, =0{Сканировать}=1{Сканировать {NUMBER_OF_PAGES} страницу}one{Сканировать {NUMBER_OF_PAGES} страницу}few{Сканировать {NUMBER_OF_PAGES} страницы}many{Сканировать {NUMBER_OF_PAGES} страниц}other{Сканировать {NUMBER_OF_PAGES} страницы}}</translation>
 <translation id="8997710128084572139">Устройство заряжено на <ph name="BATTERY_PERCENTAGE" /> %.</translation>
+<translation id="8998289560386111590">Недоступно на вашем устройстве</translation>
 <translation id="9003704114456258138">Частота</translation>
 <translation id="9025198690966128418">Использовать как личное устройство</translation>
 <translation id="9028832514430399253">Чтобы настроить заставку, активируйте переключатель.</translation>

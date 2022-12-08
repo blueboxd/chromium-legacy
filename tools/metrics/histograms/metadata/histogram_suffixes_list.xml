@@ -57,8 +57,16 @@ chromium-metrics-reviews@google.com.
   <suffix name="PermissionRequested"
       label="The Accuracy Tip was closed because the site requested a
              permission"/>
-  <affected-histogram name="Privacy.AccuracyTip.AccuracyTipTimeOpen"/>
-  <affected-histogram name="Privacy.AccuracyTip.NumDialogsShown"/>
+  <affected-histogram name="Privacy.AccuracyTip.AccuracyTipTimeOpen">
+    <obsolete>
+      Deprecated as of 12/2022.
+    </obsolete>
+  </affected-histogram>
+  <affected-histogram name="Privacy.AccuracyTip.NumDialogsShown">
+    <obsolete>
+      Deprecated as of 12/2022.
+    </obsolete>
+  </affected-histogram>
 </histogram_suffixes>
 
 <histogram_suffixes name="ActivityType" separator=".">
@@ -295,7 +303,11 @@ chromium-metrics-reviews@google.com.
 
 <histogram_suffixes name="AndroidFeatureModuleName" separator=".">
   <suffix name="ar" label="Augmented Reality Module"/>
-  <suffix name="autofill_assistant" label="Assistant-in-Chrome Module"/>
+  <suffix name="autofill_assistant" label="Assistant-in-Chrome Module">
+    <obsolete>
+      Deprecated in M110 since we removed the autofill_assistant component.
+    </obsolete>
+  </suffix>
   <suffix name="cablev2_authenticator" label="caBLEv2 Authenticator Module"/>
   <suffix name="chime" label="Chime Notification Module"/>
   <suffix name="chrome" label="Chrome Module"/>
@@ -1073,19 +1085,19 @@ chromium-metrics-reviews@google.com.
   <suffix name="SessionOnly" label="Session only"/>
   <affected-histogram name="ContentSettings.Exceptions.cookies">
     <obsolete>
-      Removed in M107. See ContentSettings.RegularProfile.Exceptions.cookies
+      Removed in M109. See ContentSettings.RegularProfile.Exceptions.cookies
       instead, which includes data only from regular profiles.
     </obsolete>
   </affected-histogram>
   <affected-histogram name="ContentSettings.Exceptions.popups">
     <obsolete>
-      Removed in M107. See ContentSettings.RegularProfile.Exceptions.popups
+      Removed in M109. See ContentSettings.RegularProfile.Exceptions.popups
       instead, which includes data only from regular profiles.
     </obsolete>
   </affected-histogram>
   <affected-histogram name="ContentSettings.Exceptions.subresource-filter">
     <obsolete>
-      Removed in M107. See
+      Removed in M109. See
       ContentSettings.RegularProfile.Exceptions.subresource-filter instead,
       which includes data only from regular profiles.
     </obsolete>
@@ -5472,7 +5484,11 @@ chromium-metrics-reviews@google.com.
   <suffix name="ChromeExtMalware" label=""/>
   <suffix name="ChromeUrlClientIncident" label=""/>
   <suffix name="IpMalware" label=""/>
-  <suffix name="UrlAccuracyTips" label=""/>
+  <suffix name="UrlAccuracyTips" label="">
+    <obsolete>
+      Deprecated as of 12/2022.
+    </obsolete>
+  </suffix>
   <suffix name="UrlBilling" label=""/>
   <suffix name="UrlCsdAllowlist" label=""/>
   <suffix name="UrlCsdDownloadAllowlist" label=""/>
@@ -5976,13 +5992,13 @@ chromium-metrics-reviews@google.com.
 </histogram_suffixes>
 
 <histogram_suffixes name="ShillCumulativeTimeOnline" separator=".">
+  <obsolete>
+    Obsoleted Dec 2022, histograms were renamed (b/254170385).
+  </obsolete>
   <suffix name="Any" label="Any connection type"/>
   <suffix name="Cellular" label="Cellular connection"/>
   <suffix name="Wifi" label="WiFi connection"/>
   <affected-histogram name="Network.Shill.CumulativeTimeOnline"/>
-  <obsolete>
-    Obsoleted Dec 2022, histograms were renamed (b/254170385).
-  </obsolete>
 </histogram_suffixes>
 
 <histogram_suffixes name="ShillWiFiRememberedNetworkSecurityMode" separator=".">

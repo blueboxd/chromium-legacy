@@ -9,10 +9,12 @@
 #include <vector>
 
 #include "base/containers/contains.h"
+#include "base/feature_list.h"
 #include "base/json/json_reader.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_management_internal.h"
 #include "chrome/browser/extensions/extension_management_test_util.h"
@@ -24,6 +26,7 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/pref_names.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
@@ -294,14 +297,14 @@ class ExtensionManagementServiceTest : public testing::Test {
       const std::string& version,
       const std::string& id,
       const std::string& update_url) {
-    base::DictionaryValue manifest_dict;
-    manifest_dict.SetStringPath(manifest_keys::kName, "test");
-    manifest_dict.SetStringPath(manifest_keys::kVersion, version);
-    manifest_dict.SetIntPath(manifest_keys::kManifestVersion, 2);
-    manifest_dict.SetStringPath(manifest_keys::kUpdateURL, update_url);
+    base::Value::Dict manifest_dict;
+    manifest_dict.Set(manifest_keys::kName, "test");
+    manifest_dict.Set(manifest_keys::kVersion, version);
+    manifest_dict.Set(manifest_keys::kManifestVersion, 2);
+    manifest_dict.Set(manifest_keys::kUpdateURL, update_url);
     std::string error;
     scoped_refptr<const Extension> extension =
-        Extension::Create(base::FilePath(), location, manifest_dict,
+        Extension::Create(base::FilePath(), location, std::move(manifest_dict),
                           Extension::NO_FLAGS, id, &error);
     CHECK(extension.get()) << error;
     return extension;
@@ -328,24 +331,24 @@ class ExtensionAdminPolicyTest : public ExtensionManagementServiceTest {
   }
 
   void CreateExtension(ManifestLocation location) {
-    base::DictionaryValue values;
+    base::Value::Dict values;
     CreateExtensionFromValues(location, &values);
   }
 
   void CreateHostedApp(ManifestLocation location) {
-    base::DictionaryValue values;
-    values.SetPath(extensions::manifest_keys::kWebURLs,
-                   base::Value(base::Value::Type::LIST));
-    values.SetStringPath(extensions::manifest_keys::kLaunchWebURL,
-                         "http://www.example.com");
+    base::Value::Dict values;
+    values.SetByDottedPath(extensions::manifest_keys::kWebURLs,
+                           base::Value(base::Value::Type::LIST));
+    values.SetByDottedPath(extensions::manifest_keys::kLaunchWebURL,
+                           "http://www.example.com");
     CreateExtensionFromValues(location, &values);
   }
 
   void CreateExtensionFromValues(ManifestLocation location,
-                                 base::DictionaryValue* values) {
-    values->SetStringPath(extensions::manifest_keys::kName, "test");
-    values->SetStringPath(extensions::manifest_keys::kVersion, "0.1");
-    values->SetIntPath(extensions::manifest_keys::kManifestVersion, 2);
+                                 base::Value::Dict* values) {
+    values->Set(extensions::manifest_keys::kName, "test");
+    values->Set(extensions::manifest_keys::kVersion, "0.1");
+    values->Set(extensions::manifest_keys::kManifestVersion, 2);
     std::string error;
     extension_ = Extension::Create(base::FilePath(), location, *values,
                                    Extension::NO_FLAGS, &error);
@@ -1122,51 +1125,78 @@ TEST_F(ExtensionManagementServiceTest, ManifestV2Default) {
   SetPref(true, pref_names::kManifestV2Availability,
           base::Value(static_cast<int>(
               internal::GlobalSettings::ManifestV2Setting::kDefault)));
-  EXPECT_TRUE(
-      extension_management_->IsAllowedManifestVersion(2, kTargetExtension));
-  EXPECT_TRUE(
-      extension_management_->IsAllowedManifestVersion(3, kTargetExtension));
+  bool is_manifest_v3_only = base::FeatureList::IsEnabled(
+      extensions_features::kExtensionsManifestV3Only);
+  EXPECT_EQ(!is_manifest_v3_only,
+            extension_management_->IsAllowedManifestVersion(
+                2, kTargetExtension, Manifest::Type::TYPE_EXTENSION));
+  EXPECT_TRUE(extension_management_->IsAllowedManifestVersion(
+      3, kTargetExtension, Manifest::Type::TYPE_EXTENSION));
 }
 
 TEST_F(ExtensionManagementServiceTest, ManifestV2Disabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      extensions_features::kExtensionsManifestV3Only);
   SetPref(true, pref_names::kManifestV2Availability,
           base::Value(static_cast<int>(
               internal::GlobalSettings::ManifestV2Setting::kDisabled)));
-  EXPECT_FALSE(
-      extension_management_->IsAllowedManifestVersion(2, kTargetExtension));
-  EXPECT_TRUE(
-      extension_management_->IsAllowedManifestVersion(3, kTargetExtension));
+  EXPECT_FALSE(extension_management_->IsAllowedManifestVersion(
+      2, kTargetExtension, Manifest::Type::TYPE_EXTENSION));
+  EXPECT_TRUE(extension_management_->IsAllowedManifestVersion(
+      3, kTargetExtension, Manifest::Type::TYPE_EXTENSION));
 }
 
 TEST_F(ExtensionManagementServiceTest, ManifestV2Enabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      extensions_features::kExtensionsManifestV3Only);
   SetPref(true, pref_names::kManifestV2Availability,
           base::Value(static_cast<int>(
               internal::GlobalSettings::ManifestV2Setting::kEnabled)));
-  EXPECT_TRUE(
-      extension_management_->IsAllowedManifestVersion(2, kTargetExtension));
-  EXPECT_TRUE(
-      extension_management_->IsAllowedManifestVersion(3, kTargetExtension));
+  EXPECT_TRUE(extension_management_->IsAllowedManifestVersion(
+      2, kTargetExtension, Manifest::Type::TYPE_EXTENSION));
+  EXPECT_TRUE(extension_management_->IsAllowedManifestVersion(
+      3, kTargetExtension, Manifest::Type::TYPE_EXTENSION));
 }
 
 TEST_F(ExtensionManagementServiceTest, ManifestV2EnabledForForceInstalled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      extensions_features::kExtensionsManifestV3Only);
   SetPref(
       true, pref_names::kManifestV2Availability,
       base::Value(static_cast<int>(internal::GlobalSettings::ManifestV2Setting::
                                        kEnabledForForceInstalled)));
-  EXPECT_FALSE(
-      extension_management_->IsAllowedManifestVersion(2, kTargetExtension));
-  EXPECT_TRUE(
-      extension_management_->IsAllowedManifestVersion(3, kTargetExtension));
+  EXPECT_FALSE(extension_management_->IsAllowedManifestVersion(
+      2, kTargetExtension, Manifest::Type::TYPE_EXTENSION));
+  EXPECT_TRUE(extension_management_->IsAllowedManifestVersion(
+      3, kTargetExtension, Manifest::Type::TYPE_EXTENSION));
 
   base::Value::Dict forced_list_pref;
   ExternalPolicyLoader::AddExtension(forced_list_pref, kTargetExtension,
                                      kExampleUpdateUrl);
   SetPref(true, pref_names::kInstallForceList, forced_list_pref.Clone());
 
-  EXPECT_TRUE(
-      extension_management_->IsAllowedManifestVersion(2, kTargetExtension));
-  EXPECT_TRUE(
-      extension_management_->IsAllowedManifestVersion(3, kTargetExtension));
+  EXPECT_TRUE(extension_management_->IsAllowedManifestVersion(
+      2, kTargetExtension, Manifest::Type::TYPE_EXTENSION));
+  EXPECT_TRUE(extension_management_->IsAllowedManifestVersion(
+      3, kTargetExtension, Manifest::Type::TYPE_EXTENSION));
+}
+
+TEST_F(ExtensionManagementServiceTest, ManifestV2EnabledForExtensionOnly) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      extensions_features::kExtensionsManifestV3Only);
+  SetPref(true, pref_names::kManifestV2Availability,
+          base::Value(static_cast<int>(
+              internal::GlobalSettings::ManifestV2Setting::kEnabled)));
+  EXPECT_TRUE(extension_management_->IsAllowedManifestVersion(
+      2, kTargetExtension, Manifest::Type::TYPE_EXTENSION));
+  EXPECT_TRUE(extension_management_->IsAllowedManifestVersion(
+      2, kTargetExtension, Manifest::Type::TYPE_LOGIN_SCREEN_EXTENSION));
+  EXPECT_FALSE(extension_management_->IsAllowedManifestVersion(
+      2, kTargetExtension, Manifest::Type::TYPE_HOSTED_APP));
 }
 
 // Tests the flag value indicating that extensions are blocklisted by default.

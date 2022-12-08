@@ -13,8 +13,7 @@ import {sanitizeInnerHtml} from 'chrome://resources/js/parse_html_subset.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../i18n_setup.js';
-import {NavigationPredictor} from '../omnibox.mojom-webui.js';
-import {ACMatchClassification, AutocompleteMatch, PageHandlerInterface} from '../realbox.mojom-webui.js';
+import {ACMatchClassification, AutocompleteMatch, NavigationPredictor, PageHandlerInterface} from '../omnibox.mojom-webui.js';
 import {decodeString16, mojoTimeTicks} from '../utils.js';
 
 import {RealboxBrowserProxy} from './realbox_browser_proxy.js';
@@ -368,7 +367,7 @@ export class RealboxMatchElement extends PolymerElement {
    * ACMatchClassification style field, maps each entry to a CSS
    * class and returns them.
    */
-  private convertClassificationStyleToCSSClasses_(style: number): string[] {
+  private convertClassificationStyleToCssClasses_(style: number): string[] {
     const classes = [];
     if (style & AcMatchClassificationStyle.DIM) {
       classes.push('dim');
@@ -403,7 +402,7 @@ export class RealboxMatchElement extends PolymerElement {
         .map(({offset, style}, index) => {
           const next = classifications[index + 1] || {offset: text.length};
           const subText = text.substring(offset, next.offset);
-          const classes = this.convertClassificationStyleToCSSClasses_(style);
+          const classes = this.convertClassificationStyleToCssClasses_(style);
           return this.createSpanWithClasses_(subText, classes);
         })
         .reduce((container, currentElement) => {

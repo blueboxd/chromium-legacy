@@ -71,6 +71,7 @@
 <translation id="1067048845568873861">ایجاد شد</translation>
 <translation id="1067661089446014701">‏برای افزایش ایمنی، می‌توانید گذرواژه‌ها را قبل‌از ذخیره شدن در «حساب Google» در دستگاهتان رمزگذاری کنید</translation>
 <translation id="1067922213147265141">‏سایر سرویس‌های Google</translation>
+<translation id="106814709658156573">برای تنظیم اثر انگشت، از فرزندتان بخواهید حسگر اثر انگشت را در پایین گوشه سمت چپ صفحه‌کلید لمس کند. داده‌های اثر انگشت فرزندتان به‌صورت ایمن ذخیره می‌شود و هرگز از این <ph name="DEVICE_TYPE" /> خارج نمی‌شود.</translation>
 <translation id="1069104208554708737">این گذرکلید فقط در این دستگاه ذخیره خواهد شد</translation>
 <translation id="1069355737714877171">حذف نمایه سیم‌کارت داخلی با نام <ph name="PROFILE_NAME" /></translation>
 <translation id="1069814191880976658">صفحه دیگری را انتخاب کنید</translation>
@@ -204,6 +205,7 @@
 <translation id="117916940443676133">کلید امنیتی‌تان پین ندارد و محافظت‌شده نیست. برای مدیریت داده‌های ورود به سیستم، ابتدا پین ایجاد کنید.</translation>
 <translation id="1181037720776840403">حذف</translation>
 <translation id="1183237619868651138"><ph name="EXTERNAL_CRX_FILE" /> در حافظه پنهان محلی نصب نمی‌شود.</translation>
+<translation id="1184709369107246085">برنامه <ph name="APPLICATION_NAME" /> به نشانی وب معتبر <ph name="APPLICATION_NAME" /> نیاز دارد.</translation>
 <translation id="1185924365081634987">همچنین می‌توانید برای برطرف کردن این خطای شبکه، <ph name="GUEST_SIGNIN_LINK_START" />به عنوان مهمان مرور کنید<ph name="GUEST_SIGNIN_LINK_END" />.</translation>
 <translation id="1186771945450942097">پاک کردن نرم‌افزار مضر</translation>
 <translation id="1187722533808055681">خروج از حالت بیکار</translation>
@@ -801,7 +803,6 @@
 <translation id="1719312230114180055">توجه: ممکن است امنیت اثر انگشت شما از یک گذرواژه یا پین قوی کمتر باشد.</translation>
 <translation id="1720318856472900922">‏راستی‌آزمایی سرور TLS WWW</translation>
 <translation id="172123215662733643">جستجوی تصویر با <ph name="VISUAL_SEARCH_PROVIDER" /></translation>
-<translation id="1721312023322545264">برای بازدید این سایت باید از <ph name="NAME" /> اجازه بگیرید</translation>
 <translation id="1722460139690167654"><ph name="BEGIN_LINK" /><ph name="DEVICE_TYPE" /><ph name="END_LINK" /> شما توسط <ph name="ENROLLMENT_DOMAIN" /> مدیریت می‌شود</translation>
 <translation id="1723824996674794290">پنجره &amp;جدید</translation>
 <translation id="1724801751621173132">حالت ورودی</translation>
@@ -1007,6 +1008,7 @@
 <translation id="1892341345406963517">سلام <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">زبان‌های دیگر</translation>
 <translation id="1895658205118569222">بسته شدن</translation>
+<translation id="1896043844785689584">برای تنظیم اثر انگشت، از فرزندتان بخواهید حسگر اثر انگشت را در پایین گوشه سمت راست صفحه‌کلید لمس کند. داده‌های اثر انگشت فرزندتان به‌صورت ایمن ذخیره می‌شود و هرگز از این <ph name="DEVICE_TYPE" /> خارج نمی‌شود.</translation>
 <translation id="1897120393475391208">از گذرواژه قوی استفاده کنید</translation>
 <translation id="1900305421498694955">‏ممکن است برنامه‌های Google Play برای خواندن فایل‌های موجود در دستگاه‌های ذخیره‌سازی خارجی و نوشتن در آن‌ها، نیازمند دسترسی کامل به سیستم فایل باشند. فایل‌ها و پوشه‌های ایجادشده در دستگاه برای هر فردی که از درایو خارجی استفاده می‌کند، نمایان است. <ph name="LINK_BEGIN" />بیشتر بدانید<ph name="LINK_END" /></translation>
 <translation id="1901303067676059328">انتخاب &amp;همه</translation>
@@ -1967,6 +1969,7 @@
 <translation id="275662540872599901">صفحه خاموش است</translation>
 <translation id="2757161511365746634">مشاهده چاپگر</translation>
 <translation id="2757338480560142065">مطمئن شوید گذرواژه‌ای که ذخیره می‌کنید با گذرواژه <ph name="WEBSITE" /> مطابقت داشته باشد</translation>
+<translation id="2761632996810146912"><ph name="HASHTAG_SETTINGS" /> نتیجه جستجویی برای <ph name="SEARCH_QUERY" /> برگردانده نشد</translation>
 <translation id="2762441749940182211">دوربین مسدود شده است</translation>
 <translation id="2764786626780673772">‏جزئیات VPN</translation>
 <translation id="2764920001292228569">نام نمایه را وارد کنید</translation>
@@ -2235,6 +2238,7 @@
 <translation id="3000378525979847272"><ph name="PERMISSION_1" /> و <ph name="PERMISSION_2" /> مجاز شده‌اند</translation>
 <translation id="3000461861112256445">صدای مونو</translation>
 <translation id="3001144475369593262">حساب‌های کودک</translation>
+<translation id="3001835006423291524">حسگر اثر انگشت را در پایین گوشه سمت راست صفحه‌کلید لمس کنید. داده‌های اثر انگشتتان به‌صورت ایمن ذخیره می‌شود و هرگز از <ph name="DEVICE_TYPE" /> شما خارج نمی‌شود.</translation>
 <translation id="3003144360685731741">شبکه‌های برگزیده</translation>
 <translation id="3003623123441819449">‏حافظهٔ پنهان CSS</translation>
 <translation id="3003828226041301643">نمی‌توان دستگاه را به دامنه وصل کرد. حسابتان را بررسی کنید تا مطمئن شوید برای اضافه کردن دستگاه مجاز هستید.</translation>
@@ -2316,6 +2320,7 @@
 <translation id="3071624960923923138">برای باز کردن برگه جدید، می‌توانید اینجا را کلیک کنید</translation>
 <translation id="3072775339180057696">به سایت اجازه می‌دهید <ph name="FILE_NAME" /> را ببیند؟</translation>
 <translation id="3074499504015191586">ترجمه کل صفحه</translation>
+<translation id="3075144191779656260">حسگر اثر انگشت را در سمت چپ <ph name="DEVICE_TYPE" /> لمس کنید. داده‌های اثر انگشتتان به‌صورت ایمن ذخیره می‌شود و هرگز از <ph name="DEVICE_TYPE" /> شما خارج نمی‌شود.</translation>
 <translation id="3075874217500066906">‏برای شروع فرآیند Powerwash، به یک راه‌اندازی مجدد نیاز دارید. پس از راه‌اندازی مجدد، از شما خواسته می‌شود تأیید کنید که می‌خواهید ادامه دهید.</translation>
 <translation id="3076909148546628648"><ph name="DOWNLOAD_RECEIVED" />/<ph name="DOWNLOAD_TOTAL" /></translation>
 <translation id="3076966043108928831">ذخیره فقط در این دستگاه</translation>
@@ -2637,6 +2642,7 @@
 <translation id="3406290648907941085">اجازه دارد از داده‌ها و دستگاه‌های واقعیت مجازی استفاده کند</translation>
 <translation id="3406396172897554194">جستجو براساس زبان با نام ورودی</translation>
 <translation id="3406605057700382950">&amp;نمایش نوار نشانک‌ها</translation>
+<translation id="3407967630066378878">برای تنظیم اثر انگشت، از فرزندتان بخواهید حسگر اثر انگشت را در سمت چپ این <ph name="DEVICE_TYPE" /> لمس کند. داده‌های اثر انگشت فرزندتان به‌صورت ایمن ذخیره می‌شود و هرگز از این <ph name="DEVICE_TYPE" /> خارج نمی‌شود.</translation>
 <translation id="3408849592677950451">{NUM_PASSWORDS,plural, =1{‏یک گذرواژه مرتبط با <ph name="USER_EMAIL" /> در «مدیر گذرواژه Google» وارد شد}one{‏{NUM_PASSWORDS} گذرواژه مرتبط با <ph name="USER_EMAIL" /> در «مدیر گذرواژه Google» وارد شد}other{‏{NUM_PASSWORDS} گذرواژه مرتبط با <ph name="USER_EMAIL" /> در «مدیر گذرواژه Google» وارد شد}}</translation>
 <translation id="3409785640040772790">Maps</translation>
 <translation id="3412265149091626468">پرش به انتخاب</translation>
@@ -2828,6 +2834,7 @@
 <translation id="3582057310199111521">در سایت فریب‌دهنده وارد و در نقض داده پیدا شد</translation>
 <translation id="3582299299336701326">‏صفحه‌های روشن تیره می‌شوند و صفحه‌های تیره روشن می‌شوند. برای روشن و خاموش کردن وارونگی رنگ، کلیدهای «جستجو + مهار + H» را فشار دهید.</translation>
 <translation id="3584169441612580296">خواندن و تغییر عکس‌ها، موسیقی، و رسانه‌های دیگر از رایانه‌تان</translation>
+<translation id="3586787825263265024">‏برنامه <ph name="APPLICATION_NAME" /> برای دردسترس بودن به OneDrive نیاز دارد.</translation>
 <translation id="3586806079541226322">این فایل باز نمی‌شود</translation>
 <translation id="3586931643579894722">عدم نمایش جزئیات</translation>
 <translation id="3587482841069643663">همه</translation>
@@ -2861,6 +2868,7 @@
 <translation id="3616741288025931835">&amp;پاک کردن داده‌های مرور...</translation>
 <translation id="3617891479562106823">پس‌زمینه‌ها دردسترس نیست. بعداً دوباره امتحان کنید.</translation>
 <translation id="3619115746895587757">کاپوچینو</translation>
+<translation id="3620136223548713675">موقعیت جغرافیایی</translation>
 <translation id="3621807901162200696">‏کمک به بهبود ویژگی‌ها و عملکرد ChromeOS</translation>
 <translation id="362266093274784978">{COUNT,plural, =1{یک برنامه}one{# برنامه}other{# برنامه}}</translation>
 <translation id="362333465072914957">‏درانتظار CA برای صدور گواهینامه</translation>
@@ -3761,6 +3769,7 @@
 <translation id="4451479197788154834">‏گذرواژه‌تان در این دستگاه و در «حساب Google» شما ذخیره می‌شود</translation>
 <translation id="4451757071857432900">در سایت‌هایی که آگهی‌های مزاحم یا گمراه‌کننده نشان می‌دهند مسدود شود (توصیه می‌شود)</translation>
 <translation id="4452898361839215358">‏یا PPD را انتخاب کنید. <ph name="LINK_BEGIN" />بیشتر بدانید<ph name="LINK_END" /></translation>
+<translation id="4453430595102511050">حسگر اثر انگشت را در بالا گوشه سمت راست صفحه‌کلید لمس کنید. داده‌های اثر انگشتتان به‌صورت ایمن ذخیره می‌شود و هرگز از <ph name="DEVICE_TYPE" /> شما خارج نمی‌شود.</translation>
 <translation id="4453946976636652378">جستجوی <ph name="SEARCH_ENGINE_NAME" /> یا تایپ نشانی وب</translation>
 <translation id="4458535500699390320">وقتی این برگه غیرفعال بود، «بهینه‌سازی حافظ» حافظه را برای کارهای دیگر آزاد کرد. هرزمان بخواهید می‌توانید آن را در تنظیمات تغییر دهید.</translation>
 <translation id="4459169140545916303">آخرین فعالیت: <ph name="DEVICE_LAST_ACTIVATED_TIME" /> روز قبل</translation>
@@ -3985,6 +3994,7 @@
 <translation id="4654236001025007561">‏هم‌رسانی فایل با دستگاه‌های Chromebook و Android در اطراف شما</translation>
 <translation id="4657914796247705218">‏سرعت TrackPoint</translation>
 <translation id="4658285806588491142">صفحه‌نمایشتان را خصوصی نگه دارید</translation>
+<translation id="4658648180588730283">برنامه <ph name="APPLICATION_NAME" /> در حالت آفلاین دردسترس نیست.</translation>
 <translation id="465878909996028221">‏فقط پروتکل‌های فایل، http و https برای ویژگی هدایت کردن مرورگر پشتیبانی می‌شوند.</translation>
 <translation id="4659126640776004816">‏وقتی به «حساب Google» خود وارد می‌شوید، این ویژگی روشن می‌شود.</translation>
 <translation id="4660465405448977105">{COUNT,plural, =1{تصویر}one{# تصویر}other{# تصویر}}</translation>
@@ -4035,6 +4045,7 @@
 <translation id="4699357559218762027">(اجرای خودکار)</translation>
 <translation id="4701025263201366865">ورود ولی به سیستم</translation>
 <translation id="4701335814944566468">دیروز مشاهده شده</translation>
+<translation id="4705624512518230041">‏زمانی که OneDrive دردسترس نباشد <ph name="FILE_NAMES" /> باز نمی‌شود</translation>
 <translation id="470644585772471629">وارونگی رنگ</translation>
 <translation id="4707337002099455863">همیشه در همه سایت‌ها روشن باشد</translation>
 <translation id="4708849949179781599">خروج از <ph name="PRODUCT_NAME" /></translation>
@@ -4502,6 +4513,7 @@
 <translation id="5160634252433617617">صفحه‌کلید فیزیکی</translation>
 <translation id="5160857336552977725">وارد سیستم <ph name="DEVICE_TYPE" /> خودتان شوید</translation>
 <translation id="5161251470972801814">‏دستگاه‌های USB از <ph name="VENDOR_NAME" /></translation>
+<translation id="5162624292894372900">‏زمانی که Drive دردسترس نباشد <ph name="FILE_NAMES" /> باز نمی‌شود</translation>
 <translation id="5162905305237671850"><ph name="DEVICE_TYPE" /> مسدود شد</translation>
 <translation id="5163910114647549394">برگه به انتهای نوار برگه منتقل شد</translation>
 <translation id="5164530241085602114">اعلان‌ها برای <ph name="SITE" /> مجاز نیست</translation>
@@ -5274,6 +5286,7 @@
 <translation id="5886112770923972514">به‌سرعت دستگاه‌های مجهز به «مرتبط‌سازی سریع» در اطرافتان را راه‌اندازی کنید و به آن‌ها متصل شوید</translation>
 <translation id="5886384907280980632">اکنون خاموش شود</translation>
 <translation id="5889282057229379085">‏حداکثر تعداد CA های متوسط: <ph name="NUM_INTERMEDIATE_CA" /></translation>
+<translation id="5889629805140803638">‏همه داده‌های همگام‌سازی‌شده را با <ph name="BEGIN_LINK" />گذرعبارت همگام‌سازی<ph name="END_LINK" /> رمزگذاری کنید. روش‌های پرداخت و نشانی‌های ذخیره‌شده در Google Pay رمزگذاری نخواهند شد. سابقه مرور Chrome همگام‌سازی نخواهد شد.</translation>
 <translation id="5891688036610113830">‏شبکه‌های Wi-Fi انتخابی</translation>
 <translation id="5895138241574237353">راه‌اندازی مجدد</translation>
 <translation id="5895335062901455404">‏هرگاه با «حساب Google» خودتان به سیستم وارد شوید، اولویت‌ها و فعالیت ذخیره‌شده‌تان در دستگاه ChromeOS Flex ذخیره خواهند شد. می‌توانید مواردی را که می‌خواهید همگام‌سازی شوند در «تنظیمات» انتخاب کنید.</translation>
@@ -5410,6 +5423,7 @@
 <translation id="6016178549409952427">پیمایش به محتوای اضافی <ph name="CURRENT_ELEMENT" /> از <ph name="TOTAL_ELEMENTS" /></translation>
 <translation id="6016551720757758985">‏تأیید Powerwash به همراه بازگشت به نسخه قبلی</translation>
 <translation id="6016972670657536680">دکمه انتخاب زبان و صفحه‌کلید. درحال‌حاضر زبان <ph name="LANGUAGE" /> انتخاب شده است.</translation>
+<translation id="6017503096330453612">«امتحان مجدد» را انتخاب کنید یا برای استفاده از نمای محدود و گزینه‌های ویرایش، «باز کردن در ویرایشگر آفلاین» را انتخاب کنید.</translation>
 <translation id="6017514345406065928">سبز</translation>
 <translation id="6019169947004469866">بریدن</translation>
 <translation id="6019851026059441029">‏عالی - HD</translation>
@@ -5919,6 +5933,7 @@
 <translation id="6508248480704296122">مرتبط با <ph name="NAME_PH" /></translation>
 <translation id="6508261954199872201">برنامه: <ph name="APP_NAME" /></translation>
 <translation id="6509207748479174212">گواهینامه رسانه</translation>
+<translation id="6511279028091289182">نحوه اتصال به وب‌سایت‌ها ازطریق اتصالی ایمن را مشخص می‌کند. این ویژگی از رساننده خدمات تحت مدیریت <ph name="DNS_SERVER_TEMPLATE_WITH_IDENTIFIER" /> استفاده می‌کند</translation>
 <translation id="6511827214781912955">توصیه می‌کنیم <ph name="FILENAME" /> را حذف کنید تا افراد دیگری که از این دستگاه استفاده می‌کنند نتوانند گذرواژه‌هایتان را ببینند</translation>
 <translation id="6512808201725371249">‏درحال‌حاضر گذرواژه‌ای برای این حساب در «مدیر گذرواژه Google» ذخیره شده است (<ph name="USER_EMAIL" />)</translation>
 <translation id="6513247462497316522">‏اگر به شبکه دیگری وصل نباشید Google Chrome از داده‌های تلفن همراه استفاده خواهد کرد.</translation>
@@ -5988,6 +6003,7 @@
 <translation id="6568283005472142698">جستجوی برگه</translation>
 <translation id="65711204837946324">برای بارگیری نیاز به اجازه دارد</translation>
 <translation id="6571772921213691236">ویرایش داده‌های ورود به سیستم</translation>
+<translation id="657229725818377235">محافظت بیشتری دربرابر وب‌سایت‌ها و بارگیری‌های خطرناک دریافت کنید</translation>
 <translation id="6573096386450695060">همیشه مجاز</translation>
 <translation id="6573497332121198392">نمی‌توان میان‌بر را برداشت</translation>
 <translation id="657402800789773160">&amp;بارگیری مجدد این صفحه</translation>
@@ -6035,6 +6051,7 @@
 <translation id="6607831829715835317">ا&amp;بزارهای بیشتر</translation>
 <translation id="6607890859198268021">‏درحال‌حاضر <ph name="DOMAIN" /> <ph name="USER_EMAIL" /> را مدیریت می‌کند. برای استفاده از کنترل‌های والدین با «حساب Google» دیگر، بعد از راه‌اندازی از سیستم خارج شوید و سپس «افزودن فرد» را در صفحه ورود به سیستم انتخاب کنید.</translation>
 <translation id="6608166463665411119">بازنشانی سیم‌کارت داخلی</translation>
+<translation id="6608773371844092260">برای تنظیم اثر انگشت، از فرزندتان بخواهید حسگر اثر انگشت را در سمت راست این <ph name="DEVICE_TYPE" /> لمس کند. داده‌های اثر انگشت فرزندتان به‌صورت ایمن ذخیره می‌شود و هرگز از این <ph name="DEVICE_TYPE" /> خارج نمی‌شود.</translation>
 <translation id="6609478180749378879">پس‌از خروج از «حالت ناشناس»، داده‌های ورود به سیستم در این دستگاه ذخیره خواهد شد. بعداً می‌توانید با دستگاهتان دوباره به سیستم این وب‌سایت وارد شوید.</translation>
 <translation id="6610002944194042868">گزینه‌های ترجمه</translation>
 <translation id="6611907964265870728">لطفاً از اتصال دستگاه به اینترنت مطمئن شوید</translation>
@@ -6271,6 +6288,7 @@
 <translation id="682871081149631693">QuickFix</translation>
 <translation id="6828860976882136098">راه‌اندازی به‌روزرسانی‌های خودکار برای همه کاربران انجام نشد (خطای اجرای پیش از تولید:‏ <ph name="ERROR_NUMBER" />)</translation>
 <translation id="682971198310367122">‏خط‌مشی رازداری Google</translation>
+<translation id="6830200424658853449">باز کردن در ویرایشگر آفلاین</translation>
 <translation id="6831043979455480757">ترجمه</translation>
 <translation id="6832218595502288407">تراز به چپ</translation>
 <translation id="6833479554815567477">برگه از گروه <ph name="GROUP_NAME" /> برداشته شد - <ph name="GROUP_CONTENTS" /></translation>
@@ -6634,6 +6652,7 @@
 <translation id="7174199383876220879">جدید! موسیقی، ویدیو، و محتوای بیشتر را کنترل کنید.</translation>
 <translation id="7175037578838465313">پیکربندی <ph name="NAME" /></translation>
 <translation id="7175353351958621980">بارگیری شده از:</translation>
+<translation id="7177079607604198383">اتصال اینترنت را بررسی کنید و «امتحان مجدد» را انتخاب کنید یا برای استفاده از نمای محدود و گزینه‌های ویرایش، «باز کردن در ویرایشگر آفلاین» را انتخاب کنید.</translation>
 <translation id="7180611975245234373">بازآوری</translation>
 <translation id="7180865173735832675">سفارشی کردن</translation>
 <translation id="7182791023900310535">انتقال گذرواژه</translation>
@@ -6680,6 +6699,7 @@
 <translation id="7225082563376899794">‏استفاده از Windows Hello هنگام وارد کردن گذرواژه‌ها</translation>
 <translation id="7225179976675429563">نوع شبکه موجود نیست</translation>
 <translation id="7227458944009118910">برنامه‌های فهرست‌شده در زیر نیز می‌توانند پیوندهای پروتکل را مدیریت کنند. برنامه‌های دیگر اجازه درخواست خواهند کرد.</translation>
+<translation id="7228056665272655255">برای تنظیم اثر انگشت، از فرزندتان بخواهید حسگر اثر انگشت را در بالا گوشه سمت راست صفحه‌کلید لمس کند. داده‌های اثر انگشت فرزندتان به‌صورت ایمن ذخیره می‌شود و هرگز از این <ph name="DEVICE_TYPE" /> خارج نمی‌شود.</translation>
 <translation id="7228523857728654909">قفل صفحه و ورود به سیستم</translation>
 <translation id="7230222852462421043">&amp;بازیابی پنجره</translation>
 <translation id="7231260028442989757">مشاهده، رد کردن، و پاسخ دادن به اعلان‌های تلفن</translation>
@@ -6807,6 +6827,7 @@
 <translation id="7360233684753165754"><ph name="PAGE_NUMBER" /> صفحه در <ph name="PRINTER_NAME" /></translation>
 <translation id="7360257054721917104">درحال نمایش الگوها و میزکارهای ذخیره‌شده. برای پیمایش، کلید جهش را فشار دهید.</translation>
 <translation id="7361297102842600584">برای اجرای <ph name="PLUGIN_NAME" /> کلیک راست کنید</translation>
+<translation id="7361914392989692067">دکمه روشن/ خاموش را با انگشتتان لمس کنید. داده‌های اثر انگشتتان به‌صورت ایمن ذخیره می‌شود و هرگز از <ph name="DEVICE_TYPE" /> شما خارج نمی‌شود.</translation>
 <translation id="7362387053578559123">سایت‌ها می‌توانند برای اتصال به دستگاه‌های بلوتوث درخواست دهند</translation>
 <translation id="7363349185727752629">راهنمای گزینه‌های حریم خصوصی</translation>
 <translation id="7364591875953874521">دسترسی درخواست شده</translation>
@@ -6931,6 +6952,7 @@
 <translation id="7465635034594602553">مشکلی پیش آمد. لطفاً چند دقیقه صبر کنید و دوباره <ph name="APP_NAME" /> را اجرا کنید.</translation>
 <translation id="7465778193084373987">‏نشانی وب ابطال گواهی Netscape</translation>
 <translation id="7466431077154602932">نمای فشرده</translation>
+<translation id="7466556884531675354">یادداشتی ذخیره نشده است</translation>
 <translation id="746861123368584540">افزونه بار شد</translation>
 <translation id="7470424110735398630">اجازه دارد بریده‌دان را ببیند</translation>
 <translation id="747114903913869239">خطا: رمزگشایی برنامهٔ افزودنی ممکن نیست</translation>
@@ -7331,6 +7353,7 @@
 <translation id="783229689197954457">‏اگر Google تخفیفی را پیدا کند، در این صفحه آن را خواهید دید</translation>
 <translation id="7833720883933317473">کلمات سفارشی ذخیره‌شده در اینجا نشان داده خواهند شد</translation>
 <translation id="7835178595033117206">نشانک حذف شد</translation>
+<translation id="7836535163829106376">نشانی وب <ph name="FILE_NAMES" /> باز نمی‌شود</translation>
 <translation id="7836850009646241041">دوباره کلید امنیتی خود را لمس کنید</translation>
 <translation id="7837776265184002579">صفحه اصلی به <ph name="URL" /> تغییر کرد.</translation>
 <translation id="7838838951812478896">«<ph name="NETWORK_NAME" />» از <ph name="DEVICE_NAME" /> ذخیره نشد</translation>
@@ -7504,7 +7527,6 @@
 <translation id="7978450511781612192">‏با این کار از سیستم حساب Google خود خارج می‌شوید. نشانک‌ها، سابقه، گذرواژه‌ها و سایر موارد دیگر همگام‌سازی نمی‌شوند.</translation>
 <translation id="7980084013673500153">شناسه دارایی: <ph name="ASSET_ID" /></translation>
 <translation id="7981313251711023384">پیش‌بارگیری صفحه‌ها برای مرور و جستجوی سریع‌تر</translation>
-<translation id="798145602633458219">افزودن پیشنهاد <ph name="SUGGESTION_NAME" /> به چارگوش جستجو</translation>
 <translation id="7981662863948574132">‏نمایش بالاپر رمزینه پاسخ‌سریع و «سند شناسه جاسازی‌شده» (EID) دستگاه</translation>
 <translation id="7981670705071137488">بعداز این، به‌روزرسانی‌های نرم‌افزار در پس‌زمینه انجام می‌شود. می‌توانید اولویت‌های به‌روزرسانی را در «تنظیمات» مرور کنید.</translation>
 <translation id="7982083145464587921">لطفاً برای رفع این خطا دستگاه خود را مجدداً راه‌اندازی کنید.</translation>
@@ -7772,6 +7794,7 @@
 <translation id="822347941086490485">‏درحال پیدا کردن دستگاه‌های HID…</translation>
 <translation id="8223573963214454788">ادامه و حذف داده‌ها</translation>
 <translation id="8225046344534779393">اتصال اینترنت را بررسی کنید</translation>
+<translation id="8225173734540525852">‏برنامه <ph name="APPLICATION_NAME" /> برای دردسترس بودن به Drive نیاز دارد.</translation>
 <translation id="8225265270453771718">هم‌رسانی پنجره برنامه</translation>
 <translation id="8226222018808695353">ممنوع</translation>
 <translation id="8226619461731305576">صف</translation>
@@ -7858,6 +7881,7 @@
 <translation id="8299319456683969623">در حال حاضر آفلاين هستید.</translation>
 <translation id="8300011035382349091">ویرایش نشانک برای این برگه</translation>
 <translation id="8300374739238450534">آبی نفتی</translation>
+<translation id="8301242268274839723">حسگر اثر انگشت را در پایین گوشه سمت چپ صفحه‌کلید لمس کنید. داده‌های اثر انگشتتان به‌صورت ایمن ذخیره می‌شود و هرگز از <ph name="DEVICE_TYPE" /> شما خارج نمی‌شود.</translation>
 <translation id="8303616404642252802">{COUNT,plural, =1{نشانی}one{# نشانی}other{# نشانی}}</translation>
 <translation id="8304383784961451596">‏اجازه ندارید از این دستگاه استفاده کنید. لطفاً برای دریافت اجازه ورود به سیستم با سرپرست تماس بگیرید یا با حساب Google تحت‌نظارت Family Link به سیستم وارد شوید.</translation>
 <translation id="8306885873692337975">جدیدترین ویژگی‌ها و بهبودهای امنیتی را دریافت می‌کنید.</translation>
@@ -7909,6 +7933,7 @@
 <translation id="8351316842353540018">‏نمایش همیشگی گزینه‌های a11y</translation>
 <translation id="8351419472474436977">این برنامه افزودنی کنترل تنظیمات پروکسی شما را در اختیار گرفته است یعنی می‌تواند هر چیزی را در که حالت آنلاین انجام می‌دهید تغییر دهد، خراب کند یا استراق سمع کند. اگر مطمئن نیستید چرا این تغییر اتفاق افتاده، احتمالاً این برنامه را نمی‌خواهید.</translation>
 <translation id="8351630282875799764">باتری درحال شارژ شدن نیست</translation>
+<translation id="8352287103893778223">عنوان گروه برگه</translation>
 <translation id="835238322900896202">خطایی درحین حذف نصب روی داد. لطفاً ازطریق «پایانه» حذف نصب کنید.</translation>
 <translation id="8353683614194668312">این می‌تواند:</translation>
 <translation id="8354034204605718473">پین فرزندتان اضافه شده است</translation>
@@ -8106,6 +8131,7 @@
 <translation id="8549316893834449916">‏برای ورود به سیستم در Chromebook از «حساب Google» استفاده خواهید کرد – همان حسابی که برای Gmail،‏ Drive، ‏YouTube، و غیره از آن استفاده می‌کنید.</translation>
 <translation id="8551388862522347954">مجوزها</translation>
 <translation id="8551588720239073785">تنظیمات تاریخ و ساعت</translation>
+<translation id="8551647092888540776"><ph name="FILE_NAMES" /> در حالت آفلاین باز نمی‌شود</translation>
 <translation id="8552102814346875916">ذخیره در فهرست «این سایت‌ها همیشه فعال نگه داشته شود»</translation>
 <translation id="8553342806078037065">مدیریت افراد دیگر</translation>
 <translation id="8554899698005018844">زبانی موجود نیست</translation>
@@ -8585,10 +8611,12 @@
 <translation id="8993059306046735527">‏اگر گذرواژه <ph name="DEVICE_TYPE" /> را فراموش کنید، همچنان می‌توانید داده‌های محلی‌تان را بازیابی کنید. باید به سیستم «حساب Google» خود وارد شوید یا از بازیابی حساب استفاده کنید.</translation>
 <translation id="8993737615451556423">کنترل‌هایی برای افزایش سرعت، کاهش سرعت، و توقف موقت صدای خواندن ارائه می‌دهد</translation>
 <translation id="899384117894244799">برداشتن کاربر محدودشده</translation>
+<translation id="8993945059918628059">حسگر اثر انگشت را با انگشتتان لمس کنید. داده‌های اثر انگشتتان به‌صورت ایمن ذخیره می‌شود و هرگز از <ph name="DEVICE_TYPE" /> شما خارج نمی‌شود.</translation>
 <translation id="899403249577094719">‏نشانی وب گواهی Netscape</translation>
 <translation id="899657321862108550">‏Chrome شما، در همه‌جا</translation>
 <translation id="8998078711690114234">این نوع فایل می‌تواند خطرناک باشد. فقط درصورتی‌که به این فایل اعتماد دارید آن را ذخیره کنید.<ph name="ORIGIN" /></translation>
 <translation id="8999560016882908256">خطای دستوری بخش: <ph name="ERROR_LINE" /></translation>
+<translation id="9000185763019430629">حسگر اثر انگشت را در سمت راست <ph name="DEVICE_TYPE" /> لمس کنید. داده‌های اثر انگشتتان به‌صورت ایمن ذخیره می‌شود و هرگز از <ph name="DEVICE_TYPE" /> شما خارج نمی‌شود.</translation>
 <translation id="9003185744423389627">اتصال ناموفق به «سرور مدیریت دستگاه» در تاریخ <ph name="FAILURE_TIME" /> با نشان دادن وضعیت «<ph name="STATUS_TEXT" />»</translation>
 <translation id="9003647077635673607">در همه وب‌سایت‌ها مجاز باشد</translation>
 <translation id="9003677638446136377">بررسی مجدد</translation>

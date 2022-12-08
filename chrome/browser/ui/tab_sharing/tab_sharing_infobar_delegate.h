@@ -11,6 +11,7 @@
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "content/public/browser/global_routing_id.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/base/models/image_model.h"
 
 namespace infobars {
 class ContentInfoBarManager;
@@ -92,6 +93,7 @@ class TabSharingInfoBarDelegate : public ConfirmInfoBarDelegate {
   int GetButtons() const override;
   bool Accept() override;
   bool Cancel() override;
+  bool ExtraButtonPressed() override;
   bool IsCloseable() const override;
   const gfx::VectorIcon& GetVectorIcon() const override;
 
@@ -106,6 +108,7 @@ class TabSharingInfoBarDelegate : public ConfirmInfoBarDelegate {
   const bool favicons_used_for_switch_to_tab_button_;
 
   std::unique_ptr<TabSharingInfoBarDelegateButton> secondary_button_;
+  std::unique_ptr<TabSharingInfoBarDelegateButton> tertiary_button_;
 };
 
 #endif  // CHROME_BROWSER_UI_TAB_SHARING_TAB_SHARING_INFOBAR_DELEGATE_H_

@@ -58,7 +58,6 @@
 #include "components/autofill/core/browser/logging/log_receiver.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/common/password_generation_util.h"
-#include "components/autofill_assistant/browser/public/runtime_manager.h"
 #include "components/back_forward_cache/back_forward_cache_disable.h"
 #include "components/browsing_data/content/browsing_data_helper.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_contents.h"
@@ -145,6 +144,7 @@
 #include "chrome/browser/password_manager/android/password_generation_controller.h"
 #include "chrome/browser/password_manager/android/password_manager_launcher_android.h"
 #include "chrome/browser/touch_to_fill/touch_to_fill_controller.h"
+#include "chrome/browser/touch_to_fill/touch_to_fill_controller_autofill_delegate.h"
 #include "components/messages/android/messages_feature.h"
 #include "components/password_manager/core/browser/credential_cache.h"
 #include "ui/base/ui_base_features.h"
@@ -493,7 +493,10 @@ void ChromePasswordManagerClient::ShowTouchToFill(
           .GetCredentialStore(url::Origin::Create(
               driver->GetLastCommittedURL().DeprecatedGetOriginAsURL()))
           .GetCredentials(),
-      webauthn_credentials, driver->AsWeakPtr(), submission_readiness);
+      webauthn_credentials,
+      std::make_unique<TouchToFillControllerAutofillDelegate>(
+          this, GetBiometricAuthenticator(), driver->AsWeakPtr(),
+          submission_readiness));
 }
 
 void ChromePasswordManagerClient::OnPasswordSelected(
@@ -501,13 +504,6 @@ void ChromePasswordManagerClient::OnPasswordSelected(
   password_reuse_detection_manager_.OnPaste(text);
 }
 #endif
-
-bool ChromePasswordManagerClient::IsAutofillAssistantUIVisible() const {
-  auto* autofill_assistant_manager =
-      autofill_assistant::RuntimeManager::GetForWebContents(web_contents());
-  return autofill_assistant_manager && autofill_assistant_manager->GetState() ==
-                                           autofill_assistant::UIState::kShown;
-}
 
 scoped_refptr<device_reauth::BiometricAuthenticator>
 ChromePasswordManagerClient::GetBiometricAuthenticator() {
@@ -1398,8 +1394,7 @@ ChromePasswordManagerClient::GetOrCreatePasswordAccessory() {
 TouchToFillController*
 ChromePasswordManagerClient::GetOrCreateTouchToFillController() {
   if (!touch_to_fill_controller_) {
-    touch_to_fill_controller_ = std::make_unique<TouchToFillController>(
-        this, GetBiometricAuthenticator());
+    touch_to_fill_controller_ = std::make_unique<TouchToFillController>();
   }
   return touch_to_fill_controller_.get();
 }
@@ -1454,11 +1449,6 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
           base::Unretained(driver_factory_)));
 
   driver_factory_->RequestSendLoggingAvailability();
-
-  auto* autofill_assistant_manager =
-      autofill_assistant::RuntimeManager::GetOrCreateForWebContents(
-          web_contents);
-  autofill_assistant_manager->AddObserver(this);
 }
 
 void ChromePasswordManagerClient::PrimaryPageChanged(content::Page& page) {
@@ -1500,12 +1490,6 @@ void ChromePasswordManagerClient::WebContentsDestroyed() {
   // Other classes may contain callbacks to the Mojo methods. Those callbacks
   // don't like to be destroyed earlier than the pipe itself.
   content_credential_manager_.DisconnectBinding();
-
-  auto* autofill_assistant_manager =
-      autofill_assistant::RuntimeManager::GetForWebContents(web_contents());
-  if (autofill_assistant_manager) {
-    autofill_assistant_manager->RemoveObserver(this);
-  }
 
 #if BUILDFLAG(IS_ANDROID)
   save_update_password_message_delegate_.DismissSaveUpdatePasswordPrompt();
@@ -1732,12 +1716,6 @@ gfx::RectF ChromePasswordManagerClient::TransformToRootCoordinates(
   return gfx::RectF(rwhv->TransformPointToRootCoordSpaceF(
                         bounds_in_frame_coordinates.origin()),
                     bounds_in_frame_coordinates.size());
-}
-
-void ChromePasswordManagerClient::OnStateChanged(
-    autofill_assistant::UIState state) {
-  if (state == autofill_assistant::UIState::kNotShown)
-    password_manager_.ResetPendingCredentials();
 }
 
 #if BUILDFLAG(IS_ANDROID)

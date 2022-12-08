@@ -15,11 +15,14 @@
 #include "components/sync/model/metadata_batch.h"
 
 class GURL;
-class ReadingListSyncBridge;
 
 namespace base {
 class Clock;
 }  // namespace base
+
+namespace syncer {
+class MetadataChangeList;
+}  // namespace syncer
 
 // Interface for a persistence layer for reading list.
 // All interface methods have to be called on main thread.
@@ -53,11 +56,6 @@ class ReadingListModelStorage {
   // the batch update has completed.
   virtual std::unique_ptr<ScopedBatchUpdate> EnsureBatchCreated() = 0;
 
-  // Returns the ReadingListSyncBridge responsible for handling sync message,
-  // which is practice is |this| or (in tests) null.
-  // TODO(crbug.com/1386158): This shouldn't belong in this interface.
-  virtual ReadingListSyncBridge* GetSyncBridge() = 0;
-
   class ScopedBatchUpdate {
    public:
     ScopedBatchUpdate() = default;
@@ -73,6 +71,9 @@ class ReadingListModelStorage {
 
     // Removed an entry from the storage.
     virtual void RemoveEntry(const GURL& entry_url) = 0;
+
+    // Allows modifications to sync metadata in storage.
+    virtual syncer::MetadataChangeList* GetSyncMetadataChangeList() = 0;
   };
 };
 

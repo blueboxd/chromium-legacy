@@ -48,6 +48,9 @@ component("clipboard_types") {
   }
   if (is_mac) {
     frameworks += [ "AppKit.framework" ]
+    weak_frameworks = [
+      "UniformTypeIdentifiers.framework",  # macOS 11
+    ]
   }
 }
 
@@ -96,6 +99,9 @@ component("clipboard") {
       "clipboard_mac.mm",
       "clipboard_util_mac.h",
       "clipboard_util_mac.mm",
+    ]
+    weak_frameworks = [
+      "UniformTypeIdentifiers.framework",  # macOS 11
     ]
   }
 

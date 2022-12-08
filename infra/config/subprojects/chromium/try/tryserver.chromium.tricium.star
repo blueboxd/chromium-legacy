@@ -77,25 +77,24 @@ try_.builder(
     name = "linux-chromeos-clang-tidy-rel",
     executable = "recipe:tricium_clang_tidy_wrapper",
     os = os.LINUX_DEFAULT,
-)
-
-try_.builder(
-    name = "linux-clang-tidy-dbg",
-    executable = "recipe:tricium_clang_tidy_wrapper",
     goma_backend = None,
-    os = os.LINUX_DEFAULT,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
 )
 
 try_.builder(
     name = "linux-clang-tidy-rel",
     executable = "recipe:tricium_clang_tidy_wrapper",
     os = os.LINUX_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
 )
 
 try_.builder(
     name = "linux-lacros-clang-tidy-rel",
     executable = "recipe:tricium_clang_tidy_wrapper",
     os = os.LINUX_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
 )
 
 try_.builder(

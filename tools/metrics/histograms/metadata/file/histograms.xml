@@ -102,6 +102,11 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="FileBrowser.ArchiveSize.{Extension}" units="100MiB"
     expires_after="2022-12-01">
+  <obsolete>
+    Became obsolete on 2022-12-01 as we've collected enough data to understand
+    the user impact of attempting to open large slow mounters without progress
+    reporting.
+  </obsolete>
   <owner>msalomao@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -275,21 +280,21 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.DriveHostedFilePinSuccess" enum="BooleanSuccess"
-    expires_after="M113">
+    expires_after="2023-06-04">
   <owner>austinct@chromium.org</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>Tracks success rate of pinning hosted files in Drive.</summary>
 </histogram>
 
 <histogram name="FileBrowser.DrivePinSuccess" enum="BooleanSuccess"
-    expires_after="M113">
+    expires_after="2023-06-04">
   <owner>austinct@chromium.org</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>Tracks success rate of pinning files in Drive.</summary>
 </histogram>
 
 <histogram name="FileBrowser.ExtractTask.Status"
-    enum="FileManagerExtractStatus" expires_after="M113">
+    enum="FileManagerExtractStatus" expires_after="2023-06-04">
   <owner>adanilo@chromium.org</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>Tracks success/error rate of extracting archive contents.</summary>
@@ -316,7 +321,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.FolderShortcut.Count" units="Shortcuts"
-    expires_after="M113">
+    expires_after="2023-06-04">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -547,7 +552,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.MenuItemSelected" enum="FileManagerMenuCommands"
-    expires_after="M113">
+    expires_after="2023-06-04">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -639,7 +644,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.QuickView.DialogType" enum="FileDialogType"
-    expires_after="M113">
+    expires_after="2023-06-04">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -648,7 +653,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.QuickView.FileType" enum="ViewFileType"
-    expires_after="M113">
+    expires_after="2023-06-04">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>File types that were tried to be opened with quick view.</summary>
@@ -662,7 +667,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.QuickView.VolumeType" enum="FileManagerVolumeType"
-    expires_after="M113">
+    expires_after="2023-06-04">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>The volume type where quick view is opened.</summary>
@@ -735,7 +740,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.SWA.Create" enum="FileDialogType"
-    expires_after="M113">
+    expires_after="2023-06-04">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -777,7 +782,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Trash.DirectorySetupFailed"
-    enum="FileManagerTrashDirectorySetupFailedStep" expires_after="2023-03-20">
+    enum="FileManagerTrashDirectorySetupFailedStep" expires_after="2023-06-04">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -903,7 +908,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.ViewingTaskType" enum="FileManagerTaskType"
-    expires_after="2023-04-03">
+    expires_after="2023-06-04">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>

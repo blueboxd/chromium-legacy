@@ -30,7 +30,6 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <variants name="OptimizationTarget">
-  <variant name="AutofillAssistant" summary="Autofill Assistant"/>
   <variant name="ClientSidePhishing" summary="Client Side Phishing"/>
   <variant name="ContextualPageActionPriceTracking"
       summary="Contextual Page Action: Show price tracking"/>
@@ -186,7 +185,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OptimizationGuide.EntityAnnotatorNativeLibrary.InitiatedSuccessfully"
-    enum="BooleanSuccess" expires_after="2023-03-26">
+    enum="BooleanSuccess" expires_after="2023-06-04">
   <owner>sophiechang@chromium.org</owner>
   <owner>chrome-intelligence-core@google.com</owner>
   <summary>
@@ -298,7 +297,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OptimizationGuide.HintsFetcher.GetHintsRequest.NetErrorCode"
-    enum="NetErrorCodes" expires_after="2023-03-19">
+    enum="NetErrorCodes" expires_after="2023-06-04">
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -308,7 +307,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OptimizationGuide.HintsFetcher.GetHintsRequest.Status"
-    enum="HttpResponseCode" expires_after="2023-03-19">
+    enum="HttpResponseCode" expires_after="2023-06-04">
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -607,7 +606,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OptimizationGuide.PageContentAnnotations.AnnotateVisitResultCached"
-    enum="BooleanCacheHit" expires_after="2023-03-26">
+    enum="BooleanCacheHit" expires_after="2023-06-04">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-intelligence-core@google.com</owner>
   <summary>
@@ -714,7 +713,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OptimizationGuide.PageContentAnnotationsService.ContentAnnotationsStorageMinMagnitudeForVisitNotFound"
-    units="ms" expires_after="2023-03-26">
+    units="ms" expires_after="2023-06-04">
   <owner>sophiechang@chromium.org</owner>
   <owner>chrome-intelligence-core@google.com</owner>
   <summary>
@@ -746,7 +745,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="OptimizationGuide.PageContentAnnotationsService.ContentAnnotationsStorageStatus"
     enum="OptimizationGuidePageContentAnnotationsStorageStatus"
-    expires_after="2023-03-26">
+    expires_after="2023-06-04">
   <owner>sophiechang@chromium.org</owner>
   <owner>mcrouse@chromium.org</owner>
   <summary>
@@ -789,7 +788,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OptimizationGuide.PageContentAnnotationsService.ModelExecutionLatency.PageEntities"
-    units="ms" expires_after="2023-03-26">
+    units="ms" expires_after="2023-06-04">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-intelligence-core@google.com</owner>
   <summary>
@@ -801,7 +800,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OptimizationGuide.PageContentAnnotationsService.ModelThreadExecutionLatency.PageEntities"
-    units="ms" expires_after="2023-03-26">
+    units="ms" expires_after="2023-06-04">
   <owner>sophiechang@chromium.org</owner>
   <owner>chrome-intelligence-core@google.com</owner>
   <summary>
@@ -831,7 +830,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OptimizationGuide.PageContentAnnotationsService.RelatedSearchesExtracted"
-    enum="BooleanAnnotated" expires_after="2023-03-19">
+    enum="BooleanAnnotated" expires_after="2023-06-04">
   <owner>mahmadi@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -982,7 +981,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OptimizationGuide.PageTopicsOverrideList.UsedOverride"
-    enum="Boolean" expires_after="M112">
+    enum="Boolean" expires_after="2023-06-04">
   <owner>robertogden@chromium.org</owner>
   <owner>chrome-intelligence-core@google.com</owner>
   <summary>
@@ -1190,7 +1189,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OptimizationGuide.PredictionModelFetcher.GetModelsResponse.NetErrorCode"
-    enum="NetErrorCodes" expires_after="2023-03-26">
+    enum="NetErrorCodes" expires_after="2023-06-04">
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -1220,7 +1219,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OptimizationGuide.PredictionModelFetcher.GetModelsResponse.Status"
-    enum="HttpResponseCode" expires_after="2023-03-26">
+    enum="HttpResponseCode" expires_after="2023-06-04">
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -1384,7 +1383,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OptimizationGuide.PushNotifications.ReceivedNotificationType"
-    enum="OptimizationType" expires_after="2023-02-19">
+    enum="OptimizationType" expires_after="2023-06-04">
   <owner>robertogden@chromium.org</owner>
   <owner>chrome-intelligence-core@google.com</owner>
   <summary>

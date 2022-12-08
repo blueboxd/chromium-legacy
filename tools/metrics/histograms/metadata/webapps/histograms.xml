@@ -38,7 +38,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="AppBanners.DismissEvent" enum="AppBannersDismissEvent"
-    expires_after="2023-04-02">
+    expires_after="2023-06-04">
   <owner>pjmclachlan@google.com</owner>
   <owner>pcovell@google.com</owner>
   <summary>
@@ -50,7 +50,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="AppBanners.DisplayEvent" enum="AppBannersDisplayEvent"
-    expires_after="2023-04-02">
+    expires_after="2023-06-04">
   <owner>pjmclachlan@google.com</owner>
   <owner>pcovell@google.com</owner>
   <summary>
@@ -84,18 +84,6 @@ chromium-metrics-reviews@google.com.
     requested specifically through the current page's HTML. This stat tracks
     when a user triggers an install dialog for the app promoted by the banner,
     as well as whether or not the user ultimately decided to install the app.
-  </summary>
-</histogram>
-
-<histogram name="AppBanners.MinutesFromFirstVisitToBannerShown" units="minutes"
-    expires_after="2021-06-01">
-  <owner>dominickn@chromium.org</owner>
-  <owner>pjmclachlan@google.com</owner>
-  <summary>
-    App banners promote an application related to the current website, and are
-    requested specifically through the current page's HTML. This stat tracks the
-    number of minutes between the first recorded visit to an origin and the time
-    when the banner is actually shown.
   </summary>
 </histogram>
 
@@ -166,7 +154,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Webapp.AddToHomescreenDialog.Timeout" units="ms"
-    expires_after="2023-03-19">
+    expires_after="2023-06-04">
   <owner>dominickn@chromium.org</owner>
   <owner>peconn@chromium.org</owner>
   <summary>
@@ -205,7 +193,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Webapp.AppIdentityDialog.NotShowing"
-    enum="AppIdentityDisplayMetric" expires_after="2023-03-19">
+    enum="AppIdentityDisplayMetric" expires_after="2023-06-04">
   <owner>finnur@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -221,7 +209,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Webapp.AppIdentityDialog.Showing"
-    enum="AppIdentityDisplayMetric" expires_after="2023-03-19">
+    enum="AppIdentityDisplayMetric" expires_after="2023-06-04">
   <owner>finnur@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -238,7 +226,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApp.AppSettingsPage.EntryPoints"
-    enum="AppSettingsPageEntryPoints" expires_after="2023-03-19">
+    enum="AppSettingsPageEntryPoints" expires_after="2023-06-04">
   <owner>phillis@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <summary>
@@ -1090,6 +1078,21 @@ chromium-metrics-reviews@google.com.
   <summary>Records the result of shortcut creation for PWA.</summary>
 </histogram>
 
+<histogram name="WebApp.Shortcuts.Update.Result" enum="BooleanSuccess"
+    expires_after="2023-12-16">
+  <owner>camdenking@google.com</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    The result of updating shortcuts for an installed PWA. Shortcuts are usually
+    the icon in the operating system signifying the app or extension as an OS
+    entity (e.g. on Mac, it's the .app file). Updating shortcuts occurs when an
+    app is updated through the manifest update mechanism, when the Mac
+    architecture changes, the shortcut version number has been updated, and when
+    the user denies use of protocol handlers or file handlers, which occurs on
+    launch of those respective features.
+  </summary>
+</histogram>
+
 <histogram name="WebApp.ShortcutsMenuRegistration.Result" enum="BooleanSuccess"
     expires_after="2023-09-10">
   <owner>dibyapal@chromium.org</owner>
@@ -1149,7 +1152,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Webapp.SystemApps.FreshInstallDuration" units="ms"
-    expires_after="2023-04-02">
+    expires_after="2023-06-04">
   <owner>ortuno@chromium.org</owner>
   <owner>qjw@chromium.org</owner>
   <summary>
@@ -1275,7 +1278,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Webapp.WebAppUrlLoaderPrepareForLoadResult"
-    enum="WebAppUrlLoaderResult" expires_after="2023-04-02">
+    enum="WebAppUrlLoaderResult" expires_after="2023-06-04">
   <owner>qjw@chromium.org</owner>
   <owner>ortuno@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>

@@ -20,12 +20,12 @@
 #include "chrome/browser/ash/crostini/crostini_features.h"
 #include "chrome/browser/ash/crostini/crostini_package_service.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
-#include "chrome/browser/ash/crostini/crostini_shelf_utils.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/ash/guest_os/guest_os_mime_types_service.h"
 #include "chrome/browser/ash/guest_os/guest_os_mime_types_service_factory.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
+#include "chrome/browser/ash/guest_os/guest_os_shelf_utils.h"
 #include "chrome/browser/ash/guest_os/guest_os_terminal.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
@@ -295,14 +295,6 @@ void CrostiniApps::Connect(
   subscriber->OnApps(std::move(apps), apps::mojom::AppType::kCrostini,
                      true /* should_notify_initialized */);
   subscribers_.Add(std::move(subscriber));
-}
-
-void CrostiniApps::GetMenuModel(const std::string& app_id,
-                                apps::mojom::MenuType menu_type,
-                                int64_t display_id,
-                                GetMenuModelCallback callback) {
-  GetMenuModel(app_id, ConvertMojomMenuTypeToMenuType(menu_type), display_id,
-               MenuItemsToMojomMenuItemsCallback(std::move(callback)));
 }
 
 void CrostiniApps::OnRegistryUpdated(

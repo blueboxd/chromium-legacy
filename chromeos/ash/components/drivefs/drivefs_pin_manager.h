@@ -5,13 +5,18 @@
 #ifndef CHROMEOS_ASH_COMPONENTS_DRIVEFS_DRIVEFS_PIN_MANAGER_H_
 #define CHROMEOS_ASH_COMPONENTS_DRIVEFS_DRIVEFS_PIN_MANAGER_H_
 
+#include <utility>
 #include <vector>
 
 #include "base/component_export.h"
 #include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
+#include "base/thread_annotations.h"
+#include "base/threading/sequence_bound.h"
 #include "base/timer/elapsed_timer.h"
+#include "chromeos/ash/components/drivefs/drivefs_host_observer.h"
 #include "chromeos/ash/components/drivefs/mojom/drivefs.mojom.h"
 #include "components/drive/file_errors.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -60,7 +65,8 @@ struct DrivePathAndStatus {
 //  - Maintain pinning of files that are newly created.
 //  - Rebuild the progress of bulk pinned items (if turned off mid way through a
 //    bulk pinning event).
-class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) DriveFsPinManager {
+class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) DriveFsPinManager
+    : public DriveFsHostObserver {
  public:
   DriveFsPinManager(bool enabled,
                     const base::FilePath& profile_path,
@@ -73,7 +79,7 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) DriveFsPinManager {
   DriveFsPinManager(const DriveFsPinManager&) = delete;
   DriveFsPinManager& operator=(const DriveFsPinManager&) = delete;
 
-  ~DriveFsPinManager();
+  ~DriveFsPinManager() override;
 
   // Enable or disable the bulk pinning.
   void SetBulkPinningEnabled(bool enabled) { enabled_ = enabled; }
@@ -85,7 +91,46 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) DriveFsPinManager {
   // pinning has completed.
   void Start(base::OnceCallback<void(PinError)> complete_callback);
 
+  // drivefs::DriveFsHostObserver
+  void OnSyncingStatusUpdate(const mojom::SyncingStatus& status) override;
+
  private:
+  // A wrapper to maintain sequence-affinity on the `InProgressMap`. The
+  // instance of this is owned by `DriveFsPinManager`, is created and destroyed
+  // on the same task runner.
+  class InProgressSyncingItems {
+   public:
+    InProgressSyncingItems();
+
+    InProgressSyncingItems(const InProgressSyncingItems&) = delete;
+    InProgressSyncingItems& operator=(const InProgressSyncingItems&) = delete;
+
+    ~InProgressSyncingItems();
+
+    // Adds an item to the map.
+    void AddItem(const std::string path);
+
+    // Removes an item from the map, if the item doesn't exist ignores the
+    // removal.
+    void RemoveItem(const std::string path);
+
+    // Update the item keyed at `path` with the new progress bytes.
+    void UpdateItem(const std::string path,
+                    int64_t bytes_transferred,
+                    int64_t bytes_to_transfer);
+
+    // Return the number of items currently being tracked as in progress.
+    size_t GetItemCount();
+
+   private:
+    SEQUENCE_CHECKER(sequence_checker_);
+    // A map that tracks the in progress items by their key to a pair of
+    // `int64_t` with `first` being the number of bytes transferred and `second`
+    // being the `bytes_to_transfer` i.e. the total bytes of the syncing file.
+    using InProgressMap = std::map<std::string, std::pair<int64_t, int64_t>>;
+    InProgressMap in_progress_items_ GUARDED_BY_CONTEXT(sequence_checker_);
+  };
+
   // Invoked on retrieval of available space in the `~/GCache` directory.
   void OnFreeDiskSpaceRetrieved(int64_t free_space);
 
@@ -109,7 +154,14 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) DriveFsPinManager {
       drive::FileError error,
       absl::optional<std::vector<drivefs::mojom::QueryItemPtr>> items);
 
-  void OnFilesPinned(std::vector<DrivePathAndStatus> pinned_files);
+  // After a file has been pinned, this ensures the in progress map has the item
+  // emplaced. Note the file being pinned is just an update in drivefs, not the
+  // actually completion of the file being downloaded, that is monitored via
+  // `OnSyncingStatusUpdate`.
+  void OnFilePinned(const std::string& path, drive::FileError status);
+
+  // If there are no remaining items left, get the next search query page.
+  void MaybeStartSearch(size_t remaining_items);
 
   bool enabled_ = false;
   int64_t size_required_ = 0;
@@ -121,6 +173,11 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) DriveFsPinManager {
   raw_ptr<mojom::DriveFs> drivefs_interface_;
   mojo::Remote<mojom::SearchQuery> search_query_;
   base::ElapsedTimer timer_;
+
+  // The in progress syncing items and the task runner which guarantees items
+  // are added / removed / updated in sequence.
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  base::SequenceBound<InProgressSyncingItems> syncing_items_;
 
   base::WeakPtrFactory<DriveFsPinManager> weak_ptr_factory_{this};
 };

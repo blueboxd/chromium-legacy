@@ -741,11 +741,6 @@ const char kMerchantWidePromotionsDescription[] =
 const char kCodeBasedRBDName[] = "Code-based RBD";
 const char kCodeBasedRBDDescription[] = "Enables the Code-based RBD.";
 
-const char kFontAccessAPIName[] = "Font Access APIs";
-const char kFontAccessAPIDescription[] =
-    "Enables the experimental Font Access APIs, giving websites access "
-    "to enumerate local fonts and access their table data.";
-
 const char kForceColorProfileSRGB[] = "sRGB";
 const char kForceColorProfileP3[] = "Display P3 D65";
 const char kForceColorProfileRec2020[] = "ITU-R BT.2020";
@@ -1633,6 +1628,11 @@ const char kHttpsOnlyModeDescription[] =
     "Adds a setting under chrome://settings/security to opt-in to HTTPS-First "
     "Mode.";
 
+const char kHttpsUpgradesName[] = "HTTPS Upgrades";
+const char kHttpsUpgradesDescription[] =
+    "Enable automatically upgrading all top-level navigations to HTTPS with "
+    "fast fallback to HTTP.";
+
 const char kIgnoreGpuBlocklistName[] = "Override software rendering list";
 const char kIgnoreGpuBlocklistDescription[] =
     "Overrides the built-in software rendering list and enables "
@@ -1765,6 +1765,11 @@ const char kJourneysShowAllClustersDescription[] =
 const char kJourneysVisitDedupingName[] = "History Journeys Visit Deduping";
 const char kJourneysVisitDedupingDescription[] =
     "Enables variations for how visits are deduped";
+
+const char kJourneysIncludeSyncedVisitsName[] =
+    "History Journeys Include SyncedVisits";
+const char kJourneysIncludeSyncedVisitsDescription[] =
+    "Enabled synced visits to be included in History Journeys clusters.";
 
 const char kExtractRelatedSearchesFromPrefetchedZPSResponseName[] =
     "Extract Related Searches from Prefetched ZPS Response";
@@ -2554,6 +2559,10 @@ const char kSafetyCheckUnusedSitePermissionsDescription[] =
     "When enabled, adds the unused sites permission module to Safety Check on "
     "desktop. The module will be shown depending on the browser state.";
 
+const char kSameAppWindowCycleName[] = "Cros Labs: Same App Window Cycling";
+const char kSameAppWindowCycleDescription[] =
+    "Use Alt+` to cycle through the windows of the active application.";
+
 const char kPartitionedCookiesName[] = "Partitioned cookies";
 const char kPartitionedCookiesDescription[] =
     "Controls if the Partitioned cookie attribute is enabled.";
@@ -2787,6 +2796,11 @@ const char kSyncAccessHandleAllSyncSurfaceName[] =
     "Sync Access Handle All Sync Surface";
 const char kSyncAccessHandleAllSyncSurfaceDescription[] =
     "Enables all-sync surface for SyncAccessHandle in File System Access API.";
+
+const char kSyncAutofillWalletUsageDataName[] =
+    "Sync Autofill Wallet Usage Data";
+const char kSyncAutofillWalletUsageDataDescription[] =
+    "When enabled, allows syncing of the autofill wallet usage data type.";
 
 const char kSyncEnableHistoryDataTypeName[] = "Enable History sync data type";
 const char kSyncEnableHistoryDataTypeDescription[] =
@@ -3204,6 +3218,13 @@ const char kWebRtcAllowInputVolumeAdjustmentDescription[] =
     "Allow the Audio Processing Module in WebRTC to adjust the input volume "
     "during a real-time call. Disable if microphone muting or clipping issues "
     "are observed when the browser is running and used for a real-time call. "
+    "This flag is experimental and may be removed at any time.";
+
+const char kWebRtcApmDownmixCaptureAudioMethodName[] =
+    "WebRTC downmix capture audio method.";
+const char kWebRtcApmDownmixCaptureAudioMethodDescription[] =
+    "Override the method that the Audio Processing Module in WebRTC uses to "
+    "downmix the captured audio to mono (when needed) during a real-time call. "
     "This flag is experimental and may be removed at any time.";
 
 const char kWebrtcHwDecodingName[] = "WebRTC hardware video decoding";
@@ -4418,6 +4439,11 @@ const char kDevToolsTabTargetLiteralName[] = "DevTools using Tab Target";
 const char kDevToolsTabTargetLiteralDescription[] =
     "Makes DevTools use an experimental CDP Tab target.";
 
+const char kAccessCodeCastTabSwitchingUIName[] =
+    "Access Code Cast Tab Switching UI";
+const char kAccessCodeCastTabSwitchingUIDescription[] =
+    "Enables tab switching during an Access Code Casting session.";
+
 #endif  // BUILDFLAG(IS_ANDROID)
 
 // Windows ---------------------------------------------------------------------
@@ -4677,11 +4703,6 @@ const char kApnRevampName[] = "APN Revamp";
 const char kApnRevampDescription[] =
     "Enables the ChromeOS APN Revamp, which updates cellular network APN "
     "system UI and related infrastructure.";
-
-const char kAppDiscoveryForOobeName[] =
-    "OOBE app recommendations with App Discovery Service.";
-const char kAppDiscoveryForOobeDescription[] =
-    "Use the App Discovery Service to request recommended apps for OOBE.";
 
 const char kArcCustomTabsExperimentName[] =
     "Enable Custom Tabs experiment for ARC";
@@ -5014,11 +5035,6 @@ const char kCameraAppMultiPageDocScanName[] = "Camera App Multi-Page Doc Scan";
 const char kCameraAppMultiPageDocScanDescription[] =
     "Enables this flag to show multi-page UI for document scanning featrue in "
     "the camera app";
-
-const char kCompactBubbleLauncherName[] = "Make bubble launcher more compact";
-
-const char kCompactBubbleLauncherDescription[] =
-    "Decreases the width of clamshell mode productivity (bubble) launcher.";
 
 const char kCryptAuthV2DedupDeviceLastActivityTimeName[] =
     "Dedup devices by last activity time";
@@ -5371,6 +5387,11 @@ const char kEcheSWADisableStunServerName[] = "Disable Eche STUN server";
 const char kEcheSWADisableStunServerDescription[] =
     "Allows disabling the stun servers when establishing a WebRTC connection "
     "to Eche";
+
+const char kEcheSWACheckAndroidNetworkInfoName[] = "Check Android network info";
+const char kEcheSWACheckAndroidNetworkInfoDescription[] =
+    "Allows CrOS to analyze Android network information to provide more "
+    "context on connection errors";
 
 const char kEnableNetworkingInDiagnosticsAppName[] =
     "Enable networking cards in the Diagnostics App";
@@ -5863,12 +5884,11 @@ const char kArcWindowPredictorDescription[] =
 
 const char kArcInputOverlayNameBeta[] = "Enable ARC Input Overlay Beta";
 const char kArcInputOverlayDescriptionBeta[] =
-    "Enable full editor feature for Gaming Input Overlay based on Alpha two, "
-    "so users can add and remove actions.";
+    "Enable full editor feature for Gaming Input Overlay including features in "
+    "Alpha V2, so users can add and remove actions.";
 
-const char kArcInputOverlayNameAlphaTwo[] =
-    "Enable ARC Input Overlay Alpha Two";
-const char kArcInputOverlayDescriptionAlphaTwo[] =
+const char kArcInputOverlayNameAlphaV2[] = "Enable ARC Input Overlay Alpha V2";
+const char kArcInputOverlayDescriptionAlphaV2[] =
     "Enable menu and action reposition feature for Gaming Input Overlay based "
     "on Alpha.";
 
@@ -6402,14 +6422,6 @@ const char kWebBluetoothConfirmPairingSupportDescription[] =
     "Bluetooth";
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
 
-#if BUILDFLAG(IS_LINUX)
-const char kForcePasswordInitialSyncWhenDecryptionFailsName[] =
-    "Force initial sync to clean local undecryptable passwords during startup";
-const char kForcePasswordInitialSyncWhenDecryptionFailsDescription[] =
-    "During startup checks if there are undecryptable passwords in the local "
-    "storage and requests initial sync.";
-#endif  // BUILDFLAG(IS_LINUX)
-
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC)
 const char kSkipUndecryptablePasswordsName[] =
     "Skip undecryptable passwords to use the available decryptable "
@@ -6417,6 +6429,11 @@ const char kSkipUndecryptablePasswordsName[] =
 const char kSkipUndecryptablePasswordsDescription[] =
     "Makes the decryptable passwords available in the password manager when "
     "there are undecryptable ones.";
+const char kForcePasswordInitialSyncWhenDecryptionFailsName[] =
+    "Force initial sync to clean local undecryptable passwords during startup";
+const char kForcePasswordInitialSyncWhenDecryptionFailsDescription[] =
+    "During startup checks if there are undecryptable passwords in the local "
+    "storage and requests initial sync.";
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC)
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
@@ -6565,6 +6582,11 @@ const char kWebKioskEnableLacrosDescription[] =
 const char kDisableLacrosTtsSupportName[] = "Disable lacros tts support";
 const char kDisableLacrosTtsSupportDescription[] =
     "Disable lacros support for text to speech.";
+
+const char kPromiseIconsName[] = "Promise Icons";
+const char kPromiseIconsDescription[] =
+    "Enables promise icons in the Launcher and Shelf (if the app is pinned) "
+    "for app installations.";
 
 const char kVcControlsUiName[] = "Video conferencing controls UI";
 const char kVcControlsUiDescription[] =

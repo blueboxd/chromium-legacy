@@ -166,6 +166,22 @@ bool ExternalVkImageBackingFactory::IsSupported(
     gfx::GpuMemoryBufferType gmb_type,
     GrContextType gr_context_type,
     base::span<const uint8_t> pixel_data) {
+  if (format.is_multi_plane()) {
+    return false;
+  }
+
+  // TODO: remove it when below formats are converted to multi plane shared
+  // image formats.
+#if BUILDFLAG(IS_LINUX)
+  switch (format.resource_format()) {
+    case viz::YUV_420_BIPLANAR:
+    case viz::YUVA_420_TRIPLANAR:
+      return false;
+    default:
+      break;
+  }
+#endif
+
   if (gmb_type != gfx::EMPTY_BUFFER && !CanImportGpuMemoryBuffer(gmb_type)) {
     return false;
   }

@@ -60,6 +60,7 @@ void AbstractTextureImpl::SetParameteri(GLenum pname, GLint param) {
   NOTIMPLEMENTED();
 }
 
+#if BUILDFLAG(IS_ANDROID)
 void AbstractTextureImpl::BindStreamTextureImage(gl::GLImage* image,
                                                  GLuint service_id) {
   const GLint level = 0;
@@ -68,6 +69,7 @@ void AbstractTextureImpl::BindStreamTextureImage(gl::GLImage* image,
       target, level, image, Texture::ImageState::UNBOUND, service_id);
   texture_->SetLevelCleared(target, level, true);
 }
+#endif
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 void AbstractTextureImpl::SetUnboundImage(gl::GLImage* image) {
@@ -140,13 +142,15 @@ void AbstractTextureImplPassthrough::SetParameteri(GLenum pname, GLint param) {
   NOTIMPLEMENTED();
 }
 
+#if BUILDFLAG(IS_ANDROID)
 void AbstractTextureImplPassthrough::BindStreamTextureImage(gl::GLImage* image,
                                                             GLuint service_id) {
   const GLint level = 0;
   const GLuint target = texture_->target();
   texture_->SetStreamLevelImage(target, level, image, service_id);
-  texture_->set_is_bind_pending(true);
+  texture_->set_bind_pending();
 }
+#endif
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 void AbstractTextureImplPassthrough::SetUnboundImage(gl::GLImage* image) {

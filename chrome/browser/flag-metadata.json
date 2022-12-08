@@ -109,7 +109,7 @@
   {
     "name": "allow-insecure-localhost",
     "owners": [ "security-dev" ],
-    "expiry_milestone": 110
+    "expiry_milestone": 118
   },
   {
     "name": "allow-repeated-updates",
@@ -214,7 +214,7 @@
     "expiry_milestone": 115
   },
   {
-    "name": "arc-input-overlay-alpha-two",
+    "name": "arc-input-overlay-alpha-v2",
     "owners": [ "cuicuiruan@google.com", "pjlee@google.com", "arc-gaming@google.com" ],
     "expiry_milestone": 125
   },
@@ -1028,11 +1028,6 @@
     "expiry_milestone": 100
   },
   {
-    "name": "compact-bubble-launcher",
-    "owners": ["tbarzic@chromium.org"],
-    "expiry_milestone": 105
-  },
-  {
     "name": "compositor-threaded-scrollbar-scrolling",
     "owners": [ "arakeri@microsoft.com" ],
     "expiry_milestone": 90
@@ -1141,6 +1136,11 @@
     "name": "cros-labs-float-window",
     "owners": [ "shidi", "afakhry" ],
     "expiry_milestone": 110
+  },
+  {
+    "name": "cros-labs-window-cycle-shortcut",
+    "owners": [ "andp", "benbecker", "nupurjain" ],
+    "expiry_milestone": 120
   },
   {
     "name": "cros-libassistant-v2-migration",
@@ -1582,6 +1582,11 @@
     "expiry_milestone": 115
   },
   {
+    "name": "eche-swa-check-android-network-info",
+    "owners": [ "dhnishi", "corakwue@google.com", "ftsui@google.com" ],
+    "expiry_milestone": 115
+  },
+  {
     "name": "eche-swa-debug-mode",
     "owners": [ "nayebi@google.com" ],
     "expiry_milestone": 115
@@ -1615,6 +1620,11 @@
     "name": "enable-16-desks",
     "owners": [ "dandersson", "janetmac" ],
     "expiry_milestone": 118
+  },
+  {
+    "name": "enable-access-code-cast-tabswitching-ui",
+    "owners": [ "//chrome/browser/media/router/discovery/access_code/OWNERS" ],
+    "expiry_milestone": 111
   },
   {
     "name": "enable-accessibility-live-caption",
@@ -1913,7 +1923,7 @@
   {
     "name": "enable-cros-ime-assist-multi-word",
     "owners": [ "curtismcmullan", "essential-inputs-team@google.com" ],
-    "expiry_milestone": 110
+    "expiry_milestone": 120
   },
   {
     "name": "enable-cros-ime-assist-multi-word-expanded",
@@ -3387,6 +3397,11 @@
     "expiry_milestone": 103
   },
   {
+    "name": "enable-webrtc-apm-downmix-capture-audio-method",
+    "owners": [ "alessiob", "silen" ],
+    "expiry_milestone": 123
+  },
+  {
     "name": "enable-webrtc-capture-multi-channel-audio-processing",
     "owners": [ "saza" ],
     "expiry_milestone": 123
@@ -3770,11 +3785,6 @@
     "expiry_milestone": 115
   },
   {
-    "name": "font-access",
-    "owners": [ "dslee" ],
-    "expiry_milestone": 110
-  },
-  {
     "name": "force-color-profile",
     "owners": [ "ccameron" ],
     // Used by developers and manual testing to test custom color profiles.
@@ -4050,6 +4060,11 @@
     "expiry_milestone": 115
   },
   {
+    "name": "history-journeys-include-synced-visits",
+    "owners": [ "tommycli", "chrome-journeys@google.com" ],
+    "expiry_milestone": 115
+  },
+  {
     "name": "history-journeys-labels",
     "owners": [ "tommycli", "chrome-journeys@google.com" ],
     "expiry_milestone": 115
@@ -4093,6 +4108,14 @@
     "name": "https-only-mode-setting",
     "owners": [ "cthomp", "trusty-transport@chromium.org" ],
     "expiry_milestone": 97
+  },
+  {
+    "name": "https-upgrades",
+    "owners": [
+      "cthomp",
+      "trusty-transport@chromium.org"
+    ],
+    "expiry_milestone": 118
   },
   {
     "name": "identity-status-consistency",
@@ -4253,6 +4276,11 @@
     "name": "ios-crashpad",
     "owners": [ "justincohen", "bling-flags@google.com" ],
     "expiry_milestone": 110
+  },
+  {
+    "name": "ios-force-translate-enabled",
+    "owners": [ "olivierrobin@google.com", "bling-flags@google.com" ],
+    "expiry_milestone": 120
   },
   {
     "name": "ios-media-permissions-control",
@@ -5690,6 +5718,11 @@
     "expiry_milestone": 82
   },
   {
+    "name": "promise-icons",
+    "owners": ["vpao", "chromeos-apps-foundation-team@google.com"],
+    "expiry_milestone": 120
+  },
+  {
     "name": "pull-to-refresh",
     "owners": [ "afakhry", "tclaiborne" ],
     "expiry_milestone": 99
@@ -6438,6 +6471,11 @@
     "name": "sync-access-handle-all-sync-surface",
     "owners": [ "dslee@google.com", "chrome-owp-storage@google.com" ],
     "expiry_milestone": 111
+  },
+  {
+    "name": "sync-autofill-wallet-usage-data",
+    "owners": [ "alexandertekle@google.com", "treib" ],
+    "expiry_milestone": 120
   },
   {
     "name": "sync-chromeos-explicit-passphrase-sharing",

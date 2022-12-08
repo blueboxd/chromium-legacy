@@ -202,7 +202,8 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   // PageLoadMetricsUpdateDispatcher::Client implementation:
   bool IsPageMainFrame(content::RenderFrameHost* rfh) const override;
   void OnTimingChanged() override;
-  void OnPageInputTimingChanged(uint64_t num_input_events) override;
+  void OnPageInputTimingChanged(uint64_t num_interactions,
+                                uint64_t num_input_events) override;
   void OnSubFrameTimingChanged(content::RenderFrameHost* rfh,
                                const mojom::PageLoadTiming& timing) override;
   void OnSubFrameInputTimingChanged(
@@ -546,7 +547,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   // Holds the RenderFrameHost for the main frame of the page that this tracker
   // instance is bound. Safe to use raw_ptr as the tracker instance is accessed
   // via a map that uses the RenderFrameHost as the key while it's valid.
-  raw_ptr<content::RenderFrameHost> page_main_frame_;
+  raw_ptr<content::RenderFrameHost, DanglingUntriaged> page_main_frame_;
 
   const bool is_first_navigation_in_web_contents_;
 

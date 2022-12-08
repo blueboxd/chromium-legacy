@@ -23,7 +23,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
+#include "components/password_manager/core/browser/affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
@@ -221,7 +221,6 @@ GURL GetGooglePasswordManagerURL(ManagePasswordsReferrer referrer) {
       case ManagePasswordsReferrer::kTouchToFill:
       case ManagePasswordsReferrer::kPasswordBreachDialog:
       case ManagePasswordsReferrer::kSafetyCheck:
-      case ManagePasswordsReferrer::kAutomatedPasswordChangeSuccessLink:
       case ManagePasswordsReferrer::kBiometricAuthenticationBeforeFillingDialog:
         NOTREACHED();
     }

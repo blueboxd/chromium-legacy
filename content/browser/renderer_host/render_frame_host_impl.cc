@@ -1131,18 +1131,6 @@ bool CoopSuppressOpener(const RenderFrameHostImpl* opener) {
   }
 }
 
-// Helper function to get navgation entry if |request| is a history navigation
-// that didn't get served from back/forward cache.
-NavigationEntryImpl* GetNavigationEntryIfNonBackForwardCacheHistoryNavigation(
-    NavigationRequest* request) {
-  if (!request->IsServedFromBackForwardCache() &&
-      BackForwardCacheMetrics::IsCrossDocumentMainFrameHistoryNavigation(
-          request)) {
-    return static_cast<NavigationEntryImpl*>(request->GetNavigationEntry());
-  }
-  return nullptr;
-}
-
 }  // namespace
 
 class RenderFrameHostImpl::SubresourceLoaderFactoriesConfig {
@@ -3109,8 +3097,11 @@ void RenderFrameHostImpl::RenderProcessGone(
 
   // If this was the current pending or speculative RFH dying, cancel and
   // destroy it.
-  frame_tree_node_->render_manager()->CleanupIfSpeculativeForRenderProcessGone(
-      this);
+  if (lifecycle_state_ == LifecycleStateImpl::kSpeculative) {
+    CHECK(owner_);
+    owner_->GetRenderFrameHostManager()
+        .CleanupSpeculativeRfhForRenderProcessGone();
+  }
 
   // Note: don't add any more code at this point in the function because
   // |this| may be deleted. Any additional cleanup should happen before
@@ -3456,7 +3447,7 @@ RenderFrameProxyHost* RenderFrameHostImpl::GetProxyToOuterDelegate() {
   DCHECK(is_main_frame());
   int outer_contents_frame_tree_node_id =
       frame_tree_node_->frame_tree()
-          ->delegate()
+          .delegate()
           ->GetOuterDelegateFrameTreeNodeId();
   FrameTreeNode* outer_contents_frame_tree_node =
       FrameTreeNode::GloballyFindByID(outer_contents_frame_tree_node_id);
@@ -3782,7 +3773,7 @@ void RenderFrameHostImpl::DidNavigate(
 
   // Sets whether the last navigation has user gesture/transient activation or
   // not.
-  last_navigation_started_with_transient_activation_ =
+  last_committed_common_params_has_user_gesture_ =
       navigation_request->common_params().has_user_gesture;
 
   // Navigations that activate an existing bfcached or prerendered document do
@@ -4070,6 +4061,9 @@ FrameTreeNode* RenderFrameHostImpl::AddChild(
     const blink::FramePolicy& frame_policy,
     std::string frame_name,
     std::string frame_unique_name) {
+  DCHECK(lifecycle_state_ == LifecycleStateImpl::kActive ||
+         lifecycle_state_ == LifecycleStateImpl::kPrerendering);
+
   // Initialize the RenderFrameHost for the new node.  We always create child
   // frames in the same SiteInstance as the current frame, and they can swap to
   // a different one if they navigate away.
@@ -4082,7 +4076,8 @@ FrameTreeNode* RenderFrameHostImpl::AddChild(
   // about the new frame.  Create a proxy for the child frame in all
   // SiteInstances that have a proxy for the frame's parent, since all frames
   // in a frame tree should have the same set of proxies.
-  frame_tree_node_->render_manager()->CreateProxiesForChildFrame(child.get());
+  CHECK(owner_);
+  owner_->GetRenderFrameHostManager().CreateProxiesForChildFrame(child.get());
 
   // When the child is added, it hasn't committed any navigation yet - its
   // initial empty document should inherit the origin of its parent (the origin
@@ -4203,7 +4198,7 @@ void RenderFrameHostImpl::Detach() {
   // strongly owned by the RenderFrameHostManager via unique_ptr) will be torn
   // down then. If we do proceed, this ends up with a use-after-free, since
   // StartPendingDeletionOnSubtree() will call
-  // ResetAllNavigationsInSubtreeForPendingDeletion(), which deletes `this`.
+  // ResetAllNavigationsInSubtreeForFrameDetach(), which deletes `this`.
   if (lifecycle_state() == LifecycleStateImpl::kSpeculative ||
       lifecycle_state() == LifecycleStateImpl::kPendingCommit) {
     return;
@@ -4249,7 +4244,7 @@ void RenderFrameHostImpl::Detach() {
   // Before completing the removal, we still need to wait for all of its
   // descendant frames to execute unload handlers. Start executing those
   // handlers now.
-  StartPendingDeletionOnSubtree();
+  StartPendingDeletionOnSubtree(PendingDeletionReason::kFrameDetach);
   frame_tree()->FrameUnloading(frame_tree_node_);
 
   // Some children with no unload handler may be eligible for immediate
@@ -4381,27 +4376,6 @@ RenderFrameHostImpl::BackForwardCacheDisablingFeatureHandle
 RenderFrameHostImpl::RegisterBackForwardCacheDisablingNonStickyFeature(
     BackForwardCacheDisablingFeature feature) {
   return BackForwardCacheDisablingFeatureHandle(this, feature);
-}
-
-void RenderFrameHostImpl::UpdateBackForwardCacheNotRestoredReasons(
-    NavigationRequest* navigation_request) {
-  if (NavigationEntryImpl* entry =
-          GetNavigationEntryIfNonBackForwardCacheHistoryNavigation(
-              navigation_request)) {
-    if (!entry->back_forward_cache_metrics()) {
-      // Create a metrics if there is none.
-      FrameNavigationEntry* frame_navigation_entry =
-          entry->GetFrameEntry(navigation_request->frame_tree_node());
-      scoped_refptr<BackForwardCacheMetrics> metrics =
-          base::WrapRefCounted(new BackForwardCacheMetrics(
-              frame_navigation_entry->document_sequence_number()));
-      entry->set_back_forward_cache_metrics(std::move(metrics));
-    }
-    // Update NotRestoredReasons to include additional reasons only
-    // known at commit time, before reporting to the renderer.
-    entry->back_forward_cache_metrics()->UpdateNotRestoredReasonsForNavigation(
-        navigation_request);
-  }
 }
 
 bool RenderFrameHostImpl::IsFrozen() {
@@ -4720,7 +4694,7 @@ void RenderFrameHostImpl::Unload(RenderFrameProxyHost* proxy, bool is_loading) {
   if (web_ui())
     web_ui()->RenderFrameHostUnloading();
 
-  StartPendingDeletionOnSubtree();
+  StartPendingDeletionOnSubtree(PendingDeletionReason::kSwappedOut);
   // Some children with no unload handler may be eligible for deletion. Cut the
   // dead branches now. This is a performance optimization.
   PendingDeletionCheckCompletedOnSubtree();
@@ -4790,7 +4764,7 @@ void RenderFrameHostImpl::DetachFromProxy() {
 
   // Start pending deletion on this frame and its children.
   DeleteRenderFrame(mojom::FrameDeleteIntention::kNotMainFrame);
-  StartPendingDeletionOnSubtree();
+  StartPendingDeletionOnSubtree(PendingDeletionReason::kFrameDetach);
   frame_tree()->FrameUnloading(frame_tree_node_);
 
   // Some children with no unload handler may be eligible for immediate
@@ -5870,7 +5844,7 @@ FrameTreeNode* RenderFrameHostImpl::FindAndVerifyChildInternal(
   if (!child_frame_or_proxy)
     return nullptr;
 
-  if (child_frame_or_proxy.GetFrameTreeNode()->frame_tree() != frame_tree()) {
+  if (&child_frame_or_proxy.GetFrameTreeNode()->frame_tree() != frame_tree()) {
     // Ignore the cases when the child lives in a different frame tree.
     // This is possible when we create a proxy for inner WebContents (e.g.
     // for portals) so the |child_frame_or_proxy| points to the root frame
@@ -6274,8 +6248,14 @@ void RenderFrameHostImpl::ForwardResourceTimingToParent(
 }
 
 bool RenderFrameHostImpl::Reload() {
-  return frame_tree_node_->navigator().controller().ReloadFrame(
-      frame_tree_node_);
+  // Reloading the document frame will delete the currently active one.
+  // We expected this function to be used only when this RenderFrameHost
+  // is the currently active one. RenderFrameHost pending deletion, or
+  // in the BackForwardCache are not expected to have side effect on the
+  // current page.
+  CHECK(IsActive());
+
+  return owner_->Reload();
 }
 
 void RenderFrameHostImpl::SendAccessibilityEventsToManager(
@@ -7207,8 +7187,12 @@ void RenderFrameHostImpl::DidStopLoading() {
 
   // Only inform the FrameTreeNode of a change in load state if the load state
   // of this RenderFrameHost is being tracked.
-  if (!IsPendingDeletion())
-    frame_tree_node_->DidStopLoading();
+  // This async Mojo method can be called from the renderer before entering
+  // BFCache but the message can arrive here after it.
+  if (!IsPendingDeletion() && !IsInBackForwardCache()) {
+    DCHECK(owner_);
+    owner_->DidStopLoading();
+  }
 }
 
 void RenderFrameHostImpl::GetSavableResourceLinksCallback(
@@ -7779,7 +7763,7 @@ void RenderFrameHostImpl::ReceivedDelegatedCapability(
 }
 
 void RenderFrameHostImpl::BeginNavigation(
-    blink::mojom::CommonNavigationParamsPtr common_params,
+    blink::mojom::CommonNavigationParamsPtr unvalidated_common_params,
     blink::mojom::BeginNavigationParamsPtr begin_params,
     mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token,
     mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client,
@@ -7787,11 +7771,9 @@ void RenderFrameHostImpl::BeginNavigation(
         initiator_policy_container_host_keep_alive_handle,
     mojo::PendingReceiver<mojom::NavigationRendererCancellationListener>
         renderer_cancellation_listener) {
-  if (frame_tree_node_->render_manager()->is_attaching_inner_delegate()) {
-    // Avoid starting any new navigations since this frame is in the process of
-    // attaching an inner delegate.
-    return;
-  }
+  TRACE_EVENT("navigation", "RenderFrameHostImpl::BeginNavigation",
+              ChromeTrackEvent::kRenderFrameHost, this, "url",
+              unvalidated_common_params->url.possibly_invalid_spec());
 
   // Only active and prerendered documents are allowed to start navigation in
   // their frame.
@@ -7803,16 +7785,22 @@ void RenderFrameHostImpl::BeginNavigation(
       return;
   }
 
-  TRACE_EVENT("navigation", "RenderFrameHostImpl::BeginNavigation",
-              ChromeTrackEvent::kRenderFrameHost, this, "url",
-              common_params->url.possibly_invalid_spec());
+  // `owner_` can not be null since the lifecycle state is checked above.
+  DCHECK(owner_);
+  if (owner_->GetRenderFrameHostManager().is_attaching_inner_delegate()) {
+    // Avoid starting any new navigations since this frame is in the process of
+    // attaching an inner delegate.
+    return;
+  }
 
   DCHECK(navigation_client.is_valid());
 
-  blink::mojom::CommonNavigationParamsPtr validated_params =
-      common_params.Clone();
-  if (!VerifyBeginNavigationCommonParams(GetSiteInstance(), &*validated_params))
+  blink::mojom::CommonNavigationParamsPtr validated_common_params =
+      unvalidated_common_params.Clone();
+  if (!VerifyBeginNavigationCommonParams(GetSiteInstance(),
+                                         &*validated_common_params)) {
     return;
+  }
 
   // BeginNavigation() should only be triggered when the navigation is
   // initiated by a frame in the same process.
@@ -7856,7 +7844,7 @@ void RenderFrameHostImpl::BeginNavigation(
   // Only uuid-in-package: URL are allowed for navigation to a resource in
   // Subresource WebBundles.
   if (begin_params->web_bundle_token &&
-      !common_params->url.SchemeIs(url::kUuidInPackageScheme)) {
+      !validated_common_params->url.SchemeIs(url::kUuidInPackageScheme)) {
     bad_message::ReceivedBadMessage(
         GetProcess(), bad_message::WEB_BUNDLE_INVALID_NAVIGATION_URL);
     return;
@@ -7867,12 +7855,12 @@ void RenderFrameHostImpl::BeginNavigation(
   // If the request was for a blob URL, but the validated URL is no longer a
   // blob URL, reset the blob_url_token to prevent hitting the ReportBadMessage
   // below, and to make sure we don't incorrectly try to use the blob_url_token.
-  if (common_params->url.SchemeIsBlob() &&
-      !validated_params->url.SchemeIsBlob()) {
+  if (unvalidated_common_params->url.SchemeIsBlob() &&
+      !validated_common_params->url.SchemeIsBlob()) {
     blob_url_token = mojo::NullRemote();
   }
 
-  if (blob_url_token && !validated_params->url.SchemeIsBlob()) {
+  if (blob_url_token && !validated_common_params->url.SchemeIsBlob()) {
     mojo::ReportBadMessage("Blob URL Token, but not a blob: URL");
     return;
   }
@@ -7888,14 +7876,14 @@ void RenderFrameHostImpl::BeginNavigation(
   // situation where a renderer currently doesn't have an easy way of resolving
   // the blob URL. For those situations resolve the blob URL here, as we don't
   // care about ordering with other blob URL manipulation anyway.
-  if (validated_params->url.SchemeIsBlob() && !blob_url_loader_factory) {
+  if (validated_common_params->url.SchemeIsBlob() && !blob_url_loader_factory) {
     blob_url_loader_factory = ChromeBlobStorageContext::URLLoaderFactoryForUrl(
-        GetStoragePartition(), validated_params->url);
+        GetStoragePartition(), validated_common_params->url);
   }
 
   if (waiting_for_init_) {
     pending_navigate_ = std::make_unique<PendingNavigation>(
-        std::move(validated_params), std::move(begin_params),
+        std::move(validated_common_params), std::move(begin_params),
         std::move(blob_url_loader_factory), std::move(navigation_client),
         std::move(renderer_cancellation_listener));
     return;
@@ -7909,10 +7897,10 @@ void RenderFrameHostImpl::BeginNavigation(
   // result of this function's execution, we don't need to pass
   // |initiator_policy_container_host_keep_alive_handle| along.
 
-  frame_tree_node()->navigator().OnBeginNavigation(
-      frame_tree_node(), std::move(validated_params), std::move(begin_params),
-      std::move(blob_url_loader_factory), std::move(navigation_client),
-      EnsurePrefetchedSignedExchangeCache(),
+  owner_->GetCurrentNavigator().OnBeginNavigation(
+      frame_tree_node(), std::move(validated_common_params),
+      std::move(begin_params), std::move(blob_url_loader_factory),
+      std::move(navigation_client), EnsurePrefetchedSignedExchangeCache(),
       std::move(renderer_cancellation_listener));
 }
 
@@ -8559,10 +8547,17 @@ void RenderFrameHostImpl::SetBeforeUnloadTimeoutDelayForTesting(
   beforeunload_timeout_delay_ = timeout;
 }
 
-void RenderFrameHostImpl::StartPendingDeletionOnSubtree() {
+void RenderFrameHostImpl::StartPendingDeletionOnSubtree(
+    RenderFrameHostImpl::PendingDeletionReason pending_deletion_reason) {
   DCHECK(IsPendingDeletion());
 
-  ResetAllNavigationsInSubtreeForPendingDeletion();
+  if (pending_deletion_reason == PendingDeletionReason::kFrameDetach ||
+      !base::FeatureList::IsEnabled(kAvoidUnnecessaryNavigationCancellations)) {
+    // Reset navigations only when entering "pending deletion" state due to
+    // frame detach if the kStopCancellingNavigationsOnCommitAndNewNavigation
+    // flag is enabled, or for all pending deletion cases otherwise.
+    ResetAllNavigationsInSubtreeForFrameDetach();
+  }
 
   for (std::unique_ptr<FrameTreeNode>& child_frame : children_) {
     for (FrameTreeNode* node : frame_tree()->SubtreeNodes(child_frame.get())) {
@@ -8591,7 +8586,7 @@ void RenderFrameHostImpl::StartPendingDeletionOnSubtree() {
                 : LifecycleStateImpl::kReadyToBeDeleted);
       }
 
-      node->frame_tree()->FrameUnloading(node);
+      node->frame_tree().FrameUnloading(node);
     }
   }
 }
@@ -8645,19 +8640,11 @@ void RenderFrameHostImpl::PendingDeletionCheckCompletedOnSubtree() {
   }
 }
 
-void RenderFrameHostImpl::ResetAllNavigationsInSubtreeForPendingDeletion() {
+void RenderFrameHostImpl::ResetAllNavigationsInSubtreeForFrameDetach() {
   for (auto& child : children_) {
-    child->current_frame_host()
-        ->ResetAllNavigationsInSubtreeForPendingDeletion();
+    child->current_frame_host()->ResetAllNavigationsInSubtreeForFrameDetach();
   }
   ResetOwnedNavigationRequests(NavigationDiscardReason::kWillRemoveFrame);
-  // TODO(https://crbug.com/1220337): This has an interesting interaction with
-  // the experimental implementations of navigation queueing: if the speculative
-  // RenderFrameHost is in pending commit when a new navigation tries to start,
-  // the new navigation attempt is queued. However, once the navigation in the
-  // speculative RenderFrameHost commits, it swaps out the old frame which
-  // causes `StartPendingDeletionOnrSubtree()` which calls this method which
-  // clobbers the navigation request that was specifically queueing...
   frame_tree_node_->ResetNavigationRequest(
       NavigationDiscardReason::kWillRemoveFrame);
   frame_tree_node_->render_manager()->DiscardSpeculativeRFH(
@@ -9153,7 +9140,7 @@ void RenderFrameHostImpl::CommitNavigation(
               NavigationEntryImpl::FromNavigationEntry(
                   navigation_request->frame_tree_node()
                       ->frame_tree()
-                      ->controller()
+                      .controller()
                       .GetLastCommittedEntry())) {
         if (last_committed_entry->back_forward_cache_metrics()) {
           last_committed_entry->back_forward_cache_metrics()
@@ -9766,7 +9753,7 @@ RenderFrameHostImpl* RenderFrameHostImpl::GetMainFrame() {
 
 const RenderFrameHostImpl* RenderFrameHostImpl::GetMainFrame() const {
   // Iteration over the GetParent() chain is used below, because returning
-  // |frame_tree()->root()->current_frame_host()| might
+  // |frame_tree().root()->current_frame_host()| might
   // give an incorrect result after |this| has been detached from the frame
   // tree.
   const RenderFrameHostImpl* main_frame = this;
@@ -10468,7 +10455,7 @@ void RenderFrameHostImpl::CreateNotificationService(
   GetProcess()->CreateNotificationService(
       GetGlobalId(),
       RenderProcessHost::NotificationServiceCreatorType::kDocument,
-      GetLastCommittedOrigin(), std::move(receiver));
+      storage_key(), std::move(receiver));
 }
 
 void RenderFrameHostImpl::CreateInstalledAppProvider(
@@ -11535,7 +11522,8 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     bool was_loading =
         frame_tree()->LoadingTree()->IsLoadingIncludingInnerFrameTrees();
     is_loading_ = true;
-    frame_tree_node()->DidStartLoading(should_show_loading_ui, was_loading);
+    DCHECK(owner_);
+    owner_->DidStartLoading(should_show_loading_ui, was_loading);
   }
 
   if (navigation_request)
@@ -11667,22 +11655,27 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
                navigation_request->GetDocumentToken());
     }
 
-    const absl::optional<FencedFrameURLMapping::FencedFrameProperties>&
-        fenced_frame_properties = navigation_request->fenced_frame_properties();
+    const absl::optional<FencedFrameProperties>& fenced_frame_properties =
+        navigation_request->GetFencedFrameProperties();
     if (fenced_frame_properties) {
       // This may only be done after creating the DocumentAssociatedData for the
       // new document, if appropriate, since `fenced_frame_urls_map` hangs off
       // of that.
-      if (fenced_frame_properties->pending_ad_components_map.has_value()) {
-        fenced_frame_properties->pending_ad_components_map->ExportToMapping(
-            GetPage().fenced_frame_urls_map());
+      if (fenced_frame_properties->nested_urn_config_pairs_.has_value()) {
+        GetPage().fenced_frame_urls_map().ImportPendingAdComponents(
+            fenced_frame_properties->nested_urn_config_pairs_
+                ->GetValueIgnoringVisibility());
       }
 
-      if (fenced_frame_properties->ad_auction_data.has_value()) {
+      if (fenced_frame_properties->ad_auction_data_.has_value()) {
         AdAuctionDocumentData::CreateForCurrentDocument(
             this,
-            fenced_frame_properties->ad_auction_data->interest_group_owner,
-            fenced_frame_properties->ad_auction_data->interest_group_name);
+            fenced_frame_properties->ad_auction_data_
+                ->GetValueIgnoringVisibility()
+                .interest_group_owner,
+            fenced_frame_properties->ad_auction_data_
+                ->GetValueIgnoringVisibility()
+                .interest_group_name);
       }
     }
 
@@ -12130,7 +12123,7 @@ void RenderFrameHostImpl::SendCommitNavigation(
       const std::string& namespace_id =
           navigation_request->frame_tree_node()
               ->frame_tree()
-              ->controller()
+              .controller()
               .GetSessionStorageNamespace(
                   GetSiteInstance()->GetStoragePartitionConfig())
               ->id();
@@ -12140,33 +12133,12 @@ void RenderFrameHostImpl::SendCommitNavigation(
     }
   }
 
-  blink::mojom::BackForwardCacheNotRestoredReasonsPtr not_restored_reasons;
-  UpdateBackForwardCacheNotRestoredReasons(navigation_request);
-  // Only populate the web-exposed NotRestoredReasons when needed by the
-  // NotRestoredReasons API, i.e. for cross-document main frame history
-  // navigations that are not served by back/forward cache where back/forward
-  // cache flag and NotRestoredReasons flag are enabled.
-  if (IsBackForwardCacheEnabled() &&
-      base::FeatureList::IsEnabled(
-          blink::features::kBackForwardCacheSendNotRestoredReasons)) {
-    if (NavigationEntryImpl* entry =
-            GetNavigationEntryIfNonBackForwardCacheHistoryNavigation(
-                navigation_request)) {
-      auto* metrics = entry->back_forward_cache_metrics();
-      // There must be a metrics object since if there's none
-      // |UpdateBackForwardCacheNotRestoredReasons| should have created one.
-      DCHECK(metrics);
-      // Only populate the web-exposed NotRestoredReasons when needed by the
-      // NotRestoredReasons API, i.e. for cross-document main frame history
-      // navigations that are not served by back/forward cache.
-      // TODO(yuzus): Do not set this when navigation gets redirected.
-      not_restored_reasons = metrics->GetWebExposedNotRestoredReasons();
-    }
-  }
-
   // Save the last sent NotRestoredReasons value for testing, so that we can
   // verify them in tests.
-  not_restored_reasons_for_testing_ = not_restored_reasons.Clone();
+  // TODO(yuzus): Remove |not_restored_reasons_for_testing_| and modify
+  // |FrameNavigateParamsCapturer|.
+  not_restored_reasons_for_testing_ =
+      commit_params->not_restored_reasons.Clone();
 
   commit_params->commit_sent = base::TimeTicks::Now();
   navigation_client->CommitNavigation(
@@ -12179,7 +12151,6 @@ void RenderFrameHostImpl::SendCommitNavigation(
       devtools_navigation_token, permissions_policy,
       std::move(policy_container), std::move(code_cache_host),
       std::move(cookie_manager_info), std::move(storage_info),
-      std::move(not_restored_reasons),
       BuildCommitNavigationCallback(navigation_request));
   base::UmaHistogramTimes(
       base::StrCat({"Navigation.SendCommitNavigationTime.",
@@ -12206,7 +12177,6 @@ void RenderFrameHostImpl::SendCommitFailedNavigation(
   DCHECK_NE(GURL(), common_params->url);
   DCHECK_NE(net::OK, error_code);
   IncreaseCommitNavigationCounter();
-  UpdateBackForwardCacheNotRestoredReasons(navigation_request);
   navigation_client->CommitFailedNavigation(
       std::move(common_params), std::move(commit_params),
       has_stale_copy_in_cache, error_code, extended_error_code,
@@ -13198,11 +13168,11 @@ void RenderFrameHostImpl::
                           request->GetNavigationEntryOffset());
   SCOPED_CRASH_KEY_NUMBER(
       "VerifyDidCommit", "entry_count",
-      request->frame_tree_node()->frame_tree()->controller().GetEntryCount());
+      request->frame_tree_node()->frame_tree().controller().GetEntryCount());
   SCOPED_CRASH_KEY_NUMBER("VerifyDidCommit", "last_committed_index",
                           request->frame_tree_node()
                               ->frame_tree()
-                              ->controller()
+                              .controller()
                               .GetLastCommittedEntryIndex());
 
   SCOPED_CRASH_KEY_BOOL(
@@ -13991,7 +13961,7 @@ void RenderFrameHostImpl::SetFrameTreeNode(FrameTreeNode& frame_tree_node) {
   devtools_instrumentation::WillSwapFrameTreeNode(*frame_tree_node_,
                                                   frame_tree_node);
   frame_tree_node_ = &frame_tree_node;
-  SetFrameTree(*frame_tree_node_->frame_tree());
+  SetFrameTree(frame_tree_node_->frame_tree());
   // Setting the FrameTreeNode is only done for FrameTree/FrameTreeNode swaps
   // in MPArch (specifically prerender activation). This is to ensure that
   // fields such as proxies and ReplicationState are copied over correctly. In
@@ -14015,7 +13985,7 @@ void RenderFrameHostImpl::SetFrameTreeNode(FrameTreeNode& frame_tree_node) {
 }
 
 void RenderFrameHostImpl::SetFrameTree(FrameTree& frame_tree) {
-  DCHECK_EQ(frame_tree_node_->frame_tree(), &frame_tree);
+  DCHECK_EQ(&frame_tree_node_->frame_tree(), &frame_tree);
   frame_tree_ = &frame_tree;
   render_view_host()->SetFrameTree(frame_tree);
   if (GetRenderWidgetHost()) {
@@ -14119,10 +14089,10 @@ void RenderFrameHostImpl::AssertBrowserContextShutdownHasntStarted() {
   if (LIKELY(!GetBrowserContext()->ShutdownStarted()))
     return;
 
-  NOTREACHED() << "BrowserContext->ShutdownStarted() without first closing all "
-                  "WebContents";
   SCOPED_CRASH_KEY_STRING256("shutdown", "frame->ToDebugString",
                              ToDebugString());
+  NOTREACHED() << "BrowserContext->ShutdownStarted() without first closing all "
+                  "WebContents";
   base::debug::DumpWithoutCrashing();
 }
 

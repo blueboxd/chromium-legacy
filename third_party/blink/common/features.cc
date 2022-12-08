@@ -297,17 +297,15 @@ const base::FeatureParam<int> kSharedStorageBitBudget = {
 const base::FeatureParam<base::TimeDelta> kSharedStorageBudgetInterval = {
     &kSharedStorageAPI, "SharedStorageBudgetInterval", base::Hours(24)};
 const base::FeatureParam<base::TimeDelta>
-    kSharedStorageStaleOriginPurgeInitialInterval = {
-        &kSharedStorageAPI, "SharedStorageStaleOriginPurgeInitialInterval",
-        base::Minutes(15)};
+    kSharedStorageStalePurgeInitialInterval = {
+        &kSharedStorageAPI, "SharedStorageStalePurgeInitialInterval",
+        base::Minutes(2)};
 const base::FeatureParam<base::TimeDelta>
-    kSharedStorageStaleOriginPurgeRecurringInterval = {
-        &kSharedStorageAPI, "SharedStorageStaleOriginPurgeRecurringInterval",
+    kSharedStorageStalePurgeRecurringInterval = {
+        &kSharedStorageAPI, "SharedStorageStalePurgeRecurringInterval",
         base::Hours(2)};
-const base::FeatureParam<base::TimeDelta>
-    kSharedStorageOriginStalenessThreshold = {
-        &kSharedStorageAPI, "SharedStorageOriginStalenessThreshold",
-        base::Days(30)};
+const base::FeatureParam<base::TimeDelta> kSharedStorageStalenessThreshold = {
+    &kSharedStorageAPI, "SharedStorageStalenessThreshold", base::Days(30)};
 const base::FeatureParam<int>
     kSharedStorageMaxAllowedFencedFrameDepthForSelectURL = {
         &kSharedStorageAPI,
@@ -342,10 +340,6 @@ BASE_FEATURE(kPrerender2InBackground,
 BASE_FEATURE(kPrerender2InNewTab,
              "Prerender2InNewTab",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-bool IsPrerender2Enabled() {
-  return base::FeatureList::IsEnabled(blink::features::kPrerender2);
-}
 
 bool IsSameSiteCrossOriginForSpeculationRulesPrerender2Enabled() {
   return base::FeatureList::IsEnabled(
@@ -698,6 +692,11 @@ BASE_FEATURE(kLowLatencyCanvas2dImageChromium,
 // Enables small accelerated canvases for webview (crbug.com/1004304)
 BASE_FEATURE(kWebviewAccelerateSmallCanvases,
              "WebviewAccelerateSmallCanvases",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Whether to aggressively free resources for canvases in background pages.
+BASE_FEATURE(kCanvasFreeMemoryWhenHidden,
+             "CanvasFreeMemoryWhenHidden",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // When enabled, frees up CachedMetadata after consumption by script resources
@@ -1552,8 +1551,10 @@ bool IsNewBaseUrlInheritanceBehaviorEnabled() {
   // The kIsolateSandboxedIframes feature depends on the new base URL behavior,
   // so it enables the new behavior even if kNewBaseUrlInheritanceBehavior
   // isn't enabled.
-  return base::FeatureList::IsEnabled(kNewBaseUrlInheritanceBehavior) ||
-         base::FeatureList::IsEnabled(kIsolateSandboxedIframes);
+  return (base::FeatureList::IsEnabled(kNewBaseUrlInheritanceBehavior) ||
+          base::FeatureList::IsEnabled(kIsolateSandboxedIframes)) &&
+         !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kDisableNewBaseUrlInheritanceBehavior);
 }
 
 const base::FeatureParam<int> kDocumentMaxEventNodePathCachedEntries{

@@ -31,7 +31,6 @@
 <translation id="1148499908455722006"><ph name="USER_NAME" /> 정보 대화상자 열기</translation>
 <translation id="1150989369772528668">캘린더</translation>
 <translation id="1153356358378277386">페어링된 기기</translation>
-<translation id="1165712434476988950">업데이트를 적용하려면 기기를 다시 시작해야 합니다.</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">사용 중인 USB-C 케이블이 디스플레이에 제대로 연결되지 않을 수 있습니다.</translation>
 <translation id="1175572348579024023">스크롤</translation>
@@ -358,7 +357,6 @@
 <translation id="296762781903199866"><ph name="LANGUAGE" /> 음성 파일을 다운로드할 수 없음</translation>
 <translation id="2970920913501714344">앱, 확장 프로그램 및 테마 설치</translation>
 <translation id="2977598380246111477">다음 번호</translation>
-<translation id="2981684127883932071">추천 표시 중</translation>
 <translation id="2985148236010982088">앱 모두 보기</translation>
 <translation id="2992327365391326550">기기의 마이크 버튼이 사용 중지되어 있습니다.</translation>
 <translation id="2996462380875591307">고정 돋보기가 사용 설정되었습니다. 사용 중지하려면 다시 Ctrl+Search+D를 누르세요.</translation>
@@ -669,6 +667,7 @@
 <translation id="4666082839192943839">모든 카메라를 항상 차단하려면 이 기기에서 카메라 액세스를 사용 중지하세요.</translation>
 <translation id="4666911709726371538">앱 더보기</translation>
 <translation id="4667099493359681081"><ph name="FILENAME" /> 파일을 다운로드하는 중입니다</translation>
+<translation id="468293128311738995">휴대전화 앱</translation>
 <translation id="4690510401873698237">실행기 하단에 표시</translation>
 <translation id="4696813013609194136">부모 코드로 기기 잠금 해제</translation>
 <translation id="4702647871202761252">개인정보 보호 화면이 꺼져 있습니다</translation>
@@ -925,12 +924,10 @@
 <translation id="6103838137565245112">시스템</translation>
 <translation id="6107292179555508368">기기에서 마이크 및 카메라 액세스가 사용 중지되어 있습니다</translation>
 <translation id="6114505516289286752">음성 파일 <ph name="LANGUAGE" />개 다운로드됨</translation>
-<translation id="6116825164611323644">기기에서 카메라 액세스가 사용 중지되어 있습니다</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />, <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042"><ph name="FILENAME" /> 다운로드 확인</translation>
 <translation id="612734058257491180">게스트 세션에서는 Google 어시스턴트를 사용할 수 없습니다.</translation>
 <translation id="6129953537138746214">Space</translation>
-<translation id="6134259848159370930">기기, 앱, 설정, 웹에서 검색합니다.</translation>
 <translation id="6137566720514957455"><ph name="USER_EMAIL_ADDRESS" /> 삭제 대화상자 열기</translation>
 <translation id="6141988275892716286">다운로드 확인</translation>
 <translation id="6154006699632741460">지원되지 않는 주변기기</translation>
@@ -1291,6 +1288,7 @@
 <translation id="8142441511840089262">더블클릭</translation>
 <translation id="8142699993796781067">사설 네트워크</translation>
 <translation id="8144760705599030999"><ph name="NAME" /> 기기를 <ph name="EMAIL" />에 저장하여 다른 기기와 더 빠르게 페어링하세요.</translation>
+<translation id="8144914663975476336">녹화 형식 선택</translation>
 <translation id="8149413265954228307">블루투스 설정을 표시합니다. <ph name="STATE_TEXT" />.</translation>
 <translation id="8152092012181020186">닫으려면 Ctrl + W를 누릅니다.</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, 자동 완성</translation>
@@ -1388,7 +1386,6 @@
 <translation id="8666856788528804727"><ph name="NAME" /> 앱을 열어 기기를 설정하세요</translation>
 <translation id="8676770494376880701">저출력 충전기 연결됨</translation>
 <translation id="8683506306463609433">성능 추적 활성화</translation>
-<translation id="8685326675965865247">기기, 앱, 설정, 웹에서 검색합니다. 앱에서 탐색하려면 화살표 키를 사용하세요.</translation>
 <translation id="8703634754197148428">녹화 시작 녹화가 시작된 후에는 Alt + Shift + L을 눌러 실행기로 이동하여 녹화 중지 버튼을 찾으세요.</translation>
 <translation id="8721053961083920564">볼륨 변경. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">전체 화면 캡처</translation>
@@ -1397,7 +1394,6 @@
 <translation id="8735678380411481005">키보드 백라이트 색상</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />,
         <ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8752416742247198423">카메라 액세스 권한이 있는 앱과 웹페이지에서 이 기기에 연결된 카메라를 사용할 수 있도록 하려면 카메라 액세스를 사용 설정하세요.</translation>
 <translation id="8755498163081687682">본인 확인: <ph name="ORIGIN_NAME" />에서 본인 확인을 요청합니다</translation>
 <translation id="875593634123171288">VPN 설정 표시</translation>
 <translation id="8759408218731716181">멀티 로그인을 설정할 수 없음</translation>
@@ -1464,7 +1460,6 @@
 <translation id="9089416786594320554">입력 방법</translation>
 <translation id="9091626656156419976">디스플레이 <ph name="DISPLAY_NAME" /> 제거됨</translation>
 <translation id="9098969848082897657">휴대전화 무음 설정</translation>
-<translation id="9099154003160514616">Lacros 업데이트 사용 가능</translation>
 <translation id="9100887602489003640">프로필을 추가하는 중입니다. 잠시만 기다려 주세요.</translation>
 <translation id="9105450214093926548">Lacros 브라우저가 실행되는 동안에는 두 번째 사용자 로그인이 지원되지 않습니다. 대신 Lacros에서 두 번째 브라우저 프로필을 사용하거나 Lacros를 닫았다가 다시 시도해 보세요.</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> 또는 <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>

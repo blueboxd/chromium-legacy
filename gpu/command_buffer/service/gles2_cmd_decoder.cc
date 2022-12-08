@@ -643,7 +643,8 @@ class GLES2DecoderImpl : public GLES2Decoder,
   GLES2DecoderImpl(DecoderClient* client,
                    CommandBufferServiceBase* command_buffer_service,
                    Outputter* outputter,
-                   ContextGroup* group);
+                   ContextGroup* group,
+                   ImageFactory* image_factory_for_nacl_swapchain);
 
   GLES2DecoderImpl(const GLES2DecoderImpl&) = delete;
   GLES2DecoderImpl& operator=(const GLES2DecoderImpl&) = delete;
@@ -2484,6 +2485,16 @@ class GLES2DecoderImpl : public GLES2Decoder,
   // using GL_RGBA and glColorMask.
   bool ChromiumImageNeedsRGBEmulation();
 
+  bool SupportsCreateAnonymousImage();
+  scoped_refptr<gl::GLImage> CreateAnonymousImage(const gfx::Size& size,
+                                                  gfx::BufferFormat format,
+                                                  bool* is_cleared);
+  unsigned int RequiredTextureTypeForAnonymousImage();
+
+  ImageFactory* image_factory_for_nacl_swapchain() {
+    return image_factory_for_nacl_swapchain_;
+  }
+
   // Helper method to call glClear workaround.
   void ClearFramebufferForWorkaround(GLbitfield mask);
 
@@ -2788,7 +2799,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
   // all the textures to stay up to date with Texture::service_id() changes.
   uint32_t texture_manager_service_id_generation_;
 
-  bool force_shader_name_hashing_for_test;
+  bool force_shader_name_hashing_for_test = false;
 
   GLfloat line_width_range_[2] = {0.0, 1.0};
 
@@ -2800,6 +2811,8 @@ class GLES2DecoderImpl : public GLES2Decoder,
   // Set of texture refs that are pending destruction, at some point in the
   // future when our context is current.
   std::set<scoped_refptr<TextureRef>> texture_refs_pending_destruction_;
+
+  const raw_ptr<ImageFactory> image_factory_for_nacl_swapchain_;
 
   base::WeakPtrFactory<GLES2DecoderImpl> weak_ptr_factory_{this};
 };
@@ -3039,7 +3052,7 @@ BackTexture::BackTexture(GLES2DecoderImpl* decoder)
       bytes_allocated_(0),
       decoder_(decoder) {
   DCHECK(!decoder_->should_use_native_gmb_for_backbuffer_ ||
-         decoder_->GetContextGroup()->image_factory());
+         decoder_->image_factory_for_nacl_swapchain());
 }
 
 BackTexture::~BackTexture() {
@@ -3178,18 +3191,14 @@ void BackTexture::Invalidate() {
 
 GLenum BackTexture::Target() {
   return decoder_->should_use_native_gmb_for_backbuffer_
-             ? decoder_->GetContextGroup()
-                   ->image_factory()
-                   ->RequiredTextureType()
+             ? decoder_->RequiredTextureTypeForAnonymousImage()
              : GL_TEXTURE_2D;
 }
 
 bool BackTexture::AllocateNativeGpuMemoryBuffer(const gfx::Size& size,
                                                 GLenum format,
                                                 bool zero) {
-  if (!decoder_->GetContextGroup()
-           ->image_factory()
-           ->SupportsCreateAnonymousImage())
+  if (!decoder_->SupportsCreateAnonymousImage())
     return false;
 
   DCHECK(format == GL_RGB || format == GL_RGBA);
@@ -3206,9 +3215,7 @@ bool BackTexture::AllocateNativeGpuMemoryBuffer(const gfx::Size& size,
 #endif
   }
   scoped_refptr<gl::GLImage> image =
-      decoder_->GetContextGroup()->image_factory()->CreateAnonymousImage(
-          size, buffer_format, gfx::BufferUsage::SCANOUT,
-          gpu::kNullSurfaceHandle, &is_cleared);
+      decoder_->CreateAnonymousImage(size, buffer_format, &is_cleared);
   if (!image)
     return false;
   DCHECK_EQ(format, image->GetDataFormat());
@@ -3427,19 +3434,22 @@ GLES2Decoder* GLES2Decoder::Create(
     DecoderClient* client,
     CommandBufferServiceBase* command_buffer_service,
     Outputter* outputter,
-    ContextGroup* group) {
+    ContextGroup* group,
+    ImageFactory* image_factory_for_nacl_swapchain) {
   if (group->use_passthrough_cmd_decoder()) {
     return new GLES2DecoderPassthroughImpl(client, command_buffer_service,
                                            outputter, group);
   }
-  return new GLES2DecoderImpl(client, command_buffer_service, outputter, group);
+  return new GLES2DecoderImpl(client, command_buffer_service, outputter, group,
+                              image_factory_for_nacl_swapchain);
 }
 
 GLES2DecoderImpl::GLES2DecoderImpl(
     DecoderClient* client,
     CommandBufferServiceBase* command_buffer_service,
     Outputter* outputter,
-    ContextGroup* group)
+    ContextGroup* group,
+    ImageFactory* image_factory_for_nacl_swapchain)
     : GLES2Decoder(client, command_buffer_service, outputter),
       group_(group),
       logger_(&debug_marker_manager_,
@@ -3506,7 +3516,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(
       validation_fbo_multisample_(0),
       validation_fbo_(0),
       texture_manager_service_id_generation_(0),
-      force_shader_name_hashing_for_test(false) {
+      image_factory_for_nacl_swapchain_(image_factory_for_nacl_swapchain) {
   DCHECK(client);
   DCHECK(group);
 }
@@ -3603,7 +3613,7 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
   should_use_native_gmb_for_backbuffer_ =
       attrib_helper.should_use_native_gmb_for_backbuffer;
   if (should_use_native_gmb_for_backbuffer_) {
-    gpu::ImageFactory* image_factory = group_->image_factory();
+    gpu::ImageFactory* image_factory = image_factory_for_nacl_swapchain();
     bool supported = false;
     if (image_factory) {
       switch (image_factory->RequiredTextureType()) {
@@ -3627,12 +3637,6 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
       return gpu::ContextResult::kFatalFailure;
     }
   }
-
-  // Support for texture_storage_image depends on the underlying
-  // ImageFactory's ability to create anonymous images.
-  gpu::ImageFactory* image_factory = group_->image_factory();
-  if (image_factory && image_factory->SupportsCreateAnonymousImage())
-    feature_info_->EnableTextureStorageImage();
 
   // In theory |needs_emulation| needs to be true on Desktop GL 4.1 or lower.
   // However, we set it to true everywhere, not to trust drivers to handle
@@ -4280,8 +4284,8 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
     caps.disable_2d_canvas_copy_on_write = true;
   }
   caps.texture_npot = feature_info_->feature_flags().npot_ok;
-  caps.texture_storage_image =
-      feature_info_->feature_flags().texture_storage_image;
+  caps.supports_scanout_shared_images =
+      SharedImageManager::SupportsScanoutImages();
   caps.supports_oop_raster = false;
   caps.chromium_gpu_fence = feature_info_->feature_flags().chromium_gpu_fence;
   caps.chromium_nonblocking_readback =
@@ -19284,7 +19288,7 @@ bool GLES2DecoderImpl::NeedsCopyTextureImageWorkaround(
 }
 
 bool GLES2DecoderImpl::ChromiumImageNeedsRGBEmulation() {
-  gpu::ImageFactory* factory = GetContextGroup()->image_factory();
+  gpu::ImageFactory* factory = image_factory_for_nacl_swapchain();
   return factory ? !factory->SupportsFormatRGB() : false;
 }
 
@@ -19535,6 +19539,24 @@ error::Error GLES2DecoderImpl::HandleSetActiveURLCHROMIUM(
   GURL url(base::StringPiece(url_str, size));
   client()->SetActiveURL(std::move(url));
   return error::kNoError;
+}
+
+bool GLES2DecoderImpl::SupportsCreateAnonymousImage() {
+  return image_factory_for_nacl_swapchain()->SupportsCreateAnonymousImage();
+}
+
+scoped_refptr<gl::GLImage> GLES2DecoderImpl::CreateAnonymousImage(
+    const gfx::Size& size,
+    gfx::BufferFormat format,
+    bool* is_cleared) {
+  return image_factory_for_nacl_swapchain()->CreateAnonymousImage(
+      size, format, gfx::BufferUsage::SCANOUT, gpu::kNullSurfaceHandle,
+      is_cleared);
+}
+
+// An image can only be bound to a texture with the appropriate type.
+unsigned int GLES2DecoderImpl::RequiredTextureTypeForAnonymousImage() {
+  return image_factory_for_nacl_swapchain()->RequiredTextureType();
 }
 
 // Include the auto-generated part of this file. We split this because it means

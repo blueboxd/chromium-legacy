@@ -84,6 +84,7 @@
 #include "third_party/blink/renderer/core/dom/dom_token_list.h"
 #include "third_party/blink/renderer/core/dom/element_data_cache.h"
 #include "third_party/blink/renderer/core/dom/element_rare_data.h"
+#include "third_party/blink/renderer/core/dom/element_rare_data_vector.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_result.h"
@@ -355,7 +356,8 @@ bool DefinitelyNewFormattingContext(const Node& node,
   if (style.IsScrollContainer())
     return node.GetDocument().ViewportDefiningElement() != &node;
   if (style.HasOutOfFlowPosition() ||
-      (style.IsFloating() && !style.IsFlexOrGridItem()) ||
+      (style.IsFloating() &&
+       !style.IsInsideDisplayIgnoringFloatingChildren()) ||
       style.ContainsPaint() || style.ContainsLayout() ||
       style.SpecifiesColumns())
     return true;
@@ -1025,11 +1027,11 @@ Vector<AtomicString> Element::getAttributeNames() const {
 
 inline ElementRareDataBase* Element::GetElementRareData() const {
   DCHECK(HasRareData());
-  return static_cast<ElementRareData*>(RareData());
+  return static_cast<ElementRareDataBase*>(RareData());
 }
 
 inline ElementRareDataBase& Element::EnsureElementRareData() {
-  return static_cast<ElementRareData&>(EnsureRareData());
+  return static_cast<ElementRareDataBase&>(EnsureRareData());
 }
 
 void Element::RemovePopoverData() {
@@ -4061,9 +4063,8 @@ void Element::SetNeedsAnimationStyleRecalc() {
   // Setting this flag to 'true' only makes sense if there's an existing style,
   // otherwise there is no previous style to use as the basis for the new one.
   if (NeedsStyleRecalc() && GetComputedStyle() &&
-      !GetComputedStyle()->IsEnsuredInDisplayNone()) {
+      !GetComputedStyle()->IsEnsuredInDisplayNone())
     SetAnimationStyleChange(true);
-  }
 }
 
 void Element::SetNeedsCompositingUpdate() {
@@ -4284,7 +4285,7 @@ bool Element::AttachDeclarativeShadowRoot(HTMLTemplateElement* template_element,
   // to element internals" to true.
   shadow_root.SetAvailableToElementInternals(true);
 
-  if (!RuntimeEnabledFeatures::StreamingDeclarativeShadowDOMEnabled()) {
+  if (template_element->IsNonStreamingDeclarativeShadowRoot()) {
     // 13.2. Append the declarative template element's DocumentFragment to the
     // newly-created shadow root.
     shadow_root.ParserTakeAllChildrenFrom(

@@ -17,6 +17,7 @@
 #include "chrome/browser/apps/app_preload_service/proto/app_provisioning.pb.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
@@ -42,6 +43,15 @@ constexpr char kApsStateManager[] = "apps.app_preload_service.state_manager";
 
 const base::Value::Dict& GetStateManager(Profile* profile) {
   return profile->GetPrefs()->GetDict(kApsStateManager);
+}
+
+void FillWebExtras(apps::proto::AppProvisioningResponse_WebExtras* extras,
+                   const std::string& start_url) {
+  extras->set_manifest_id(start_url);
+  extras->set_start_url(start_url);
+  extras->set_scope(start_url);
+  extras->set_display_mode(
+      apps::proto::AppProvisioningResponse::DISPLAY_MODE_STANDALONE);
 }
 
 }  // namespace
@@ -100,8 +110,8 @@ TEST_F(AppPreloadServiceTest, ServiceAccessPerProfile) {
   EXPECT_EQ(nullptr,
             AppPreloadServiceFactory::GetForProfile(incognito_profile));
 
-  // We expect the App Preload Service to not be available in a guest profile as
-  // the App Service isn't available.
+  // We expect the App Preload Service to not be available in either regular or
+  // OTR guest profiles.
   TestingProfile::Builder guest_builder;
   guest_builder.SetGuestSession();
   auto guest_profile = guest_builder.Build();
@@ -109,17 +119,28 @@ TEST_F(AppPreloadServiceTest, ServiceAccessPerProfile) {
   EXPECT_EQ(nullptr,
             AppPreloadServiceFactory::GetForProfile(guest_profile.get()));
 
-  // The service is available for the OTR profile in guest mode, as the App
-  // Service supports this mode.
   auto* guest_otr_profile =
       guest_profile->GetPrimaryOTRProfile(/*create_if_needed=*/true);
-  EXPECT_TRUE(AppPreloadServiceFactory::IsAvailable(guest_otr_profile));
-  auto* otr_guest_service =
-      AppPreloadServiceFactory::GetForProfile(guest_otr_profile);
-  EXPECT_NE(nullptr, otr_guest_service);
+  EXPECT_FALSE(AppPreloadServiceFactory::IsAvailable(guest_otr_profile));
+  EXPECT_EQ(nullptr,
+            AppPreloadServiceFactory::GetForProfile(guest_otr_profile));
 
-  // We expect a different service in the Guest Session profile.
-  EXPECT_NE(otr_guest_service, service);
+  // The service is unsupported for managed and supervised accounts.
+  TestingProfile::Builder child_builder;
+  child_builder.SetIsSupervisedProfile();
+  std::unique_ptr<TestingProfile> child_profile = child_builder.Build();
+
+  EXPECT_FALSE(AppPreloadServiceFactory::IsAvailable(child_profile.get()));
+  EXPECT_EQ(nullptr,
+            AppPreloadServiceFactory::GetForProfile(child_profile.get()));
+
+  TestingProfile::Builder managed_builder;
+  managed_builder.OverridePolicyConnectorIsManagedForTesting(true);
+  std::unique_ptr<TestingProfile> managed_profile = managed_builder.Build();
+
+  EXPECT_FALSE(AppPreloadServiceFactory::IsAvailable(managed_profile.get()));
+  EXPECT_EQ(nullptr,
+            AppPreloadServiceFactory::GetForProfile(managed_profile.get()));
 }
 
 TEST_F(AppPreloadServiceTest, FirstLoginStartedPrefSet) {
@@ -137,6 +158,8 @@ TEST_F(AppPreloadServiceTest, FirstLoginStartedPrefSet) {
 }
 
 TEST_F(AppPreloadServiceTest, FirstLoginCompletedPrefSetAfterSuccess) {
+  // An empty response indicates that the request completed successfully, but
+  // there are no apps to install.
   proto::AppProvisioningResponse response;
 
   url_loader_factory_.AddResponse(
@@ -175,11 +198,7 @@ TEST_F(AppPreloadServiceTest, WebAppInstall) {
   app->set_name("Peanut Types");
   app->set_platform(proto::AppProvisioningResponse::PLATFORM_WEB);
   app->set_install_reason(proto::AppProvisioningResponse::INSTALL_REASON_OEM);
-  auto* web_extras = app->mutable_web_extras();
-  web_extras->set_start_url("https://peanuttypes.com/app");
-  web_extras->set_scope("https://peanuttypes.com/");
-  web_extras->set_display_mode(
-      proto::AppProvisioningResponse::DISPLAY_MODE_STANDALONE);
+  FillWebExtras(app->mutable_web_extras(), "https://peanuttypes.com/app");
 
   url_loader_factory_.AddResponse(
       AppPreloadServerConnector::GetServerUrl().spec(),
@@ -201,6 +220,114 @@ TEST_F(AppPreloadServiceTest, WebAppInstall) {
             EXPECT_EQ(update.PublisherId(), "https://peanuttypes.com/app");
           });
   ASSERT_TRUE(found);
+}
+
+TEST_F(AppPreloadServiceTest, IgnoreDefaultAppInstall) {
+  proto::AppProvisioningResponse response;
+  auto* app = response.add_apps_to_install();
+  app->set_name("Peanut Types");
+  app->set_platform(proto::AppProvisioningResponse::PLATFORM_WEB);
+  app->set_install_reason(
+      proto::AppProvisioningResponse::INSTALL_REASON_DEFAULT);
+  FillWebExtras(app->mutable_web_extras(), "https://peanuttypes.com/app");
+
+  url_loader_factory_.AddResponse(
+      AppPreloadServerConnector::GetServerUrl().spec(),
+      response.SerializeAsString());
+
+  base::test::TestFuture<bool> result;
+  auto* service = AppPreloadService::Get(GetProfile());
+  service->SetInstallationCompleteCallbackForTesting(result.GetCallback());
+  ASSERT_TRUE(result.Get());
+
+  auto app_id = web_app::GenerateAppId(absl::nullopt,
+                                       GURL("https://peanuttypes.com/app"));
+  bool found = AppServiceProxyFactory::GetForProfile(GetProfile())
+                   ->AppRegistryCache()
+                   .ForOneApp(app_id, [](const AppUpdate&) {});
+  ASSERT_FALSE(found);
+}
+
+TEST_F(AppPreloadServiceTest, IgnoreAndroidAppInstall) {
+  constexpr char kPackageName[] = "com.peanuttypes";
+  constexpr char kActivityName[] = "com.peanuttypes.PeanutTypesActivity";
+
+  proto::AppProvisioningResponse response;
+  auto* app = response.add_apps_to_install();
+  app->set_name("Peanut Types");
+  app->set_platform(proto::AppProvisioningResponse::PLATFORM_ANDROID);
+  app->set_install_reason(proto::AppProvisioningResponse::INSTALL_REASON_OEM);
+  app->mutable_android_extras()->set_package_name(kPackageName);
+  app->mutable_android_extras()->set_activity_name(kActivityName);
+
+  url_loader_factory_.AddResponse(
+      AppPreloadServerConnector::GetServerUrl().spec(),
+      response.SerializeAsString());
+
+  base::test::TestFuture<bool> result;
+  auto* service = AppPreloadService::Get(GetProfile());
+  service->SetInstallationCompleteCallbackForTesting(result.GetCallback());
+  ASSERT_TRUE(result.Get());
+
+  // It's hard to assert conclusively that nothing happens in this case, but for
+  // now we just assert that the app wasn't added to App Service.
+  auto app_id = ArcAppListPrefs::GetAppId(kPackageName, kActivityName);
+  bool found = AppServiceProxyFactory::GetForProfile(GetProfile())
+                   ->AppRegistryCache()
+                   .ForOneApp(app_id, [](const AppUpdate&) {});
+  ASSERT_FALSE(found);
+}
+
+TEST_F(AppPreloadServiceTest, InstallOverUserApp) {
+  constexpr char kStartUrl[] = "https://www.example.com/";
+  constexpr char kUserAppName[] = "User Installed App";
+
+  auto app_id = web_app::test::InstallDummyWebApp(GetProfile(), kUserAppName,
+                                                  GURL(kStartUrl));
+
+  proto::AppProvisioningResponse response;
+  auto* app = response.add_apps_to_install();
+
+  app->set_name("OEM Installed app");
+  app->set_platform(proto::AppProvisioningResponse::PLATFORM_WEB);
+  app->set_install_reason(proto::AppProvisioningResponse::INSTALL_REASON_OEM);
+  FillWebExtras(app->mutable_web_extras(), kStartUrl);
+
+  url_loader_factory_.AddResponse(
+      AppPreloadServerConnector::GetServerUrl().spec(),
+      response.SerializeAsString());
+
+  base::test::TestFuture<bool> result;
+  auto* service = AppPreloadService::Get(GetProfile());
+  service->SetInstallationCompleteCallbackForTesting(result.GetCallback());
+  ASSERT_TRUE(result.Get());
+
+  bool found = AppServiceProxyFactory::GetForProfile(GetProfile())
+                   ->AppRegistryCache()
+                   .ForOneApp(app_id, [](const AppUpdate& update) {
+                     EXPECT_EQ(update.InstallReason(), InstallReason::kOem);
+                   });
+  ASSERT_TRUE(found);
+}
+
+TEST_F(AppPreloadServiceTest, FirstLoginStartedNotCompletedAfterServerError) {
+  url_loader_factory_.AddResponse(
+      AppPreloadServerConnector::GetServerUrl().spec(), /*content=*/"",
+      net::HTTP_INTERNAL_SERVER_ERROR);
+
+  base::test::TestFuture<bool> result;
+  auto* service = AppPreloadService::Get(GetProfile());
+  service->SetInstallationCompleteCallbackForTesting(result.GetCallback());
+  ASSERT_FALSE(result.Get());
+
+  auto flow_started =
+      GetStateManager(GetProfile()).FindBool(kFirstLoginFlowStartedKey);
+  auto flow_completed =
+      GetStateManager(GetProfile()).FindBool(kFirstLoginFlowCompletedKey);
+  // Since there was an error fetching apps, the flow should be "started" but
+  // not "completed".
+  EXPECT_EQ(flow_started, true);
+  EXPECT_EQ(flow_completed, absl::nullopt);
 }
 
 }  // namespace apps

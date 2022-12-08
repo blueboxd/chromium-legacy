@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <cstddef>
 #include <map>
 #include <memory>
 #include <numeric>
@@ -440,6 +441,8 @@ void ProfileManager::ShutdownSessionServices() {
 // static
 Profile* ProfileManager::GetLastUsedProfile() {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
+  if (!profile_manager)  // Can be null in unit tests.
+    return nullptr;
 
 #if BUILDFLAG(IS_CHROMEOS)
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -577,7 +580,6 @@ Profile* ProfileManager::GetPrimaryUserProfile() {
 
   return profile_manager->GetActiveUserOrOffTheRecordProfile();
 }
-#endif  // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
 
 // static
 Profile* ProfileManager::GetActiveUserProfile() {
@@ -606,6 +608,7 @@ Profile* ProfileManager::GetActiveUserProfile() {
   CHECK(profile) << profile_manager->user_data_dir().AsUTF8Unsafe();
   return profile;
 }
+#endif  // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_ANDROID)
 // static
@@ -1275,7 +1278,7 @@ void ProfileManager::RemoveKeepAlive(const Profile* profile,
   VLOG(1) << "RemoveKeepAlive(" << profile->GetDebugName() << ", " << origin
           << "). keep_alives=" << info->keep_alives;
 
-  DeleteProfileIfNoKeepAlive(info);
+  UnloadProfileIfNoKeepAlive(info);
 }
 
 void ProfileManager::ClearFirstBrowserWindowKeepAlive(const Profile* profile) {
@@ -1296,7 +1299,7 @@ void ProfileManager::ClearFirstBrowserWindowKeepAlive(const Profile* profile) {
   VLOG(1) << "ClearFirstBrowserWindowKeepAlive(" << profile->GetDebugName()
           << "). keep_alives=" << info->keep_alives;
 
-  DeleteProfileIfNoKeepAlive(info);
+  UnloadProfileIfNoKeepAlive(info);
 }
 
 void ProfileManager::NotifyOnProfileMarkedForPermanentDeletion(
@@ -1305,7 +1308,7 @@ void ProfileManager::NotifyOnProfileMarkedForPermanentDeletion(
     observer.OnProfileMarkedForPermanentDeletion(profile);
 }
 
-void ProfileManager::DeleteProfileIfNoKeepAlive(const ProfileInfo* info) {
+void ProfileManager::UnloadProfileIfNoKeepAlive(const ProfileInfo* info) {
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
   if (GetTotalRefCount(info->keep_alives) != 0)
     return;
@@ -1313,18 +1316,18 @@ void ProfileManager::DeleteProfileIfNoKeepAlive(const ProfileInfo* info) {
   could_have_destroyed_profile_ = true;
 
   // When DestroyProfileOnBrowserClose is disabled: record memory metrics, but
-  // don't actually delete the Profile.
+  // don't actually unload the Profile.
   if (!base::FeatureList::IsEnabled(features::kDestroyProfileOnBrowserClose))
     return;
 
   if (!info->GetCreatedProfile()) {
-    NOTREACHED() << "Attempted to delete profile "
+    NOTREACHED() << "Attempted to unload profile "
                  << info->GetRawProfile()->GetDebugName()
-                 << " before it was created. This is not valid.";
+                 << " before it was loaded. This is not valid.";
   }
 
-  VLOG(1) << "Deleting profile " << info->GetCreatedProfile()->GetDebugName();
-  RemoveProfile(info->GetCreatedProfile()->GetPath());
+  VLOG(1) << "Unloading profile " << info->GetCreatedProfile()->GetDebugName();
+  UnloadProfile(info->GetCreatedProfile()->GetPath());
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
@@ -1544,6 +1547,7 @@ Profile* ProfileManager::ProfileInfo::GetRawProfile() const {
   return unowned_profile_;
 }
 
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
 Profile* ProfileManager::GetActiveUserOrOffTheRecordProfile() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (!IsLoggedIn()) {
@@ -1580,6 +1584,7 @@ Profile* ProfileManager::GetActiveUserOrOffTheRecordProfile() {
   return GetProfile(default_profile_dir);
 #endif
 }
+#endif  // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
 
 bool ProfileManager::AddProfile(std::unique_ptr<Profile> profile) {
   TRACE_EVENT0("browser", "ProfileManager::AddProfile");
@@ -1605,8 +1610,8 @@ bool ProfileManager::AddProfile(std::unique_ptr<Profile> profile) {
 }
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
-void ProfileManager::RemoveProfile(const base::FilePath& profile_dir) {
-  TRACE_EVENT0("browser", "ProfileManager::RemoveProfile");
+void ProfileManager::UnloadProfile(const base::FilePath& profile_dir) {
+  TRACE_EVENT0("browser", "ProfileManager::UnloadProfile");
 
   DCHECK(base::Contains(profiles_info_, profile_dir));
 

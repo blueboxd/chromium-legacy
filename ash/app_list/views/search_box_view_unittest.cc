@@ -139,7 +139,7 @@ class SearchBoxViewTest : public views::test::WidgetTest,
     std::unique_ptr<SearchBoxView> view;
     // Initialize SearchBoxView like clamshell productivity launcher.
     view = std::make_unique<SearchBoxView>(this, &view_delegate_,
-                                           /*app_list_view=*/nullptr);
+                                           /*is_bubble_app_list=*/true);
     view->InitializeForBubbleLauncher();
     view_ = widget_->GetContentsView()->AddChildView(std::move(view));
 
@@ -170,13 +170,6 @@ class SearchBoxViewTest : public views::test::WidgetTest,
 
   void SetSearchBoxActive(bool active, ui::EventType type) {
     view()->SetSearchBoxActive(active, type);
-  }
-
-  void SetContentsView(ContentsView* contents_view) {
-    view()->set_contents_view(contents_view);
-    view()->SetResultSelectionController(
-        contents_view->search_result_page_view()
-            ->result_selection_controller());
   }
 
   void KeyPress(ui::KeyboardCode key_code, bool is_shift_down = false) {

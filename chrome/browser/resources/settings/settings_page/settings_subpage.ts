@@ -28,9 +28,20 @@ import {EventTracker} from 'chrome://resources/js/event_tracker.js';
 
 import {loadTimeData} from '../i18n_setup.js';
 import {Route, RouteObserverMixin, RouteObserverMixinInterface, Router} from '../router.js';
-import {getSettingIdParameter} from '../setting_id_param_util.js';
 
 import {getTemplate} from './settings_subpage.html.js';
+
+
+const SETTING_ID_URL_PARAM_NAME: string = 'settingId';
+
+/**
+ * Retrieves the setting ID saved in the URL's query parameter. Returns null if
+ * setting ID is unavailable.
+ */
+function getSettingIdParameter(): string|null {
+  return Router.getInstance().getQueryParameters().get(
+      SETTING_ID_URL_PARAM_NAME);
+}
 
 export interface SettingsSubpageElement {
   $: {

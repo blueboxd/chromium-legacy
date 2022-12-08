@@ -71,6 +71,7 @@
 <translation id="1067048845568873861">Oluşturulduğu tarih</translation>
 <translation id="1067661089446014701">Ek güvenlik için, Google Hesabınıza kaydedilmeden önce şifrelerinizi cihazınızda şifreleyebilirsiniz</translation>
 <translation id="1067922213147265141">Diğer Google hizmetleri</translation>
+<translation id="106814709658156573">Parmak izini ayarlamak için çocuğunuzun, klavyenin sol alt köşesindeki parmak izi sensörüne dokunması gerekir. Çocuğunuzun parmak izi verileri güvenli bir şekilde depolanır ve her zaman <ph name="DEVICE_TYPE" /> cihazınızda tutulur.</translation>
 <translation id="1069104208554708737">Bu şifre anahtarı yalnızca bu cihazda kaydedilir</translation>
 <translation id="1069355737714877171"><ph name="PROFILE_NAME" /> adlı eSIM profilini kaldır</translation>
 <translation id="1069814191880976658">Farklı bir ekran seç</translation>
@@ -792,7 +793,6 @@ Uygulamalara vermiş olduğunuz izinler bu hesap için geçerli olabilir. Androi
 <translation id="1719312230114180055">Not: Parmak iziniz güçlü bir şifre veya PIN kadar güvenli olmayabilir.</translation>
 <translation id="1720318856472900922">TLS WWW Sunucu Kimlik Doğrulaması</translation>
 <translation id="172123215662733643"><ph name="VISUAL_SEARCH_PROVIDER" /> ile görsel ara</translation>
-<translation id="1721312023322545264">Bu siteyi ziyaret etmek için <ph name="NAME" /> size izin vermelidir</translation>
 <translation id="1722460139690167654"><ph name="BEGIN_LINK" /><ph name="DEVICE_TYPE" /><ph name="END_LINK" />, <ph name="ENROLLMENT_DOMAIN" /> tarafından yönetilmektedir</translation>
 <translation id="1723824996674794290">Ye&amp;ni pencere</translation>
 <translation id="1724801751621173132">Giriş modu</translation>
@@ -998,6 +998,7 @@ Uygulamalara vermiş olduğunuz izinler bu hesap için geçerli olabilir. Androi
 <translation id="1892341345406963517">Merhaba <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">Diğer diller</translation>
 <translation id="1895658205118569222">Kapat</translation>
+<translation id="1896043844785689584">Parmak izini ayarlamak için çocuğunuzun, klavyenin sağ alt köşesindeki parmak izi sensörüne dokunması gerekir. Çocuğunuzun parmak izi verileri güvenli bir şekilde depolanır ve her zaman <ph name="DEVICE_TYPE" /> cihazınızda tutulur.</translation>
 <translation id="1897120393475391208">Güçlü şifre kullan</translation>
 <translation id="1900305421498694955">Google Play uygulamaları, harici depolama cihazlarında bulunan dosyaları ve klasörleri okuyup yazmak için tam dosya sistemi erişim izni gerektirebilir. Cihazda oluşturulan dosyalar ve klasörler, harici sürücüyü kullanan herkes tarafından görülebilir. <ph name="LINK_BEGIN" />Daha fazla bilgi<ph name="LINK_END" /></translation>
 <translation id="1901303067676059328">Tümünü &amp;seç</translation>
@@ -1953,6 +1954,7 @@ Cihazınızda Family Link uygulamasını yükleyerek bu hesabın ayarlarını y�
 <translation id="275662540872599901">ekran kapalı</translation>
 <translation id="2757161511365746634">Yazıcıyı göster</translation>
 <translation id="2757338480560142065">Kaydettiğiniz şifrenin <ph name="WEBSITE" /> için kullandığınız şifreyle eşleştiğinden emin olun</translation>
+<translation id="2761632996810146912"><ph name="HASHTAG_SETTINGS" /> <ph name="SEARCH_QUERY" /> için arama sonucu döndürülmedi</translation>
 <translation id="2762441749940182211">Kamera engellendi</translation>
 <translation id="2764786626780673772">VPN ayrıntıları</translation>
 <translation id="2764920001292228569">Profil adı girin</translation>
@@ -2221,6 +2223,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3000378525979847272">İzin verildi: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /></translation>
 <translation id="3000461861112256445">Mono ses</translation>
 <translation id="3001144475369593262">Alt hesaplar</translation>
+<translation id="3001835006423291524">Klavyenizin sağ alt köşesindeki parmak izi sensörüne dokunun. Parmak izi verileriniz güvenli şekilde depolanır ve her zaman <ph name="DEVICE_TYPE" /> cihazınızda tutulur.</translation>
 <translation id="3003144360685731741">Tercih edilen ağlar</translation>
 <translation id="3003623123441819449">CSS Önbelleği</translation>
 <translation id="3003828226041301643">Cihaz alan adına eklenemiyor. Hesabınızı kontrol ederek, cihazları eklemek için gerekli ayrıcalıklara sahip olduğunuzdan emin olun.</translation>
@@ -2302,6 +2305,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3071624960923923138">Yeni sekme açmak için burayı tıklayabilirsiniz</translation>
 <translation id="3072775339180057696">Siteye <ph name="FILE_NAME" /> dosyasını görüntüleme izni verilsin mi?</translation>
 <translation id="3074499504015191586">Tüm Sayfayı Çevir</translation>
+<translation id="3075144191779656260"><ph name="DEVICE_TYPE" /> cihazınızın sol tarafındaki parmak izi sensörüne dokunun. Parmak izi verileriniz güvenli şekilde depolanır ve her zaman <ph name="DEVICE_TYPE" /> cihazınızda tutulur.</translation>
 <translation id="3075874217500066906">Powerwash işleminin başlaması için cihazın tekrar başlatılması gerekiyor. Tekrar başlattıktan sonra devam etmek istediğinizi onaylamanız istenecektir.</translation>
 <translation id="3076909148546628648"><ph name="DOWNLOAD_RECEIVED" />/<ph name="DOWNLOAD_TOTAL" /></translation>
 <translation id="3076966043108928831">Sadece bu cihaza kaydet</translation>
@@ -2623,6 +2627,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3406290648907941085">Sanal gerçeklik cihazları ve verileri kullanmasına izin verilen siteler</translation>
 <translation id="3406396172897554194">Dile veya giriş adına göre ara</translation>
 <translation id="3406605057700382950">Yer işaretleri ç&amp;ubuğunu göster</translation>
+<translation id="3407967630066378878">Parmak izini ayarlamak için çocuğunuzun, bu <ph name="DEVICE_TYPE" /> cihazının sol tarafındaki parmak izi sensörüne dokunması gerekir. Çocuğunuzun parmak izi verileri güvenli bir şekilde depolanır ve her zaman <ph name="DEVICE_TYPE" /> cihazınızda tutulur.</translation>
 <translation id="3408849592677950451">{NUM_PASSWORDS,plural, =1{1 şifre <ph name="USER_EMAIL" /> için Google Şifre Yöneticisi'ne aktarıldı}other{{NUM_PASSWORDS} şifre <ph name="USER_EMAIL" /> için Google Şifre Yöneticisi'ne aktarıldı}}</translation>
 <translation id="3409785640040772790">Haritalar</translation>
 <translation id="3412265149091626468">Seçim'e Atla</translation>
@@ -2847,6 +2852,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3616741288025931835">Tarama Verilerini &amp;Temizle...</translation>
 <translation id="3617891479562106823">Arka planlar kullanılamıyor. Daha sonra tekrar deneyin.</translation>
 <translation id="3619115746895587757">Kapuçino</translation>
+<translation id="3620136223548713675">Coğrafi konum</translation>
 <translation id="3621807901162200696">ChromeOS özelliklerini ve performansını iyileştirmeye yardımcı olun</translation>
 <translation id="362266093274784978">{COUNT,plural, =1{bir uygulama}other{# uygulama}}</translation>
 <translation id="362333465072914957">CA'nın sertifika yayınlaması bekleniyor</translation>
@@ -3747,6 +3753,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4451479197788154834">Şifreniz bu cihazda ve Google Hesabınızda kayıtlı</translation>
 <translation id="4451757071857432900">Araya giren veya yanıltıcı reklamlar gösteren sitelerde engellenir (önerilir)</translation>
 <translation id="4452898361839215358">veya PPD'yi seçin. <ph name="LINK_BEGIN" />Daha fazla bilgi<ph name="LINK_END" /></translation>
+<translation id="4453430595102511050">Klavyenizin sağ üst köşesindeki parmak izi sensörüne dokunun. Parmak izi verileriniz güvenli şekilde depolanır ve her zaman <ph name="DEVICE_TYPE" /> cihazınızda tutulur.</translation>
 <translation id="4453946976636652378"><ph name="SEARCH_ENGINE_NAME" /> üzerinde arayın veya bir URL yazın</translation>
 <translation id="4458535500699390320">Bellek Tasarrufu, bu sekme etkin değilken bellekte diğer görevler için yer açtı. İstediğiniz zaman bunu Ayarlar'dan değiştirebilirsiniz.</translation>
 <translation id="4459169140545916303"><ph name="DEVICE_LAST_ACTIVATED_TIME" /> gün önce etkindi</translation>
@@ -5260,6 +5267,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="5886112770923972514">Yakındaki Hızlı Eşleme cihazlarına bağlanıp bunları hızlıca kurun</translation>
 <translation id="5886384907280980632">Şimdi kapat</translation>
 <translation id="5889282057229379085">Ara CA sayısı üst sınırı: <ph name="NUM_INTERMEDIATE_CA" /></translation>
+<translation id="5889629805140803638">Senkronize edilen verileri kendi <ph name="BEGIN_LINK" />senkronizasyon parolanızla<ph name="END_LINK" /> şifreleyin. Google Pay'deki ödeme yöntemleri ve adresler şifrelenmez. Chrome'daki tarama geçmişi senkronize edilmez.</translation>
 <translation id="5891688036610113830">Tercih edilen kablosuz ağlar</translation>
 <translation id="5895138241574237353">Yeniden başlat</translation>
 <translation id="5895335062901455404">Google Hesabınızla oturum açtığınızda kayıtlı tercihleriniz herhangi bir ChromeOS Flex cihazda hazır olur. Neyin senkronize edileceğini Ayarlar'dan seçebilirsiniz.</translation>
@@ -5905,6 +5913,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6508248480704296122"><ph name="NAME_PH" /> ile ilgili</translation>
 <translation id="6508261954199872201">Uygulama: <ph name="APP_NAME" /></translation>
 <translation id="6509207748479174212">Medya lisansı</translation>
+<translation id="6511279028091289182">Web sitelerine güvenli bir bağlantı üzerinden nasıl bağlanılacağını belirler. Bu özellik, <ph name="DNS_SERVER_TEMPLATE_WITH_IDENTIFIER" /> adresinde yönetilen bir servis sağlayıcı kullanır</translation>
 <translation id="6511827214781912955">Bu cihazı kullanan diğer kişilerin şifrelerinizi görmemesi için <ph name="FILENAME" /> dosyasını silebilirsiniz.</translation>
 <translation id="6512808201725371249">Bu hesaba ait bir şifre, Google Şifre Yöneticinizde (<ph name="USER_EMAIL" />) zaten kayıtlı</translation>
 <translation id="6513247462497316522">Başka bir ağa bağlı değilseniz Google Chrome mobil verileri kullanır.</translation>
@@ -5974,6 +5983,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6568283005472142698">Sekme Araması</translation>
 <translation id="65711204837946324">İndirme için izin gerekiyor</translation>
 <translation id="6571772921213691236">Oturum açma verilerini düzenleyin</translation>
+<translation id="657229725818377235">Tehlikeli web sitelerine ve indirmelere karşı daha fazla koruma elde edin</translation>
 <translation id="6573096386450695060">Her zaman izin ver</translation>
 <translation id="6573497332121198392">Kısayol kaldırılamıyor</translation>
 <translation id="657402800789773160">Bu &amp;Sayfayı Tekrar Yükle</translation>
@@ -6019,6 +6029,7 @@ Güvenliği ihlal edilmiş # şifreniz daha var. Google Şifre Yöneticisi bu ş
 <translation id="6607831829715835317">Diğer araç&amp;lar</translation>
 <translation id="6607890859198268021"><ph name="USER_EMAIL" /> zaten <ph name="DOMAIN" /> tarafından yönetiliyor. Ebeveyn denetimlerini farklı bir Google Hesabıyla kullanmak için kurulumdan sonra oturumu kapatıp oturum açma ekranında "Kişi ekle"yi seçin.</translation>
 <translation id="6608166463665411119">eSIM'i sıfırla</translation>
+<translation id="6608773371844092260">Parmak izini ayarlamak için çocuğunuzun, bu <ph name="DEVICE_TYPE" /> cihazının sağ tarafındaki parmak izi sensörüne dokunması gerekir. Çocuğunuzun parmak izi verileri güvenli bir şekilde depolanır ve her zaman <ph name="DEVICE_TYPE" /> cihazınızda tutulur.</translation>
 <translation id="6609478180749378879">Gizli moddan çıktıktan sonra oturum açma verileriniz bu cihazda saklanır. Daha sonra cihazınızla bu web sitesinde tekrar oturum açabilirsiniz.</translation>
 <translation id="6610002944194042868">Çeviri Seçenekleri</translation>
 <translation id="6611907964265870728">Lütfen cihazınızın internete bağlı olduğundan emin olun</translation>
@@ -6664,6 +6675,7 @@ Güvenliği ihlal edilmiş # şifreniz daha var. Google Şifre Yöneticisi bu ş
 <translation id="7225082563376899794">Şifreleri doldururken Windows Hello'yu kullan</translation>
 <translation id="7225179976675429563">Ağ türü eksik</translation>
 <translation id="7227458944009118910">Aşağıda listelenen uygulamalar, protokol bağlantılarını da işleyebilir. Diğer uygulamalar izin ister.</translation>
+<translation id="7228056665272655255">Parmak izini ayarlamak için çocuğunuzun, klavyenin sağ üst köşesindeki parmak izi sensörüne dokunması gerekir. Çocuğunuzun parmak izi verileri güvenli bir şekilde depolanır ve her zaman <ph name="DEVICE_TYPE" /> cihazınızda tutulur.</translation>
 <translation id="7228523857728654909">Ekran kilidi ve oturum açma</translation>
 <translation id="7230222852462421043">&amp;Pencereyi Geri Yükle</translation>
 <translation id="7231260028442989757">Telefonunuzun bildirimlerini görün, kapatın ve yanıtlayın</translation>
@@ -6791,6 +6803,7 @@ Güvenliği ihlal edilmiş # şifreniz daha var. Google Şifre Yöneticisi bu ş
 <translation id="7360233684753165754"><ph name="PRINTER_NAME" /> adlı yazıcıya <ph name="PAGE_NUMBER" /> sayfa</translation>
 <translation id="7360257054721917104">Kayıtlı masalar ve şablonlar gösteriliyor. Gezinmek için sekme tuşuna basın.</translation>
 <translation id="7361297102842600584"><ph name="PLUGIN_NAME" /> eklentisini çalıştırmak için sağ tıklayın</translation>
+<translation id="7361914392989692067">Parmağınızla güç düğmesine dokunun. Parmak izi verileriniz güvenli şekilde depolanır ve her zaman <ph name="DEVICE_TYPE" /> cihazınızda tutulur.</translation>
 <translation id="7362387053578559123">Siteler, Bluetooth cihazlarına bağlanmak isteyebilir</translation>
 <translation id="7363349185727752629">Gizlilik tercihlerinizle ilgili kılavuz</translation>
 <translation id="7364591875953874521">Erişim isteği</translation>
@@ -6915,6 +6928,7 @@ Güvenliği ihlal edilmiş # şifreniz daha var. Google Şifre Yöneticisi bu ş
 <translation id="7465635034594602553">Bir sorun oldu. Lütfen birkaç dakika bekleyip <ph name="APP_NAME" /> uygulamasını tekrar çalıştırın.</translation>
 <translation id="7465778193084373987">Netscape Sertifika İptali URL'si</translation>
 <translation id="7466431077154602932">Kompakt görünüm</translation>
+<translation id="7466556884531675354">Kayıtlı not yok</translation>
 <translation id="746861123368584540">Uzantı yüklendi</translation>
 <translation id="7470424110735398630">Panonuzu görmesine izin verilen siteler</translation>
 <translation id="747114903913869239">Hata: Uzantının kodu çözülemiyor</translation>
@@ -7489,7 +7503,6 @@ Atamayı kaldırmak için atanmış bir anahtara veya tuşa basın.</translation
 <translation id="7978450511781612192">Bu işlem Google hesaplarınızın oturumunu kapatacak. Yer işaretleriniz, şifreleriniz ve diğer içerikler artık senkronize edilmeyecek.</translation>
 <translation id="7980084013673500153">Öğe kimliği: <ph name="ASSET_ID" /></translation>
 <translation id="7981313251711023384">Daha hızlı göz atmak ve arama yapmak için sayfaları önceden yükle</translation>
-<translation id="798145602633458219"><ph name="SUGGESTION_NAME" /> önerisini arama kutusuna ekle</translation>
 <translation id="7981662863948574132">Cihaz EID numarası ve QR kodu pop-up'ını göster</translation>
 <translation id="7981670705071137488">Yazılım güncellemeleri artık arka planda gerçekleştirilecek. Güncelleme tercihlerini Ayarlar'da inceleyebilirsiniz.</translation>
 <translation id="7982083145464587921">Bu hatayı düzeltmek için lütfen cihazınızı yeniden başlatın.</translation>
@@ -7843,6 +7856,7 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8299319456683969623">Şu anda çevrimdışısınız.</translation>
 <translation id="8300011035382349091">Bu sekmenin yer işaretini düzenle</translation>
 <translation id="8300374739238450534">Gece mavisi</translation>
+<translation id="8301242268274839723">Klavyenizin sol alt köşesindeki parmak izi sensörüne dokunun. Parmak izi verileriniz güvenli şekilde depolanır ve her zaman <ph name="DEVICE_TYPE" /> cihazınızda tutulur.</translation>
 <translation id="8303616404642252802">{COUNT,plural, =1{Adres}other{# adres}}</translation>
 <translation id="8304383784961451596">Bu cihazı kullanmak için yetkili değilsiniz. Oturum açma izni için lütfen yöneticinize danışın veya Family Link gözetimindeki bir Google hesabı ile oturum açın.</translation>
 <translation id="8306885873692337975">En son özellikleri ve güvenlik iyileştirmelerini edinin.</translation>
@@ -7894,6 +7908,7 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8351316842353540018">Her zaman a11y seçeneklerini göster</translation>
 <translation id="8351419472474436977">Bu uzantı proxy ayarlarınızın denetimini ele geçirdi. Bu, uzantının çevrimiçinde yaptıklarınızı değiştirebileceği, kesebileceği veya dinleyebileceği anlamına gelir. Bu değişikliğin neden olduğundan emin değilseniz muhtemelen bu değişikliği yapmayı istememişsinizdir.</translation>
 <translation id="8351630282875799764">Pil şarj olmuyor</translation>
+<translation id="8352287103893778223">Sekme grubu başlığı</translation>
 <translation id="835238322900896202">Yükleme kaldırma işlemi sırasında bir hata oluştu. Lütfen Terminali kullanarak yüklemeyi kaldırın.</translation>
 <translation id="8353683614194668312">Şunları yapabilir:</translation>
 <translation id="8354034204605718473">Çocuğunuzun PIN'i eklendi</translation>
@@ -8569,10 +8584,12 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8993059306046735527"><ph name="DEVICE_TYPE" /> şifrenizi unutsanız bile, yerel verilerinizi geri yükleyebilirsiniz. Google Hesabınızda oturum açmanız veya hesap kurtarma özelliğini kullanmanız gerekir.</translation>
 <translation id="8993737615451556423">Okuma sesini hızlandırma, yavaşlatma ve duraklatma kontrollerini sağlar</translation>
 <translation id="899384117894244799">Kısıtlanmış kullanıcıyı kaldır</translation>
+<translation id="8993945059918628059">Parmağınızla parmak izi sensörüne dokunun. Parmak izi verileriniz güvenli şekilde depolanır ve her zaman <ph name="DEVICE_TYPE" /> cihazınızda tutulur.</translation>
 <translation id="899403249577094719">Netscape Sertifikası Temel URL'si</translation>
 <translation id="899657321862108550">Kendi Chrome'unuz, Her Yerde</translation>
 <translation id="8998078711690114234">Bu tür dosyalar tehlikeli olabilir. Bu dosyayı yalnızca <ph name="ORIGIN" /> sitesine güveniyorsanız kaydedin</translation>
 <translation id="8999560016882908256">Bölüm söz dizimi hatası: <ph name="ERROR_LINE" /></translation>
+<translation id="9000185763019430629"><ph name="DEVICE_TYPE" /> cihazınızın sağ tarafındaki parmak izi sensörüne dokunun. Parmak izi verileriniz güvenli şekilde depolanır ve her zaman <ph name="DEVICE_TYPE" /> cihazınızda tutulur.</translation>
 <translation id="9003185744423389627">Cihaz Yönetim Paneli sunucu bağlantısı <ph name="FAILURE_TIME" /> tarihinde "<ph name="STATUS_TEXT" />" durumunu göstererek başarısız oldu</translation>
 <translation id="9003647077635673607">Tüm web sitelerinde izin ver</translation>
 <translation id="9003677638446136377">Tekrar kontrol et</translation>

@@ -165,6 +165,7 @@
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2391082728065870591">ফিডব্যাক রিপোর্ট পাঠান</translation>
 <translation id="2407209115954268704">সিম লক স্ট্যাটাস</translation>
+<translation id="241419523391571119">পরীক্ষা করার জন্য ডিভাইসের লিডটি আবার খুলুন</translation>
 <translation id="2414886740292270097">অন্ধকার</translation>
 <translation id="2418150275289244458">সেটিংসে খুলুন</translation>
 <translation id="2421798028054665193"><ph name="TOTAL_PAGES" />টির মধ্যে <ph name="CURRENT_PAGE" /> নম্বর ছবি</translation>
@@ -175,6 +176,7 @@
 <translation id="2491955442992294626">অন্য উইন্ডো ব্যবহার করার সময় কী পরীক্ষা করা হয়না</translation>
 <translation id="2493126929778606526">আপনার সেরা ফটোগুলি অটোমেটিক বেছে নেওয়া হয়</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
+<translation id="2498950423397131220">ফ্লোট</translation>
 <translation id="2505327257735685095">বর্তমান ওয়ালপেপারের ছবি রিফ্রেশ করুন</translation>
 <translation id="2513396635448525189">'লগ-ইন'-এর ছবি</translation>
 <translation id="2517472476991765520">স্ক্যান করুন</translation>
@@ -205,6 +207,7 @@
 <translation id="2878387241690264070"><ph name="NUM_SECONDS" /> সেকেন্ডে <ph name="RATE" /> চার্জ শেষ হয়েছে।</translation>
 <translation id="2902312830803030883">আরও অ্যাকশন</translation>
 <translation id="2926057806159140518">আপনার ব্যবহারকারীর নাম এবং পাসওয়ার্ড লিখুন বা আপনার QR কোড স্ক্যান করুন</translation>
+<translation id="2940811910881150316">ডিভাইসটি পরীক্ষা করা সম্ভব হচ্ছে না। পরীক্ষার জন্য ডিভাইসের লিডটি আবার খুলুন।</translation>
 <translation id="3008341117444806826">রিফ্রেশ করুন</translation>
 <translation id="3009958530611748826">কোন ফোল্ডারে সেভ করতে চান তা বেছে নিন</translation>
 <translation id="3017079585324758401">ব্যাকগ্রাউন্ড</translation>
@@ -285,6 +288,7 @@
 <translation id="3820172043799983114">ভুল পিন।</translation>
 <translation id="3824259034819781947">ফাইল অ্যাটাচ করুন</translation>
 <translation id="3838338534323494292">নতুন পাসওয়ার্ড</translation>
+<translation id="3845880861638660475">ডায়ালগ বন্ধ করার জন্য <ph name="ALT_SHORTCUT_START" />alt<ph name="ALT_SHORTCUT_END" /> + <ph name="ESC_SHORTCUT_START" />esc<ph name="ESC_SHORTCUT_END" /> ‘কী’ প্রেস করুন।</translation>
 <translation id="385051799172605136">ফিরুন</translation>
 <translation id="3858860766373142691">নাম</translation>
 <translation id="3862598938296403232">বিবরণ লিখতে হবে</translation>
@@ -292,6 +296,7 @@
 <translation id="3866249974567520381">বর্ণনা</translation>
 <translation id="387301095347517405">আপনার ব্যাটারি যতবার পুরো চার্জ দেওয়া হয়েছে</translation>
 <translation id="3885327323343477505">স্ক্রিন সেভার পরিবর্তন করুন</translation>
+<translation id="391412459402535266">ডিভাইসটি পরীক্ষা করা সম্ভব হচ্ছে না। পরীক্ষার জন্য ল্যাপটপ মোড চালু করুন।</translation>
 <translation id="3923184630988645767">ডেটা ব্যবহার</translation>
 <translation id="3932043219784172185">কোনও ডিভাইস কানেক্ট করা নেই</translation>
 <translation id="3941014780699102620">হোস্ট নেম যাচাই করা যায়নি</translation>
@@ -304,6 +309,7 @@
 <translation id="39823212440917567"><ph name="NUMBER_OF_DAYS" /> দিনের বেশি পুরনো প্রিন্ট জব সরিয়ে দেওয়া হবে</translation>
 <translation id="3993704782688964914">আপনার <ph name="DEVICE_NAME" /> ডিভাইস এখন আপ-টু-ডেট আছে</translation>
 <translation id="4003384961948020559">প্রিন্ট করা যায়নি - আউটপুট বিন ভর্তি হয়ে গেছে</translation>
+<translation id="4021031199988160623">পরীক্ষার জন্য ল্যাপটপ মোড চালু করুন</translation>
 <translation id="4034824040120875894">প্রিন্টার</translation>
 <translation id="4044093238444069296">গেটওয়েতে যোগাযোগ করা যাচ্ছে না</translation>
 <translation id="4046123991198612571">পরবর্তী ট্র্যাক</translation>
@@ -336,6 +342,7 @@
 <translation id="4289849978083912975">স্লাইড শো</translation>
 <translation id="4297501883039923494">বন্ধ হয়ে গেছে - অজানা সমস্যা</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" />টি ছবি</translation>
+<translation id="4311195029067684288">পূর্ণ</translation>
 <translation id="4333390807948134856"><ph name="KEY_NAME" /> কী প্রেস করা হয়েছে</translation>
 <translation id="435692326371619097">নেটওয়ার্ক APN সেটিংস ম্যানেজ করুন। APN একটি সেলুলার নেটওয়ার্ক এবং ইন্টারনেটের মধ্যে কানেকশন তৈরি করে। <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>
 <translation id="4378373042927530923">চালানো যায়নি</translation>
@@ -415,7 +422,9 @@
 <translation id="4921665434385737356"><ph name="NUM_SECONDS" /> সেকেন্ডে <ph name="RATE" /> চার্জ হয়েছে।</translation>
 <translation id="4930320165497208503">কানেকশন আপডেট করতে বা সেট আপ করতে<ph name="BEGIN_LINK" />সেটিংস<ph name="END_LINK" /> বিকল্পে যান।</translation>
 <translation id="4932733599132424254">তারিখ</translation>
+<translation id="4937657825850660613">হাফ</translation>
 <translation id="4950314376641394653"><ph name="DEVICE_NAME" /> ফার্মওয়্যার <ph name="VERSION" /> ভার্সনে আপডেট করা হয়েছে</translation>
+<translation id="4971925105143343452">আংশিক</translation>
 <translation id="498186245079027698">স্ক্যানার চেক করে আবার চেষ্টা করুন। স্ক্যান করা ফাইল সেভ করার জন্য পর্যাপ্ত লোকাল স্পেস আছে কিনা দেখে নিন।</translation>
 <translation id="4985509611418653372">চালান</translation>
 <translation id="4987769320337599931">ফায়ারওয়াল</translation>
@@ -679,6 +688,7 @@
 <translation id="7415801143053185905">HTTP লেটেন্সি অনেক বেশি</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7435977162516949853">{NUMBER_OF_PAGES,plural, =1{স্ক্যান করা সম্পূর্ণ হয়েছে। ১টি পৃষ্ঠা স্ক্যান করা হয়েছে}one{স্ক্যান করা সম্পূর্ণ হয়েছে। {NUMBER_OF_PAGES}টি পৃষ্ঠা স্ক্যান করা হয়েছে}other{স্ক্যান করা সম্পূর্ণ হয়েছে। {NUMBER_OF_PAGES}টি পৃষ্ঠা স্ক্যান করা হয়েছে}}</translation>
+<translation id="7458970041932198923">অবতার দেখার ও সেট করার জন্য ডিভাইসটি নেটওয়ার্কের সঙ্গে কানেক্ট করে পেজটি আবার লোড করুন।</translation>
 <translation id="7469648432129124067">পোর্টাল শনাক্ত করা হয়েছে</translation>
 <translation id="7481312909269577407">ফরওয়ার্ড</translation>
 <translation id="7487067081878637334">প্রযুক্তি</translation>
@@ -833,6 +843,7 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8987565828374052507">{NUMBER_OF_PAGES,plural, =0{স্ক্যান করুন}=1{{NUMBER_OF_PAGES} নম্বর পৃষ্ঠা স্ক্যান করুন}one{{NUMBER_OF_PAGES} নম্বর পৃষ্ঠা স্ক্যান করুন}other{{NUMBER_OF_PAGES} নম্বর পৃষ্ঠা স্ক্যান করুন}}</translation>
 <translation id="8997710128084572139">ডিভাইসে <ph name="BATTERY_PERCENTAGE" />% ব্যাটারি আছে।</translation>
+<translation id="8998289560386111590">আপনার ডিভাইসে উপলভ্য নয়</translation>
 <translation id="9003704114456258138">ফ্রিকোয়েন্সি</translation>
 <translation id="9025198690966128418">ব্যক্তিগত ডিভাইস হিসেবে ব্যবহার করুন</translation>
 <translation id="9028832514430399253">স্ক্রিনসেভার বিকল্পগুলি বেছে নিতে টগলটি চালু করুন</translation>

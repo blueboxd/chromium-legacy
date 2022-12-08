@@ -225,6 +225,17 @@ chromium-metrics-reviews@google.com.
   <summary>Time from the login screen start to user session start.</summary>
 </histogram>
 
+<histogram name="OOBE.ConsolidatedConsentScreen.RecoveryOptInResult"
+    enum="RecoveryOptInResult" expires_after="2023-06-01">
+  <owner>anastasiian@chromium.org</owner>
+  <owner>cros-lurs@google.com</owner>
+  <owner>cros-oobe@google.com</owner>
+  <summary>
+    Tracks the result of the cryptohome recovery opt-in on the consolidated
+    consent screen. Recorded when user exists the consolidated consent screen.
+  </summary>
+</histogram>
+
 <histogram name="OOBE.ConsolidatedConsentScreen.UserActions"
     enum="ConsolidatedConsentScreenUserAction" expires_after="2023-09-01">
   <owner>osamafathy@google.com</owner>
@@ -273,7 +284,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.FingerprintSetupScreen.UserActions"
-    enum="FingerprintSetupScreenUserAction" expires_after="2023-04-01">
+    enum="FingerprintSetupScreenUserAction" expires_after="2023-06-04">
   <owner>dkuzmin@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -293,7 +304,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.GaiaPasswordChangedScreen.UserActions"
-    enum="GaiaPasswordChangedScreenUserAction" expires_after="2023-04-01">
+    enum="GaiaPasswordChangedScreenUserAction" expires_after="2023-06-04">
   <owner>dkuzmin@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -379,6 +390,16 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records success or failure of a pairing attempt (initiated automatically by
     the OOBE HID detection screen) to a HID.
+  </summary>
+</histogram>
+
+<histogram name="OOBE.HidDetectionScreen.BluetoothPairing.TimeoutExceeded"
+    enum="BooleanSuccess" expires_after="2023-05-06">
+  <owner>gordonseto@google.com</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Records success each time a pairing session times out while on the OOBE HID
+    detection page.
   </summary>
 </histogram>
 
@@ -476,7 +497,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.PinSetupScreen.UserActions"
-    enum="PinSetupScreenUserAction" expires_after="2023-04-01">
+    enum="PinSetupScreenUserAction" expires_after="2023-06-04">
   <owner>dkuzmin@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -543,7 +564,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.RecommendApps.Screen.Action"
-    enum="RecommendAppsScreenAction" expires_after="2023-04-01">
+    enum="RecommendAppsScreenAction" expires_after="2023-06-04">
   <owner>dkuzmin@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <owner>chromesky-eng@google.com</owner>
@@ -551,7 +572,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.RecommendApps.Screen.SelectedAppCount" units="apps"
-    expires_after="2023-04-01">
+    expires_after="2023-06-04">
   <owner>dkuzmin@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <owner>chromesky-eng@google.com</owner>
@@ -567,7 +588,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.RecommendApps.Screen.State"
-    enum="RecommendAppsScreenState" expires_after="2023-04-01">
+    enum="RecommendAppsScreenState" expires_after="2023-06-04">
   <owner>dkuzmin@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <owner>chromesky-eng@google.com</owner>
@@ -652,7 +673,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.SyncConsentScreen.ReviewFollowingSetup"
-    enum="BooleanChecked" expires_after="2023-04-01">
+    enum="BooleanChecked" expires_after="2023-06-04">
   <owner>dkuzmin@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -796,7 +817,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.WelcomeScreen.UserChangedLocale" enum="Boolean"
-    expires_after="2023-03-26">
+    expires_after="2023-06-04">
   <owner>bohdanty@google.com</owner>
   <owner>cros-oobe@google.com</owner>
   <summary>

@@ -50,6 +50,9 @@ ci.builder(
     # Every 6 hours starting at 5am UTC.
     schedule = "0 5/6 * * * *",
     triggered_by = [],
+
+    # TODO(crbug.com/1366968): Default omit_python2 to True for all builders
+    omit_python2 = True,
 )
 
 ci.builder(
@@ -72,6 +75,9 @@ ci.builder(
     # TODO(crbug.com/1267449): Trigger builds routinely once works fine.
     schedule = "triggered",
     triggered_by = [],
+
+    # TODO(crbug.com/1366968): Default omit_python2 to True for all builders
+    omit_python2 = True,
 )
 
 ci.builder(
@@ -85,6 +91,9 @@ ci.builder(
     schedule = "0 7,14,22 * * * *",
     sheriff_rotations = sheriff_rotations.ANDROID,
     triggered_by = [],
+
+    # TODO(crbug.com/1366968): Default omit_python2 to True for all builders
+    omit_python2 = True,
 )
 
 ci.builder(
@@ -121,37 +130,14 @@ ci.builder(
             "gclient_config": "chromium",
             "gclient_apply_config": ["android"],
         },
-        # TODO(crbug.com/1381614): Remove properties below after
-        # avd_packager is refactored to recipe_module in crrev.com/c/4021719
-        "avd_configs": [
-            "tools/android/avd/proto/creation/generic_android19.textpb",
-            "tools/android/avd/proto/creation/generic_android22.textpb",
-            "tools/android/avd/proto/creation/generic_android23.textpb",
-            "tools/android/avd/proto/creation/generic_android24.textpb",
-            "tools/android/avd/proto/creation/generic_playstore_android24.textpb",
-            "tools/android/avd/proto/creation/generic_android25.textpb",
-            "tools/android/avd/proto/creation/generic_playstore_android25.textpb",
-            "tools/android/avd/proto/creation/generic_android27.textpb",
-            "tools/android/avd/proto/creation/generic_playstore_android27.textpb",
-            "tools/android/avd/proto/creation/generic_android28.textpb",
-            "tools/android/avd/proto/creation/generic_playstore_android28.textpb",
-            "tools/android/avd/proto/creation/generic_android29.textpb",
-            "tools/android/avd/proto/creation/generic_android30.textpb",
-            "tools/android/avd/proto/creation/generic_playstore_android30.textpb",
-            "tools/android/avd/proto/creation/generic_android31.textpb",
-            "tools/android/avd/proto/creation/generic_playstore_android31.textpb",
-            "tools/android/avd/proto/creation/generic_android32_foldable.textpb",
-            "tools/android/avd/proto/creation/generic_playstore_android32_foldable.textpb",
-            "tools/android/avd/proto/creation/generic_android33.textpb",
-            "tools/android/avd/proto/creation/generic_playstore_android33.textpb",
-        ],
-        "gclient_config": "chromium",
-        "gclient_apply_config": ["android"],
     },
     # Triggered manually through the scheduler UI
     # https://luci-scheduler.appspot.com/jobs/chromium/android-avd-packager
     schedule = "triggered",
     triggered_by = [],
+
+    # TODO(crbug.com/1366968): Default omit_python2 to True for all builders
+    omit_python2 = True,
 )
 
 ci.builder(
@@ -170,10 +156,6 @@ ci.builder(
                 "cipd_yaml": "third_party/android_sdk/cipd/build-tools/25.0.2.yaml",
             },
             {
-                "sdk_package_name": "build-tools;31.0.0",
-                "cipd_yaml": "third_party/android_sdk/cipd/build-tools/31.0.0.yaml",
-            },
-            {
                 "sdk_package_name": "build-tools;33.0.0",
                 "cipd_yaml": "third_party/android_sdk/cipd/build-tools/33.0.0.yaml",
             },
@@ -190,12 +172,12 @@ ci.builder(
                 "cipd_yaml": "third_party/android_sdk/cipd/patcher/v4.yaml",
             },
             {
-                "sdk_package_name": "platforms;android-31",
-                "cipd_yaml": "third_party/android_sdk/cipd/platforms/android-31.yaml",
-            },
-            {
                 "sdk_package_name": "platforms;android-33",
                 "cipd_yaml": "third_party/android_sdk/cipd/platforms/android-33.yaml",
+            },
+            {
+                "sdk_package_name": "platforms;android-TiramisuPrivacySandbox",
+                "cipd_yaml": "third_party/android_sdk/cipd/platforms/android-TiramisuPrivacySandbox.yaml",
             },
             {
                 "sdk_package_name": "platform-tools",
@@ -294,10 +276,17 @@ ci.builder(
                 "sdk_package_name": "system-images;android-33;google_apis_playstore;x86_64",
                 "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-33/google_apis_playstore/x86_64.yaml",
             },
+            {
+                "sdk_package_name": "system-images;android-TiramisuPrivacySandbox;google_apis_playstore;x86_64",
+                "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-TiramisuPrivacySandbox/google_apis_playstore/x86_64.yaml",
+            },
         ],
     },
     schedule = "0 7 * * *",
     triggered_by = [],
+
+    # TODO(crbug.com/1366968): Default omit_python2 to True for all builders
+    omit_python2 = True,
 )
 
 ci.builder(
@@ -309,7 +298,7 @@ ci.builder(
     ),
     cores = None,
     executable = "recipe:chromium_rts/create_model",
-    execution_timeout = 8 * time.hour,
+    execution_timeout = 10 * time.hour,
     notifies = [
         luci.notifier(
             name = "rts-model-packager-notifier",
@@ -319,4 +308,7 @@ ci.builder(
     ],
     schedule = "0 9 * * *",  # at 1AM or 2AM PT (depending on DST), once a day.
     triggered_by = [],
+
+    # TODO(crbug.com/1366968): Default omit_python2 to True for all builders
+    omit_python2 = True,
 )

@@ -178,7 +178,15 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     _showsSelectionUpdates = YES;
     _notSelectedTabCellOpacity = 1.0;
     _mode = TabGridModeNormal;
+
+    // Register for VoiceOver notifications.
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(voiceOverStatusDidChange)
+               name:UIAccessibilityVoiceOverStatusDidChangeNotification
+             object:nil];
   }
+
   return self;
 }
 
@@ -234,7 +242,8 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   collectionView.allowsMultipleSelection = YES;
   collectionView.dragDelegate = self;
   collectionView.dropDelegate = self;
-  collectionView.dragInteractionEnabled = YES;
+  self.collectionView.dragInteractionEnabled =
+      [self shouldEnableDrapAndDropInteraction];
 
   self.pointerInteractionCells =
       [NSHashTable<UICollectionViewCell*> weakObjectsHashTable];
@@ -309,7 +318,9 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     return;
   }
 
+  TabGridMode previousMode = _mode;
   _mode = mode;
+
   // TODO(crbug.com/1300369): Enable dragging items from search results.
   self.collectionView.dragInteractionEnabled = (_mode != TabGridModeSearch);
   self.emptyStateView.tabGridMode = _mode;
@@ -332,21 +343,36 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
           return;
         }
 
-        NSRange allSectionsRange = NSMakeRange(
-            /*location=*/0, strongSelf.collectionView.numberOfSections);
-        NSIndexSet* allSectionsIndexSet =
-            [NSIndexSet indexSetWithIndexesInRange:allSectionsRange];
-        [strongSelf.collectionView reloadSections:allSectionsIndexSet];
-        // Scroll to the selected item here, so the animation of reloading and
-        // scrolling happens at once.
+        if (mode == TabGridModeSelection && previousMode == TabGridModeNormal) {
+          // If the grid is switching from normal to selected state don't
+          // reload the whole table view to avoid having a flash, particularly
+          // visible when using context menu.
+          for (UITableViewCell* cell in strongSelf.collectionView
+                   .visibleCells) {
+            GridCell* gridCell = base::mac::ObjCCast<GridCell>(cell);
+            gridCell.state = mode == TabGridModeSelection
+                                 ? GridCellStateEditingUnselected
+                                 : GridCellStateNotEditing;
+          }
+        } else {
+          NSRange allSectionsRange = NSMakeRange(
+              /*location=*/0, strongSelf.collectionView.numberOfSections);
+          NSIndexSet* allSectionsIndexSet =
+              [NSIndexSet indexSetWithIndexesInRange:allSectionsRange];
+          [strongSelf.collectionView reloadSections:allSectionsIndexSet];
+        }
         NSUInteger selectedIndex = strongSelf.selectedIndex;
-        if (mode == TabGridModeNormal && selectedIndex != NSNotFound) {
+        if (previousMode != TabGridModeSelection && mode == TabGridModeNormal &&
+            selectedIndex != NSNotFound) {
+          // Scroll to the selected item here, so the animation of reloading and
+          // scrolling happens at once.
           [strongSelf.collectionView
               scrollToItemAtIndexPath:CreateIndexPath(selectedIndex)
                      atScrollPosition:UICollectionViewScrollPositionTop
                              animated:NO];
         }
       }
+
                completion:nil];
 
   if (mode == TabGridModeNormal) {
@@ -1341,6 +1367,16 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 }
 
 #pragma mark - Private
+
+- (void)voiceOverStatusDidChange {
+  self.collectionView.dragInteractionEnabled =
+      [self shouldEnableDrapAndDropInteraction];
+}
+
+- (BOOL)shouldEnableDrapAndDropInteraction {
+  // Don't enable drag and drop when voice over is enabled.
+  return !UIAccessibilityIsVoiceOverRunning();
+}
 
 // Checks whether `indexPath` corresponds to the index path of the plus sign
 // cell. The plus sign cell is the last cell in the collection view after all

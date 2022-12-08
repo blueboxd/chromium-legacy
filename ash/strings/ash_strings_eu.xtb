@@ -31,7 +31,6 @@ Hona hemen hasteko egin ditzakezun gauza batzuk.</translation>
 <translation id="1148499908455722006">Ireki <ph name="USER_NAME" /> erabiltzailearen informazio-leihoa</translation>
 <translation id="1150989369772528668">Egutegia</translation>
 <translation id="1153356358378277386">Parekatutako gailuak</translation>
-<translation id="1165712434476988950">Gailua berrabiarazi egin behar da eguneratzea aplikatzeko.</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Baliteke USB-C kablea behar bezala ez konektatzea pantailetara</translation>
 <translation id="1175572348579024023">Egin gora edo behera</translation>
@@ -358,7 +357,6 @@ Hona hemen hasteko egin ditzakezun gauza batzuk.</translation>
 <translation id="296762781903199866">Ezin izan dira deskargatu hizketa-fitxategiak (<ph name="LANGUAGE" />)</translation>
 <translation id="2970920913501714344">Instalatu aplikazioak, luzapenak eta gaiak</translation>
 <translation id="2977598380246111477">Hurrengo zenbakia</translation>
-<translation id="2981684127883932071">Iradokizunak daude ikusgai</translation>
 <translation id="2985148236010982088">Ikusi aplikazio guztiak</translation>
 <translation id="2992327365391326550">Gailuaren mikrofonoaren botoia desaktibatuta dago.</translation>
 <translation id="2996462380875591307">Gaituta dago lupa ainguratua. Desaktibatzeko, sakatu berriro Ktrl + Bilatu + D.</translation>
@@ -670,6 +668,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="4666082839192943839">Desaktibatu gailu honetako kamera atzitzeko baimena kamera guztiak blokeatuta egon daitezen beti.</translation>
 <translation id="4666911709726371538">Aplikazio gehiago</translation>
 <translation id="4667099493359681081"><ph name="FILENAME" /> deskargatzen</translation>
+<translation id="468293128311738995">Telefonoko aplikazioak</translation>
 <translation id="4690510401873698237">Apala behealdean dago</translation>
 <translation id="4696813013609194136">Desblokeatu gailua gurasoen kodearekin</translation>
 <translation id="4702647871202761252">Desaktibatuta dago pribatutasun-pantaila</translation>
@@ -926,12 +925,10 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="6103838137565245112">sistema</translation>
 <translation id="6107292179555508368">Mikrofonoa eta kamera erabiltzeko baimenak desaktibatuta daude gailu honetan</translation>
 <translation id="6114505516289286752">Deskargatu dira hizketa-fitxategiak (<ph name="LANGUAGE" />)</translation>
-<translation id="6116825164611323644">Kamera erabiltzeko baimena desaktibatuta dago gailu honetan</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042">Berretsi <ph name="FILENAME" /> deskargatu nahi duzula</translation>
 <translation id="612734058257491180">Google-ren Laguntzailea ez dago erabilgarri gonbidatuentzako saioetan.</translation>
 <translation id="6129953537138746214">Zuriunea</translation>
-<translation id="6134259848159370930">Bilatu gailuan, aplikazioetan, ezarpenetan eta sarean</translation>
 <translation id="6137566720514957455">Ireki <ph name="USER_EMAIL_ADDRESS" /> erabiltzailearen leihoa kentzeko aukera</translation>
 <translation id="6141988275892716286">Berretsi deskarga</translation>
 <translation id="6154006699632741460">Ez da onartzen gailu periferikoa</translation>
@@ -1291,6 +1288,7 @@ Berriki instalatu da</translation>
 <translation id="8142441511840089262">Egin klik bikoitza</translation>
 <translation id="8142699993796781067">Sare pribatua</translation>
 <translation id="8144760705599030999">Gorde <ph name="NAME" /> gailua <ph name="EMAIL" /> kontuan, gainerako gailuekin bizkorrago parekatu ahal izateko</translation>
+<translation id="8144914663975476336">Hautatu grabaketaren formatua</translation>
 <translation id="8149413265954228307">Erakutsi Bluetootharen ezarpenak. <ph name="STATE_TEXT" />.</translation>
 <translation id="8152092012181020186">Ixteko, sakatu Ktrl + W.</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, automatikoki betea</translation>
@@ -1388,7 +1386,6 @@ Berriki instalatu da</translation>
 <translation id="8666856788528804727">Gailua konfiguratzeko, ireki <ph name="NAME" /></translation>
 <translation id="8676770494376880701">Potentzia txikiko kargagailua konektatu da</translation>
 <translation id="8683506306463609433">Aktibo dago funtzionamenduaren jarraipena egiteko aukera</translation>
-<translation id="8685326675965865247">Bilatu gailuan, aplikazioetan, ezarpenetan eta sarean. Aplikazio batetik bestera pasatzeko, erabili gezi-teklak.</translation>
 <translation id="8703634754197148428">Hasi grabatzen. Grabatzen hasi ondoren, sakatu Alt + Maius + L apalera joateko; bertan ikusiko duzu grabaketa gelditzeko botoia.</translation>
 <translation id="8721053961083920564">Aldatu bolumena. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">Pantaila osoaren kaptura</translation>
@@ -1397,7 +1394,6 @@ Berriki instalatu da</translation>
 <translation id="8735678380411481005">Teklatuaren atzeko argiztapenaren kolorea</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />,
         <ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8752416742247198423">Aktibatu kamera erabiltzeko baimena, baimen hori duten aplikazio eta webguneek gailura konektatutako kamerak erabil ditzaten.</translation>
 <translation id="8755498163081687682">Egiaztatu zure identitatea: <ph name="ORIGIN_NAME" /> webguneak zeu zarela berretsi nahi du</translation>
 <translation id="875593634123171288">Erakutsi VPN ezarpenak</translation>
 <translation id="8759408218731716181">Ezin da saio-hasiera anitza konfiguratu</translation>
@@ -1464,7 +1460,6 @@ Berriki instalatu da</translation>
 <translation id="9089416786594320554">Idazketa-metodoak</translation>
 <translation id="9091626656156419976">Kendu da <ph name="DISPLAY_NAME" /> pantaila</translation>
 <translation id="9098969848082897657">Isilarazi telefonoa</translation>
-<translation id="9099154003160514616">Lacros-en eguneratze bat dago</translation>
 <translation id="9100887602489003640">Profila gehitzen. Itxaron minutu batzuk.</translation>
 <translation id="9105450214093926548">Lacros arakatzailea abian den bitartean ezin da hasi saiorik beste erabiltzaile batekin. Horren ordez, erabili beste erabiltzaile-profil bat Lacros-en bertan, edo itxi arakatzailea eta saiatu berriro.</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> edo <ph name="CTRL" /> <ph name="SEPARATOR1" /> <ph name="SHIFT" /> <ph name="SEPARATOR2" /> <ph name="OVERVIEW" /></translation>

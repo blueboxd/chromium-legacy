@@ -45,6 +45,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/image/image_skia_rep.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -69,18 +70,6 @@ std::vector<uint8_t> ReadFileAsCompressedData(const base::FilePath path) {
   std::string data;
   base::ReadFileToString(path, &data);
   return std::vector<uint8_t>(data.begin(), data.end());
-}
-
-std::vector<uint8_t> CompressedDataFromResource(
-    extensions::ExtensionResource resource) {
-  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
-                                                base::BlockingType::MAY_BLOCK);
-
-  const base::FilePath& path = resource.GetFilePath();
-  if (path.empty()) {
-    return std::vector<uint8_t>();
-  }
-  return ReadFileAsCompressedData(path);
 }
 
 // Returns a callback that converts a gfx::Image to an ImageSkia.
@@ -114,44 +103,6 @@ FaviconResultToImageSkia(base::OnceCallback<void(gfx::ImageSkia)> callback,
                 result.bitmap_data->front() + result.bitmap_data->size()));
       },
       std::move(callback), icon_scale);
-}
-
-// Loads the compressed data of an icon at the requested size (or larger) for
-// the given extension.
-void LoadCompressedDataFromExtension(
-    const extensions::Extension* extension,
-    int size_hint_in_px,
-    base::OnceCallback<void(std::vector<uint8_t>)> compressed_data_callback) {
-  // Load some component extensions' icons from statically compiled
-  // resources (built into the Chrome binary), and other extensions'
-  // icons (whether component extensions or otherwise) from files on
-  // disk.
-  extensions::ExtensionResource ext_resource =
-      extensions::IconsInfo::GetIconResource(extension, size_hint_in_px,
-                                             ExtensionIconSet::MATCH_BIGGER);
-
-  if (extension && extension->location() ==
-                       extensions::mojom::ManifestLocation::kComponent) {
-    int resource_id = 0;
-    const extensions::ComponentExtensionResourceManager* manager =
-        extensions::ExtensionsBrowserClient::Get()
-            ->GetComponentExtensionResourceManager();
-    if (manager &&
-        manager->IsComponentExtensionResource(
-            extension->path(), ext_resource.relative_path(), &resource_id)) {
-      base::StringPiece data =
-          ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
-              resource_id);
-      std::move(compressed_data_callback)
-          .Run(std::vector<uint8_t>(data.begin(), data.end()));
-      return;
-    }
-  }
-
-  base::ThreadPool::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::BindOnce(&CompressedDataFromResource, std::move(ext_resource)),
-      std::move(compressed_data_callback));
 }
 
 absl::optional<IconPurpose> GetIconPurpose(
@@ -386,16 +337,6 @@ void AppIconLoader::LoadWebAppIcon(const std::string& web_app_id,
 
   switch (icon_type_) {
     case IconType::kCompressed:
-      if (icon_effects_ == apps::IconEffects::kNone &&
-          *icon_purpose_to_read == IconPurpose::ANY) {
-        // Only read IconPurpose::ANY icons compressed as other purposes would
-        // need to be uncompressed to apply icon effects.
-        icon_manager.ReadSmallestCompressedIconAny(
-            web_app_id, icon_size_in_px_,
-            base::BindOnce(&AppIconLoader::CompleteWithCompressed,
-                           base::WrapRefCounted(this)));
-        return;
-      }
       [[fallthrough]];
     case IconType::kUncompressed:
       if (icon_type_ == apps::IconType::kUncompressed) {
@@ -409,9 +350,9 @@ void AppIconLoader::LoadWebAppIcon(const std::string& web_app_id,
       }
       [[fallthrough]];
     case IconType::kStandard: {
-      // If |icon_effects| are requested, we must always load the
-      // uncompressed image to apply the icon effects, and then re-encode the
-      // image if the compressed icon is requested.
+      // We always load the uncompressed image to apply the icon effects or
+      // resize the icon size, and then re-encode the image if the compressed
+      // icon is requested.
       std::vector<int> icon_pixel_sizes;
       for (auto scale_factor : ui::GetSupportedResourceScaleFactors()) {
         auto size_and_purpose = icon_manager.FindIconMatchBigger(
@@ -454,28 +395,13 @@ void AppIconLoader::LoadExtensionIcon(const extensions::Extension* extension,
   profile_ = Profile::FromBrowserContext(context);
   switch (icon_type_) {
     case IconType::kCompressed:
-      // For compressed icons with no |icon_effects|, serve the
-      // already-compressed bytes.
-      if (icon_effects_ == apps::IconEffects::kNone) {
-        // For the kUncompressed case, RunCallbackWithUncompressedImage
-        // calls extensions::ImageLoader::LoadImageAtEveryScaleFactorAsync,
-        // which already handles that distinction. We can't use
-        // LoadImageAtEveryScaleFactorAsync here, because the caller has asked
-        // for compressed icons (i.e. PNG-formatted data), not uncompressed
-        // (i.e. a gfx::ImageSkia).
-        LoadCompressedDataFromExtension(
-            extension, icon_size_in_px_,
-            base::BindOnce(&AppIconLoader::CompleteWithCompressed,
-                           base::WrapRefCounted(this)));
-        return;
-      }
       [[fallthrough]];
     case IconType::kUncompressed:
       [[fallthrough]];
     case IconType::kStandard:
-      // If |icon_effects| are requested, we must always load the
-      // uncompressed image to apply the icon effects, and then re-encode
-      // the image if the compressed icon is requested.
+      // We always load the uncompressed image to apply the icon effects or
+      // resize the icon size, and then re-encode the image if the compressed
+      // icon is requested.
       extensions::ImageLoader::Get(context)->LoadImageAtEveryScaleFactorAsync(
           extension, gfx::Size(size_hint_in_dip_, size_hint_in_dip_),
           ImageToImageSkia(
@@ -657,7 +583,7 @@ void AppIconLoader::GetWebAppCompressedIconData(
   absl::optional<IconPurpose> icon_purpose_to_read =
       GetIconPurpose(web_app_id, icon_manager, size_hint_in_dip_);
 
-  if (!icon_purpose_to_read.has_value()) {
+  if (!icon_purpose_to_read.has_value() || icon_type_ == IconType::kUnknown) {
     MaybeLoadFallbackOrCompleteEmpty();
     return;
   }
@@ -670,45 +596,32 @@ void AppIconLoader::GetWebAppCompressedIconData(
       web_app_id, {*icon_purpose_to_read}, icon_size_in_px_);
   DCHECK(size_and_purpose.has_value());
 
-  switch (icon_type_) {
-    case IconType::kCompressed:
-      // Only read IconPurpose::ANY icons compressed as other purposes would
-      // need to find the icon size to match the icon purpose.
-      //
-      // If the icon px size returned from FindIconMatchBigger doesn't match
-      // icon_size_in_px_, the returned compressed icon should be resized, so
-      // ReadSmallestCompressedIconAny can't be used.
-      //
-      // If `icon_effects_` is not none, the icon needs to be converted to the
-      // uncompressed icon to apply the icon effects. So ReadIcons is used to
-      // get the icon to match the size in px and icon purpose to keep the
-      // consistent implementation with LoadWebAppIcon.
-      if (icon_effects_ == apps::IconEffects::kNone &&
-          *icon_purpose_to_read == IconPurpose::ANY &&
-          icon_size_in_px_ == size_and_purpose->size_px) {
-        icon_manager.ReadSmallestCompressedIconAny(
-            web_app_id, icon_size_in_px_,
-            base::BindOnce(&AppIconLoader::CompleteWithCompressed,
-                           base::WrapRefCounted(this)));
-        return;
-      }
-      [[fallthrough]];
-    case IconType::kUncompressed:
-      [[fallthrough]];
-    case IconType::kStandard: {
-      std::vector<int> icon_pixel_sizes;
-      icon_pixel_sizes.emplace_back(size_and_purpose->size_px);
-      icon_manager.ReadIcons(
-          web_app_id, *icon_purpose_to_read, icon_pixel_sizes,
-          base::BindOnce(&AppIconLoader::OnReadWebAppForCompressedIconData,
-                         base::WrapRefCounted(this)));
-      return;
-    }
-    case IconType::kUnknown:
-      MaybeLoadFallbackOrCompleteEmpty();
-      return;
+  std::vector<int> icon_pixel_sizes;
+  icon_pixel_sizes.emplace_back(size_and_purpose->size_px);
+  icon_manager.ReadIcons(
+      web_app_id, *icon_purpose_to_read, icon_pixel_sizes,
+      base::BindOnce(&AppIconLoader::OnReadWebAppForCompressedIconData,
+                     base::WrapRefCounted(this)));
+}
+
+void AppIconLoader::GetChromeAppCompressedIconData(
+    const extensions::Extension* extension,
+    content::BrowserContext* context,
+    ui::ResourceScaleFactor scale_factor) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (!extension || icon_type_ == IconType::kUnknown) {
+    MaybeLoadFallbackOrCompleteEmpty();
+    return;
   }
-  NOTREACHED();
+
+  icon_scale_ = ui::GetScaleForResourceScaleFactor(scale_factor);
+  profile_ = Profile::FromBrowserContext(context);
+  extensions::ImageLoader::Get(context)->LoadImageAtEveryScaleFactorAsync(
+      extension, gfx::Size(size_hint_in_dip_, size_hint_in_dip_),
+      ImageToImageSkia(
+          base::BindOnce(&AppIconLoader::OnReadChromeAppForCompressedIconData,
+                         base::WrapRefCounted(this))));
 }
 
 std::unique_ptr<arc::IconDecodeRequest>
@@ -903,6 +816,20 @@ void AppIconLoader::OnReadWebAppForCompressedIconData(
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&apps::EncodeImageToPngBytes, image_skia, icon_scale_),
+      base::BindOnce(&AppIconLoader::CompleteWithCompressed,
+                     base::WrapRefCounted(this)));
+}
+
+void AppIconLoader::OnReadChromeAppForCompressedIconData(gfx::ImageSkia image) {
+  if (image.isNull()) {
+    MaybeLoadFallbackOrCompleteEmpty();
+    return;
+  }
+
+  image.MakeThreadSafe();
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+      base::BindOnce(&apps::EncodeImageToPngBytes, image, icon_scale_),
       base::BindOnce(&AppIconLoader::CompleteWithCompressed,
                      base::WrapRefCounted(this)));
 }

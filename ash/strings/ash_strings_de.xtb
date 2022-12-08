@@ -31,7 +31,6 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="1148499908455722006">Infodialog für <ph name="USER_NAME" /> öffnen</translation>
 <translation id="1150989369772528668">Kalender</translation>
 <translation id="1153356358378277386">Gekoppelte Geräte</translation>
-<translation id="1165712434476988950">Das Gerät muss neu gestartet werden, um das Update zu installieren.</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Dein USB-C-Kabel ist nicht zum Verbinden von Bildschirmen geeignet</translation>
 <translation id="1175572348579024023">Scrollen</translation>
@@ -358,7 +357,6 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="296762781903199866">Sprachdateien auf <ph name="LANGUAGE" /> konnten nicht heruntergeladen werden</translation>
 <translation id="2970920913501714344">Apps, Erweiterungen und Designs installieren</translation>
 <translation id="2977598380246111477">Nächste Nummer</translation>
-<translation id="2981684127883932071">Vorschläge werden angezeigt</translation>
 <translation id="2985148236010982088">Alle Apps anzeigen</translation>
 <translation id="2992327365391326550">Das Mikrofon des Geräts ist ausgeschaltet.</translation>
 <translation id="2996462380875591307">Angedockte Lupe aktiviert. Drücke Strg + Suchtaste + D, um sie zu deaktivieren.</translation>
@@ -668,6 +666,7 @@ Schließe dein Gerät an eine Steckdose an.</translation>
 <translation id="4666082839192943839">Deaktiviere den Kamerazugriff auf diesem Gerät, um alle Kameras dauerhaft zu blockieren.</translation>
 <translation id="4666911709726371538">Weitere Apps</translation>
 <translation id="4667099493359681081">„<ph name="FILENAME" />“ wird heruntergeladen</translation>
+<translation id="468293128311738995">Apps von deinem Smartphone</translation>
 <translation id="4690510401873698237">Ablage unten</translation>
 <translation id="4696813013609194136">Gerät mit Elterncode entsperren</translation>
 <translation id="4702647871202761252">Der Datenschutzbildschirm ist momentan deaktiviert</translation>
@@ -924,12 +923,10 @@ Schließe dein Gerät an eine Steckdose an.</translation>
 <translation id="6103838137565245112">System</translation>
 <translation id="6107292179555508368">Mikrofon- und Kamerazugriff sind auf diesem Gerät deaktiviert</translation>
 <translation id="6114505516289286752">Sprachdateien auf <ph name="LANGUAGE" /> heruntergeladen</translation>
-<translation id="6116825164611323644">Kamerazugriff ist auf diesem Gerät deaktiviert</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" />.</translation>
 <translation id="6121838516699723042">Download bestätigen: <ph name="FILENAME" /></translation>
 <translation id="612734058257491180">In Gastsitzungen ist Google Assistant nicht verfügbar.</translation>
 <translation id="6129953537138746214">Leertaste</translation>
-<translation id="6134259848159370930">Auf deinem Gerät, in Apps, Einstellungen und im Web suchen.</translation>
 <translation id="6137566720514957455">Dialog „Entfernen“ für <ph name="USER_EMAIL_ADDRESS" /> öffnen</translation>
 <translation id="6141988275892716286">Download bestätigen</translation>
 <translation id="6154006699632741460">Peripheriegerät wird nicht unterstützt</translation>
@@ -1290,6 +1287,7 @@ Neuinstallation</translation>
 <translation id="8142441511840089262">Doppelklick</translation>
 <translation id="8142699993796781067">Privates Netzwerk</translation>
 <translation id="8144760705599030999">Speichere <ph name="NAME" /> unter <ph name="EMAIL" />, um das Gerät schneller mit anderen Geräten koppeln zu können</translation>
+<translation id="8144914663975476336">Aufnahmeformat auswählen</translation>
 <translation id="8149413265954228307">Bluetooth-Einstellungen anzeigen. <ph name="STATE_TEXT" />.</translation>
 <translation id="8152092012181020186">Drücke zum Schließen Strg + W.</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, automatische Vervollständigung</translation>
@@ -1387,7 +1385,6 @@ Neuinstallation</translation>
 <translation id="8666856788528804727"><ph name="NAME" /> öffnen, um das Gerät einzurichten</translation>
 <translation id="8676770494376880701">Leistungsschwaches Ladegerät angeschlossen</translation>
 <translation id="8683506306463609433">Leistungsverfolgung ist aktiv</translation>
-<translation id="8685326675965865247">Du kannst auf deinem Gerät, in deinen Apps und Einstellungen sowie im Web suchen. Gehe mit den Pfeiltasten die entsprechenden Apps durch.</translation>
 <translation id="8703634754197148428">Aufnahme starten. Wenn die Aufnahme gestartet ist, kannst du Alt + Umschalttaste + L verwenden, um zur Ablage zu gehen – dort findest du die Schaltfläche zum Beenden der Aufnahme.</translation>
 <translation id="8721053961083920564">Ton ein- oder ausschalten. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">Aufnahme vom ganzen Bildschirm</translation>
@@ -1396,7 +1393,6 @@ Neuinstallation</translation>
 <translation id="8735678380411481005">Farbe der Tastaturbeleuchtung</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />,
         <ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8752416742247198423">Aktiviere den Zugriff auf die Kamera, um Apps und Webseiten mit der Kameraberechtigung zu erlauben, die mit diesem Gerät verbundenen Kameras zu verwenden.</translation>
 <translation id="8755498163081687682">Identität bestätigen: <ph name="ORIGIN_NAME" /> möchte sichergehen, dass du das bist</translation>
 <translation id="875593634123171288">VPN-Einstellungen anzeigen</translation>
 <translation id="8759408218731716181">Mehrfachanmeldung kann nicht eingerichtet werden</translation>
@@ -1463,7 +1459,6 @@ Neuinstallation</translation>
 <translation id="9089416786594320554">Eingabemethoden</translation>
 <translation id="9091626656156419976">Bildschirm <ph name="DISPLAY_NAME" /> wurde entfernt</translation>
 <translation id="9098969848082897657">Smartphone stummschalten</translation>
-<translation id="9099154003160514616">Lacros-Update verfügbar</translation>
 <translation id="9100887602489003640">Profil wird hinzugefügt. Warte ein paar Minuten.</translation>
 <translation id="9105450214093926548">Während der Lacros-Browser läuft, kann kein zweiter Nutzer angemeldet werden. Verwende stattdessen ein zweites Browserprofil in Lacros oder schließe den Browser und versuche es noch einmal.</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> oder <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>

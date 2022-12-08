@@ -35,12 +35,7 @@ namespace features {
 
 BASE_FEATURE(kEnableOverlayPrioritization,
              "EnableOverlayPrioritization",
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-             base::FEATURE_ENABLED_BY_DEFAULT
-#else
-             base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kUseMultipleOverlays,
              "UseMultipleOverlays",
@@ -67,12 +62,6 @@ BASE_FEATURE(kVideoDetectorIgnoreNonVideos,
 
 BASE_FEATURE(kSimpleFrameRateThrottling,
              "SimpleFrameRateThrottling",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Kill-switch to disable de-jelly, even if flags/properties indicate it should
-// be enabled.
-BASE_FEATURE(kDisableDeJelly,
-             "DisableDeJelly",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_ANDROID)
@@ -233,7 +222,7 @@ BASE_FEATURE(kBufferQueueImageSetPurgeable,
 // render pass, instead of SkiaOutputDeviceBufferQueue itself.
 BASE_FEATURE(kRendererAllocatesImages,
              "RendererAllocatesImages",
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_CHROMEOS_ASH)
              base::FEATURE_ENABLED_BY_DEFAULT
 #else
              base::FEATURE_DISABLED_BY_DEFAULT
@@ -241,12 +230,7 @@ BASE_FEATURE(kRendererAllocatesImages,
 );
 
 bool IsOverlayPrioritizationEnabled() {
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  // DelegatedCompositing in Lacros makes this feature a no-op.
-  return false;
-#else
   return base::FeatureList::IsEnabled(kEnableOverlayPrioritization);
-#endif
 }
 
 bool IsDelegatedCompositingEnabled() {

@@ -31,7 +31,6 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="1148499908455722006">Apri la finestra di dialogo delle informazioni per <ph name="USER_NAME" /></translation>
 <translation id="1150989369772528668">Calendario</translation>
 <translation id="1153356358378277386">Dispositivi accoppiati</translation>
-<translation id="1165712434476988950">È necessario riavviare il dispositivo per applicare l'aggiornamento.</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Il cavo USB-C potrebbe non collegarsi correttamente ai display</translation>
 <translation id="1175572348579024023">Scorri</translation>
@@ -358,7 +357,6 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="296762781903199866">Impossibile scaricare i file di contenuti vocali per la lingua: <ph name="LANGUAGE" /></translation>
 <translation id="2970920913501714344">Installare app, estensioni e temi.</translation>
 <translation id="2977598380246111477">Numero successivo</translation>
-<translation id="2981684127883932071">Visualizzazione dei suggerimenti</translation>
 <translation id="2985148236010982088">Mostra tutte le app</translation>
 <translation id="2992327365391326550">Il pulsante del microfono del dispositivo è disattivato.</translation>
 <translation id="2996462380875591307">Lente d'ingrandimento ancorata attivata. Premi di nuovo CTRL + tasto per la ricerca + D per disattivarla.</translation>
@@ -670,6 +668,7 @@ Collega il dispositivo all'alimentazione.</translation>
 <translation id="4666082839192943839">Disattiva l'accesso alla fotocamera su questo dispositivo per bloccare sempre tutte le fotocamere.</translation>
 <translation id="4666911709726371538">Altre app</translation>
 <translation id="4667099493359681081">Download di <ph name="FILENAME" /> in corso…</translation>
+<translation id="468293128311738995">App dal telefono</translation>
 <translation id="4690510401873698237">Barra delle app in basso</translation>
 <translation id="4696813013609194136">Sblocca con codice genitore</translation>
 <translation id="4702647871202761252">Schermata sulla privacy non attiva</translation>
@@ -926,12 +925,10 @@ Collega il dispositivo all'alimentazione.</translation>
 <translation id="6103838137565245112">sistema</translation>
 <translation id="6107292179555508368">Gli accessi a microfono e fotocamera sono disattivati su questo dispositivo</translation>
 <translation id="6114505516289286752">File di contenuti vocali scaricati per questa la lingua: <ph name="LANGUAGE" /></translation>
-<translation id="6116825164611323644">Non è stato concesso l'accesso alla fotocamera su questo dispositivo</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042">Conferma download <ph name="FILENAME" /></translation>
 <translation id="612734058257491180">L'Assistente Google non è disponibile in una sessione Ospite.</translation>
 <translation id="6129953537138746214">Spazio</translation>
-<translation id="6134259848159370930">Cerca sul dispositivo, nelle app, nelle impostazioni e sul Web.</translation>
 <translation id="6137566720514957455">Apri la finestra di dialogo di rimozione per <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6141988275892716286">Conferma download</translation>
 <translation id="6154006699632741460">Periferica non supportata</translation>
@@ -1292,6 +1289,7 @@ Nuova installazione</translation>
 <translation id="8142441511840089262">Doppio clic</translation>
 <translation id="8142699993796781067">Rete privata</translation>
 <translation id="8144760705599030999">Salva <ph name="NAME" /> nell'account <ph name="EMAIL" /> per velocizzare l'accoppiamento con gli altri dispositivi</translation>
+<translation id="8144914663975476336">Seleziona il formato di registrazione</translation>
 <translation id="8149413265954228307">Mostra le impostazioni Bluetooth. <ph name="STATE_TEXT" />.</translation>
 <translation id="8152092012181020186">Premi CTRL + W per chiudere.</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, completamento automatico</translation>
@@ -1389,7 +1387,6 @@ Nuova installazione</translation>
 <translation id="8666856788528804727">Apri <ph name="NAME" /> per configurare il tuo dispositivo</translation>
 <translation id="8676770494376880701">Caricabatterie a basso consumo collegato</translation>
 <translation id="8683506306463609433">Traccia delle prestazioni attiva</translation>
-<translation id="8685326675965865247">Cerca sul dispositivo, nelle app, nelle impostazioni e sul Web. Usa i tasti freccia per esplorare le tue app.</translation>
 <translation id="8703634754197148428">Avvia registrazione. Dopo aver avviato la registrazione, utilizza i tasti Alt + Maiusc + L per accedere alla barra delle app e individuare il pulsante per interrompere la registrazione</translation>
 <translation id="8721053961083920564">Attiva/disattiva volume. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">Acquisizione schermo intero</translation>
@@ -1397,7 +1394,6 @@ Nuova installazione</translation>
 <translation id="8734991477317290293">Potrebbe essere un tentativo di rubare i tasti premuti</translation>
 <translation id="8735678380411481005">Colore della retroilluminazione della tastiera</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />, <ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8752416742247198423">Concedi l'accesso alla fotocamera per consentire alle app e alle pagine web autorizzate di utilizzare le fotocamere collegate a questo dispositivo.</translation>
 <translation id="8755498163081687682">Verifica la tua identità come richiesto da <ph name="ORIGIN_NAME" /></translation>
 <translation id="875593634123171288">Mostra impostazioni VPN</translation>
 <translation id="8759408218731716181">Impossibile impostare l'accesso simultaneo</translation>
@@ -1464,7 +1460,6 @@ Nuova installazione</translation>
 <translation id="9089416786594320554">Metodi immissione</translation>
 <translation id="9091626656156419976">Schermo <ph name="DISPLAY_NAME" /> rimosso</translation>
 <translation id="9098969848082897657">Disattiva audio</translation>
-<translation id="9099154003160514616">Aggiornamento di Lacros disponibile</translation>
 <translation id="9100887602489003640">Aggiunta del profilo in corso… Attendi qualche minuto.</translation>
 <translation id="9105450214093926548">L'accesso di un secondo utente non è supportato durante l'uso del browser Lacros. Usa invece un secondo profilo del browser in Lacros oppure chiudi Lacros e riprova.</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> oppure <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>

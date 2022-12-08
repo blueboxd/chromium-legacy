@@ -65,6 +65,10 @@ class TouchToFillCreditCardMediator {
         mDelegate.scanCreditCard();
     }
 
+    public void showCreditCardSettings() {
+        mDelegate.showCreditCardSettings();
+    }
+
     private void onSelectedCreditCard(String uniqueId) {
         mDelegate.suggestionSelected(uniqueId);
     }
@@ -72,6 +76,8 @@ class TouchToFillCreditCardMediator {
     private PropertyModel createCardModel(CreditCard card) {
         return new PropertyModel
                 .Builder(TouchToFillCreditCardProperties.CreditCardProperties.ALL_KEYS)
+                .with(TouchToFillCreditCardProperties.CreditCardProperties.CARD_ICON_ID,
+                        card.getIssuerIconDrawableId())
                 .with(TouchToFillCreditCardProperties.CreditCardProperties.CARD_NAME,
                         card.getCardNameForAutofillDisplay())
                 .with(TouchToFillCreditCardProperties.CreditCardProperties.CARD_NUMBER,

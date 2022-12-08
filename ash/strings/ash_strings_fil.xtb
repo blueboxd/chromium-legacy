@@ -31,7 +31,6 @@ Narito ang ilang bagay na puwede mong subukang simulan.</translation>
 <translation id="1148499908455722006">Buksan ang dialog ng impormasyon para sa <ph name="USER_NAME" /></translation>
 <translation id="1150989369772528668">Kalendaryo</translation>
 <translation id="1153356358378277386">Mga nakapares na device</translation>
-<translation id="1165712434476988950">Kailangang mag-restart ng device para mailapat ang update.</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Posibleng hindi kumonekta nang maayos sa mga display ang iyong USB-C cable</translation>
 <translation id="1175572348579024023">Mag-scroll</translation>
@@ -358,7 +357,6 @@ Narito ang ilang bagay na puwede mong subukang simulan.</translation>
 <translation id="296762781903199866">Hindi ma-download ang mga <ph name="LANGUAGE" /> na speech file</translation>
 <translation id="2970920913501714344">Mag-install ng mga app, extension, at tema</translation>
 <translation id="2977598380246111477">Susunod na numero</translation>
-<translation id="2981684127883932071">Ipinapakita ang mga suhestyon</translation>
 <translation id="2985148236010982088">Tingnan ang lahat ng app</translation>
 <translation id="2992327365391326550">Naka-off ang button ng mikropono ng device.</translation>
 <translation id="2996462380875591307">Na-enable ang Naka-dock na Magnifier. Pinduting muli ang Ctrl+Search+D para i-off ito.</translation>
@@ -669,6 +667,7 @@ Isaksak ang iyong device.</translation>
 <translation id="4666082839192943839">I-off ang access sa camera sa device na ito para i-block ang lahat ng camera sa lahat ng pagkakataon.</translation>
 <translation id="4666911709726371538">Higit pang app</translation>
 <translation id="4667099493359681081">Dina-download ang <ph name="FILENAME" /></translation>
+<translation id="468293128311738995">Mga app mula sa iyong telepono</translation>
 <translation id="4690510401873698237">Nasa ibaba ang shelf</translation>
 <translation id="4696813013609194136">I-unlock ang device gamit ang parent code</translation>
 <translation id="4702647871202761252">Naka-off ang privacy screen</translation>
@@ -925,12 +924,10 @@ Isaksak ang iyong device.</translation>
 <translation id="6103838137565245112">system</translation>
 <translation id="6107292179555508368">Naka-off ang mga access sa mikropono at camera sa device na ito</translation>
 <translation id="6114505516289286752">Na-download na ang mga <ph name="LANGUAGE" /> na speech file</translation>
-<translation id="6116825164611323644">Naka-off ang access sa camera sa device na ito</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042">Kumpirmahin ang pag-download ng <ph name="FILENAME" /></translation>
 <translation id="612734058257491180">Hindi available ang Google Assistant sa session ng bisita.</translation>
 <translation id="6129953537138746214">Puwang</translation>
-<translation id="6134259848159370930">Maghanap sa iyong device, mga app, mga setting, at web.</translation>
 <translation id="6137566720514957455">Buksan ang alisin ang dialog para sa <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6141988275892716286">Kumpirmahin ang pag-download</translation>
 <translation id="6154006699632741460">Hindi sinusuportahan ang peripheral</translation>
@@ -1291,6 +1288,7 @@ Kaka-install lang</translation>
 <translation id="8142441511840089262">I-double click</translation>
 <translation id="8142699993796781067">Pribadong network</translation>
 <translation id="8144760705599030999">I-save ang iyong <ph name="NAME" /> sa <ph name="EMAIL" /> para sa mas mabilis na pagpapares sa iba mo pang device</translation>
+<translation id="8144914663975476336">Pumili ng format ng recording</translation>
 <translation id="8149413265954228307">Ipakita ang mga setting ng Bluetooth. <ph name="STATE_TEXT" />.</translation>
 <translation id="8152092012181020186">Pindutin ang Ctrl + W para isara ito.</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, Autocomplete</translation>
@@ -1388,7 +1386,6 @@ Kaka-install lang</translation>
 <translation id="8666856788528804727">Buksan ang <ph name="NAME" /> para i-set up ang iyong device</translation>
 <translation id="8676770494376880701">Nakakabit ang low-power charger</translation>
 <translation id="8683506306463609433">Aktibo ang pag-trace ng performance</translation>
-<translation id="8685326675965865247">Maghanap sa iyong device, mga app, mga setting, at web. Gamitin ang mga arrow key para i-navigate ang iyong mga app.</translation>
 <translation id="8703634754197148428">Simulang mag-record. Kapag nagsimula na ang pag-record, gamitin ang Alt + Shift + L para mag-navigate papunta sa shelf at makita ang button na ihinto ang pag-record</translation>
 <translation id="8721053961083920564">I-toggle ang Volume. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">Full screen capture</translation>
@@ -1396,7 +1393,6 @@ Kaka-install lang</translation>
 <translation id="8734991477317290293">Maaaring sinusubukan nitong nakawin ang iyong mga keystroke</translation>
 <translation id="8735678380411481005">Kulay ng backlight ng keyboard</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />, <ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8752416742247198423">I-on ang access sa camera para payagan ang mga app at webpage na may pahintulot sa camera na gamitin ang (mga) camera na nakakonekta sa device na ito.</translation>
 <translation id="8755498163081687682">I-verify ang pagkakakilanlan mo: Gustong kumpirmahin ng <ph name="ORIGIN_NAME" /> na ikaw ito</translation>
 <translation id="875593634123171288">Ipakita ang mga setting ng VPN</translation>
 <translation id="8759408218731716181">Hindi maaaring mag-set up ng multiple na pag-sign in</translation>
@@ -1463,7 +1459,6 @@ Kaka-install lang</translation>
 <translation id="9089416786594320554">Mga input method</translation>
 <translation id="9091626656156419976">Naalis ang display na <ph name="DISPLAY_NAME" /></translation>
 <translation id="9098969848082897657">I-silent ang telepono</translation>
-<translation id="9099154003160514616">Available ang update sa Lacros</translation>
 <translation id="9100887602489003640">Idinaragdag ang profile. Maghintay nang ilang minuto.</translation>
 <translation id="9105450214093926548">Hindi sinusuportahan ang pag-sign in ng pangalawang user habang tumatakbo ang Lacros browser. Gumamit na lang ng pangalawang profile ng browser sa Lacros o isara ang Lacros at subukan ulit.</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> o <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>

@@ -19,8 +19,8 @@ import '../os_privacy_page/os_privacy_page.js';
 import '../os_printing_page/os_printing_page.js';
 import '../os_search_page/os_search_page.js';
 import '../personalization_page/personalization_page.js';
-import '../../settings_page/settings_section.js';
-import '../../settings_page_styles.css.js';
+import '../os_settings_page/os_settings_section.js';
+import '../os_settings_page_styles.css.js';
 import '../device_page/device_page.js';
 import '../internet_page/internet_page.js';
 import '../kerberos_page/kerberos_page.js';
@@ -30,7 +30,7 @@ import '../os_settings_icons.html.js';
 
 import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {beforeNextRender, microTask, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Route, Router} from '../../router.js';

@@ -17,7 +17,7 @@ import './title_item.js';
 import './strings.m.js';
 
 import {assert} from 'chrome://resources/js/assert_ts.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {MetricsReporter, MetricsReporterImpl} from 'chrome://resources/js/metrics_reporter/metrics_reporter.js';
 import {listenOnce} from 'chrome://resources/js/util_ts.js';
 import {Token} from 'chrome://resources/mojo/mojo/public/mojom/base/token.mojom-webui.js';
@@ -290,9 +290,9 @@ export class TabSearchAppElement extends PolymerElement {
       // The infinite-list produces viewport-filled events whenever a data or
       // scroll position change triggers the the viewport fill logic.
       listenOnce(this.$.tabsList, 'viewport-filled', () => {
-        // Push showUI() to the event loop to allow reflow to occur following
+        // Push showUi() to the event loop to allow reflow to occur following
         // the DOM update.
-        setTimeout(() => this.apiProxy_.showUI(), 0);
+        setTimeout(() => this.apiProxy_.showUi(), 0);
       });
 
       // TODO(crbug.com/c/1349350): Determine why no active window is reported

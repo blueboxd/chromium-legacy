@@ -5,10 +5,12 @@
 #ifndef SANDBOX_MAC_SANDBOX_COMPILER_H_
 #define SANDBOX_MAC_SANDBOX_COMPILER_H_
 
-#include <map>
 #include <string>
 
+#include "sandbox/mac/seatbelt.h"
+#include "sandbox/mac/seatbelt.pb.h"
 #include "sandbox/mac/seatbelt_export.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"  // nogncheck
 
 namespace sandbox {
 
@@ -16,32 +18,53 @@ namespace sandbox {
 // initialization and cleanup.
 class SEATBELT_EXPORT SandboxCompiler {
  public:
-  explicit SandboxCompiler(const std::string& profile_str);
+  enum class Target {
+    // The result of compilation is a SandboxPolicy proto containing the policy
+    // string source and a map of key/value pairs.
+    kSource,
+
+    // The result of compilation is a SandboxPolicy proto containing a sealed,
+    // compiled, binary sandbox policy that can be applied immediately.
+    kCompiled,
+  };
+
+  // Creates a compiler in the default mode, `Target::kSource`.
+  SandboxCompiler();
+
+  // Creates a compiler with the specified target mode.
+  explicit SandboxCompiler(Target mode);
 
   ~SandboxCompiler();
   SandboxCompiler(const SandboxCompiler& other) = delete;
   SandboxCompiler& operator=(const SandboxCompiler& other) = delete;
 
+  // Sets the policy source string, if not already specified in the constructor.
+  void SetProfile(const std::string& policy);
+
   // Inserts a boolean into the parameters key/value map. A duplicate key is not
   // allowed, and will cause the function to return false. The value is not
   // inserted in this case.
-  bool InsertBooleanParam(const std::string& key, bool value);
+  [[nodiscard]] bool SetBooleanParameter(const std::string& key, bool value);
 
   // Inserts a string into the parameters key/value map. A duplicate key is not
   // allowed, and will cause the function to return false. The value is not
   // inserted in this case.
-  bool InsertStringParam(const std::string& key, const std::string& value);
+  [[nodiscard]] bool SetParameter(const std::string& key,
+                                  const std::string& value);
 
   // Compiles and applies the profile; returns true on success.
   bool CompileAndApplyProfile(std::string* error);
 
- private:
-  // Storage of the key/value pairs of strings that are used in the sandbox
-  // profile.
-  std::map<std::string, std::string> params_map_;
+  // Compiles the policy into a sandbox policy proto. Returns `absl::nullopt` on
+  // error, with an error message set.
+  absl::optional<mac::SandboxPolicy> CompilePolicyToProto(std::string* error);
 
-  // The sandbox profile source code.
-  const std::string profile_str_;
+ private:
+  const Target mode_;
+
+  mac::SourcePolicy policy_;
+
+  Seatbelt::Parameters params_;
 };
 
 }  // namespace sandbox

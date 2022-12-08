@@ -6,6 +6,7 @@ import 'chrome://os-settings/strings.m.js';
 import 'chrome://resources/ash/common/network/apn_list_item.js';
 import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 
+import {ApnDetailDialogMode, ApnEventData} from 'chrome://resources/ash/common/network/cellular_utils.js';
 import {MojoInterfaceProviderImpl} from 'chrome://resources/ash/common/network/mojo_interface_provider.js';
 import {OncMojo} from 'chrome://resources/ash/common/network/onc_mojo.js';
 import {ApnState, CrosNetworkConfigRemote} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-webui.js';
@@ -13,6 +14,16 @@ import {NetworkType} from 'chrome://resources/mojo/chromeos/services/network_con
 import {assertEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {FakeNetworkConfig} from 'chrome://webui-test/chromeos/fake_network_config_mojom.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
+import {eventToPromise} from 'chrome://webui-test/test_util.js';
+
+/** @type {!ApnEventData} */
+const TEST_APN_EVENT_DATA = {
+  apn: {
+    name: 'test_apn',
+  },
+  guid: 'test-guid',
+  mode: ApnDetailDialogMode.VIEW,
+};
 
 suite('ApnListItemTest', function() {
   /** @type {ApnListItemElement} */
@@ -25,7 +36,9 @@ suite('ApnListItemTest', function() {
     mojoApi_ = new FakeNetworkConfig();
     MojoInterfaceProviderImpl.getInstance().remote_ = mojoApi_;
     apnListItem = document.createElement('apn-list-item');
-    apnListItem.apn = {name: 'apn1'};
+    apnListItem.apn = {
+      accessPointName: 'apn1',
+    };
     apnListItem.guid = 'cellular_guid';
     document.body.appendChild(apnListItem);
     await flushTasks();
@@ -43,6 +56,12 @@ suite('ApnListItemTest', function() {
 
   test('Check if APN list item exists', async function() {
     assertTrue(!!apnListItem);
+    apnListItem.apn = {
+      accessPointName: 'apn1',
+    };
+    await flushTasks();
+    assertEquals(
+        apnListItem.$.apnName.innerText, apnListItem.apn.accessPointName);
   });
 
   test('Check if connected sublabel is shown', async function() {
@@ -80,15 +99,26 @@ suite('ApnListItemTest', function() {
   });
 
   test('Check disabled state.', async function() {
-    apnListItem.apn = {state: ApnState.kDisabled, name: 'apn'};
+    apnListItem.apn = {
+      state: ApnState.kDisabled,
+      accessPointName: 'apn',
+    };
     await flushTasks();
     assertFalse(apnListItem.hasAttribute('is-disabled_'));
 
-    apnListItem.apn = {state: ApnState.kEnabled, name: 'apn', id: '1'};
+    apnListItem.apn = {
+      state: ApnState.kEnabled,
+      accessPointName: 'apn',
+      id: '1',
+    };
     await flushTasks();
     assertFalse(apnListItem.hasAttribute('is-disabled_'));
 
-    apnListItem.apn = {state: ApnState.kDisabled, name: 'apn', id: '1'};
+    apnListItem.apn = {
+      state: ApnState.kDisabled,
+      accessPointName: 'apn',
+      id: '1',
+    };
     await flushTasks();
     assertTrue(apnListItem.hasAttribute('is-disabled_'));
   });
@@ -100,7 +130,10 @@ suite('ApnListItemTest', function() {
         apnListItem.$.dotsMenu.querySelector('#removeButton');
     assertTrue(getRemoveButton().hidden);
 
-    apnListItem.apn = {name: 'name1', id: '1'};
+    apnListItem.apn = {
+      accessPointName: 'name1',
+      id: '1',
+    };
     await flushTasks();
     assertFalse(getRemoveButton().hidden);
 
@@ -108,7 +141,12 @@ suite('ApnListItemTest', function() {
     const props = OncMojo.getDefaultManagedProperties(
         NetworkType.kCellular, guid, 'cellular');
 
-    props.typeProperties.cellular = {customApnList: [{name: 'name1', id: '1'}]};
+    props.typeProperties.cellular = {
+      customApnList: [{
+        accessPointName: 'name1',
+        id: '1',
+      }],
+    };
     mojoApi_.setManagedPropertiesForTest(props);
     let managedProps = await mojoApi_.getManagedProperties(guid);
     assertEquals(
@@ -133,7 +171,7 @@ suite('ApnListItemTest', function() {
 
     const getApn = (disabled) => {
       return {
-        name: 'name1',
+        accessPointName: 'name1',
         id: '1',
         state: disabled ? ApnState.kDisabled : ApnState.kEnabled,
       };
@@ -168,4 +206,21 @@ suite('ApnListItemTest', function() {
         ApnState.kDisabled,
         managedProps.result.typeProperties.cellular.customApnList[0].state);
   });
+
+  test(
+      'Clicking APN details button triggers a show-apn-detail-dialog event ',
+      async function() {
+        apnListItem.apn = TEST_APN_EVENT_DATA.apn;
+        apnListItem.guid = TEST_APN_EVENT_DATA.guid;
+
+        const apnDetailsClickedEvent =
+            eventToPromise('show-apn-detail-dialog', window);
+        assertTrue(!!apnListItem.$.detailsButton);
+        apnListItem.$.detailsButton.click();
+        const eventData = await apnDetailsClickedEvent;
+
+        assertEquals(TEST_APN_EVENT_DATA.apn.name, eventData.detail.apn.name);
+        assertEquals(TEST_APN_EVENT_DATA.guid, eventData.detail.guid);
+        assertEquals(TEST_APN_EVENT_DATA.mode, eventData.detail.mode);
+      });
 });

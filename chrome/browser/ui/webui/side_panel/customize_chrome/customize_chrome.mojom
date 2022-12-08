@@ -5,6 +5,23 @@
 module side_panel.mojom;
 
 import "skia/public/mojom/skcolor.mojom";
+import "url/mojom/url.mojom";
+
+// The background image URL and styling.
+struct BackgroundImage {
+  // URL to the background image. Can point to untrusted content.
+  url.mojom.Url url;
+};
+
+// A generic theme.
+struct Theme {
+  // The background image.
+  BackgroundImage? background_image;
+  // Whether the OS is in dark mode.
+  bool system_dark_mode;
+  // The current theme color. If not set, we use the default theme.
+  skia.mojom.SkColor? foreground_color;
+};
 
 struct ChromeColor {
   // Localized string of the color name.
@@ -13,6 +30,16 @@ struct ChromeColor {
   skia.mojom.SkColor background;
   // The background color.
   skia.mojom.SkColor foreground;
+};
+
+// A collection of background images.
+struct BackgroundCollection {
+  // Collection identifier.
+  string id;
+  // Localized string of the collection name.
+  string label;
+  // URL to a preview image for the collection. Can point to untrusted content.
+  url.mojom.Url preview_image_url;
 };
 
 // Used by the WebUI page to bootstrap bidirectional communication.
@@ -33,8 +60,15 @@ interface CustomizeChromePageHandler {
 
   // Returns the chrome colors used in the customize chrome side panel.
   GetChromeColors() => (array<ChromeColor> colors);
+
+  // Returns the collections of background images.
+  GetBackgroundCollections() => (array<BackgroundCollection> collections);
+  // Triggers a call to |CustomizeChromePage.SetTheme()|.
+  UpdateTheme();
 };
 
 // WebUI-side handler for requests from the browser.
 interface CustomizeChromePage {
+   // Sets the current theme.
+   SetTheme(Theme theme);
 };

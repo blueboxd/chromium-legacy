@@ -15,6 +15,7 @@ import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingProper
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingProperties.KeyboardExtensionState.REPLACING_KEYBOARD;
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingProperties.KeyboardExtensionState.WAITING_TO_REPLACE;
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingProperties.PORTRAIT_ORIENTATION;
+import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingProperties.SHOULD_EXTEND_KEYBOARD;
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingProperties.SHOW_WHEN_VISIBLE;
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingProperties.SUPPRESSED_BY_BOTTOM_SHEET;
 
@@ -316,9 +317,14 @@ class ManualFillingMediator
         mPopup = popup;
     }
 
-    void showWhenKeyboardIsVisible() {
+    void show(boolean waitForKeyboard) {
+        showWithKeyboardExtensionState(waitForKeyboard);
+    }
+
+    private void showWithKeyboardExtensionState(boolean shouldExtendKeyboard) {
         if (!isInitialized()) return;
         mModel.set(SHOW_WHEN_VISIBLE, true);
+        mModel.set(SHOULD_EXTEND_KEYBOARD, shouldExtendKeyboard);
         if (is(HIDDEN)) mModel.set(KEYBOARD_EXTENSION_STATE, FLOATING_BAR);
     }
 
@@ -366,7 +372,7 @@ class ManualFillingMediator
     private boolean hasSufficientSpace() {
         if (mActivity == null) return false;
         WebContents webContents = mActivity.getCurrentWebContents();
-        if (webContents == null) return false;
+        if (webContents == null || webContents.isDestroyed()) return false;
         float height = webContents.getHeight(); // In dip. Includes top control elements only.
 
         // WebContents height ignores the soft keyboard — subtract the keyboard height:
@@ -400,6 +406,13 @@ class ManualFillingMediator
                 mModel.set(KEYBOARD_EXTENSION_STATE, HIDDEN);
             }
             return;
+        } else if (property == SHOULD_EXTEND_KEYBOARD) {
+            // Do nothing. SHOULD_EXTEND_KEYBOARD is used with KEYBOARD_EXTENSION_STATE.
+            // However, if SHOULD_EXTEND_KEYBOARD is changed to false, keyboard accessory should be
+            // in HIDDEN state.
+            assert mModel.get(SHOULD_EXTEND_KEYBOARD)
+                    || mModel.get(KEYBOARD_EXTENSION_STATE) == HIDDEN;
+            return;
         }
         throw new IllegalArgumentException("Unhandled property: " + property);
     }
@@ -426,10 +439,11 @@ class ManualFillingMediator
             case HIDDEN:
                 return true;
             case FLOATING_BAR:
-                if (isSoftKeyboardShowing(getContentView())) {
+                if (mModel.get(SHOULD_EXTEND_KEYBOARD) && isSoftKeyboardShowing(getContentView())) {
                     mModel.set(KEYBOARD_EXTENSION_STATE, EXTENDING_KEYBOARD);
                     return false;
                 }
+                if (!mModel.get(SHOULD_EXTEND_KEYBOARD)) return true;
                 // Intentional fallthrough.
             case EXTENDING_KEYBOARD:
                 if (!canExtendKeyboard() || mModel.get(SUPPRESSED_BY_BOTTOM_SHEET)) {
@@ -490,6 +504,7 @@ class ManualFillingMediator
     }
 
     private void updateKeyboard(@KeyboardExtensionState int extensionState) {
+        if (!mModel.get(SHOULD_EXTEND_KEYBOARD)) return;
         if (isFloating(extensionState)) {
             // Keyboard-bound states are always preferable over floating states. Therefore, trigger
             // a keyboard here. This also allows for smooth transitions, e.g. when closing a sheet:
@@ -664,7 +679,7 @@ class ManualFillingMediator
     private void restrictAccessorySheetHeight() {
         if (!is(FLOATING_SHEET) && !is(REPLACING_KEYBOARD)) return;
         WebContents webContents = mActivity.getCurrentWebContents();
-        if (webContents == null) return;
+        if (webContents == null || webContents.isDestroyed()) return;
         float density = mWindowAndroid.getDisplay().getDipScale();
         // The maximal height for the sheet ensures a minimal amount of WebContents space.
         @Px
@@ -690,7 +705,7 @@ class ManualFillingMediator
     @VisibleForTesting
     AccessorySheetTabCoordinator getOrCreateSheet(
             WebContents webContents, @AccessoryTabType int tabType) {
-        if (!canCreateSheet(tabType)) return null;
+        if (!canCreateSheet(tabType) || webContents.isDestroyed()) return null;
         AccessorySheetTabCoordinator sheet;
         ManualFillingState state = mStateCache.getStateFor(webContents);
         sheet = ChromeFeatureList.isEnabled(AUTOFILL_KEYBOARD_ACCESSORY)

@@ -31,7 +31,6 @@
 <translation id="1148499908455722006">Отвара дијалог са информацијама за корисника <ph name="USER_NAME" /></translation>
 <translation id="1150989369772528668">Календар</translation>
 <translation id="1153356358378277386">Упарени уређаји</translation>
-<translation id="1165712434476988950">Рестартујте уређај да бисте применили ажурирање.</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">USB-C кабл се не повезује правилно са екранима</translation>
 <translation id="1175572348579024023">Померај</translation>
@@ -358,7 +357,6 @@
 <translation id="296762781903199866">Преузимање фајлова са говором на језику <ph name="LANGUAGE" /> није успело</translation>
 <translation id="2970920913501714344">Инсталирајте апликације, додатке и теме</translation>
 <translation id="2977598380246111477">Следећи број</translation>
-<translation id="2981684127883932071">Приказују се предлози</translation>
 <translation id="2985148236010982088">Прикажи све апликације</translation>
 <translation id="2992327365391326550">Дугме за микрофон на уређају је искључено.</translation>
 <translation id="2996462380875591307">Монтирана лупа екрана је омогућена. Притисните Ctrl + тастер за претрагу + D поново да бисте је искључили.</translation>
@@ -670,6 +668,7 @@
 <translation id="4666082839192943839">Искључите приступ камери на овом уређају да бисте блокирали све камере све време.</translation>
 <translation id="4666911709726371538">Још апликација</translation>
 <translation id="4667099493359681081">Преузима се фајл <ph name="FILENAME" /></translation>
+<translation id="468293128311738995">Апликације са телефона</translation>
 <translation id="4690510401873698237">Полица у дну</translation>
 <translation id="4696813013609194136">Откључајте уређај помоћу кода родитеља</translation>
 <translation id="4702647871202761252">Екран за приватност је искључен</translation>
@@ -926,12 +925,10 @@
 <translation id="6103838137565245112">систем</translation>
 <translation id="6107292179555508368">Приступ микрофону и камери је искључен на овом уређају</translation>
 <translation id="6114505516289286752">Преузети су фајлови са говором на језику <ph name="LANGUAGE" /></translation>
-<translation id="6116825164611323644">Приступ камери је искључен на овом уређају</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042">Потврдите преузимање фајла <ph name="FILENAME" /></translation>
 <translation id="612734058257491180">Google помоћник није доступан у сесији госта.</translation>
 <translation id="6129953537138746214">Размак</translation>
-<translation id="6134259848159370930">Претражујте уређај, апликације, подешавања и веб.</translation>
 <translation id="6137566720514957455">Отвара налог за уклањање за корисника <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6141988275892716286">Потврдите преузимање</translation>
 <translation id="6154006699632741460">Периферни уређај није подржан</translation>
@@ -1292,6 +1289,7 @@
 <translation id="8142441511840089262">Двоструки клик</translation>
 <translation id="8142699993796781067">Приватна мрежа</translation>
 <translation id="8144760705599030999">Сачувајте уређај <ph name="NAME" /> на <ph name="EMAIL" /> ради бржег упаривања са другим уређајима</translation>
+<translation id="8144914663975476336">Изаберите формат снимка</translation>
 <translation id="8149413265954228307">Прегледајте Bluetooth подешавања. <ph name="STATE_TEXT" />.</translation>
 <translation id="8152092012181020186">Притисните Ctrl + W да бисте затворили.</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, аутоматско довршавање</translation>
@@ -1389,7 +1387,6 @@
 <translation id="8666856788528804727">Отворите <ph name="NAME" /> да бисте подесили уређај</translation>
 <translation id="8676770494376880701">Повезан је пуњач мале снаге</translation>
 <translation id="8683506306463609433">Праћење учинка је активно</translation>
-<translation id="8685326675965865247">Претражујте уређај, апликације, подешавања и веб. Користите тастере са стрелицама да бисте се кретали кроз апликације.</translation>
 <translation id="8703634754197148428">Започните снимање. Када снимање почне, користите Alt + Shift + L да бисте се кретали до полице и пронашли дугме за заустављање снимања</translation>
 <translation id="8721053961083920564">Укључите/искључите звук. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">Снимање целог екрана</translation>
@@ -1398,7 +1395,6 @@
 <translation id="8735678380411481005">Боја позадинског осветљења тастатуре</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />,
         <ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8752416742247198423">Укључите приступ камери да бисте дозволили апликацијама и веб-страницама са дозволом за камеру да користе камере повезане са овим уређајем.</translation>
 <translation id="8755498163081687682">Верификујте идентитет: <ph name="ORIGIN_NAME" /> жели да потврди да сте то ви</translation>
 <translation id="875593634123171288">Прегледајте подешавања VPN-а</translation>
 <translation id="8759408218731716181">Није могуће подесити вишеструко пријављивање</translation>
@@ -1465,7 +1461,6 @@
 <translation id="9089416786594320554">Методи уноса</translation>
 <translation id="9091626656156419976">Уклоњен је приказ <ph name="DISPLAY_NAME" /></translation>
 <translation id="9098969848082897657">Искључи звук телефона</translation>
-<translation id="9099154003160514616">Доступно је ажурирање за Lacros</translation>
 <translation id="9100887602489003640">Додаје се профил. Сачекајте неколико минута.</translation>
 <translation id="9105450214093926548">Пријављивање другог корисника није подржано док је Lacros прегледач активан. Боље да користите други профил за прегледач у Lacros-у или да затворите Lacros и пробате поново.</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> или <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>

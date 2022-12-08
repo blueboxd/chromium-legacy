@@ -79,7 +79,7 @@ namespace {
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 // Denotes whether user web apps may be installed on profiles other than the
-// main profile. This may be modified by SkipMainProfileCheckForTesting().
+// main profile. This may be modified by SetSkipMainProfileCheckForTesting().
 bool g_skip_main_profile_check_for_testing = false;
 #endif
 
@@ -547,47 +547,14 @@ bool IsWebAppsCrosapiEnabled() {
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-void SkipMainProfileCheckForTesting() {
-  g_skip_main_profile_check_for_testing = true;
+void SetSkipMainProfileCheckForTesting(bool skip_check) {
+  g_skip_main_profile_check_for_testing = skip_check;
+}
+
+bool IsMainProfileCheckSkippedForTesting() {
+  return g_skip_main_profile_check_for_testing;
 }
 #endif
-
-void PersistProtocolHandlersUserChoice(
-    Profile* profile,
-    const AppId& app_id,
-    const GURL& protocol_url,
-    bool allowed,
-    base::OnceClosure update_finished_callback) {
-  WebAppProvider* const provider = WebAppProvider::GetForWebApps(profile);
-  DCHECK(provider);
-
-  OsIntegrationManager& os_integration_manager =
-      provider->os_integration_manager();
-  const std::vector<custom_handlers::ProtocolHandler>
-      original_protocol_handlers =
-          os_integration_manager.GetAppProtocolHandlers(app_id);
-
-  if (allowed) {
-    provider->sync_bridge().AddAllowedLaunchProtocol(app_id,
-                                                     protocol_url.scheme());
-  } else {
-    provider->sync_bridge().AddDisallowedLaunchProtocol(app_id,
-                                                        protocol_url.scheme());
-  }
-
-  // OS protocol registration does not need to be updated.
-  if (original_protocol_handlers ==
-      os_integration_manager.GetAppProtocolHandlers(app_id)) {
-    std::move(update_finished_callback).Run();
-    return;
-  }
-
-  // TODO(https://crbug.com/1251062): Can we avoid the delay of startup, if the
-  // action as allowed?
-  provider->os_integration_manager().UpdateProtocolHandlers(
-      app_id, /*force_shortcut_updates_if_needed=*/true,
-      std::move(update_finished_callback));
-}
 
 bool HasAnySpecifiedSourcesAndNoOtherSources(WebAppSources sources,
                                              WebAppSources specified_sources) {
@@ -605,6 +572,7 @@ bool CanUserUninstallWebApp(WebAppSources sources) {
            WebAppManagement::kSubApp,
            WebAppManagement::kOem,
            WebAppManagement::kCommandLine,
+           WebAppManagement::kOneDriveIntegration,
        }) {
     specified_sources.set(type);
   }

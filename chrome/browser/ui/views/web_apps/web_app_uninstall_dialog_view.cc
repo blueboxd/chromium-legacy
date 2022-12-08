@@ -9,7 +9,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ui/native_window_tracker.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -35,6 +34,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/native_window_tracker.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -191,6 +191,7 @@ void WebAppUninstallDialogDelegateView::ClearWebAppSiteData() {
                          url::Origin::Create(app_start_url_),
                          /*clear_cookies=*/true,
                          /*clear_storage=*/true, /*clear_cache=*/true,
+                         /*storage_buckets_to_remove=*/{},
                          /*avoid_closing_connections=*/false,
                          /*cookie_partition_key=*/absl::nullopt,
                          /*storage_key=*/absl::nullopt, base::DoNothing());
@@ -221,7 +222,7 @@ WebAppUninstallDialogViews::WebAppUninstallDialogViews(Profile* profile,
                                                        gfx::NativeWindow parent)
     : parent_(parent), profile_(profile) {
   if (parent)
-    parent_window_tracker_ = NativeWindowTracker::Create(parent);
+    parent_window_tracker_ = views::NativeWindowTracker::Create(parent);
 }
 
 WebAppUninstallDialogViews::~WebAppUninstallDialogViews() {

@@ -12,6 +12,7 @@
 #include "chrome/browser/commerce/shopping_service_factory.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/plural_string_handler.h"
@@ -68,11 +69,13 @@ BookmarksSidePanelUI::BookmarksSidePanelUI(content::WebUI* web_ui)
       {"createNewFolderA11yLabel", IDS_BOOKMARKS_CREATE_NEW_FOLDER_A11Y_LABEL},
       {"editBookmarkListA11yLabel",
        IDS_BOOKMARKS_EDIT_BOOKMARK_LIST_A11Y_LABEL},
+      {"cancelA11yLabel", IDS_CANCEL},
       {"addCurrentTab", IDS_READ_LATER_ADD_CURRENT_TAB},
       {"emptyTitle", IDS_BOOKMARKS_EMPTY_STATE_TITLE},
       {"emptyBody", IDS_BOOKMARKS_EMPTY_STATE_BODY},
       {"searchBookmarks", IDS_BOOKMARK_MANAGER_SEARCH_BUTTON},
       {"clearSearch", IDS_BOOKMARK_MANAGER_CLEAR_SEARCH},
+      {"selectedBookmarkCount", IDS_BOOKMARK_MANAGER_ITEMS_SELECTED},
   };
   for (const auto& str : kLocalizedStrings)
     webui::AddLocalizedString(source, str.name, str.id);
@@ -88,6 +91,9 @@ BookmarksSidePanelUI::BookmarksSidePanelUI(content::WebUI* web_ui)
   source->AddBoolean("unifiedSidePanel",
                      base::FeatureList::IsEnabled(features::kUnifiedSidePanel));
 
+  source->AddBoolean("canModifyBookmarks", !profile->IsGuestSession() &&
+                                               !profile->IsIncognitoProfile());
+
   content::URLDataSource::Add(
       profile, std::make_unique<FaviconSource>(
                    profile, chrome::FaviconUrlFormat::kFavicon2));
@@ -98,7 +104,6 @@ BookmarksSidePanelUI::BookmarksSidePanelUI(content::WebUI* web_ui)
   webui::SetupWebUIDataSource(
       source, base::make_span(kSidePanelResources, kSidePanelResourcesSize),
       resource);
-  webui::EnableTrustedTypesCSP(source);
 
   // Add a handler to provide pluralized strings.
   auto plural_string_handler = std::make_unique<PluralStringHandler>();

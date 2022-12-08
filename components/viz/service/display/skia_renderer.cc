@@ -51,6 +51,7 @@
 #include "components/viz/service/display/skia_output_surface.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
+#include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "skia/ext/opacity_filter_canvas.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -73,10 +74,12 @@
 #include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/modules/skcms/skcms.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/color_transform.h"
 #include "ui/gfx/geometry/angle_conversions.h"
 #include "ui/gfx/geometry/axis_transform2d.h"
 #include "ui/gfx/geometry/linear_gradient.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -631,7 +634,10 @@ SkiaRenderer::ScopedSkImageBuilder::ScopedSkImageBuilder(
     image_context->set_origin(origin);
   }
 
-  skia_renderer->skia_output_surface_->MakePromiseSkImage(image_context);
+  // We need the original TransferableResource.color_space for YUV => RGB
+  // conversion.
+  skia_renderer->skia_output_surface_->MakePromiseSkImage(
+      image_context, resource_provider->GetOverlayColorSpace(resource_id));
   paint_op_buffer_ = image_context->paint_op_buffer();
   clear_color_ = image_context->clear_color();
   sk_image_ = image_context->image().get();
@@ -977,12 +983,18 @@ void SkiaRenderer::SwapBuffersSkipped() {
   FlushOutputSurface();
 }
 
-void SkiaRenderer::SwapBuffersComplete(gfx::GpuFenceHandle release_fence) {
+void SkiaRenderer::SwapBuffersComplete(
+    const gpu::SwapBuffersCompleteParams& params,
+    gfx::GpuFenceHandle release_fence) {
   auto& read_lock_release_fence_overlay_locks =
       read_lock_release_fence_overlay_locks_.emplace_back();
   auto read_fence_lock_iter = committed_overlay_locks_.end();
 
   if (buffer_queue_) {
+    if (params.swap_response.result ==
+        gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS) {
+      buffer_queue_->RecreateBuffers();
+    }
     buffer_queue_->SwapBuffersComplete();
   }
   if (!release_fence.is_null()) {
@@ -3586,7 +3598,13 @@ void SkiaRenderer::PrepareRenderPassOverlay(
       apply_clip.Intersect(overlay->clip_rect.value());
 
     OverlayCandidate::ApplyClip(*overlay, gfx::RectF(apply_clip));
+    overlay->clip_rect = absl::nullopt;
   }
+  // Assume full damage every time the pass is rendered.
+  overlay->damage_rect = gfx::RectF(filter_bounds);
+  // Fill in |format| and |color_space| information based on selected backing.
+  overlay->color_space = color_space;
+  overlay->format = BufferFormat(buffer_format);
 #endif  // BUILDFLAG(IS_APPLE)
 }
 #endif  // BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE)

@@ -326,6 +326,7 @@
 <translation id="3801082500826908679">Færøysk</translation>
 <translation id="3809272675881623365">Kanin</translation>
 <translation id="3810973564298564668">Administrer</translation>
+<translation id="3811408895933919563">Engelsk (Pakistan)</translation>
 <translation id="3811494700605067549">1 fil er valgt</translation>
 <translation id="3817579325494460411">Ikke angitt</translation>
 <translation id="3819448694985509187">Feil PIN-kode. Du har ett forsøk igjen.</translation>
@@ -935,7 +936,7 @@
 <translation id="8609695766746872526">Islandsk</translation>
 <translation id="863903787380594467">Feil PIN-kode. Du har <ph name="RETRIES" /> forsøk igjen.</translation>
 <translation id="8639391553632924850"><ph name="INPUT_LABEL" /> – port</translation>
-<translation id="8656768832129462377">Ikke merk av</translation>
+<translation id="8656768832129462377">Ikke sjekk</translation>
 <translation id="8688591111840995413">Feil passord</translation>
 <translation id="8698464937041809063">Google-tegning</translation>
 <translation id="8698877009525468705">Denne filen er konfidensiell og underlagt begrensninger via administratorregler.</translation>

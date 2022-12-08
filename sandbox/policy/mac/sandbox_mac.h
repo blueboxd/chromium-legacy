@@ -52,6 +52,12 @@ class SANDBOX_POLICY_EXPORT SandboxMac {
   // Returns true on success, false if an error occurred enabling the sandbox.
   static bool Enable(sandbox::mojom::Sandbox sandbox_type);
 };
+// Returns true if the compiled policy for the sandbox `sandbox_type` can be
+// cached and reused across multiple processes. Some sandbox policies bind
+// parameters that prevent the policy from being reused.
+SANDBOX_POLICY_EXPORT bool CanCacheSandboxPolicy(
+    sandbox::mojom::Sandbox sandbox_type);
+
 }  // namespace policy
 }  // namespace sandbox
 

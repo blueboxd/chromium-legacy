@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "content/public/browser/identity_request_dialog_controller.h"
 #include "content/public/browser/manifest_icon_downloader.h"
+#include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -27,7 +28,7 @@
 #include "url/gurl.h"
 
 using AccountList = content::IdpNetworkRequestManager::AccountList;
-using ClientMetadata = content::IdpNetworkRequestManager::ClientMetadata;
+using IdpClientMetadata = content::IdpNetworkRequestManager::ClientMetadata;
 using Endpoints = content::IdpNetworkRequestManager::Endpoints;
 using FetchStatus = content::IdpNetworkRequestManager::FetchStatus;
 using ParseStatus = content::IdpNetworkRequestManager::ParseStatus;
@@ -87,6 +88,12 @@ std::string ReplaceFirstLineWithKeyFromJson(const std::string& key,
 std::string RemoveAllLinesWithKeyFromJson(const std::string& key,
                                           const std::string& input) {
   return ReplaceFirstLineWithKeyFromJson(key, "", input, /*replace_all=*/true);
+}
+
+url::Origin GetOriginHeader(const network::ResourceRequest& request) {
+  std::string origin;
+  request.headers.GetHeader(net::HttpRequestHeaders::kOrigin, &origin);
+  return url::Origin::Create(GURL(origin));
 }
 
 class IdpNetworkRequestManagerTest : public ::testing::Test {
@@ -203,7 +210,7 @@ class IdpNetworkRequestManagerTest : public ::testing::Test {
     return {fetch_status, token};
   }
 
-  ClientMetadata SendClientMetadataRequestAndWaitForResponse(
+  IdpClientMetadata SendClientMetadataRequestAndWaitForResponse(
       const char* client_id,
       net::HttpStatusCode http_status = net::HTTP_OK) {
     const char response[] = R"({})";
@@ -212,10 +219,10 @@ class IdpNetworkRequestManagerTest : public ::testing::Test {
         client_id_endpoint.spec() + "?client_id=" + client_id, response,
         http_status);
 
-    ClientMetadata data;
+    IdpClientMetadata data;
     base::RunLoop run_loop;
     auto callback = base::BindLambdaForTesting(
-        [&](FetchStatus status, ClientMetadata metadata) {
+        [&](FetchStatus status, IdpClientMetadata metadata) {
           data = metadata;
           run_loop.Quit();
         });
@@ -749,15 +756,17 @@ TEST_F(IdpNetworkRequestManagerTest, ParseManifestBrandingMinSize) {
   }
 }
 
-// Tests that we send the correct referrer for account requests.
-TEST_F(IdpNetworkRequestManagerTest, AccountRequestReferrer) {
+// Tests that we send the correct origin for account requests.
+TEST_F(IdpNetworkRequestManagerTest, AccountRequestOrigin) {
   bool called = false;
   auto interceptor =
       base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
         called = true;
         EXPECT_EQ(GURL(kTestAccountsEndpoint), request.url);
         EXPECT_EQ(request.request_body, nullptr);
-        EXPECT_EQ(false, request.referrer.is_valid());
+        EXPECT_FALSE(request.referrer.is_valid());
+        EXPECT_FALSE(
+            request.headers.HasHeader(net::HttpRequestHeaders::kOrigin));
       });
   test_url_loader_factory().SetInterceptor(interceptor);
 
@@ -790,6 +799,8 @@ TEST_F(IdpNetworkRequestManagerTest, AccountSignedInStatus) {
         EXPECT_EQ(GURL(kTestAccountsEndpoint), request.url);
         EXPECT_EQ(request.request_body, nullptr);
         EXPECT_FALSE(request.referrer.is_valid());
+        EXPECT_FALSE(
+            request.headers.HasHeader(net::HttpRequestHeaders::kOrigin));
       });
   test_url_loader_factory().SetInterceptor(interceptor);
 
@@ -854,7 +865,9 @@ TEST_F(IdpNetworkRequestManagerTest, TokenRequest) {
       base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
         called = true;
         EXPECT_EQ(GURL(kTestTokenEndpoint), request.url);
-        EXPECT_EQ(GURL(kTestRpUrl), request.referrer);
+        EXPECT_FALSE(request.referrer.is_valid());
+        EXPECT_EQ(url::Origin::Create(GURL(kTestRpUrl)),
+                  GetOriginHeader(request));
 
         // Check that the request body is correct (should be "request")
         ASSERT_NE(request.request_body, nullptr);
@@ -887,10 +900,12 @@ TEST_F(IdpNetworkRequestManagerTest, ClientMetadata) {
             std::string(kTestClientMetadataEndpoint) + "?client_id=xxx";
         EXPECT_EQ(GURL(url_string), request.url);
         EXPECT_EQ(request.request_body, nullptr);
-        EXPECT_EQ(GURL(kTestRpUrl), request.referrer);
+        EXPECT_FALSE(request.referrer.is_valid());
+        EXPECT_EQ(url::Origin::Create(GURL(kTestRpUrl)),
+                  GetOriginHeader(request));
       });
   test_url_loader_factory().SetInterceptor(interceptor);
-  ClientMetadata data = SendClientMetadataRequestAndWaitForResponse("xxx");
+  IdpClientMetadata data = SendClientMetadataRequestAndWaitForResponse("xxx");
   ASSERT_TRUE(called);
   ASSERT_EQ("", data.privacy_policy_url);
   ASSERT_EQ("", data.terms_of_service_url);
@@ -906,6 +921,8 @@ TEST_F(IdpNetworkRequestManagerTest, RecordApprovedClientsMetrics) {
         EXPECT_EQ(GURL(kTestAccountsEndpoint), request.url);
         EXPECT_EQ(request.request_body, nullptr);
         EXPECT_FALSE(request.referrer.is_valid());
+        EXPECT_FALSE(
+            request.headers.HasHeader(net::HttpRequestHeaders::kOrigin));
       });
   test_url_loader_factory().SetInterceptor(interceptor);
 

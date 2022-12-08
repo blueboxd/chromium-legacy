@@ -8,10 +8,10 @@
 #import "base/strings/sys_string_conversions.h"
 #import "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#import "components/password_manager/core/browser/affiliation/fake_affiliation_service.h"
 #import "components/password_manager/core/browser/password_form.h"
 #import "components/password_manager/core/browser/password_store_built_in_backend.h"
 #import "components/password_manager/core/browser/password_store_factory_util.h"
-#import "components/password_manager/core/browser/site_affiliation/fake_affiliation_service.h"
 #import "components/password_manager/core/common/password_manager_pref_names.h"
 #import "components/prefs/pref_service.h"
 #import "components/prefs/testing_pref_service.h"
@@ -54,7 +54,11 @@ using password_manager::LoginDatabase;
 class CredentialProviderServiceTest : public PlatformTest {
  public:
   CredentialProviderServiceTest()
-      : chrome_browser_state_(TestChromeBrowserState::Builder().Build()) {}
+      : chrome_browser_state_(TestChromeBrowserState::Builder().Build()) {
+    NSUserDefaults* user_defaults = [NSUserDefaults standardUserDefaults];
+    [user_defaults removeObjectForKey:
+                       kUserDefaultsCredentialProviderFirstTimeSyncCompleted];
+  }
 
   CredentialProviderServiceTest(const CredentialProviderServiceTest&) = delete;
   CredentialProviderServiceTest& operator=(
@@ -66,10 +70,6 @@ class CredentialProviderServiceTest : public PlatformTest {
     password_store_ = CreatePasswordStore();
     password_store_->Init(/*prefs=*/nullptr,
                           /*affiliated_match_helper=*/nullptr);
-
-    NSUserDefaults* user_defaults = [NSUserDefaults standardUserDefaults];
-    EXPECT_FALSE([user_defaults
-        boolForKey:kUserDefaultsCredentialProviderFirstTimeSyncCompleted]);
 
     credential_store_ = [[MemoryCredentialStore alloc] init];
 

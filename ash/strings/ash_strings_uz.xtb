@@ -31,7 +31,6 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="1148499908455722006"><ph name="USER_NAME" /> axborot oynasini ochish</translation>
 <translation id="1150989369772528668">Taqvim</translation>
 <translation id="1153356358378277386">Ulangan qurilmalar</translation>
-<translation id="1165712434476988950">Yangilanishni tatbiq qilish uchun qurilmani oʻchirib yoqing.</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">USB-C kabelingiz displeylarga toʻgʻri ulanmasligi mumkin</translation>
 <translation id="1175572348579024023">Aylantirish</translation>
@@ -358,7 +357,6 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="296762781903199866"><ph name="LANGUAGE" /> nutq fayllari yuklab olinmadi</translation>
 <translation id="2970920913501714344">Ilovalar, kengaytmalar va mavzularni oʻrnating</translation>
 <translation id="2977598380246111477">Keyingi raqam</translation>
-<translation id="2981684127883932071">Takliflar chiqarildi</translation>
 <translation id="2985148236010982088">Barcha ilovalar</translation>
 <translation id="2992327365391326550">Qurilmaning mikrofon tugmasi faolsizlantirildi.</translation>
 <translation id="2996462380875591307">Mahkamlangan lupa yoniq. Uni olib tashlash uchun Ctrl+Qidiruv+D tugmalarini bosing.</translation>
@@ -669,6 +667,7 @@ Qurilmani quvvat manbaiga ulang.</translation>
 <translation id="4666082839192943839">Kameraga ruxsat faolsizlantirilganda bu qurilmadagi barcha kameralar butunlay bloklanadi.</translation>
 <translation id="4666911709726371538">Boshqa ilovalar</translation>
 <translation id="4667099493359681081"><ph name="FILENAME" /> yuklab olinmoqda</translation>
+<translation id="468293128311738995">Telefondagi ilovalar</translation>
 <translation id="4690510401873698237">Javon pastda</translation>
 <translation id="4696813013609194136">Ota-ona kodi bilan qurilmani qulfdan chiqarish</translation>
 <translation id="4702647871202761252">Maxfiylik ekrani yoniq emas</translation>
@@ -925,12 +924,10 @@ Qurilmani quvvat manbaiga ulang.</translation>
 <translation id="6103838137565245112">tizim</translation>
 <translation id="6107292179555508368">Mikrofon va kamera ruxsatlari bu qurilmada yoqilmagan</translation>
 <translation id="6114505516289286752"><ph name="LANGUAGE" /> nutq fayllari yuklab olindi</translation>
-<translation id="6116825164611323644">Bu qurilmada kamera ruxsati yoqilmagan</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042"><ph name="FILENAME" /> fayli yuklanishni tasdiqlang</translation>
 <translation id="612734058257491180">Google Assistent mehmon seansida ishlamaydi.</translation>
 <translation id="6129953537138746214">Bo‘shliq</translation>
-<translation id="6134259848159370930">Qurilma, ilovalar, sozlamalar va internetdan qidirish.</translation>
 <translation id="6137566720514957455"><ph name="USER_EMAIL_ADDRESS" /> hisobini olib tashlash oynasini ochish</translation>
 <translation id="6141988275892716286">Yuklanishni tasdiqlang</translation>
 <translation id="6154006699632741460">Tashqi qurilmalar ishlamaydi</translation>
@@ -1291,6 +1288,7 @@ yangi oʻrnatilgan</translation>
 <translation id="8142441511840089262">Ikki marta bosish</translation>
 <translation id="8142699993796781067">Xususiy tarmoq</translation>
 <translation id="8144760705599030999">Boshqa qurilmalarga tezkor ulanish uchun qurilmani (<ph name="NAME" />) <ph name="EMAIL" /> hisobiga saqlang</translation>
+<translation id="8144914663975476336">Yozuv formatini tanlang</translation>
 <translation id="8149413265954228307">Bluetooth sozlamalarini ochish <ph name="STATE_TEXT" />.</translation>
 <translation id="8152092012181020186">Yopish uchun Ctrl+W tugmalarini bosing.</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, Avtomatik kiritish</translation>
@@ -1388,7 +1386,6 @@ yangi oʻrnatilgan</translation>
 <translation id="8666856788528804727">Qurilmani sozlash uchun <ph name="NAME" /> ilovasini oching</translation>
 <translation id="8676770494376880701">Kam quvvatli zaryadlash vositasi</translation>
 <translation id="8683506306463609433">Unumdorlik kuzatilmoqda</translation>
-<translation id="8685326675965865247">Qurilma, ilovalar, sozlamalar va internetdan qidiring. Ilovalaringiz boʻylab strelkalar yordamida kezing.</translation>
 <translation id="8703634754197148428">Yozib olish. Yozib olish jarayoni boshlansa, javonga oʻtish va yozib olishni toʻxtatish tugmasini topish uchun Alt + Shift + L tugmalaridan foydalaning</translation>
 <translation id="8721053961083920564">Tovushlar: <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">Butun ekranni tasvirga olish</translation>
@@ -1397,7 +1394,6 @@ yangi oʻrnatilgan</translation>
 <translation id="8735678380411481005">Klaviatura orqa chirogʻi rangi</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />,
         <ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8752416742247198423">Ilova va saytlar bu qurilmaga ulangan kameradan foydalanishi uchun kamera ruxsatini yoqing.</translation>
 <translation id="8755498163081687682">Shaxsingizni tasdiqlang: <ph name="ORIGIN_NAME" /> bu siz ekanligingizni tasdiqlamoqchi</translation>
 <translation id="875593634123171288">VPN sozlamalarini ochish</translation>
 <translation id="8759408218731716181">Bir nechta hisobdan kirish sozlanmadi</translation>
@@ -1464,7 +1460,6 @@ yangi oʻrnatilgan</translation>
 <translation id="9089416786594320554">Matn kiritish</translation>
 <translation id="9091626656156419976"><ph name="DISPLAY_NAME" /> ekrani olib tashlandi</translation>
 <translation id="9098969848082897657">Soatni sukut qilish</translation>
-<translation id="9099154003160514616">Lacros yangilanishi mavjud</translation>
 <translation id="9100887602489003640">Profil kiritilmoqda. Bir necha daqiqa kuting.</translation>
 <translation id="9105450214093926548">Lacros brauzeri ishlayotganda ikkinchi foydalanuvchining kirishi imkonsiz. Lacros brauzerida ikkinchi profildan foydalaning yoki Lacros brauzerini yopib, qaytadan urining.</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> yoki <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>

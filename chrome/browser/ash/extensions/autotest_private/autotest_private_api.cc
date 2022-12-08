@@ -75,6 +75,8 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/ash/arc/tracing/arc_app_performance_tracing.h"
@@ -125,8 +127,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/default_pinned_apps.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service_factory.h"
@@ -2163,7 +2163,6 @@ ExtensionFunction::ResponseAction AutotestPrivateGetArcPackageFunction::Run() {
                           base::Microseconds(package_info->last_backup_time))
                           .ToJsTime());
     package_value.Set("shouldSync", package_info->should_sync);
-    package_value.Set("system", package_info->system);
     package_value.Set("vpnProvider", package_info->vpn_provider);
   }
   return RespondNow(WithArguments(std::move(package_value)));
@@ -6090,7 +6089,7 @@ AutotestPrivateGetLoginEventRecorderLoginEventsFunction::Run() {
     api::autotest_private::LoginEventRecorderData event_data;
     event_data.name = data.name();
     event_data.microsecnods_since_unix_epoch =
-        (data.time() - base::Time::UnixEpoch()).InMicroseconds();
+        (data.time() - base::TimeTicks::UnixEpoch()).InMicroseconds();
     result_data.emplace_back(std::move(event_data));
   }
 

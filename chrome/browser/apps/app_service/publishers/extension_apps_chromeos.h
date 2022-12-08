@@ -17,10 +17,10 @@
 #include "chrome/browser/apps/app_service/media_requests.h"
 #include "chrome/browser/apps/app_service/paused_apps.h"
 #include "chrome/browser/apps/app_service/publishers/extension_apps_base.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_display_service.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/cpp/app_types.h"
@@ -92,10 +92,6 @@ class ExtensionAppsChromeOs : public ExtensionAppsBase,
   // apps::mojom::Publisher overrides.
   void PauseApp(const std::string& app_id) override;
   void UnpauseApp(const std::string& app_id) override;
-  void GetMenuModel(const std::string& app_id,
-                    apps::mojom::MenuType menu_type,
-                    int64_t display_id,
-                    GetMenuModelCallback callback) override;
 
   // Overridden from AppWindowRegistry::Observer:
   void OnAppWindowAdded(extensions::AppWindow* app_window) override;

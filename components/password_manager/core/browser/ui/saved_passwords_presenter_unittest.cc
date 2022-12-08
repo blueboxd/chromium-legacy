@@ -18,12 +18,12 @@
 #include "base/test/task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/time.h"
+#include "components/password_manager/core/browser/affiliation/mock_affiliation_service.h"
 #include "components/password_manager/core/browser/fake_password_store_backend.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
-#include "components/password_manager/core/browser/site_affiliation/mock_affiliation_service.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -471,7 +471,7 @@ TEST_F(SavedPasswordsPresenterTest, EditOnlyNoteFirstTime) {
   const std::u16string kNewNoteValue = u"new note";
 
   CredentialUIEntry credential_to_edit(form);
-  credential_to_edit.note = PasswordNote(kNewNoteValue, base::Time::Now());
+  credential_to_edit.note = kNewNoteValue;
 
   base::HistogramTester histogram_tester;
   EXPECT_EQ(SavedPasswordsPresenter::EditResult::kSuccess,
@@ -508,7 +508,7 @@ TEST_F(SavedPasswordsPresenterTest, EditingNotesShouldNotResetPasswordIssues) {
   const std::u16string kNewNoteValue = u"new note";
 
   CredentialUIEntry credential_to_edit(form);
-  credential_to_edit.note = PasswordNote(kNewNoteValue, base::Time::Now());
+  credential_to_edit.note = kNewNoteValue;
 
   EXPECT_EQ(SavedPasswordsPresenter::EditResult::kSuccess,
             presenter().EditSavedCredentials(CredentialUIEntry(form),
@@ -539,7 +539,7 @@ TEST_F(SavedPasswordsPresenterTest, EditOnlyNoteSecondTime) {
   const std::u16string kNewNoteValue = u"new note";
 
   CredentialUIEntry credential_to_edit(form);
-  credential_to_edit.note = PasswordNote(kNewNoteValue, base::Time::Now());
+  credential_to_edit.note = kNewNoteValue;
 
   base::HistogramTester histogram_tester;
   EXPECT_EQ(SavedPasswordsPresenter::EditResult::kSuccess,
@@ -569,7 +569,7 @@ TEST_F(SavedPasswordsPresenterTest, EditNoteAsEmpty) {
   RunUntilIdle();
 
   CredentialUIEntry credential_to_edit(form);
-  credential_to_edit.note = PasswordNote(u"", base::Time::Now());
+  credential_to_edit.note = u"";
 
   base::HistogramTester histogram_tester;
   EXPECT_EQ(SavedPasswordsPresenter::EditResult::kSuccess,
@@ -592,15 +592,14 @@ TEST_F(SavedPasswordsPresenterTest,
        GetSavedCredentialsReturnNotesWithEmptyDisplayName) {
   // Create form with two notes, first is with a non-empty display name, and the
   // second with an empty one.
-  PasswordNote kNoteWithEmptyDisplayName =
-      PasswordNote(u"note with empty display name",
-                   /*date_created=*/base::Time::Now());
+  const std::u16string kNoteWithEmptyDisplayName =
+      u"note with empty display name";
   PasswordForm form =
       CreateTestPasswordForm(PasswordForm::Store::kProfileStore);
   form.notes.emplace_back(u"display name", u"note with non-empty display name",
                           /*date_created=*/base::Time::Now(),
                           /*hide_by_default=*/true);
-  form.notes.push_back(kNoteWithEmptyDisplayName);
+  form.notes.emplace_back(kNoteWithEmptyDisplayName, base::Time::Now());
 
   store().AddLogin(form);
   RunUntilIdle();

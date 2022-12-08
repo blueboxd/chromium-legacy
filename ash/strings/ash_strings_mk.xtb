@@ -31,7 +31,6 @@
 <translation id="1148499908455722006">Отворете го дијалогот со податоци за <ph name="USER_NAME" /></translation>
 <translation id="1150989369772528668">Календар</translation>
 <translation id="1153356358378277386">Спарени уреди</translation>
-<translation id="1165712434476988950">Потребно е да се рестартира уредот за да се примени ажурирањето.</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" /> <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Кабелот USB-C не може да поврзува екрани правилно</translation>
 <translation id="1175572348579024023">Лизгај</translation>
@@ -101,6 +100,7 @@
 <translation id="1447641497144572814">Заштитникот на екран започнува</translation>
 <translation id="1455242230282523554">Прикажи ги поставките за јазикот</translation>
 <translation id="1460620680449458626">Звукот е исклучен.</translation>
+<translation id="14648076227129703">Ова дозволува пристап до камерата за <ph name="APP1_NAME" />, <ph name="APP2_NAME" /> и сите апликации и веб-сајтови со дозвола за камерата</translation>
 <translation id="1467432559032391204">Лево</translation>
 <translation id="146902737843070955">Администраторот ја побара променава</translation>
 <translation id="147310119694673958">Батерија на телефонот <ph name="BATTERY_PERCENTAGE" /> %</translation>
@@ -160,6 +160,7 @@
 <translation id="1797271123677381264">Ја заборавивте лозинката</translation>
 <translation id="181103072419391116">Јачина на сигналот: <ph name="SIGNAL_STRENGTH" />, управувана од администраторот</translation>
 <translation id="1812997170047690955">Што има на мојот екран?</translation>
+<translation id="1816896987747843206">Ова дозволува пристап до камерата за сите апликации и веб-сајтови со дозвола за камерата</translation>
 <translation id="1823280932251546115">Фиока за статусот, време <ph name="TIME" />,
         <ph name="BATTERY" />
         <ph name="CHANNEL" />
@@ -358,7 +359,6 @@
 <translation id="296762781903199866">Не може да се преземат датотеките за говор на <ph name="LANGUAGE" /></translation>
 <translation id="2970920913501714344">Инсталира апликации, екстензии и теми</translation>
 <translation id="2977598380246111477">Следен број</translation>
-<translation id="2981684127883932071">Се прикажуваат предлози</translation>
 <translation id="2985148236010982088">Приказ на сите апликации</translation>
 <translation id="2992327365391326550">Копчето за микрофон на уредот е исклучено.</translation>
 <translation id="2996462380875591307">Овозможена е закотвената лупа. Притиснете Ctrl+Search+D повторно за да ја исклучите.</translation>
@@ -601,6 +601,7 @@
 <translation id="4316910396681052118">СИТЕ АПЛИКАЦИИ</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4322742403972824594">Кратенката од тастатура Ctrl + Alt + Стрелка нагоре се промени. За да го користите копчето Home, притиснете го копчето <ph name="LAUNCHER_KEY_NAME" /> + Стрелка налево.</translation>
+<translation id="4324840740119394760">Ова дозволува пристап до камерата за <ph name="APP_NAME" /> и сите апликации и веб-сајтови со дозвола за камерата</translation>
 <translation id="4333628967105022692">Lacros не е поддржан кога се најавени повеќе корисници.</translation>
 <translation id="4338109981321384717">Лупа</translation>
 <translation id="4351433414020964307">„Помошникот“ се вчитува…</translation>
@@ -670,6 +671,7 @@
 <translation id="4666082839192943839">Исклучете го пристапот до камерата на уредов за да се блокираат сите камери цело време.</translation>
 <translation id="4666911709726371538">Повеќе апликации</translation>
 <translation id="4667099493359681081">Се презема <ph name="FILENAME" /></translation>
+<translation id="468293128311738995">Апликации од телефонот</translation>
 <translation id="4690510401873698237">Полицата е најдолу</translation>
 <translation id="4696813013609194136">Отклучете го уредот со код на родител</translation>
 <translation id="4702647871202761252">Исклучен е екранот за приватност</translation>
@@ -793,6 +795,7 @@
 <translation id="5356963482258194581">Сменете на темна и светла тема. Кликнете со десното копче на работната површина и изберете „Тапети и стил“.</translation>
 <translation id="536019650977002321">Вашиот администратор не дозволува снимање аудио. Контактирајте со администраторот за повеќе информации.</translation>
 <translation id="5363163447017455357"><ph name="DELIMITER" /> Одете на оваа картичка</translation>
+<translation id="5377367976106153749">Да се вклучи пристапот до камерата?</translation>
 <translation id="5379115545237091094">Премногу обиди</translation>
 <translation id="5391307769715781764">Да се замени зачуваната работна површина?</translation>
 <translation id="5393156353051693207">Допрете и задржете каде било за да ги преуредите апликациите</translation>
@@ -926,12 +929,10 @@
 <translation id="6103838137565245112">систем</translation>
 <translation id="6107292179555508368">Пристапите до микрофонот и камерата се исклучени на уредов</translation>
 <translation id="6114505516289286752">Датотеките за говор на <ph name="LANGUAGE" /> се преземени</translation>
-<translation id="6116825164611323644">Пристапот до камерата е исклучен на уредов</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042">Потврдете го преземањето на <ph name="FILENAME" /></translation>
 <translation id="612734058257491180">„Помошникот на Google“ не е достапен во гостинска сесија.</translation>
 <translation id="6129953537138746214">Празно место</translation>
-<translation id="6134259848159370930">Пребарувајте низ уредот, апликациите, поставките и на интернет.</translation>
 <translation id="6137566720514957455">Отвори го дијалогот за отстранување за <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6141988275892716286">Потврдете го преземањето</translation>
 <translation id="6154006699632741460">Периферните уреди не се поддржани</translation>
@@ -1292,6 +1293,7 @@
 <translation id="8142441511840089262">Двоен клик</translation>
 <translation id="8142699993796781067">Приватна мрежа</translation>
 <translation id="8144760705599030999">Зачувајте го уредот <ph name="NAME" /> на <ph name="EMAIL" /> за побрзо спарување со вашите други уреди</translation>
+<translation id="8144914663975476336">Изберете формат на снимање</translation>
 <translation id="8149413265954228307">Прикажете ги поставките за Bluetooth. <ph name="STATE_TEXT" />.</translation>
 <translation id="8152092012181020186">Притиснете Ctrl + W за да затворите.</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, автоматско довршување</translation>
@@ -1389,7 +1391,6 @@
 <translation id="8666856788528804727">Отворете ја <ph name="NAME" /> за да го поставите уредот</translation>
 <translation id="8676770494376880701">Поврзан е полнач со ниско напојување</translation>
 <translation id="8683506306463609433">Следењето на изведбата е активно</translation>
-<translation id="8685326675965865247">Пребарувајте низ уредот, апликациите, поставките и на интернет. Користете ги копчињата со стрелки за навигација низ апликациите.</translation>
 <translation id="8703634754197148428">Започни со снимање. Откако ќе започне снимањето, користете Alt + Shift + L за да одите на полицата и најдете го копчето за сопирање на снимањето</translation>
 <translation id="8721053961083920564">Вклучување/исклучување звук. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">Снимање на целиот екран</translation>
@@ -1398,7 +1399,6 @@
 <translation id="8735678380411481005">Боја на заднинско светло на тастатура</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />,
         <ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8752416742247198423">Вклучете го пристапот до камерата за да дозволите апликациите и веб-страниците со дозвола за камера да ги користат камерите поврзани со уредов.</translation>
 <translation id="8755498163081687682">Потврдете го вашиот идентитет: <ph name="ORIGIN_NAME" /> сака да потврдите дека сте вие</translation>
 <translation id="875593634123171288">Прикажи ги поставките за VPN</translation>
 <translation id="8759408218731716181">Не може да се постават повеќе најави</translation>
@@ -1465,7 +1465,6 @@
 <translation id="9089416786594320554">Влезни методи</translation>
 <translation id="9091626656156419976">Отстранет екран <ph name="DISPLAY_NAME" /></translation>
 <translation id="9098969848082897657">Исклучи го звукот на телефонот</translation>
-<translation id="9099154003160514616">Достапно е ажурирање за Lacros</translation>
 <translation id="9100887602489003640">Се додава профил. Почекајте неколку минути.</translation>
 <translation id="9105450214093926548">Не е поддржано најавување втор корисник додека се извршува прелистувачот Lacros. Наместо тоа, користете втор профил за прелистувач во Lacros или затворете го Lacros и обидете се повторно.</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> или <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>

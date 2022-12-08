@@ -308,7 +308,6 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="168693727862418163">Impossibile convalidare il valore del criterio in base al relativo schema. Il valore verrà ignorato.</translation>
 <translation id="168841957122794586">Il certificato del server contiene una chiave crittografica debole.</translation>
 <translation id="1697532407822776718">Ecco fatto!</translation>
-<translation id="1699570257714336246">Mancano informazioni</translation>
 <translation id="1702815194757674443">ROC 16K</translation>
 <translation id="1703835215927279855">Letter</translation>
 <translation id="1706625117072057435">Livelli di zoom</translation>
@@ -1021,7 +1020,6 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="3584299510153766161">Perforatura doppia in basso</translation>
 <translation id="3586931643579894722">Nascondi dettagli</translation>
 <translation id="3587738293690942763">Medio</translation>
-<translation id="3595645257662173296">Quali prove ci sono a supporto?</translation>
 <translation id="3595699422137460894">{NUM_DAYS,plural, =0{Puoi reimpostare il tuo gruppo in qualsiasi momento. Ci vorrà circa un giorno per unirsi a un nuovo gruppo.}=1{Puoi reimpostare il tuo gruppo in qualsiasi momento. Ci vorrà circa un giorno per unirsi a un nuovo gruppo.}other{Puoi reimpostare il tuo gruppo in qualsiasi momento. Ci vorranno {NUM_DAYS} giorni per unirsi a un nuovo gruppo.}}</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3603507503523709">Applicazione bloccata dal tuo amministratore</translation>
@@ -1161,7 +1159,6 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="3961148744525529027">Il foglio per la gestione dei pagamenti è aperto nella parte inferiore dello schermo</translation>
 <translation id="3962859241508114581">Traccia precedente</translation>
 <translation id="3963721102035795474">Modalità Reader</translation>
-<translation id="3963837677003247395">Continuare manualmente?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{Nessuno}=1{Di 1 sito }other{Di # siti }}</translation>
 <translation id="3969052498612555048">Non riesci a trovare il codice? <ph name="BEGIN_LINK" />Ricevi nuovo codice<ph name="END_LINK" /></translation>
 <translation id="397105322502079400">Calcolo in corso...</translation>
@@ -1363,7 +1360,6 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="4434045419905280838">Popup e reindirizzamenti</translation>
 <translation id="443673843213245140">L'utilizzo di un proxy è stato disattivato ma è stata specificata una configurazione proxy esplicita.</translation>
 <translation id="4441832193888514600">Ignorato perché il criterio può essere impostato solo da un utente cloud.</translation>
-<translation id="4450893287417543264">Non mostrare più</translation>
 <translation id="4451135742916150903">Può chiedere di connettersi ai dispositivi HID</translation>
 <translation id="4452328064229197696">La password appena usata è stata compromessa nell'ambito di una violazione dei dati. Per proteggere i tuoi account, Gestore delle password di Google consiglia di controllare le password salvate.</translation>
 <translation id="4460315069258617173">Consentita fino alla chiusura delle schede di questo sito</translation>
@@ -1506,7 +1502,6 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="4813512666221746211">Errore di rete</translation>
 <translation id="4816492930507672669">Adatta alla pagina</translation>
 <translation id="4819347708020428563">Vuoi modificare le annotazioni nella visualizzazione predefinita?</translation>
-<translation id="4823325221257637040">Avvio in corso…</translation>
 <translation id="4825496307559726072"><ph name="CREATE_GOOGLE_SHEET_FOCUSED_FRIENDLY_MATCH_TEXT" />, premi Tab e poi Invio per creare rapidamente un nuovo foglio Google</translation>
 <translation id="4825507807291741242">Potente</translation>
 <translation id="483241715238664915">Attiva gli avvisi</translation>
@@ -1940,7 +1935,6 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="5937560539988385583">Pagina tradotta</translation>
 <translation id="5938153366081463283">Aggiungi carta virtuale</translation>
 <translation id="5938793338444039872">Troy</translation>
-<translation id="5946937721014915347">Apertura di <ph name="SITE_NAME" />…</translation>
 <translation id="5947508410139465809">I file che carichi o alleghi vengono inviati a Google Cloud o a terze parti per l'analisi. Ad esempio, potrebbero essere sottoposti a scansione per rilevare dati sensibili o malware e archiviati in base ai criteri aziendali.</translation>
 <translation id="5951495562196540101">Impossibile effettuare la registrazione con l'account consumer (è disponibile la licenza inclusa).</translation>
 <translation id="5953516610448771166">La funzionalità Sottotitoli in tempo reale non è disponibile per questi contenuti multimediali. Per visualizzare i sottotitoli codificati, blocca l'impostazione <ph name="CONTENT_SETTINGS" /> per questo sito.</translation>
@@ -1962,6 +1956,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="5995727681868049093">Gestisci le tue informazioni, la privacy e la sicurezza nel tuo Account Google</translation>
 <translation id="5997247540087773573">La password appena usata è stata compromessa nell'ambito di una violazione dei dati. Per proteggere i tuoi account, Gestore delle password di Google consiglia di cambiarla subito e poi di controllare le password salvate.</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> risultati per "<ph name="SEARCH_TEXT" />"</translation>
+<translation id="6005765687956866568">Le informazioni compilate automaticamente sono state cancellate dal modulo</translation>
 <translation id="6006365096047131769">3 x 5 in</translation>
 <translation id="6006484371116297560">Classico</translation>
 <translation id="6008122969617370890">Ordine da N a 1</translation>
@@ -2030,7 +2025,6 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="6165508094623778733">Scopri di più</translation>
 <translation id="6167577165590485365">Ultimo tentativo di recupero:</translation>
 <translation id="6169916984152623906">Ora puoi navigare in privato. Le altre persone che usano questo dispositivo non vedranno le tue attività, ma i download e i preferiti verranno salvati.</translation>
-<translation id="6176716740821145453">Dedica un istante alla valutazione dell'accuratezza</translation>
 <translation id="6177128806592000436">La tua connessione a questo sito non è sicura</translation>
 <translation id="6177531123306197852">Busta C2</translation>
 <translation id="6180316780098470077">Intervallo tra tentativi</translation>
@@ -2076,7 +2070,6 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="6295618774959045776">CVC:</translation>
 <translation id="6300452962057769623">{0,plural, =0{Il tuo dispositivo verrà riavviato adesso}=1{Il tuo dispositivo verrà riavviato tra 1 secondo}other{Il tuo dispositivo verrà riavviato tra # secondi}}</translation>
 <translation id="6301104306974789820">Ricevi notifiche per il monitoraggio dei prezzi</translation>
-<translation id="6302269476990306341">Interruzione dell'Assistente Google in Chrome</translation>
 <translation id="6305205051461490394"><ph name="URL" /> non è raggiungibile.</translation>
 <translation id="6311165245110979290">Carta virtuale disponibile</translation>
 <translation id="6312113039770857350">Pagina web non disponibile</translation>
@@ -2271,6 +2264,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="6826993739343257035">Consentire AR?</translation>
 <translation id="6828866289116430505">Genetica</translation>
 <translation id="6831043979455480757">Traduci</translation>
+<translation id="6832753933931306326">Il modulo è stato compilato</translation>
 <translation id="6842196666980060516">184 x 260 mm</translation>
 <translation id="6846340164947227603">Usa un numero di carta virtuale…</translation>
 <translation id="6852204201400771460">Ricaricare l'app?</translation>
@@ -2331,7 +2325,6 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="6971439137020188025">Crea rapidamente una nuova presentazione Google in Presentazioni</translation>
 <translation id="6972629891077993081">Dispositivi HID</translation>
 <translation id="6973656660372572881">Sono stati specificati sia i server proxy fissi che un URL script .pac.</translation>
-<translation id="6973932557599545801">Mi spiace, non posso aiutarti. Continua autonomamente.</translation>
 <translation id="6973988895180423160">3,5 x 5 in</translation>
 <translation id="6978236010531171013">Condividi comunque</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -2527,7 +2520,6 @@ Ulteriori dettagli:
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Leggere ulteriori informazioni<ph name="END_LINK" /> sul problema.</translation>
 <translation id="7455133967321480974">Usa predefinita globale (Blocca)</translation>
 <translation id="745640750744109667">A0x3</translation>
-<translation id="7460618730930299168">I contenuti mostrati sono diversi da quelli che hai selezionato. Continuare?</translation>
 <translation id="7461924472993315131">Blocca</translation>
 <translation id="7463075493919226237">Football australiano</translation>
 <translation id="7465963048299965912">10 x 13 in</translation>
@@ -2536,7 +2528,6 @@ Ulteriori dettagli:
 <translation id="7481312909269577407">Avanti</translation>
 <translation id="7481603210197454575">Busta Italian</translation>
 <translation id="7485870689360869515">Nessun dato trovato.</translation>
-<translation id="7485948220959728508">Chi c'è dietro a queste informazioni?</translation>
 <translation id="748745328507845862">Concerti e festival musicali</translation>
 <translation id="7489473601138133813">Pianificazione carriera e risorse</translation>
 <translation id="7495528107193238112">Questi contenuti sono bloccati. Contatta il proprietario del sito per risolvere il problema.</translation>
@@ -2642,7 +2633,6 @@ Ulteriori dettagli:
 <translation id="7682451652090915298">Rugby</translation>
 <translation id="7687186412095877299">Compila i moduli di pagamento con i metodi di pagamento salvati</translation>
 <translation id="7687305263118037187">Timeout tentativo</translation>
-<translation id="7687451951329798396">Cosa dicono le altre fonti?</translation>
 <translation id="7690647519407127574">Oufuku Hagaki (cartolina)</translation>
 <translation id="7693583928066320343">Ordine pagine ricevuto</translation>
 <translation id="7696089921647603491">Rock classico e oldies</translation>
@@ -2727,6 +2717,7 @@ Ulteriori dettagli:
 <translation id="7950027195171824198">Gestisci le preferenze relative ai cookie nelle impostazioni di Chrome</translation>
 <translation id="7951415247503192394">(a 32 bit)</translation>
 <translation id="7952192831285741665">European EDP</translation>
+<translation id="7952804540472583406"><ph name="BEGIN_LINK" />Accedere<ph name="END_LINK" /> alla rete.</translation>
 <translation id="7953569069500808819">Impuntura in alto</translation>
 <translation id="7956713633345437162">Preferiti su disp. mobili</translation>
 <translation id="7961015016161918242">Mai</translation>
@@ -3218,7 +3209,6 @@ Ulteriori dettagli:
 <translation id="937457230470581909">Zoo, acquari e riserve</translation>
 <translation id="939736085109172342">Nuova cartella</translation>
 <translation id="940053046584497293">Viaggi e trasporti</translation>
-<translation id="945522503751344254">Invia feedback</translation>
 <translation id="945855313015696284">Controlla le informazioni riportate di seguito ed elimina le schede non valide</translation>
 <translation id="947370374845726940"><ph name="CREATE_GOOGLE_SITE_FOCUSED_FRIENDLY_MATCH_TEXT" />, premi Tab e poi Invio per creare rapidamente un nuovo sito in Google Sites</translation>
 <translation id="950736567201356821">Tripla perforatura in alto</translation>

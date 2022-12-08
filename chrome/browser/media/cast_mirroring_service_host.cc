@@ -245,6 +245,16 @@ void CastMirroringServiceHost::Start(
   ShowCaptureIndicator();
 }
 
+void CastMirroringServiceHost::GetTabSourceId(
+    GetTabSourceIdCallback get_tab_source_id_callback) {
+  if (web_contents()) {
+    std::move(get_tab_source_id_callback)
+        .Run(web_contents()->GetPrimaryMainFrame()->GetFrameTreeNodeId());
+  } else {
+    std::move(get_tab_source_id_callback).Run(-1);
+  }
+}
+
 // static
 gfx::Size CastMirroringServiceHost::GetCaptureResolutionConstraint() {
   absl::optional<gfx::Size> screen_resolution = GetScreenResolution();
@@ -513,7 +523,8 @@ void CastMirroringServiceHost::ShowTabSharingUI(
 
   std::unique_ptr<MediaStreamUI> notification_ui =
       TabSharingUI::Create(capturer_id, source_media_id_, std::u16string(),
-                           /*favicons_used_for_switch_to_tab_button=*/false);
+                           /*favicons_used_for_switch_to_tab_button=*/false,
+                           /*app_preferred_current_tab=*/false);
 
   media_stream_ui_ = MediaCaptureDevicesDispatcher::GetInstance()
                          ->GetMediaStreamCaptureIndicator()

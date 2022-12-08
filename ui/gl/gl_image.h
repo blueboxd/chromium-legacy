@@ -29,14 +29,31 @@ class ProcessMemoryDump;
 }  // namespace trace_event
 }  // namespace base
 
+namespace gpu {
+class DawnEGLImageRepresentation;
+class D3DImageBacking;
+class TestOverlayImageRepresentation;
+}  // namespace gpu
+
+namespace gpu::gles2 {
+class Texture;
+}
+
+namespace media {
+class VTVideoDecodeAccelerator;
+}
+
+namespace ui {
+class SurfacelessGlRenderer;
+class SurfacelessSkiaGlRenderer;
+}  // namespace ui
+
 namespace gl {
 
 // Encapsulates an image that can be bound and/or copied to a texture, hiding
 // platform specific management.
 class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
  public:
-  GLImage() = default;
-
   GLImage(const GLImage&) = delete;
   GLImage& operator=(const GLImage&) = delete;
 
@@ -83,24 +100,6 @@ class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
   // BT.709, or BT.2020) and range (limited or null), and |color_space| conveys
   // this.
   virtual void SetColorSpace(const gfx::ColorSpace& color_space);
-  const gfx::ColorSpace& color_space() const { return color_space_; }
-
-  // Dumps information about the memory backing the GLImage to a dump named
-  // |dump_name|.
-  virtual void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
-                            uint64_t process_tracing_id,
-                            const std::string& dump_name);
-
-  // If this returns true, then the command buffer client has requested a
-  // CHROMIUM image with internalformat GL_RGB, but the platform only supports
-  // GL_RGBA. The client is responsible for implementing appropriate
-  // workarounds. The only support that the command buffer provides is format
-  // validation during calls to copyTexImage2D and copySubTexImage2D.
-  //
-  // This is a workaround that is not intended to become a permanent part of the
-  // GLImage API. Theoretically, when Apple fixes their drivers, this can be
-  // removed. https://crbug.com/581777#c36
-  virtual bool EmulatingRGB() const;
 
   // An identifier for subclasses. Necessary for safe downcasting.
   enum class Type {
@@ -114,18 +113,39 @@ class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
   };
   virtual Type GetType() const;
 
+ protected:
+  // NOTE: We are in the process of eliminating client usage of GLImage. As part
+  // of this effort, we are incrementally moving its public interface to be
+  // protected with friend'ing of existing users. DO NOT ADD MORE client usage -
+  // instead, reach out to shared-image-team@ with your use case.
+  // See crbug.com/1382031.
+  GLImage() = default;
+
+  virtual ~GLImage() = default;
+
+  // Dumps information about the memory backing the GLImage to a dump named
+  // |dump_name|.
+  virtual void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
+                            uint64_t process_tracing_id,
+                            const std::string& dump_name);
+
   // Returns the NativePixmap backing the GLImage. If not backed by a
   // NativePixmap, returns null.
   virtual scoped_refptr<gfx::NativePixmap> GetNativePixmap();
 
   virtual void* GetEGLImage() const;
 
- protected:
-  virtual ~GLImage() = default;
-
   gfx::ColorSpace color_space_;
 
  private:
+  friend class gpu::DawnEGLImageRepresentation;
+  friend class gpu::D3DImageBacking;
+  friend class gpu::TestOverlayImageRepresentation;
+  friend class gpu::gles2::Texture;
+  friend class media::VTVideoDecodeAccelerator;
+  friend class ui::SurfacelessGlRenderer;
+  friend class ui::SurfacelessSkiaGlRenderer;
+
   friend class base::RefCounted<GLImage>;
 };
 

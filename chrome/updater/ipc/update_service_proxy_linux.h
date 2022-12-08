@@ -10,7 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
-#include "chrome/updater/app/server/linux/mojom/updater_service.mojom-forward.h"
+#include "chrome/updater/app/server/posix/mojom/updater_service.mojom-forward.h"
 #include "chrome/updater/update_service.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
@@ -79,6 +79,7 @@ class UpdateServiceProxy : public UpdateService {
 
  private:
   ~UpdateServiceProxy() override;
+  void EnsureConnecting();
 
   SEQUENCE_CHECKER(sequence_checker_);
   scoped_refptr<UpdateServiceProxyImpl> impl_;

@@ -10,40 +10,31 @@
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/time/clock.h"
-// TODO(crbug.com/1386158): ReadingListLocal should be fully abstracted within
-// ReadingListModelStorage.
-#include "components/reading_list/core/proto/reading_list.pb.h"
-#include "components/reading_list/core/reading_list_model.h"
+#include "components/reading_list/core/reading_list_model_impl.h"
 #include "components/sync/model/entity_change.h"
+#include "components/sync/model/in_memory_metadata_change_list.h"
 #include "components/sync/model/metadata_batch.h"
-#include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_type_change_processor.h"
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 
 ReadingListSyncBridge::ReadingListSyncBridge(
-    syncer::OnceModelTypeStoreFactory create_store_callback,
+    base::Clock* clock,
     std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor)
-    : ModelTypeSyncBridge(std::move(change_processor)),
-      ReadingListModelStorageImpl(std::move(create_store_callback)) {}
+    : ModelTypeSyncBridge(std::move(change_processor)), clock_(clock) {}
 
 ReadingListSyncBridge::~ReadingListSyncBridge() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void ReadingListSyncBridge::SetReadingListModel(
-    ReadingListModel* model,
-    ReadingListSyncBridgeDelegate* delegate,
-    base::Clock* clock) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  model_ = model;
-  delegate_ = delegate;
-  clock_ = clock;
-}
-
 void ReadingListSyncBridge::ModelReadyToSync(
+    ReadingListModelImpl* model,
     std::unique_ptr<syncer::MetadataBatch> sync_metadata_batch) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(model);
+  DCHECK(!model_);
+
+  model_ = model;
   change_processor()->ModelReadyToSync(std::move(sync_metadata_batch));
 }
 
@@ -52,10 +43,10 @@ void ReadingListSyncBridge::ReportError(const syncer::ModelError& error) {
   change_processor()->ReportError(error);
 }
 
-void ReadingListSyncBridge::DidAddOrUpdateEntry(const ReadingListEntry& entry) {
+void ReadingListSyncBridge::DidAddOrUpdateEntry(
+    const ReadingListEntry& entry,
+    syncer::MetadataChangeList* metadata_change_list) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Caller must start a transaction.
-  DCHECK(store_batch());
 
   if (!change_processor()->IsTrackingMetadata()) {
     return;
@@ -69,30 +60,24 @@ void ReadingListSyncBridge::DidAddOrUpdateEntry(const ReadingListEntry& entry) {
   entity_data->name = pb_entry_sync->entry_id();
 
   change_processor()->Put(entry.URL().spec(), std::move(entity_data),
-                          store_batch()->GetMetadataChangeList());
+                          metadata_change_list);
 }
 
-void ReadingListSyncBridge::DidRemoveEntry(const ReadingListEntry& entry) {
+void ReadingListSyncBridge::DidRemoveEntry(
+    const ReadingListEntry& entry,
+    syncer::MetadataChangeList* metadata_change_list) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Caller must start a transaction.
-  DCHECK(store_batch());
 
   if (!change_processor()->IsTrackingMetadata()) {
     return;
   }
-  change_processor()->Delete(entry.URL().spec(),
-                             store_batch()->GetMetadataChangeList());
+
+  change_processor()->Delete(entry.URL().spec(), metadata_change_list);
 }
 
-ReadingListSyncBridge* ReadingListSyncBridge::GetSyncBridge() {
-  return this;
-}
-
-// Creates an object used to communicate changes in the sync metadata to the
-// model type store.
 std::unique_ptr<syncer::MetadataChangeList>
 ReadingListSyncBridge::CreateMetadataChangeList() {
-  return syncer::ModelTypeStore::WriteBatch::CreateMetadataChangeList();
+  return std::make_unique<syncer::InMemoryMetadataChangeList>();
 }
 
 // Perform the initial merge between local and sync data. This should only be
@@ -111,11 +96,12 @@ absl::optional<syncer::ModelError> ReadingListSyncBridge::MergeSyncData(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_changes) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto token = EnsureBatchCreated();
+  DCHECK(model_);
+
   // Keep track of the last update of each item.
   std::set<std::string> synced_entries;
-  std::unique_ptr<ReadingListModel::ScopedReadingListBatchUpdate>
-      model_batch_updates = model_->BeginBatchUpdates();
+  std::unique_ptr<ReadingListModelImpl::ScopedReadingListBatchUpdateImpl>
+      model_batch_updates = model_->BeginBatchUpdatesWithSyncMetadata();
 
   // Merge sync to local data.
   for (const auto& change : entity_changes) {
@@ -130,25 +116,9 @@ absl::optional<syncer::ModelError> ReadingListSyncBridge::MergeSyncData(
         model_->GetEntryByURL(entry->URL());
 
     if (!existing_entry) {
-      // This entry is new. Add it to the store and model.
-      // Convert to local store format and write to store.
-      std::unique_ptr<reading_list::ReadingListLocal> entry_pb =
-          entry->AsReadingListLocal(clock_->Now());
-      store_batch()->WriteData(entry->URL().spec(),
-                               entry_pb->SerializeAsString());
-
-      // Notify model about updated entry.
-      delegate_->SyncAddEntry(std::move(entry));
+      model_->SyncAddEntry(std::move(entry));
     } else {
-      // Merge the local data and the sync data and store the result.
-      ReadingListEntry* merged_entry =
-          delegate_->SyncMergeEntry(std::move(entry));
-
-      // Write to the store.
-      std::unique_ptr<reading_list::ReadingListLocal> entry_local_pb =
-          merged_entry->AsReadingListLocal(clock_->Now());
-      store_batch()->WriteData(merged_entry->URL().spec(),
-                               entry_local_pb->SerializeAsString());
+      ReadingListEntry* merged_entry = model_->SyncMergeEntry(std::move(entry));
 
       // Send to sync
       std::unique_ptr<sync_pb::ReadingListSpecifics> entry_sync_pb =
@@ -187,7 +157,9 @@ absl::optional<syncer::ModelError> ReadingListSyncBridge::MergeSyncData(
     change_processor()->Put(entry_pb->entry_id(), std::move(entity_data),
                             metadata_change_list.get());
   }
-  store_batch()->TakeMetadataChangesFrom(std::move(metadata_change_list));
+
+  static_cast<syncer::InMemoryMetadataChangeList*>(metadata_change_list.get())
+      ->TransferChangesTo(model_batch_updates->GetSyncMetadataChangeList());
 
   return {};
 }
@@ -201,15 +173,14 @@ absl::optional<syncer::ModelError> ReadingListSyncBridge::ApplySyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_changes) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::unique_ptr<ReadingListModel::ScopedReadingListBatchUpdate> batch =
-      model_->BeginBatchUpdates();
-  auto token = EnsureBatchCreated();
+  DCHECK(model_);
+
+  std::unique_ptr<ReadingListModelImpl::ScopedReadingListBatchUpdateImpl>
+      model_batch_updates = model_->BeginBatchUpdatesWithSyncMetadata();
 
   for (const std::unique_ptr<syncer::EntityChange>& change : entity_changes) {
     if (change->type() == syncer::EntityChange::ACTION_DELETE) {
-      store_batch()->DeleteData(change->storage_key());
-      // Need to notify model that entry is deleted.
-      delegate_->SyncRemoveEntry(GURL(change->storage_key()));
+      model_->SyncRemoveEntry(GURL(change->storage_key()));
     } else {
       // Deserialize entry.
       const sync_pb::ReadingListSpecifics& specifics =
@@ -221,25 +192,10 @@ absl::optional<syncer::ModelError> ReadingListSyncBridge::ApplySyncChanges(
           model_->GetEntryByURL(entry->URL());
 
       if (!existing_entry) {
-        // This entry is new. Add it to the store and model.
-        // Convert to local store format and write to store.
-        std::unique_ptr<reading_list::ReadingListLocal> entry_pb =
-            entry->AsReadingListLocal(clock_->Now());
-        store_batch()->WriteData(entry->URL().spec(),
-                                 entry_pb->SerializeAsString());
-
-        // Notify model about updated entry.
-        delegate_->SyncAddEntry(std::move(entry));
+        model_->SyncAddEntry(std::move(entry));
       } else {
         // Merge the local data and the sync data and store the result.
-        ReadingListEntry* merged_entry =
-            delegate_->SyncMergeEntry(std::move(entry));
-
-        // Write to the store.
-        std::unique_ptr<reading_list::ReadingListLocal> entry_local_pb =
-            merged_entry->AsReadingListLocal(clock_->Now());
-        store_batch()->WriteData(merged_entry->URL().spec(),
-                                 entry_local_pb->SerializeAsString());
+        model_->SyncMergeEntry(std::move(entry));
 
         // Note: Do NOT send the merged data back to Sync. Doing that could
         // cause ping-pong between two devices that disagree on the "correct"
@@ -250,7 +206,9 @@ absl::optional<syncer::ModelError> ReadingListSyncBridge::ApplySyncChanges(
     }
   }
 
-  store_batch()->TakeMetadataChangesFrom(std::move(metadata_change_list));
+  static_cast<syncer::InMemoryMetadataChangeList*>(metadata_change_list.get())
+      ->TransferChangesTo(model_batch_updates->GetSyncMetadataChangeList());
+
   return {};
 }
 

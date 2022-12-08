@@ -46,6 +46,10 @@ BASE_DECLARE_FEATURE(kFileHandlersMV3);
 
 BASE_DECLARE_FEATURE(kExtensionSourceUrlEnforcement);
 
+BASE_DECLARE_FEATURE(kWebviewTagMPArchBehavior);
+
+BASE_DECLARE_FEATURE(kExtensionsManifestV3Only);
+
 }  // namespace extensions_features
 
 #endif  // EXTENSIONS_COMMON_EXTENSION_FEATURES_H_

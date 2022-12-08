@@ -8,13 +8,9 @@ import android.annotation.SuppressLint;
 import android.app.job.JobInfo;
 import android.app.job.JobScheduler;
 import android.app.job.JobWorkItem;
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
-import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 
-import androidx.annotation.RequiresApi;
 import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
@@ -62,7 +58,6 @@ public class LogcatExtractionRunnableTest {
         }
     };
 
-    @RequiresApi(Build.VERSION_CODES.M)
     private static class TestJobScheduler extends JobScheduler {
         TestJobScheduler() {}
 
@@ -98,22 +93,8 @@ public class LogcatExtractionRunnableTest {
 
     // Responsible for verifying that the correct intent is fired after the logcat is extracted.
     private class TestContext extends AdvancedMockContext {
-        int mNumServiceStarts;
-
         TestContext(Context realContext) {
             super(realContext);
-        }
-
-        @Override
-        public ComponentName startService(Intent intent) {
-            ++mNumServiceStarts;
-            Assert.assertEquals(1, mNumServiceStarts);
-            Assert.assertEquals(
-                    MinidumpUploadService.class.getName(), intent.getComponent().getClassName());
-            Assert.assertEquals(MinidumpUploadServiceImpl.ACTION_UPLOAD, intent.getAction());
-            Assert.assertEquals(new File(mCrashDir, "test.dmp.try0").getAbsolutePath(),
-                    intent.getStringExtra(MinidumpUploadServiceImpl.FILE_TO_UPLOAD_KEY));
-            return super.startService(intent);
         }
 
         @Override
@@ -184,10 +165,7 @@ public class LogcatExtractionRunnableTest {
 
     @Test
     @MediumTest
-    public void testSimpleExtraction_SansJobScheduler() throws IOException {
-        // The JobScheduler API is used as of Android M+.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) return;
-
+    public void testSimpleExtraction() throws IOException {
         final File minidump = createMinidump("test.dmp");
         Context testContext = new TestContext(InstrumentationRegistry.getTargetContext());
 

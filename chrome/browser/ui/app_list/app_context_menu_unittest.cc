@@ -19,9 +19,17 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/values.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/app_service_test.h"
+#include "chrome/browser/ash/app_list/app_service/app_service_app_item.h"
+#include "chrome/browser/ash/app_list/app_service/app_service_context_menu.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_test.h"
+#include "chrome/browser/ash/app_list/internal_app/internal_app_metadata.h"
+#include "chrome/browser/ash/app_list/test/fake_app_list_model_updater.h"
+#include "chrome/browser/ash/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
@@ -32,14 +40,7 @@
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
-#include "chrome/browser/ui/app_list/app_service/app_service_app_item.h"
-#include "chrome/browser/ui/app_list/app_service/app_service_context_menu.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
-#include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
-#include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
-#include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/app_constants/constants.h"
@@ -284,12 +285,10 @@ class AppContextMenuTest : public AppListTestBase {
         deserializer.Deserialize(nullptr, nullptr));
 
     DCHECK(manifest.is_dict());
-    const base::DictionaryValue* dictionary_manifest = nullptr;
-    manifest.GetAsDictionary(&dictionary_manifest);
     std::string error;
     return extensions::Extension::Create(
         path.DirName(), extensions::mojom::ManifestLocation::kInternal,
-        *dictionary_manifest, extensions::Extension::NO_FLAGS, app_id, &error);
+        manifest.GetDict(), extensions::Extension::NO_FLAGS, app_id, &error);
   }
 
   void TestExtensionApp(const std::string& app_id,
@@ -332,10 +331,10 @@ class AppContextMenuTest : public AppListTestBase {
 
   scoped_refptr<extensions::Extension> MakeChromeApp() {
     std::string err;
-    base::DictionaryValue value;
-    value.SetStringKey("name", "Chrome App");
-    value.SetStringKey("version", "0.0");
-    value.SetStringPath("app.launch.web_url", "http://google.com");
+    base::Value::Dict value;
+    value.Set("name", "Chrome App");
+    value.Set("version", "0.0");
+    value.SetByDottedPath("app.launch.web_url", "http://google.com");
     scoped_refptr<extensions::Extension> app = extensions::Extension::Create(
         base::FilePath(), extensions::mojom::ManifestLocation::kInternal, value,
         extensions::Extension::WAS_INSTALLED_BY_DEFAULT,

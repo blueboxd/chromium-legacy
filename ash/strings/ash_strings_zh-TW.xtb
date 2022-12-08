@@ -31,7 +31,6 @@
 <translation id="1148499908455722006">開啟「<ph name="USER_NAME" />」的資訊對話方塊</translation>
 <translation id="1150989369772528668">日曆</translation>
 <translation id="1153356358378277386">配對裝置</translation>
-<translation id="1165712434476988950">必須重新啟動裝置才能套用更新。</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />，<ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">你的 USB-C 連接線可能未妥善連接螢幕</translation>
 <translation id="1175572348579024023">捲動</translation>
@@ -358,7 +357,6 @@
 <translation id="296762781903199866">無法下載<ph name="LANGUAGE" />語音檔案</translation>
 <translation id="2970920913501714344">安裝應用程式、擴充功能和主題</translation>
 <translation id="2977598380246111477">下一個號碼</translation>
-<translation id="2981684127883932071">目前正顯示建議項目</translation>
 <translation id="2985148236010982088">查看所有應用程式</translation>
 <translation id="2992327365391326550">裝置的麥克風按鈕已關閉。</translation>
 <translation id="2996462380875591307">停駐放大鏡已啟用。再次按下 Ctrl 鍵 + 搜尋鍵 + D 鍵即可停用。</translation>
@@ -668,6 +666,7 @@
 <translation id="4666082839192943839">關閉這部裝置的相機存取權，一律封鎖所有相機。</translation>
 <translation id="4666911709726371538">更多應用程式</translation>
 <translation id="4667099493359681081">正在下載 <ph name="FILENAME" /></translation>
+<translation id="468293128311738995">你手機上的應用程式</translation>
 <translation id="4690510401873698237">在底部顯示檔案櫃</translation>
 <translation id="4696813013609194136">使用家長存取碼將裝置解鎖</translation>
 <translation id="4702647871202761252">已停用隱私保護畫面</translation>
@@ -924,12 +923,10 @@
 <translation id="6103838137565245112">系統</translation>
 <translation id="6107292179555508368">這部裝置已停用麥克風和相機的存取權</translation>
 <translation id="6114505516289286752">已下載<ph name="LANGUAGE" />語音檔案</translation>
-<translation id="6116825164611323644">這部裝置的相機存取權已關閉</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />。<ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042">確認下載「<ph name="FILENAME" />」</translation>
 <translation id="612734058257491180">Google 助理不支援訪客工作階段。</translation>
 <translation id="6129953537138746214">空格</translation>
-<translation id="6134259848159370930">搜尋你的裝置、應用程式、設定和網路。</translation>
 <translation id="6137566720514957455">開啟移除 <ph name="USER_EMAIL_ADDRESS" /> 的對話方塊</translation>
 <translation id="6141988275892716286">確認下載</translation>
 <translation id="6154006699632741460">不支援周邊裝置</translation>
@@ -1289,6 +1286,7 @@
 <translation id="8142441511840089262">按兩下</translation>
 <translation id="8142699993796781067">私人網路</translation>
 <translation id="8144760705599030999">將 <ph name="NAME" /> 儲存到 <ph name="EMAIL" /> 即可與其他裝置快速配對</translation>
+<translation id="8144914663975476336">選取錄影格式</translation>
 <translation id="8149413265954228307">顯示藍牙設定。<ph name="STATE_TEXT" />。</translation>
 <translation id="8152092012181020186">按下 Ctrl + W 即可關閉。</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />，自動完成</translation>
@@ -1386,7 +1384,6 @@
 <translation id="8666856788528804727">開啟 <ph name="NAME" /> 以設定裝置</translation>
 <translation id="8676770494376880701">已連接低功率充電器</translation>
 <translation id="8683506306463609433">效能追蹤已啟用</translation>
-<translation id="8685326675965865247">搜尋你的裝置、應用程式、設定和網路。可使用方向鍵瀏覽應用程式。</translation>
 <translation id="8703634754197148428">開始錄製。如要停止已經開始的錄製作業，請按下 Alt + Shift + L 鍵前往檔案櫃，並從中找出停止錄影的按鈕</translation>
 <translation id="8721053961083920564">切換音量設定。<ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">全螢幕畫面擷取</translation>
@@ -1394,7 +1391,6 @@
 <translation id="8734991477317290293">你的按鍵行為可能會遭到側錄</translation>
 <translation id="8735678380411481005">鍵盤背光顏色</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />，<ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8752416742247198423">開啟相機存取權，允許任何具有相機權限的應用程式和網頁使用連結至這部裝置的相機。</translation>
 <translation id="8755498163081687682">驗證身分：<ph name="ORIGIN_NAME" /> 要求確認你的身分</translation>
 <translation id="875593634123171288">顯示 VPN 設定</translation>
 <translation id="8759408218731716181">無法設定多重登入</translation>
@@ -1461,7 +1457,6 @@
 <translation id="9089416786594320554">輸入法</translation>
 <translation id="9091626656156419976">「<ph name="DISPLAY_NAME" />」螢幕已移除</translation>
 <translation id="9098969848082897657">將手機設為靜音</translation>
-<translation id="9099154003160514616">有 Lacros 更新</translation>
 <translation id="9100887602489003640">正在新增設定檔，請稍後片刻。</translation>
 <translation id="9105450214093926548">Lacros 瀏覽器執行期間不支援登入第二個使用者帳戶。請改為在 Lacros 中使用第二個瀏覽器設定檔，或者關閉 Lacros 後再試一次。</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> 或 <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.privacy_sandbox.v4;
 
 import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.Espresso.pressBack;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
@@ -15,20 +16,17 @@ import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withParent;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import static org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxTestUtils.clickImageButtonNextToText;
-import static org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxTestUtils.withTopic;
+import static org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxTestUtils.getRootViewSanitized;
 import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
 
 import android.view.View;
 
-import androidx.annotation.StringRes;
 import androidx.test.filters.SmallTest;
 
 import org.hamcrest.Matcher;
@@ -47,7 +45,6 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.privacy_sandbox.FakePrivacySandboxBridge;
-import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxBridge;
 import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxBridgeJni;
 import org.chromium.chrome.browser.privacy_sandbox.R;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -116,11 +113,12 @@ public final class TopicsFragmentV4Test {
                         hasDescendant(withText(R.string.settings_topics_page_toggle_label)))));
     }
 
-    private View getRootView(@StringRes int text) {
-        View[] view = {null};
-        onView(withText(text)).check(((v, e) -> view[0] = v.getRootView()));
-        TestThreadUtils.runOnUiThreadBlocking(() -> RenderTestRule.sanitize(view[0]));
-        return view[0];
+    private View getTopicsRootView() {
+        return getRootViewSanitized(R.string.settings_topics_page_title);
+    }
+
+    private View getBlockedTopicsRootView() {
+        return getRootViewSanitized(R.string.settings_topics_page_blocked_topics_sub_page_title);
     }
 
     private void setTopicsPrefEnabled(boolean isEnabled) {
@@ -139,7 +137,7 @@ public final class TopicsFragmentV4Test {
     public void testRenderTopicsOff() throws IOException {
         setTopicsPrefEnabled(false);
         startTopicsSettings();
-        mRenderTestRule.render(getRootView(R.string.settings_topics_page_title), "topics_page_off");
+        mRenderTestRule.render(getTopicsRootView(), "topics_page_off");
     }
 
     @Test
@@ -148,8 +146,7 @@ public final class TopicsFragmentV4Test {
     public void testRenderTopicsEmpty() throws IOException {
         setTopicsPrefEnabled(true);
         startTopicsSettings();
-        mRenderTestRule.render(
-                getRootView(R.string.settings_topics_page_title), "topics_page_empty");
+        mRenderTestRule.render(getTopicsRootView(), "topics_page_empty");
     }
 
     @Test
@@ -159,8 +156,39 @@ public final class TopicsFragmentV4Test {
         setTopicsPrefEnabled(true);
         mFakePrivacySandboxBridge.setCurrentTopTopics(TOPIC_NAME_1, TOPIC_NAME_2);
         startTopicsSettings();
-        mRenderTestRule.render(
-                getRootView(R.string.settings_topics_page_title), "topic_page_populated");
+        mRenderTestRule.render(getTopicsRootView(), "topic_page_populated");
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"RenderTest"})
+    public void testRenderBlockedTopicsEmpty() throws IOException {
+        setTopicsPrefEnabled(false);
+        startTopicsSettings();
+        onView(withText(R.string.settings_topics_page_blocked_topics_heading)).perform(click());
+        mRenderTestRule.render(getBlockedTopicsRootView(), "blocked_topics_page_empty");
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"RenderTest"})
+    public void testRenderBlockedTopicsOffPopulated() throws IOException {
+        setTopicsPrefEnabled(false);
+        mFakePrivacySandboxBridge.setBlockedTopics(TOPIC_NAME_1, TOPIC_NAME_2);
+        startTopicsSettings();
+        onView(withText(R.string.settings_topics_page_blocked_topics_heading)).perform(click());
+        mRenderTestRule.render(getBlockedTopicsRootView(), "blocked_topics_page_off_populated");
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"RenderTest"})
+    public void testRenderBlockedTopicsOnPopulated() throws IOException {
+        setTopicsPrefEnabled(true);
+        mFakePrivacySandboxBridge.setBlockedTopics(TOPIC_NAME_1, TOPIC_NAME_2);
+        startTopicsSettings();
+        onView(withText(R.string.settings_topics_page_blocked_topics_heading)).perform(click());
+        mRenderTestRule.render(getBlockedTopicsRootView(), "blocked_topics_page_on_populated");
     }
 
     @Test
@@ -239,27 +267,89 @@ public final class TopicsFragmentV4Test {
 
     @Test
     @SmallTest
-    public void testRemoveTopicsFromList() {
+    public void testBlockedTopicsAppearWhenTopicOff() {
+        setTopicsPrefEnabled(false);
+        mFakePrivacySandboxBridge.setBlockedTopics(TOPIC_NAME_1, TOPIC_NAME_2);
+        startTopicsSettings();
+        onView(withText(R.string.settings_topics_page_blocked_topics_heading)).perform(click());
+
+        onViewWaiting(withText(R.string.settings_topics_page_blocked_topics_description_disabled));
+        onView(withText(TOPIC_NAME_1)).check(matches(isDisplayed()));
+        onView(withText(TOPIC_NAME_2)).check(matches(isDisplayed()));
+    }
+
+    @Test
+    @SmallTest
+    public void testBlockedTopicsAppearWhenTopicOn() {
+        setTopicsPrefEnabled(true);
+        mFakePrivacySandboxBridge.setBlockedTopics(TOPIC_NAME_1, TOPIC_NAME_2);
+        startTopicsSettings();
+        onView(withText(R.string.settings_topics_page_blocked_topics_heading)).perform(click());
+
+        onViewWaiting(withText(R.string.settings_topics_page_blocked_topics_description));
+        onView(withText(TOPIC_NAME_1)).check(matches(isDisplayed()));
+        onView(withText(TOPIC_NAME_2)).check(matches(isDisplayed()));
+    }
+
+    @Test
+    @SmallTest
+    public void testBlockTopics() {
         setTopicsPrefEnabled(true);
         mFakePrivacySandboxBridge.setCurrentTopTopics(TOPIC_NAME_1, TOPIC_NAME_2);
         startTopicsSettings();
 
         // Remove the first Topic from the list.
         clickImageButtonNextToText(TOPIC_NAME_1);
-        // Check that the Topic list entry has been removed.
         onView(withText(TOPIC_NAME_1)).check(doesNotExist());
-        // Check that the Topic is blocked.
-        assertThat(PrivacySandboxBridge.getBlockedTopics(), hasItem(withTopic(TOPIC_NAME_1)));
 
         // Remove the second Topic from the list.
         clickImageButtonNextToText(TOPIC_NAME_2);
-        // Check that the Topic list entry has been removed.
         onView(withText(TOPIC_NAME_2)).check(doesNotExist());
-        // Check that the Topic is blocked.
-        assertThat(PrivacySandboxBridge.getBlockedTopics(), hasItem(withTopic(TOPIC_NAME_2)));
 
         // Check that the empty state UI is displayed when the Topic list is empty.
         onView(withText(R.string.settings_topics_page_current_topics_description_empty))
                 .check(matches(isDisplayed()));
+
+        // Open the blocked topics sub-page
+        onView(withText(R.string.settings_topics_page_blocked_topics_heading)).perform(click());
+        onViewWaiting(withText(R.string.settings_topics_page_blocked_topics_sub_page_title));
+
+        // Verify that the topics are blocked
+        onView(withText(TOPIC_NAME_1)).check(matches(isDisplayed()));
+        onView(withText(TOPIC_NAME_2)).check(matches(isDisplayed()));
     }
+
+    @Test
+    @SmallTest
+    public void testUnblockTopics() {
+        setTopicsPrefEnabled(true);
+        mFakePrivacySandboxBridge.setBlockedTopics(TOPIC_NAME_1, TOPIC_NAME_2);
+        startTopicsSettings();
+
+        // Open the blocked Topics sub-page
+        onView(withText(R.string.settings_topics_page_blocked_topics_heading)).perform(click());
+        onViewWaiting(withText(R.string.settings_topics_page_blocked_topics_sub_page_title));
+
+        // Unblock the first Topic
+        clickImageButtonNextToText(TOPIC_NAME_1);
+        onView(withText(TOPIC_NAME_1)).check(doesNotExist());
+
+        // Unblock the second Topic
+        clickImageButtonNextToText(TOPIC_NAME_2);
+        onView(withText(TOPIC_NAME_2)).check(doesNotExist());
+
+        // Check that the empty state UI is displayed when the Topic list is empty.
+        onView(withText(R.string.settings_topics_page_blocked_topics_description_empty))
+                .check(matches(isDisplayed()));
+
+        // Go back to the main Topics fragment
+        pressBack();
+        onViewWaiting(withText(R.string.settings_topics_page_title));
+
+        // Verify that the Topics are unblocked
+        onView(withText(TOPIC_NAME_1)).check(matches(isDisplayed()));
+        onView(withText(TOPIC_NAME_2)).check(matches(isDisplayed()));
+    }
+    // TODO(http://b/261822498): Add Managed state tests when the Privacy Sandbox policy is
+    // implemented.
 }

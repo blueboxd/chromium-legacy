@@ -1003,12 +1003,12 @@ bool OnDeterminingFilenameWillDispatchCallback(
     content::BrowserContext* browser_context,
     Feature::Context target_context,
     const Extension* extension,
-    const base::DictionaryValue* listener_filter,
+    const base::Value::Dict* listener_filter,
     std::unique_ptr<base::Value::List>* event_args_out,
     mojom::EventFilteringInfoPtr* event_filtering_info_out) {
   *any_determiners = true;
   base::Time installed =
-      ExtensionPrefs::Get(browser_context)->GetInstallTime(extension->id());
+      ExtensionPrefs::Get(browser_context)->GetLastUpdateTime(extension->id());
   data->AddPendingDeterminer(extension->id(), installed);
   return true;
 }

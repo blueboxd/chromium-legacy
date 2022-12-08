@@ -12,7 +12,6 @@ import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.os.SystemClock;
 import android.text.TextUtils;
 import android.view.Gravity;
@@ -85,7 +84,6 @@ class AppMenu implements OnItemClickListener, OnKeyListener, AppMenuClickHandler
     private AnimatorSet mMenuItemEnterAnimator;
     private long mMenuShownTimeMs;
     private boolean mSelectedItemBeforeDismiss;
-    private Integer mHighlightedItemId;
     private ModelList mModelList;
 
     /**
@@ -185,10 +183,8 @@ class AppMenu implements OnItemClickListener, OnKeyListener, AppMenuClickHandler
         mPopup.setFocusable(true);
         mPopup.setInputMethodMode(PopupWindow.INPUT_METHOD_NOT_NEEDED);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            // The window layout type affects the z-index of the popup window on M+.
-            mPopup.setWindowLayoutType(WindowManager.LayoutParams.TYPE_APPLICATION_SUB_PANEL);
-        }
+        // The window layout type affects the z-index of the popup window.
+        mPopup.setWindowLayoutType(WindowManager.LayoutParams.TYPE_APPLICATION_SUB_PANEL);
 
         mPopup.setOnDismissListener(() -> {
             recordTimeToTakeActionHistogram();
@@ -206,7 +202,6 @@ class AppMenu implements OnItemClickListener, OnKeyListener, AppMenuClickHandler
             mListView = null;
             mFooterView = null;
             mMenuItemEnterAnimator = null;
-            mHighlightedItemId = null;
         });
 
         // Some OEMs don't actually let us change the background... but they still return the
@@ -267,7 +262,6 @@ class AppMenu implements OnItemClickListener, OnKeyListener, AppMenuClickHandler
         int footerHeight = inflateFooter(footerResourceId, contentView, menuWidth);
         int headerHeight = inflateHeader(headerResourceId, contentView, menuWidth);
 
-        mHighlightedItemId = highlightedItemId;
         if (highlightedItemId != null) {
             View viewToHighlight = contentView.findViewById(highlightedItemId);
             HighlightParams highlightParams = new HighlightParams(HighlightShape.RECTANGLE);
@@ -392,7 +386,7 @@ class AppMenu implements OnItemClickListener, OnKeyListener, AppMenuClickHandler
         int id = model.get(AppMenuItemProperties.MENU_ITEM_ID);
         mSelectedItemBeforeDismiss = true;
         dismiss();
-        mHandler.onOptionsItemSelected(id, mHighlightedItemId != null && mHighlightedItemId == id);
+        mHandler.onOptionsItemSelected(id);
     }
 
     @Override

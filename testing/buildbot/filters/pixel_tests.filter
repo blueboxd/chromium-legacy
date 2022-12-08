@@ -11,7 +11,6 @@
 # causes flakes (due to widget activation, occlusion, etc.)
 
 AccessCodeCastDialogBrowserTest.*
-AccuracyTipBubbleViewDialogBrowserTest.*
 AppInfoDialogBrowserTest.*
 AskGoogleForSuggestionsDialogTest.*
 AssistantOnboardingViewBrowserTest.InvokeUi_*
@@ -71,6 +70,8 @@ ScreenCaptureNotificationUiBrowserTest.*
 SecurePaymentConfirmationDialogViewTest.InvokeUi_*
 *SendTabToSelfBubbleTest.*
 SessionCrashedBubbleViewTest.*
+SyncConfirmationUIDialogPixelTest.*
+SyncConfirmationUIWindowPixelTest.*
 TabGroupEditorBubbleViewDialogBrowserTest.*
 TabHoverCardBubbleViewDialogBrowserTest.*
 *TailoredSecurityDesktopModalTest.InvokeUi_*

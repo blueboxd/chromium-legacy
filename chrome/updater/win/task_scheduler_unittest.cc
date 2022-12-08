@@ -33,8 +33,8 @@
 #include "chrome/updater/constants.h"
 #include "chrome/updater/test/integration_tests_impl.h"
 #include "chrome/updater/test_scope.h"
-#include "chrome/updater/unittest_util.h"
 #include "chrome/updater/updater_branding.h"
+#include "chrome/updater/util/unittest_util.h"
 #include "chrome/updater/util/util.h"
 #include "chrome/updater/util/win_util.h"
 #include "chrome/updater/win/test/test_executables.h"
@@ -65,7 +65,7 @@ const char kUnitTestSwitch[] = "a_switch";
 class TaskSchedulerTests : public ::testing::Test {
  public:
   void SetUp() override {
-    DeleteLogFile();
+    DeleteUpdaterLog();
 
     task_scheduler_ = TaskScheduler::CreateInstance();
     EXPECT_TRUE(task_scheduler_->DeleteTask(kTaskName1));
@@ -83,7 +83,7 @@ class TaskSchedulerTests : public ::testing::Test {
                                  TestTimeouts::action_max_timeout());
     EXPECT_FALSE(test::IsProcessRunning(kTestProcessExecutableName));
 
-    DeleteLogFile();
+    DeleteUpdaterLog();
   }
 
   // Converts a base::Time that is in UTC and returns the corresponding local
@@ -106,15 +106,13 @@ class TaskSchedulerTests : public ::testing::Test {
     return base::Time::FromFileTime(file_time_local);
   }
 
-  void DeleteLogFile() {
-    const absl::optional<base::FilePath> log_dir =
-        GetBaseDataDirectory(GetTestScope());
-    if (log_dir) {
-      base::DeleteFile(log_dir->Append(FILE_PATH_LITERAL("updater.log")));
+  void DeleteUpdaterLog() {
+    const absl::optional<base::FilePath> log_file =
+        GetLogFilePath(GetTestScope());
+    if (log_file) {
+      base::DeleteFile(*log_file);
     }
   }
-
-  static void SetUpTestCase() { InitLogging(GetTestScope()); }
 
  protected:
   std::unique_ptr<TaskScheduler> task_scheduler_;

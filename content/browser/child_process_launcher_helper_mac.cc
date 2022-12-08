@@ -3,9 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/containers/flat_map.h"
+#include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/posix/global_descriptors.h"
 #include "base/strings/stringprintf.h"
+#include "base/synchronization/lock.h"
+#include "base/thread_annotations.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/child_process_launcher_helper.h"
 #include "content/browser/child_process_launcher_helper_posix.h"
@@ -19,7 +23,9 @@
 #include "content/public/common/result_codes.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "sandbox/mac/sandbox_compiler.h"
 #include "sandbox/mac/seatbelt_exec.h"
+#include "sandbox/policy/features.h"
 #include "sandbox/policy/mac/sandbox_mac.h"
 #include "sandbox/policy/sandbox.h"
 #include "sandbox/policy/sandbox_type.h"
@@ -33,6 +39,44 @@
 
 namespace content {
 namespace internal {
+
+namespace {
+
+// Class that holds a map of SandboxTypes to compiled policy protos. Only
+// certain sandbox types can be cached, depending on the nature of the
+// runtime parameters that are bound into the profile.
+class SandboxProfileCache {
+ public:
+  SandboxProfileCache() = default;
+  ~SandboxProfileCache() = default;
+
+  static SandboxProfileCache& Get() {
+    static base::NoDestructor<SandboxProfileCache> cache;
+    return *cache;
+  }
+
+  sandbox::mac::SandboxPolicy* Query(sandbox::mojom::Sandbox sandbox_type) {
+    base::AutoLock lock(lock_);
+    auto it = cache_.find(sandbox_type);
+    if (it == cache_.end())
+      return nullptr;
+    return &it->second;
+  }
+
+  void Insert(sandbox::mojom::Sandbox sandbox_type,
+              const sandbox::mac::SandboxPolicy& policy) {
+    DCHECK(sandbox::policy::CanCacheSandboxPolicy(sandbox_type));
+    base::AutoLock lock(lock_);
+    cache_.emplace(sandbox_type, policy);
+  }
+
+ private:
+  base::Lock lock_;
+  base::flat_map<sandbox::mojom::Sandbox, sandbox::mac::SandboxPolicy> cache_
+      GUARDED_BY(lock_);
+};
+
+}  // namespace
 
 absl::optional<mojo::NamedPlatformChannel>
 ChildProcessLauncherHelper::CreateNamedPlatformChannelOnClientThread() {
@@ -86,22 +130,43 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
       sandbox::policy::IsUnsandboxedSandboxType(sandbox_type);
 
   if (!no_sandbox) {
-    // Generate the profile string.
-    std::string profile = sandbox::policy::GetSandboxProfile(sandbox_type);
-
     // Disable os logging to com.apple.diagnosticd which is a performance
     // problem.
     options->environment.insert(std::make_pair("OS_ACTIVITY_MODE", "disable"));
 
-    seatbelt_exec_client_ = std::make_unique<sandbox::SeatbeltExecClient>();
-    seatbelt_exec_client_->SetProfile(profile);
+    auto* cached_policy = SandboxProfileCache::Get().Query(sandbox_type);
+    if (cached_policy) {
+      policy_ = *cached_policy;
+    } else {
+      const bool can_cache_policy =
+          sandbox::policy::CanCacheSandboxPolicy(sandbox_type);
 
-    SetupSandboxParameters(sandbox_type, *command_line_.get(),
+      // Generate the sandbox policy profile.
+      sandbox::SandboxCompiler compiler(
+          can_cache_policy ? sandbox::SandboxCompiler::Target::kCompiled
+                           : sandbox::SandboxCompiler::Target::kSource);
+      compiler.SetProfile(sandbox::policy::GetSandboxProfile(sandbox_type));
+      SetupSandboxParameters(sandbox_type, *command_line_.get(),
 #if BUILDFLAG(ENABLE_PPAPI)
-                           plugins_,
+                             plugins_,
 #endif
-                           seatbelt_exec_client_.get());
+                             &compiler);
 
+      std::string error;
+      absl::optional<sandbox::mac::SandboxPolicy> policy =
+          compiler.CompilePolicyToProto(&error);
+      if (!policy.has_value()) {
+        LOG(ERROR) << "Failed to compile sandbox policy: " << error;
+        return false;
+      }
+      policy_ = std::move(*policy);
+
+      if (can_cache_policy) {
+        SandboxProfileCache::Get().Insert(sandbox_type, policy_);
+      }
+    }
+
+    seatbelt_exec_client_ = std::make_unique<sandbox::SeatbeltExecClient>();
     int pipe = seatbelt_exec_client_->GetReadFD();
     if (pipe < 0) {
       LOG(ERROR) << "The file descriptor for the sandboxed child is invalid.";
@@ -144,7 +209,7 @@ void ChildProcessLauncherHelper::AfterLaunchOnLauncherThread(
   // Send the sandbox profile after launch so that the child will exist and be
   // waiting for the message on its side of the pipe.
   if (process.process.IsValid() && seatbelt_exec_client_.get() != nullptr) {
-    seatbelt_exec_client_->SendProfile();
+    seatbelt_exec_client_->SendPolicy(policy_);
   }
 }
 

@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
 #include "chrome/browser/ui/webui/app_home/app_home.mojom.h"
+#include "chrome/browser/web_applications/app_registrar_observer.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_install_manager_observer.h"
@@ -41,7 +42,8 @@ class AppHomePageHandler
       public web_app::WebAppInstallManagerObserver,
       public extensions::ExtensionRegistryObserver,
       public extensions::ExtensionUninstallDialog::Delegate,
-      public ExtensionEnableFlowDelegate {
+      public ExtensionEnableFlowDelegate,
+      public web_app::AppRegistrarObserver {
  public:
   AppHomePageHandler(
       content::WebUI*,
@@ -65,6 +67,15 @@ class AppHomePageHandler
   void OnExtensionUninstalled(content::BrowserContext* browser_context,
                               const extensions::Extension* extension,
                               extensions::UninstallReason reason) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const extensions::Extension* extension,
+                           extensions::UnloadedExtensionReason reason) override;
+
+  // web_app::AppRegistrarObserver:
+  void OnWebAppRunOnOsLoginModeChanged(
+      const web_app::AppId& app_id,
+      web_app::RunOnOsLoginMode run_on_os_login_mode) override;
+  void OnAppRegistrarDestroyed() override;
 
   // app_home::mojom::PageHandler:
   void GetApps(GetAppsCallback callback) override;
@@ -75,6 +86,10 @@ class AppHomePageHandler
   void LaunchApp(const std::string& app_id,
                  int source,
                  app_home::mojom::ClickEventPtr click_event) override;
+  void SetRunOnOsLoginMode(
+      const std::string& app_id,
+      web_app::RunOnOsLoginMode run_on_os_login_mode) override;
+  void LaunchDeprecatedAppDialog() override;
 
  private:
   Browser* GetCurrentBrowser();
@@ -88,6 +103,8 @@ class AppHomePageHandler
 
   // Reset some instance flags we use to track the currently prompting app.
   void ResetExtensionDialogState();
+
+  void ExtensionRemoved(const extensions::Extension* extension);
 
   // ExtensionUninstallDialog::Delegate:
   void OnExtensionUninstallDialogClosed(bool did_start_uninstall,
@@ -127,6 +144,10 @@ class AppHomePageHandler
   // outlives this class since it's owned by |profile_|.
   const raw_ptr<extensions::ExtensionService> extension_service_;
 
+  base::ScopedObservation<web_app::WebAppRegistrar,
+                          web_app::AppRegistrarObserver>
+      web_app_registrar_observation_{this};
+
   base::ScopedObservation<web_app::WebAppInstallManager,
                           web_app::WebAppInstallManagerObserver>
       install_manager_observation_{this};
@@ -138,6 +159,8 @@ class AppHomePageHandler
 
   // Used to show confirmation UI for enabling extensions.
   std::unique_ptr<ExtensionEnableFlow> extension_enable_flow_;
+  // Set of deprecated app ids for showing on dialog.
+  std::set<extensions::ExtensionId> deprecated_app_ids_;
 
   // Used for passing callbacks.
   base::WeakPtrFactory<AppHomePageHandler> weak_ptr_factory_{this};

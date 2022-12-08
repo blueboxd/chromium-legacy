@@ -34,7 +34,7 @@ ReadAnythingModel::ReadAnythingModel()
 
 ReadAnythingModel::~ReadAnythingModel() = default;
 
-void ReadAnythingModel::Init(std::string& font_name,
+void ReadAnythingModel::Init(const std::string& font_name,
                              double font_scale,
                              read_anything::mojom::Colors colors,
                              Spacing line_spacing,
@@ -63,6 +63,7 @@ void ReadAnythingModel::Init(std::string& font_name,
         letter_spacing_index);
   }
 
+  font_name_ = font_model_->GetFontNameAt(font_model_->GetStartingStateIndex());
   colors_combobox_index_ = colors_model_->GetStartingStateIndex();
   auto& initial_colors = colors_model_->GetColorsAt(colors_combobox_index_);
   foreground_color_id_ = initial_colors.foreground_color_id;
@@ -267,10 +268,15 @@ ReadAnythingColorsModel::ReadAnythingColorsModel() {
                              ui::kColorReadAnythingForegroundYellow,
                              ui::kColorReadAnythingBackgroundYellow};
 
+  ColorInfo kBlueColors = {u"Blue", IDS_READ_ANYTHING_BLUE_PNG,
+                           ui::kColorReadAnythingForegroundBlue,
+                           ui::kColorReadAnythingBackgroundBlue};
+
   colors_choices_.emplace_back(kDefaultColors);
   colors_choices_.emplace_back(kLightColors);
   colors_choices_.emplace_back(kDarkColors);
   colors_choices_.emplace_back(kYellowColors);
+  colors_choices_.emplace_back(kBlueColors);
   colors_choices_.shrink_to_fit();
 }
 bool ReadAnythingColorsModel::IsValidColorsIndex(size_t index) {

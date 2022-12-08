@@ -3,12 +3,14 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ash/app_mode/app_session_ash.h"
+#include <memory>
 
 #include "ash/public/cpp/accessibility_controller.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_update_service.h"
 #include "chrome/browser/ash/app_mode/kiosk_mode_idle_app_name_notification.h"
 #include "chrome/browser/ash/app_mode/metrics/network_connectivity_metrics_service.h"
+#include "chrome/browser/ash/app_mode/metrics/periodic_metrics_service.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -29,38 +31,36 @@ void StartFloatingAccessibilityMenu() {
 
 }  // namespace
 
-AppSessionAsh::AppSessionAsh() {
-  network_metrics_service_ = std::make_unique<NetworkConnectivityMetricsService>();
-}
+AppSessionAsh::AppSessionAsh(Profile* profile)
+    : AppSession(profile),
+      network_metrics_service_(
+          std::make_unique<NetworkConnectivityMetricsService>()),
+      periodic_metrics_service_(std::make_unique<PeriodicMetricsService>()) {}
 
 AppSessionAsh::~AppSessionAsh() = default;
 
-void AppSessionAsh::Init(Profile* profile, const std::string& app_id) {
-  chromeos::AppSession::Init(profile, app_id);
+void AppSessionAsh::Init(const std::string& app_id) {
+  chromeos::AppSession::Init(app_id);
   StartFloatingAccessibilityMenu();
-  InitKioskAppUpdateService(profile, app_id);
+  InitKioskAppUpdateService(app_id);
   SetRebootAfterUpdateIfNecessary();
+  periodic_metrics_service_->StartRecordingPeriodicMetrics();
 }
 
-void AppSessionAsh::InitForWebKiosk(Browser* browser) {
-  chromeos::AppSession::InitForWebKiosk(browser);
+void AppSessionAsh::InitForWebKiosk(
+    const absl::optional<std::string>& web_app_name) {
+  chromeos::AppSession::InitForWebKiosk(web_app_name);
   StartFloatingAccessibilityMenu();
-}
-
-void AppSessionAsh::InitForWebKioskWithLacros(Profile* profile) {
-  SetProfile(profile);
-  CreateBrowserWindowHandler(absl::nullopt);
-  StartFloatingAccessibilityMenu();
+  periodic_metrics_service_->StartRecordingPeriodicMetrics();
 }
 
 void AppSessionAsh::ShuttingDown() {
   network_metrics_service_.reset();
 }
 
-void AppSessionAsh::InitKioskAppUpdateService(Profile* profile,
-                                              const std::string& app_id) {
+void AppSessionAsh::InitKioskAppUpdateService(const std::string& app_id) {
   // Set the app_id for the current instance of KioskAppUpdateService.
-  auto* update_service = KioskAppUpdateServiceFactory::GetForProfile(profile);
+  auto* update_service = KioskAppUpdateServiceFactory::GetForProfile(profile());
   DCHECK(update_service);
   if (update_service)
     update_service->Init(app_id);

@@ -129,6 +129,20 @@ class TestResultSink(object):
             pair('web_tests_base_timeout',
                  str(int(self._port.timeout_ms() / 1000))),
         ]
+        if result.image_diff_stats:
+            tags.append(
+                pair('web_tests_image_diff_stats',
+                     str(result.image_diff_stats)))
+        test_type = []
+        for name in result.artifacts.artifacts.keys():
+            if name == 'actual_text':
+                test_type.extend(['text'])
+            elif name == 'actual_image':
+                test_type.extend(['image'])
+            elif name == 'actual_audio':
+                test_type.extend(['audio'])
+        if len(test_type) > 0:
+            tags.append(pair('web_tests_test_type', str(test_type)))
 
         for used_file in self._port.used_expectations_files():
             tags.append(

@@ -165,6 +165,7 @@
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2391082728065870591">Pošalji izveštaj sa povratnim informacijama</translation>
 <translation id="2407209115954268704">Status zaključavanja SIM kartice</translation>
+<translation id="241419523391571119">Ponovo otvorite poklopac da biste ga testirali</translation>
 <translation id="2414886740292270097">Tamna</translation>
 <translation id="2418150275289244458">Otvori u podešavanjima</translation>
 <translation id="2421798028054665193"><ph name="CURRENT_PAGE" />. slika od <ph name="TOTAL_PAGES" /></translation>
@@ -175,6 +176,7 @@
 <translation id="2491955442992294626">Tasteri se ne testiraju kada koristite drugi prozor</translation>
 <translation id="2493126929778606526">Najbolje automatski izabrane slike</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
+<translation id="2498950423397131220">Plutajuće</translation>
 <translation id="2505327257735685095">Osvežite aktuelnu sliku pozadine</translation>
 <translation id="2513396635448525189">Slika za prijavljivanje</translation>
 <translation id="2517472476991765520">Skeniraj</translation>
@@ -205,6 +207,7 @@
 <translation id="2878387241690264070">Ispražnjeno <ph name="RATE" /> za <ph name="NUM_SECONDS" /> sek.</translation>
 <translation id="2902312830803030883">Još radnji</translation>
 <translation id="2926057806159140518">Unesite korisničko ime i lozinku ili skenirajte QR kôd</translation>
+<translation id="2940811910881150316">Testiranje uređaja nije uspelo. Ponovo otvorite poklopac da biste ga testirali.</translation>
 <translation id="3008341117444806826">OSVEŽI</translation>
 <translation id="3009958530611748826">Izaberite folder za čuvanje</translation>
 <translation id="3017079585324758401">Pozadina</translation>
@@ -285,6 +288,7 @@
 <translation id="3820172043799983114">Nevažeći PIN.</translation>
 <translation id="3824259034819781947">Priloži fajlove</translation>
 <translation id="3838338534323494292">Nova lozinka</translation>
+<translation id="3845880861638660475">Pritisnite <ph name="ALT_SHORTCUT_START" />alt<ph name="ALT_SHORTCUT_END" /> + <ph name="ESC_SHORTCUT_START" />esc<ph name="ESC_SHORTCUT_END" /> da biste zatvorili dijalog.</translation>
 <translation id="385051799172605136">Nazad</translation>
 <translation id="3858860766373142691">Naziv</translation>
 <translation id="3862598938296403232">Opis je obavezan</translation>
@@ -292,6 +296,7 @@
 <translation id="3866249974567520381">Opis</translation>
 <translation id="387301095347517405">Broj puta kada se baterija napunila do kraja</translation>
 <translation id="3885327323343477505">Promenite čuvar ekrana</translation>
+<translation id="391412459402535266">Testiranje uređaja nije uspelo. Pređite na režim laptopa da biste ga testirali.</translation>
 <translation id="3923184630988645767">Potrošnja podataka</translation>
 <translation id="3932043219784172185">Nema povezanih uređaja</translation>
 <translation id="3941014780699102620">Razrešenje hosta nije uspelo</translation>
@@ -304,6 +309,7 @@
 <translation id="39823212440917567">Zadaci štampanja stariji od <ph name="NUMBER_OF_DAYS" /> dana se uklanjaju</translation>
 <translation id="3993704782688964914">Uređaj <ph name="DEVICE_NAME" /> je ažuriran</translation>
 <translation id="4003384961948020559">Nije uspelo – izlaz je pun</translation>
+<translation id="4021031199988160623">Pređite na režim laptopa da biste ga testirali</translation>
 <translation id="4034824040120875894">Štampač</translation>
 <translation id="4044093238444069296">Kontakt sa mrežnim prolazom ne uspeva</translation>
 <translation id="4046123991198612571">Sledeća pesma</translation>
@@ -336,6 +342,7 @@
 <translation id="4289849978083912975">Projekcija slajdova</translation>
 <translation id="4297501883039923494">Zaustavljeno – nepoznata greška</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> slika</translation>
+<translation id="4311195029067684288">Potpuno</translation>
 <translation id="4333390807948134856">Taster <ph name="KEY_NAME" /> je pritisnut</translation>
 <translation id="435692326371619097">Upravljajte podešavanjima naziva pristupne tačke mreže. Nazivi pristupnih tačaka uspostavljaju vezu između mobilne mreže i interneta. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="4378373042927530923">Nije pokrenuto</translation>
@@ -415,7 +422,9 @@
 <translation id="4921665434385737356">Napunjeno <ph name="RATE" /> za <ph name="NUM_SECONDS" /> sek.</translation>
 <translation id="4930320165497208503">Da biste podesili ili ažurirali vezu, idite u <ph name="BEGIN_LINK" />Podešavanja<ph name="END_LINK" />.</translation>
 <translation id="4932733599132424254">Datum</translation>
+<translation id="4937657825850660613">Polovina</translation>
 <translation id="4950314376641394653">Firmver <ph name="DEVICE_NAME" /> je ažuriran na verziju <ph name="VERSION" /></translation>
+<translation id="4971925105143343452">Delimično</translation>
 <translation id="498186245079027698">Proverite skener i probajte ponovo. Uverite se da ima dovoljno lokalne memorije za čuvanje skeniranih fajlova.</translation>
 <translation id="4985509611418653372">Pokreni</translation>
 <translation id="4987769320337599931">Zaštitni zid</translation>
@@ -552,6 +561,7 @@ Probajte da dodirnete mikrofon da biste me pitali nešto.</translation>
 <translation id="6189418609903030344">Kapacitet baterije se smanjuje tokom korišćenja</translation>
 <translation id="6191293864534840972">Serveri za imena su pogrešnog formata</translation>
 <translation id="6213737986933151570">CDMA1XRTT</translation>
+<translation id="6223066887782788441">Izađite iz prikaza preko celog ekrana</translation>
 <translation id="6223752125779001553">Nisu dostupni skeneri</translation>
 <translation id="6232017090690406397">Baterija</translation>
 <translation id="6235460611964961764">Ručno resetuj potrošnju podataka</translation>
@@ -680,10 +690,12 @@ Probajte da dodirnete mikrofon da biste me pitali nešto.</translation>
 <translation id="7415801143053185905">Veoma veliko HTTP kašnjenje</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7435977162516949853">{NUMBER_OF_PAGES,plural, =1{Skeniranje je završeno. Skenirana je 1 stranica}one{Skeniranje je završeno. Skenirana je {NUMBER_OF_PAGES} stranica}few{Skeniranje je završeno. Skenirane su {NUMBER_OF_PAGES} stranice}other{Skeniranje je završeno. Skenirano je {NUMBER_OF_PAGES} stranica}}</translation>
+<translation id="7458970041932198923">Povežite se na mrežu i ponovo učitajte stranicu da biste videli i podesili avatare.</translation>
 <translation id="7469648432129124067">Otkriven je portal</translation>
 <translation id="7481312909269577407">Prosledi</translation>
 <translation id="7487067081878637334">Tehnologija</translation>
 <translation id="7490813197707563893">MAC adresa</translation>
+<translation id="7491478667760509108">Izađite iz plutajućeg prikaza</translation>
 <translation id="7497215489070763236">CA sertifikat servera</translation>
 <translation id="7502658306369382406">IPv6 adresa</translation>
 <translation id="7515998400212163428">Android</translation>
@@ -834,6 +846,7 @@ Probajte da dodirnete mikrofon da biste me pitali nešto.</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8987565828374052507">{NUMBER_OF_PAGES,plural, =0{Skeniraj}=1{Skeniraj {NUMBER_OF_PAGES}. stranicu}one{Skeniraj {NUMBER_OF_PAGES}. stranicu}few{Skeniraj {NUMBER_OF_PAGES}. stranicu}other{Skeniraj {NUMBER_OF_PAGES}. stranicu}}</translation>
 <translation id="8997710128084572139">Uređaj ima <ph name="BATTERY_PERCENTAGE" />% baterije.</translation>
+<translation id="8998289560386111590">Nije dostupno na vašem uređaju</translation>
 <translation id="9003704114456258138">Frekvencija</translation>
 <translation id="9025198690966128418">Koristi kao lični uređaj</translation>
 <translation id="9028832514430399253">Uključite prekidač da biste izabrali opcije čuvara ekrana</translation>

@@ -4,7 +4,7 @@
 
 import {EventHandler} from '../common/event_handler.js';
 
-import {Commands} from './commands.js';
+import {SACommands} from './commands.js';
 import {Navigator} from './navigator.js';
 import {KeyboardRootNode} from './nodes/keyboard_node.js';
 import {PreferenceManager} from './preference_manager.js';
@@ -77,8 +77,8 @@ export class SwitchAccess {
    * for improved text input is enabled.
    * @return {boolean}
    */
-  improvedTextInputEnabled() {
-    return this.enableImprovedTextInput_;
+  static improvedTextInputEnabled() {
+    return SwitchAccess.instance.enableImprovedTextInput_;
   }
 
   /** @return {!SAConstants.Mode} */
@@ -157,7 +157,7 @@ export class SwitchAccess {
     // Navigator must be initialized first.
     Navigator.initializeSingletonInstance(desktop);
 
-    Commands.initialize();
+    SwitchAccess.commands = new SACommands();
     KeyboardRootNode.startWatchingVisibility();
     PreferenceManager.initialize();
   }

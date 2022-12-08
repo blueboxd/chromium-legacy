@@ -106,6 +106,7 @@
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/events/types/event_type.h"
+#include "ui/gfx/image/image_skia_rep.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/test/widget_animation_waiter.h"
 #include "ui/views/view.h"
@@ -4343,7 +4344,15 @@ TEST_P(QuickActionShowBubbleTest, ScrollFromShelfToShowAppList) {
                                        AppListShowSource::kScrollFromShelf,
                                        bucket_scroll_count);
 
-    GetAppListTestHelper()->DismissAndRunLoop();
+    // The same gesture on the opposite direction should dismiss the app list.
+    if (test.swipe_gesture) {
+      FlingBetweenLocations(navigation_widget_center,
+                            navigation_widget_center + offset);
+    } else {
+      DoTwoFingerScrollAtLocation(navigation_widget_center, -offset.x(),
+                                  -offset.y(), false);
+    }
+    GetAppListTestHelper()->WaitUntilIdle();
     GetAppListTestHelper()->CheckVisibility(false);
 
     // Action performed from the status area should not show the bubble
@@ -4426,7 +4435,13 @@ TEST_P(QuickActionShowBubbleTest, ScrollFromShelfToShowAppListOverShelfApps) {
                                        AppListShowSource::kScrollFromShelf,
                                        bucket_scroll_count);
 
-    GetAppListTestHelper()->DismissAndRunLoop();
+    // The same gesture on the opposite direction should dismiss the app list.
+    if (test.swipe_gesture)
+      FlingBetweenLocations(swipe_point, swipe_point + offset);
+    else
+      DoTwoFingerScrollAtLocation(swipe_point, -offset.x(), -offset.y(), false);
+
+    GetAppListTestHelper()->WaitUntilIdle();
     GetAppListTestHelper()->CheckVisibility(false);
 
     // Action performed over the hotseat should not show the bubble launcher

@@ -18,6 +18,7 @@ source_set("unit_tests") {
     "//chrome/browser",
     "//chrome/browser/ui",
     "//chrome/browser/web_applications",
+    "//chrome/browser/web_applications:web_applications_test_support",
     "//chrome/browser/web_applications:web_applications_unit_tests",
     "//components/services/app_service/public/cpp:intents",
     "//content/test:test_support",
@@ -29,6 +30,7 @@ source_set("browser_tests") {
   testonly = true
 
   sources = [
+    "commands/launch_web_app_command_browsertest.cc",
     "create_shortcut_browsertest.cc",
     "pwa_mixed_content_browsertest.cc",
     "sub_apps_service_impl_browsertest.cc",

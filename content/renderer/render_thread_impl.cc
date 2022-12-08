@@ -851,22 +851,6 @@ void RenderThreadImpl::InitializeCompositorThread() {
       compositor_task_runner_.get());
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-RenderThreadImpl::CreateVideoFrameCompositorTaskRunner() {
-  if (!video_frame_compositor_thread_) {
-    // All of Chromium's GPU code must know which thread it's running on, and
-    // be the same thread on which the rendering context was initialized. This
-    // is why this must be a SingleThreadTaskRunner instead of a
-    // SequencedTaskRunner.
-    video_frame_compositor_thread_ =
-        std::make_unique<base::Thread>("VideoFrameCompositor");
-    video_frame_compositor_thread_->StartWithOptions(
-        base::Thread::Options(base::ThreadType::kCompositing));
-  }
-
-  return video_frame_compositor_thread_->task_runner();
-}
-
 void RenderThreadImpl::InitializeWebKit(mojo::BinderMap* binders) {
   DCHECK(!blink_platform_impl_);
 
@@ -1054,12 +1038,10 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
           kGpuStreamPriorityMedia);
 
   const bool enable_video_decode_accelerator =
-
 #if BUILDFLAG(IS_LINUX)
       base::FeatureList::IsEnabled(media::kVaapiVideoDecodeLinux) &&
-#else
-      !cmd_line->HasSwitch(switches::kDisableAcceleratedVideoDecode) &&
 #endif  // BUILDFLAG(IS_LINUX)
+      !cmd_line->HasSwitch(switches::kDisableAcceleratedVideoDecode) &&
       (gpu_channel_host->gpu_feature_info()
            .status_values[gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE] ==
        gpu::kGpuFeatureStatusEnabled);
@@ -1126,7 +1108,9 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
 scoped_refptr<viz::RasterContextProvider>
 RenderThreadImpl::GetVideoFrameCompositorContextProvider(
     scoped_refptr<viz::RasterContextProvider> unwanted_context_provider) {
-  DCHECK(video_frame_compositor_thread_);
+  auto video_frame_compositor_task_runner =
+      blink_platform_impl_->VideoFrameCompositorTaskRunner();
+  DCHECK(video_frame_compositor_task_runner);
   if (video_frame_compositor_context_provider_ &&
       video_frame_compositor_context_provider_ != unwanted_context_provider) {
     return video_frame_compositor_context_provider_;
@@ -1134,7 +1118,7 @@ RenderThreadImpl::GetVideoFrameCompositorContextProvider(
 
   // Need to make sure these references are removed on the correct task runner;
   if (video_frame_compositor_context_provider_) {
-    video_frame_compositor_thread_->task_runner()->ReleaseSoon(
+    video_frame_compositor_task_runner->ReleaseSoon(
         FROM_HERE, std::move(video_frame_compositor_context_provider_));
   }
 

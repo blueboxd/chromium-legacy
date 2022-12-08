@@ -176,6 +176,7 @@
 <translation id="2491955442992294626">គ្រាប់ចុចមិនត្រូវបានធ្វើតេស្ត នៅពេលអ្នកកំពុងប្រើវិនដូផ្សេងទៀតទេ</translation>
 <translation id="2493126929778606526">រូបថតល្អបំផុត​របស់អ្នក ដែលបាន​ជ្រើសរើស​ដោយស្វ័យប្រវត្តិ</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
+<translation id="2498950423397131220">អណ្ដែត</translation>
 <translation id="2505327257735685095">ផ្ទុក​ផ្ទាំងរូបភាព​បច្ចុប្បន្ន​ឡើងវិញ</translation>
 <translation id="2513396635448525189">រូបភាពចូលគណនី</translation>
 <translation id="2517472476991765520">ស្កេន</translation>
@@ -341,6 +342,7 @@
 <translation id="4289849978083912975">បញ្ចាំងស្លាយ</translation>
 <translation id="4297501883039923494">បានឈប់ - មានបញ្ហា​ដែលមិនស្គាល់</translation>
 <translation id="4300073214558989">រូបភាព <ph name="IMAGE_COUNT" /></translation>
+<translation id="4311195029067684288">ពេញ</translation>
 <translation id="4333390807948134856">បានចុច​គ្រាប់ចុច <ph name="KEY_NAME" /></translation>
 <translation id="435692326371619097">គ្រប់គ្រង​ការ​កំណត់ APN បណ្ដាញ។ APN បង្កើត​ការ​តភ្ជាប់​រវាង​បណ្ដាញ​ចល័ត និង​អ៊ីនធឺណិត។ <ph name="BEGIN_LINK" />ស្វែងយល់បន្ថែម<ph name="END_LINK" /></translation>
 <translation id="4378373042927530923">មិនដំណើរការទេ</translation>
@@ -420,7 +422,9 @@
 <translation id="4921665434385737356">បានសាកថ្ម <ph name="RATE" /> ក្នុងរយៈពេល <ph name="NUM_SECONDS" /> វិនាទី។</translation>
 <translation id="4930320165497208503">ដើម្បីរៀបចំ ឬធ្វើបច្ចុប្បន្នភាពការតភ្ជាប់ សូមចូលទៅកាន់<ph name="BEGIN_LINK" />ការកំណត់<ph name="END_LINK" />។</translation>
 <translation id="4932733599132424254">កាលបរិច្ឆេទ</translation>
+<translation id="4937657825850660613">ពាក់​ក​ណ្តា​ល</translation>
 <translation id="4950314376641394653">កម្មវិធី​បង្កប់ <ph name="DEVICE_NAME" /> ត្រូវបាន​ដំឡើងកំណែ​ទៅកំណែ <ph name="VERSION" /></translation>
+<translation id="4971925105143343452">ផ្នែកខ្លះ</translation>
 <translation id="498186245079027698">ពិនិត្យមើល​កម្មវិធីស្កេន រួចព្យាយាមម្ដងទៀត។ ត្រូវប្រាកដថា មានទំហំផ្ទុក​ក្នុងឧបករណ៍​គ្រប់គ្រាន់ ដើម្បីរក្សាទុក​ឯកសារដែលបានស្កេន។</translation>
 <translation id="4985509611418653372">ដំណើរការ</translation>
 <translation id="4987769320337599931">ជញ្ជាំង​ភ្លើង</translation>
@@ -684,6 +688,7 @@
 <translation id="7415801143053185905">ការពន្យារ HTTP ខ្ពស់ខ្លាំង</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7435977162516949853">{NUMBER_OF_PAGES,plural, =1{ការស្កេន​បានបញ្ចប់។ បានស្កេន 1 ទំព័រ}other{ការស្កេន​បានបញ្ចប់។ បានស្កេន {NUMBER_OF_PAGES} ទំព័រ}}</translation>
+<translation id="7458970041932198923">សូម​ភ្ជាប់​ទៅ​បណ្ដាញ រួច​ផ្ទុក​ទំព័រ​ឡើងវិញ ដើម្បី​មើល​ និង​កំណត់​រូបអវតារ។</translation>
 <translation id="7469648432129124067">បានរកឃើញ​ច្រក</translation>
 <translation id="7481312909269577407">ទៅមុខ</translation>
 <translation id="7487067081878637334">បច្ចេកវិទ្យា</translation>
@@ -788,6 +793,7 @@
 <translation id="8498220429738806196">មុខងាររាប់ចំនួនចរាចរណ៍</translation>
 <translation id="8503813439785031346">ឈ្មោះអ្នកប្រើ</translation>
 <translation id="8503836310948963452">នៅសល់តែពីរបីនាទីទៀតប៉ុណ្ណោះ...</translation>
+<translation id="8508640263392900755">ព័ត៌មានលម្អិតអំពី​ APN</translation>
 <translation id="8528615187455571738">Crosvm</translation>
 <translation id="8575298406870537639">ក្រុមហ៊ុនសេវាទូរសព្ទ​របស់អ្នកអាច​តម្រូវឱ្យមានជម្រើសនេះ ដើម្បីភ្ជាប់ជាមួយ​បណ្ដាញរបស់ក្រុមហ៊ុននោះ។ សូមទាក់ទងក្រុមហ៊ុន​សេវាទូរសព្ទរបស់អ្នក ដើម្បីទទួលបាន​ព័ត៌មានលម្អិត។</translation>
 <translation id="8576249514688522074">មិនបាន​ចាប់​ផ្ដើម</translation>
@@ -838,6 +844,7 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8987565828374052507">{NUMBER_OF_PAGES,plural, =0{ស្កេន}=1{ស្កេនទំព័រទី {NUMBER_OF_PAGES}}other{ស្កេនទំព័រទី {NUMBER_OF_PAGES}}}</translation>
 <translation id="8997710128084572139">ឧបករណ៍មានថ្ម <ph name="BATTERY_PERCENTAGE" />%។</translation>
+<translation id="8998289560386111590">មិន​អាច​ប្រើ​​នៅ​លើ​ឧបករណ៍​របស់​អ្នក​បានទេ</translation>
 <translation id="9003704114456258138">ហ្វ្រេកង់</translation>
 <translation id="9025198690966128418">ប្រើប្រាស់ជាឧបករណ៍ផ្ទាល់ខ្លួន</translation>
 <translation id="9028832514430399253">បើកប៊ូតុងបិទ/បើក ដើម្បីជ្រើសរើសជម្រើសធាតុរក្សាអេក្រង់</translation>

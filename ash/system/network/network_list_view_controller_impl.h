@@ -21,10 +21,15 @@
 #include "ash/system/tray/tri_view.h"
 #include "base/timer/timer.h"
 #include "chromeos/ash/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/views/controls/separator.h"
+
+namespace views {
+class ImageView;
+}
 
 namespace ash {
 
@@ -46,6 +51,9 @@ class ASH_EXPORT NetworkListViewControllerImpl
   void SetDefaultNetworkForTesting(
       chromeos::network_config::mojom::NetworkStatePropertiesPtr
           default_network);
+
+  void SetManagedNetworkPropertiesForTesting(
+      chromeos::network_config::mojom::ManagedPropertiesPtr managed_properties);
 
  protected:
   TrayNetworkStateModel* model() { return model_; }
@@ -69,6 +77,7 @@ class ASH_EXPORT NetworkListViewControllerImpl
     kWifiSeparator = 16,
     kWifiSectionHeader = 17,
     kWifiStatusMessage = 18,
+    kConnectionWarningIcon = 19
   };
 
   // Map of network guids and their corresponding list item views.
@@ -98,9 +107,10 @@ class ASH_EXPORT NetworkListViewControllerImpl
           chromeos::network_config::mojom::NetworkStatePropertiesPtr>&
           networks);
 
-  // Adds a warning indicator if connected to a VPN or if the default network
-  // has a proxy installed.
-  size_t ShowConnectionWarningIfVpnOrProxy(size_t index);
+  // Adds a warning indicator if connected to a VPN, if the default network
+  // has a proxy installed or if the secure DNS template URIs contain user or
+  // device identifiers.
+  size_t ShowConnectionWarningIfNetworkMonitored(size_t index);
 
   // Returns true if mobile data section should be added to view.
   bool ShouldMobileDataSectionBeShown();
@@ -144,8 +154,9 @@ class ASH_EXPORT NetworkListViewControllerImpl
       NetworkIdToViewMap* previous_views);
 
   // Creates a view that indicates connections might be monitored if
-  // connected to a VPN or if the default network has a proxy installed.
-  void ShowConnectionWarning();
+  // connected to a VPN, if the default network has a proxy installed or if the
+  // secure DNS template URIs contain identifiers.
+  void ShowConnectionWarning(bool show_managed_icon);
 
   // Determines whether a scan for WiFi and Tether networks should be requested
   // and updates the scanning bar accordingly.
@@ -161,8 +172,31 @@ class ASH_EXPORT NetworkListViewControllerImpl
   // Focuses on last selected view in NetworkDetailedNetworkView scroll list.
   void FocusLastSelectedView();
 
+  // Sets an icon next to the connection warning text; if `use_managed_icon` is
+  // true, the managed icon is shown, otherwise the system info icon. If an icon
+  // already exists, it will be replaced.
+  void SetConnectionWarningIcon(TriView* parent, bool use_managed_icon);
+
   const chromeos::network_config::mojom::NetworkStateProperties*
   GetDefaultNetwork();
+
+  // Fetches the managed properties for the network identified by `guid`
+  // asynchronously and calls `callback` with the result. The `guid` belongs
+  // either to the default network or to the connected VPN.
+  void GetManagedProperties(const std::string& guid,
+                            chromeos::network_config::mojom::CrosNetworkConfig::
+                                GetManagedPropertiesCallback callback);
+
+  // Called when the managed properties for the network identified by `guid` are
+  // fetched.
+  void OnGetManagedPropertiesResult(
+      const std::string& guid,
+      chromeos::network_config::mojom::ManagedPropertiesPtr properties);
+
+  // Checks if the network is managed and, if true, replaces the system icon
+  // shown next to the privacy warning message with a managed icon. Only called
+  // if the default network has a proxy configured or if a VPN is active.
+  void MaybeShowConnectionWarningManagedIcon(bool using_proxy);
 
   TrayNetworkStateModel* model_;
 
@@ -179,6 +213,12 @@ class ASH_EXPORT NetworkListViewControllerImpl
   views::Separator* mobile_separator_view_ = nullptr;
   TriView* connection_warning_ = nullptr;
 
+  // Pointer to the icon displayed next to the connection warning message when
+  // a proxy or a VPN is active. Owned by `connection_warning_`. If the network
+  // is monitored by the admin, via policy, it displays the managed icon,
+  // otherwise the system icon.
+  views::ImageView* connection_warning_icon_ = nullptr;
+
   NetworkListWifiHeaderView* wifi_header_view_ = nullptr;
   views::Separator* wifi_separator_view_ = nullptr;
   TrayInfoLabel* wifi_status_message_ = nullptr;
@@ -189,10 +229,19 @@ class ASH_EXPORT NetworkListViewControllerImpl
 
   bool has_mobile_networks_;
   bool has_wifi_networks_;
-  bool is_vpn_connected_;
   bool is_mobile_network_enabled_;
   bool is_wifi_enabled_;
+  std::string connected_vpn_guid_;
 
+  // Can be nullopt while the managed properties of the network are being
+  // fetched via mojo. If one of `is_proxy_managed_` or `is_vpn_managed_` is
+  // true, the system icon shown next to the privacy warning is replaced by a
+  // managed icon.
+  absl::optional<bool> is_proxy_managed_;
+  absl::optional<bool> is_vpn_managed_;
+
+  chromeos::network_config::mojom::ManagedPropertiesPtr
+      managed_network_properties_for_testing_ = nullptr;
   chromeos::network_config::mojom::NetworkStatePropertiesPtr
       default_network_for_testing_ = nullptr;
 

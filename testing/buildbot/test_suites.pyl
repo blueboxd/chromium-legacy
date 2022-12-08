@@ -4071,15 +4071,6 @@
       'wayland_client_tests': {},
     },
 
-    'linux_example_builder_gtests': {
-      'base_unittests': {},
-      'interactive_ui_tests': {
-        'swarming': {
-          'shards': 3,
-        },
-      },
-    },
-
     'linux_flavor_specific_chromium_gtests': {
       # Android, Chrome OS and Linux
       'sandbox_linux_unittests': {},
@@ -7036,13 +7027,11 @@
         'variants': [
           'LACROS_JACUZZI',
         ],
-        'ci_only': True,
       },
       'lacros_cq_tast_tests_jacuzzi': {
         'variants': [
           'LACROS_JACUZZI',
         ],
-        'ci_only': True,
       },
     },
 

@@ -31,7 +31,6 @@ Başlamaq üçün aşağıdakıları yoxlaya bilərsiniz.</translation>
 <translation id="1148499908455722006"><ph name="USER_NAME" /> üçün məlumat dialoqunu açın</translation>
 <translation id="1150989369772528668">Təqvim</translation>
 <translation id="1153356358378277386">Birləşmiş cihazlar</translation>
-<translation id="1165712434476988950">Güncəlləməni tətbiq etmək üçün cihazı yenidən başlatmaq tələb olunur.</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">USB-C kabeliniz displeylərə düzgün qoşulmaya bilər</translation>
 <translation id="1175572348579024023">Sürüşdürün</translation>
@@ -358,7 +357,6 @@ Başlamaq üçün aşağıdakıları yoxlaya bilərsiniz.</translation>
 <translation id="296762781903199866"><ph name="LANGUAGE" /> dilində danışıq fayllarını endirmək mümkün olmadı</translation>
 <translation id="2970920913501714344">Tətbiq, artırma və temaları quraşdırın</translation>
 <translation id="2977598380246111477">Növbəti nömrə</translation>
-<translation id="2981684127883932071">Təkliflərin göstərilməsi</translation>
 <translation id="2985148236010982088">Bütün tətbiqlərə baxın</translation>
 <translation id="2992327365391326550">Cihazın mikrofon düyməsi deaktivdir.</translation>
 <translation id="2996462380875591307">Yüksək Kontrast Rejimi aktiv edildi. Rejimi deaktiv etmək üçün Ctrl+Search+D düymələrini basın.</translation>
@@ -669,6 +667,7 @@ Cihazınızı enerji mənbəyinə qoşun.</translation>
 <translation id="4666082839192943839">Bütün kameraları hər zaman bloklamaq üçün bu cihazda kamera girişini deaktiv edin.</translation>
 <translation id="4666911709726371538">Daha çox tətbiq</translation>
 <translation id="4667099493359681081"><ph name="FILENAME" /> endirilir</translation>
+<translation id="468293128311738995">Telefonunuzdan tətbiqlər</translation>
 <translation id="4690510401873698237">Rəf aşağıdadır</translation>
 <translation id="4696813013609194136">Cihazı valideyn kodu ilə kiliddən çıxarın</translation>
 <translation id="4702647871202761252">Məxfilik ekranı deaktivdir</translation>
@@ -925,12 +924,10 @@ Cihazınızı enerji mənbəyinə qoşun.</translation>
 <translation id="6103838137565245112">sistem</translation>
 <translation id="6107292179555508368">Bu cihazda mikrofon və kamera girişləri deaktivdir</translation>
 <translation id="6114505516289286752"><ph name="LANGUAGE" /> dilində danışıq faylları endirilib</translation>
-<translation id="6116825164611323644">Bu cihazda kameraya giriş deaktivdir</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042"><ph name="FILENAME" /> endirilməsini təsdiq edin</translation>
 <translation id="612734058257491180">Google Assistent qonaq sessiyasında əlçatan deyil.</translation>
 <translation id="6129953537138746214">Boşluq</translation>
-<translation id="6134259848159370930">Cihaz, tətbiqlər, ayarlar və vebdə axtarın.</translation>
 <translation id="6137566720514957455"><ph name="USER_EMAIL_ADDRESS" /> üçün silinmə dialoqunu açın</translation>
 <translation id="6141988275892716286">Endirməni təsdiq edin</translation>
 <translation id="6154006699632741460">Əlavə cihaz dəstəklənmir</translation>
@@ -1291,6 +1288,7 @@ Yeni quraşdırma</translation>
 <translation id="8142441511840089262">2 dəfə klikləyin</translation>
 <translation id="8142699993796781067">Şəxsi şəbəkə</translation>
 <translation id="8144760705599030999">Digər cihazlarla sürətli birləşdirmək üçün <ph name="NAME" /> cihazınızı <ph name="EMAIL" /> hesabında yadda saxlayın</translation>
+<translation id="8144914663975476336">Səsyazma formatını seçin</translation>
 <translation id="8149413265954228307">Bluetooth ayarlarını göstərin. <ph name="STATE_TEXT" />.</translation>
 <translation id="8152092012181020186">Bağlamaq üçün Ctrl + W düymələrinə basın.</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, Avto-tamamlama</translation>
@@ -1388,7 +1386,6 @@ Yeni quraşdırma</translation>
 <translation id="8666856788528804727">Cihazınızı ayarlamaq üçün <ph name="NAME" /> tətbiqini açın</translation>
 <translation id="8676770494376880701">Enerjiyə qənaət edən şarjer qoşuldu</translation>
 <translation id="8683506306463609433">Performansın izlənməsi aktivdir</translation>
-<translation id="8685326675965865247">Cihaz, tətbiqlər, ayarlar və vebdə axtarın. Tətbiqləri axtarmaq üçün ox düymələrindən istifadə edin.</translation>
 <translation id="8703634754197148428">Yazmanı başladın. Yazma başladıqda Alt + Shift + L düymələri ilə rəfə keçin və yazmanın dayandırılması düyməsini tapın</translation>
 <translation id="8721053961083920564">Səsi aktiv edin. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">Tam ekran çəkimi</translation>
@@ -1397,7 +1394,6 @@ Yeni quraşdırma</translation>
 <translation id="8735678380411481005">Klaviatura arxa işığı rəngi</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />,
         <ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8752416742247198423">Kamera icazəsi olan tətbiqlərə və veb səhifələrə bu cihaza qoşulmuş kameralardan istifadə etməyə icazə vermək üçün kameraya girişi aktiv edin.</translation>
 <translation id="8755498163081687682">Kimliyinizi doğrulayın: <ph name="ORIGIN_NAME" /> siz olduğunuzu təsdiqləmək istəyir</translation>
 <translation id="875593634123171288">VPN ayarlarını göstərin</translation>
 <translation id="8759408218731716181">Çoxsaylı giriş ayarlana bilmir</translation>
@@ -1464,7 +1460,6 @@ Yeni quraşdırma</translation>
 <translation id="9089416786594320554">Daxiletmə metodları</translation>
 <translation id="9091626656156419976"><ph name="DISPLAY_NAME" /> silindi</translation>
 <translation id="9098969848082897657">Telefonu səssiz edin</translation>
-<translation id="9099154003160514616">Lacros güncəlləməsi əlçatandır</translation>
 <translation id="9100887602489003640">Profil əlavə edilir. Bir neçə dəqiqə gözləyin.</translation>
 <translation id="9105450214093926548">Lacros brauzeri işləyərkən ikinci bir istifadəçinin daxil olması dəstəklənmir. Bunun əvəzinə Lacros'da ikinci bir brauzer profili istifadə edin və ya Lacros'u bağlayıb yenidən cəhd edin.</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> və ya <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>

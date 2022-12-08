@@ -52,12 +52,6 @@ BASE_FEATURE(kAnonymousUpdateChecks,
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-BASE_FEATURE(kAppDiscoveryForOobe,
-             "AppDiscoveryForOobe",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#endif
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
 BASE_FEATURE(kAppManagementAppDetails,
              "AppManagementAppDetails",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -261,7 +255,7 @@ BASE_FEATURE(kPreinstalledWebAppDuplicationFixer,
 // DB.
 BASE_FEATURE(kOsIntegrationSubManagers,
              "OsIntegrationSubManagers",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 const base::FeatureParam<OsIntegrationSubManagersStage>::Option
     sub_manager_stages[] = {
         {OsIntegrationSubManagersStage::kWriteConfig, "write_config"},
@@ -345,11 +339,14 @@ BASE_FEATURE(kDesktopPWAsWebBundles,
 BASE_FEATURE(kChromeAppsDeprecation,
              "ChromeAppsDeprecation",
              base::FEATURE_ENABLED_BY_DEFAULT);
-//  Controls whether force installed and preinstalled apps should be exempt from
-//  deprecation.
+// Controls whether force installed and preinstalled apps should be exempt from
+// deprecation.
 BASE_FEATURE(kKeepForceInstalledPreinstalledApps,
              "KeepForceInstalledPreinstalledApps",
              base::FEATURE_ENABLED_BY_DEFAULT);
+// Controls if the 'launch anyways' button is shown.
+const base::FeatureParam<bool> kChromeAppsDeprecationHideLaunchAnyways{
+    &kChromeAppsDeprecation, "HideLaunchAnyways", false};
 #endif
 
 // Enables notification permission revocation for origins that may send
@@ -640,6 +637,11 @@ BASE_FEATURE(kHideWebAppOriginText,
 
 // Sets whether the HTTPS-Only Mode setting is displayed in the settings UI.
 BASE_FEATURE(kHttpsOnlyMode, "HttpsOnlyMode", base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables automatically upgrading main frame navigations to HTTPS.
+BASE_FEATURE(kHttpsUpgrades,
+             "HttpsUpgrades",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_MAC)
 BASE_FEATURE(kImmersiveFullscreen,
@@ -1078,11 +1080,6 @@ BASE_FEATURE(kTPMFirmwareUpdate,
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if !BUILDFLAG(IS_ANDROID)
-// Enables logging UKMs for background tab activity by TabActivityWatcher.
-BASE_FEATURE(kTabMetricsLogging,
-             "TabMetricsLogging",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables the demo version of the Support Tool. The tool will be available in
 // chrome://support-tool. See go/support-tool-v1-design for more details.
 BASE_FEATURE(kSupportTool, "SupportTool", base::FEATURE_DISABLED_BY_DEFAULT);

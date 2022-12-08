@@ -186,9 +186,8 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
   bool had_layer = HasLayer();
   bool layer_was_self_painting = had_layer && Layer()->IsSelfPaintingLayer();
   bool was_horizontal_writing_mode = IsHorizontalWritingMode();
-  bool could_contain_fixed = ComputeIsFixedContainer(old_style);
-  bool could_contain_absolute =
-      could_contain_fixed || ComputeIsAbsoluteContainer(old_style);
+  bool could_contain_fixed = CanContainFixedPositionObjects();
+  bool could_contain_absolute = CanContainAbsolutePositionObjects();
 
   LayoutObject::StyleDidChange(diff, old_style);
   UpdateFromStyle();
@@ -574,6 +573,20 @@ void LayoutBoxModelObject::UpdateFromStyle() {
   SetCanContainAbsolutePositionObjects(
       ComputeIsAbsoluteContainer(&style_to_use));
   SetCanContainFixedPositionObjects(ComputeIsFixedContainer(&style_to_use));
+}
+
+PhysicalRect LayoutBoxModelObject::PhysicalVisualOverflowRectIncludingFilters()
+    const {
+  NOT_DESTROYED();
+  PhysicalRect bounds_rect = PhysicalVisualOverflowRect();
+  if (!StyleRef().HasFilter())
+    return bounds_rect;
+  gfx::RectF float_rect(bounds_rect);
+  gfx::RectF filter_reference_box = Layer()->FilterReferenceBox();
+  if (!filter_reference_box.size().IsZero())
+    float_rect.UnionEvenIfEmpty(filter_reference_box);
+  float_rect = Layer()->MapRectForFilter(float_rect);
+  return PhysicalRect::EnclosingRect(float_rect);
 }
 
 LayoutBlock* LayoutBoxModelObject::ContainingBlockForAutoHeightDetection(

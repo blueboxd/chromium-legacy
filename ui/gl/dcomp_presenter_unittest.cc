@@ -157,6 +157,7 @@ class DCompPresenterTest : public testing::Test {
       return;
     }
     surface_ = CreateDCompPresenter();
+    context_ = CreateGLContext(surface_);
     SetDirectCompositionScaledOverlaysSupportedForTesting(false);
     SetDirectCompositionOverlayFormatUsedForTesting(DXGI_FORMAT_NV12);
   }
@@ -190,6 +191,7 @@ class DCompPresenterTest : public testing::Test {
       scoped_refptr<DCompPresenter> surface) {
     scoped_refptr<GLContext> context =
         gl::init::CreateGLContext(nullptr, surface.get(), GLContextAttribs());
+    EXPECT_TRUE(context->MakeCurrent(surface.get()));
     return context;
   }
 

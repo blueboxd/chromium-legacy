@@ -1154,14 +1154,6 @@
       "use_remoteexec": true
     }
   },
-  "linux-example-builder": {
-    "gn_args": {
-      "dcheck_always_on": false,
-      "is_component_build": false,
-      "is_debug": false,
-      "use_remoteexec": true
-    }
-  },
   "linux-fieldtrial-rel": {
     "gn_args": {
       "dcheck_always_on": false,
@@ -1521,6 +1513,15 @@
     }
   },
   "win10-wpt-content-shell-fyi-rel": {
+    "gn_args": {
+      "dcheck_always_on": true,
+      "is_component_build": false,
+      "is_debug": false,
+      "symbol_level": 1,
+      "use_remoteexec": true
+    }
+  },
+  "win11-wpt-content-shell-fyi-rel": {
     "gn_args": {
       "dcheck_always_on": true,
       "is_component_build": false,

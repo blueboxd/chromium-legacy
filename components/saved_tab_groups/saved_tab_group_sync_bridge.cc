@@ -35,6 +35,9 @@
 #include "base/logging.h"
 
 namespace {
+constexpr base::TimeDelta discard_orphaned_tabs_threshold =
+    base::Microseconds(base::Time::kMicrosecondsPerDay * 90);
+
 std::unique_ptr<syncer::EntityData> CreateEntityData(
     std::unique_ptr<sync_pb::SavedTabGroupSpecifics> specific) {
   std::unique_ptr<syncer::EntityData> entity_data =
@@ -85,7 +88,7 @@ absl::optional<syncer::ModelError> SavedTabGroupSyncBridge::MergeSyncData(
   // Update sync with any locally stored data not currently stored in sync.
   for (const SavedTabGroup& group : model_->saved_tab_groups()) {
     for (const SavedTabGroupTab& tab : group.saved_tabs()) {
-      if (synced_items.count(tab.guid().AsLowercaseString()))
+      if (synced_items.count(tab.saved_tab_guid().AsLowercaseString()))
         continue;
       SendToSync(tab.ToSpecifics(), metadata_change_list.get());
     }
@@ -209,7 +212,7 @@ void SavedTabGroupSyncBridge::SavedTabGroupRemovedLocally(
 
   RemoveEntitySpecific(removed_group->saved_guid(), write_batch.get());
   for (const SavedTabGroupTab& tab : removed_group->saved_tabs())
-    RemoveEntitySpecific(tab.guid(), write_batch.get());
+    RemoveEntitySpecific(tab.saved_tab_guid(), write_batch.get());
 
   store_->CommitWriteBatch(
       std::move(write_batch),
@@ -371,8 +374,18 @@ void SavedTabGroupSyncBridge::ResolveTabsMissingGroups(
     SavedTabGroup* group = model_->Get(
         base::GUID::ParseLowercase(tab_iterator->tab().group_guid()));
     if (!group) {
-      ++tab_iterator;
-      continue;
+      base::Time last_update_time = base::Time::FromDeltaSinceWindowsEpoch(
+          base::Microseconds(tab_iterator->update_time_windows_epoch_micros()));
+      base::Time now = base::Time::Now();
+
+      // Discard orphaned tabs that have not been updated for 90 days.
+      if (now - last_update_time >= discard_orphaned_tabs_threshold) {
+        RemoveEntitySpecific(base::GUID::ParseLowercase(tab_iterator->guid()),
+                             write_batch);
+        tab_iterator = tabs_missing_groups_.erase(tab_iterator);
+      } else {
+        ++tab_iterator;
+      }
     } else {
       write_batch->WriteData(tab_iterator->guid(),
                              tab_iterator->SerializeAsString());

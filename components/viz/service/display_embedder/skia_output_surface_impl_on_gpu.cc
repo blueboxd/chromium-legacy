@@ -625,6 +625,16 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
     return;
   }
 
+  // When CompositorGpuThread is disabled, this cleanup for gpu main
+  // thread context already happens in raster decoder and hence we do not want
+  // to do additional cleanup here on same context. That results in more skia
+  // reported memory on mac - crbug.com/1396279.
+  // When CompositorGpuThread is enabled, we want to do cleanup here for every
+  // render pass instead of once per frame as it results in less outstanding
+  // allocated memory.
+  if (dependency_->IsUsingCompositorGpuThread())
+    dependency_->ScheduleGrContextCleanup();
+
   // Only overlayed images require end_semaphore synchronization.
   DCHECK(is_overlay || end_semaphores.empty());
 
@@ -1575,8 +1585,8 @@ void SkiaOutputSurfaceImplOnGpu::BeginAccessImages(
     // Texture parameters can be modified by concurrent reads so reset them
     // before compositing from the texture. See https://crbug.com/1092080.
     if (is_gl && context->maybe_concurrent_reads()) {
-      auto* promise_texture = context->promise_image_texture();
-      if (promise_texture) {
+      for (SkPromiseImageTexture* promise_texture :
+           context->promise_image_textures()) {
         GrBackendTexture backend_texture = promise_texture->backendTexture();
         backend_texture.glTextureParametersModified();
       }
@@ -1586,10 +1596,12 @@ void SkiaOutputSurfaceImplOnGpu::BeginAccessImages(
 
 void SkiaOutputSurfaceImplOnGpu::ResetStateOfImages() {
   for (auto& context : image_contexts_with_end_access_state_) {
-    if (!gr_context()->setBackendTextureState(
-            context.first->promise_image_texture()->backendTexture(),
-            *context.second)) {
-      DLOG(ERROR) << "setBackendTextureState() failed.";
+    for (SkPromiseImageTexture* promise_texture :
+         context.first->promise_image_textures()) {
+      if (!gr_context()->setBackendTextureState(
+              promise_texture->backendTexture(), *context.second)) {
+        DLOG(ERROR) << "setBackendTextureState() failed.";
+      }
     }
   }
   image_contexts_with_end_access_state_.clear();

@@ -308,7 +308,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="168693727862418163">Nilai kebijakan ini gagal memvalidasi skemanya dan akan diabaikan.</translation>
 <translation id="168841957122794586">Sertifikat server berisi kunci kriptografis yang lemah.</translation>
 <translation id="1697532407822776718">Anda sudah siap!</translation>
-<translation id="1699570257714336246">Informasi tidak ada</translation>
 <translation id="1702815194757674443">ROC 16K</translation>
 <translation id="1703835215927279855">Letter</translation>
 <translation id="1706625117072057435">Tingkat perbesar/perkecil</translation>
@@ -1023,7 +1022,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="3584299510153766161">Dua lubang di bawah</translation>
 <translation id="3586931643579894722">Sembunyikan detail</translation>
 <translation id="3587738293690942763">Tengah</translation>
-<translation id="3595645257662173296">Bukti apa yang mendukungnya?</translation>
 <translation id="3595699422137460894">{NUM_DAYS,plural, =0{Anda dapat mereset grup kapan saja. Perlu waktu sekitar 1 hari untuk bergabung ke grup baru.}=1{Anda dapat mereset grup kapan saja. Perlu waktu sekitar 1 hari untuk bergabung ke grup baru.}other{Anda dapat mereset grup kapan saja. Perlu waktu sekitar {NUM_DAYS} hari untuk bergabung ke grup baru.}}</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3603507503523709">Aplikasi diblokir oleh administrator Anda</translation>
@@ -1163,7 +1161,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="3961148744525529027">Lembar handler pembayaran setengah terbuka</translation>
 <translation id="3962859241508114581">Lagu Sebelumnya</translation>
 <translation id="3963721102035795474">Mode Pembaca</translation>
-<translation id="3963837677003247395">Lanjutkan secara manual?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{Tidak ada}=1{Dari 1 situs }other{Dari # situs }}</translation>
 <translation id="3969052498612555048">Tidak dapat menemukan kode? <ph name="BEGIN_LINK" />Dapatkan kode baru<ph name="END_LINK" /></translation>
 <translation id="397105322502079400">Menghitung...</translation>
@@ -1365,7 +1362,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="4434045419905280838">Pop-up dan pengalihan</translation>
 <translation id="443673843213245140">Penggunaan proxy dinonaktifkan tetapi konfigurasi proxy yang eksplisit ditentukan.</translation>
 <translation id="4441832193888514600">Diabaikan karena kebijakan ini hanya dapat disetel sebagai kebijakan pengguna cloud.</translation>
-<translation id="4450893287417543264">Jangan tampilkan lagi</translation>
 <translation id="4451135742916150903">Dapat meminta untuk terhubung ke perangkat HID</translation>
 <translation id="4452328064229197696">Sandi yang baru saja Anda gunakan terekspos dalam pelanggaran data. Untuk mengamankan akun Anda, Pengelola Sandi Google merekomendasikan untuk memeriksa sandi tersimpan Anda.</translation>
 <translation id="4460315069258617173">Diizinkan sampai Anda menutup tab untuk situs ini</translation>
@@ -1508,7 +1504,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="4813512666221746211">Kesalahan jaringan</translation>
 <translation id="4816492930507672669">Paskan dengan halaman</translation>
 <translation id="4819347708020428563">Edit anotasi dalam tampilan default?</translation>
-<translation id="4823325221257637040">Memulai</translation>
 <translation id="4825496307559726072"><ph name="CREATE_GOOGLE_SHEET_FOCUSED_FRIENDLY_MATCH_TEXT" />, tekan Tab lalu Enter untuk membuat Spreadsheet Google baru dengan cepat</translation>
 <translation id="4825507807291741242">Kuat</translation>
 <translation id="483241715238664915">Aktifkan peringatan</translation>
@@ -1942,7 +1937,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="5937560539988385583">Halaman diterjemahkan</translation>
 <translation id="5938153366081463283">Tambahkan kartu virtual</translation>
 <translation id="5938793338444039872">Troy</translation>
-<translation id="5946937721014915347">Membuka <ph name="SITE_NAME" />…</translation>
 <translation id="5947508410139465809">File yang Anda upload atau lampirkan akan dikirimkan ke Google Cloud atau pihak ketiga untuk analisis. Misalnya, file mungkin dipindai untuk mendeteksi data sensitif atau malware dan mungkin disimpan berdasarkan kebijakan perusahaan.</translation>
 <translation id="5951495562196540101">Tidak dapat mendaftar dengan akun konsumen (tersedia paket lisensi).</translation>
 <translation id="5953516610448771166">Teks Otomatis tidak tersedia untuk media ini. Untuk mendapatkan teks, blokir <ph name="CONTENT_SETTINGS" /> untuk situs ini.</translation>
@@ -1964,6 +1958,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="5995727681868049093">Kelola info, privasi, dan keamanan di Akun Google Anda</translation>
 <translation id="5997247540087773573">Sandi yang baru saja Anda gunakan terekspos dalam pelanggaran data. Untuk mengamankan akun Anda, Pengelola Sandi Google merekomendasikan untuk mengubah sandi tersebut sekarang dan memeriksa sandi tersimpan Anda.</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> hasil untuk '<ph name="SEARCH_TEXT" />'</translation>
+<translation id="6005765687956866568">Info yang diisi otomatis telah dihapus dari formulir</translation>
 <translation id="6006365096047131769">3 x 5 inci (7 x 12 cm)</translation>
 <translation id="6006484371116297560">Klasik</translation>
 <translation id="6008122969617370890">Urutan N-ke-1</translation>
@@ -2033,7 +2028,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="6165508094623778733">Pelajari selengkapnya</translation>
 <translation id="6167577165590485365">Upaya pengambilan terakhir:</translation>
 <translation id="6169916984152623906">Anda kini dapat mengakses secara rahasia, dan orang lain yang menggunakan perangkat ini tidak akan melihat aktivitas Anda. Namun, hasil download dan bookmark akan disimpan.</translation>
-<translation id="6176716740821145453">Luangkan waktu sejenak untuk mempertimbangkan akurasi</translation>
 <translation id="6177128806592000436">Sambungan Anda ke situs ini tidak aman</translation>
 <translation id="6177531123306197852">Envelope C2</translation>
 <translation id="6180316780098470077">Interval percobaan ulang</translation>
@@ -2079,7 +2073,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="6295618774959045776">CVC:</translation>
 <translation id="6300452962057769623">{0,plural, =0{Perangkat akan dimulai ulang sekarang}=1{Perangkat akan dimulai ulang dalam 1 detik}other{Perangkat akan dimulai ulang dalam # detik}}</translation>
 <translation id="6301104306974789820">Dapatkan notifikasi pemantauan harga</translation>
-<translation id="6302269476990306341">Asisten Google di Chrome sedang dihentikan</translation>
 <translation id="6305205051461490394"><ph name="URL" /> tidak dapat dijangkau.</translation>
 <translation id="6311165245110979290">Kartu virtual tersedia</translation>
 <translation id="6312113039770857350">Halaman web tidak tersedia</translation>
@@ -2274,6 +2267,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="6826993739343257035">Izinkan AR?</translation>
 <translation id="6828866289116430505">Genetika</translation>
 <translation id="6831043979455480757">Terjemahkan</translation>
+<translation id="6832753933931306326">Formulir telah diisi</translation>
 <translation id="6842196666980060516">184 x 260 mm</translation>
 <translation id="6846340164947227603">Gunakan nomor kartu virtual...</translation>
 <translation id="6852204201400771460">Muat ulang aplikasi?</translation>
@@ -2334,7 +2328,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="6971439137020188025">Buat presentasi Google baru di Slide dengan cepat</translation>
 <translation id="6972629891077993081">Perangkat HID</translation>
 <translation id="6973656660372572881">Server proxy tetap dan URL skrip .pac telah ditentukan.</translation>
-<translation id="6973932557599545801">Maaf, saya tidak bisa membantu lagi. Silakan lanjutkan sendiri.</translation>
 <translation id="6973988895180423160">3,5 x 5 inci (8 x 12 cm)</translation>
 <translation id="6978236010531171013">Tetap bagikan</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -2528,7 +2521,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /> tentang masalah ini.</translation>
 <translation id="7455133967321480974">Gunakan default global (Cekal)</translation>
 <translation id="745640750744109667">A0x3</translation>
-<translation id="7460618730930299168">Penyaringan ini berbeda dengan yang telah Anda pilih. Lanjutkan?</translation>
 <translation id="7461924472993315131">Sematkan</translation>
 <translation id="7463075493919226237">Sepak bola Australia</translation>
 <translation id="7465963048299965912">10 x 13 inci (25 x 33 cm)</translation>
@@ -2537,7 +2529,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="7481312909269577407">Maju</translation>
 <translation id="7481603210197454575">Envelope Italian</translation>
 <translation id="7485870689360869515">Tidak ada data yang ditemukan.</translation>
-<translation id="7485948220959728508">Siapa yang memberikan informasi ini?</translation>
 <translation id="748745328507845862">Konser &amp; festival musik</translation>
 <translation id="7489473601138133813">Referensi &amp; perencanaan karier</translation>
 <translation id="7495528107193238112">Konten ini diblokir. Hubungi pemilik situs untuk memperbaiki masalah.</translation>
@@ -2643,7 +2634,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="7682451652090915298">Rugbi</translation>
 <translation id="7687186412095877299">Mengisi formulir pembayaran dengan metode pembayaran yang Anda simpan</translation>
 <translation id="7687305263118037187">Waktu percobaan ulang habis</translation>
-<translation id="7687451951329798396">Apa kata sumber lain?</translation>
 <translation id="7690647519407127574">Kartu Pos Oufuku Hagaki</translation>
 <translation id="7693583928066320343">Urutan halaman diterima</translation>
 <translation id="7696089921647603491">Musik rock klasik &amp; lawas</translation>
@@ -2728,6 +2718,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="7950027195171824198">Kelola preferensi cookie di setelan Chrome</translation>
 <translation id="7951415247503192394">(32 bit)</translation>
 <translation id="7952192831285741665">Eropa EDP</translation>
+<translation id="7952804540472583406"><ph name="BEGIN_LINK" />Login<ph name="END_LINK" /> ke jaringan.</translation>
 <translation id="7953569069500808819">Jahit tepi di atas</translation>
 <translation id="7956713633345437162">Bookmark seluler</translation>
 <translation id="7961015016161918242">Jangan pernah</translation>
@@ -2845,6 +2836,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="8241707690549784388">Halaman yang dicari menggunakan informasi yang Anda masukkan. Kembali ke halaman tersebut dapat menyebabkan pengulangan tindakan apa pun yang Anda lakukan. Apakah Anda ingin melanjutkan?</translation>
 <translation id="8241712895048303527">Blokir di situs ini</translation>
 <translation id="8242426110754782860">Lanjutkan</translation>
+<translation id="8245703462678310750">Tekan dan tahan |<ph name="ACCELERATOR" />| untuk keluar dari layar penuh dan melihat download.</translation>
 <translation id="8249296373107784235">Batalkan</translation>
 <translation id="8249463483885748674">Ujian terstandardisasi &amp; ujian masuk</translation>
 <translation id="8252991034201168845">Tombol Kelola setelan aksesibilitas, Enter untuk mempersonalisasi alat aksesibilitas Anda di setelan ChromeOS</translation>
@@ -3215,7 +3207,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="937457230470581909">Kebun binatang, akuarium &amp; cagar alam</translation>
 <translation id="939736085109172342">Folder baru</translation>
 <translation id="940053046584497293">Perjalanan &amp; transportasi</translation>
-<translation id="945522503751344254">Kirim masukan</translation>
 <translation id="945855313015696284">Periksa info di bawah dan hapus kartu apa pun yang tidak valid</translation>
 <translation id="947370374845726940"><ph name="CREATE_GOOGLE_SITE_FOCUSED_FRIENDLY_MATCH_TEXT" />, tekan Tab lalu Enter untuk membuat situs baru di Google Sites dengan cepat</translation>
 <translation id="950736567201356821">Tiga lubang di atas</translation>

@@ -385,16 +385,6 @@ ci.builder(
 )
 
 ci.builder(
-    name = "linux-example-builder",
-    console_view_entry = consoles.console_view_entry(
-        category = "linux",
-    ),
-    os = os.LINUX_DEFAULT,
-    schedule = "with 12h interval",
-    triggered_by = [],
-)
-
-ci.builder(
     name = "linux-fieldtrial-rel",
     console_view_entry = consoles.console_view_entry(
         category = "linux",
@@ -2037,6 +2027,32 @@ ci.builder(
     ),
     os = os.WINDOWS_10,
     experimental = True,
+    builder_spec = builder_config.builder_spec(
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = ["mb"],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+    ),
+    schedule = "with 5h interval",
+    triggered_by = [],
+)
+
+ci.builder(
+    name = "win11-wpt-content-shell-fyi-rel",
+    builderless = True,
+    console_view_entry = consoles.console_view_entry(
+        category = "win11",
+    ),
+    os = os.WINDOWS_ANY,
+    goma_backend = None,
+    experimental = True,
+    reclient_jobs = reclient.jobs.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     builder_spec = builder_config.builder_spec(
         chromium_config = builder_config.chromium_config(
             config = "chromium",

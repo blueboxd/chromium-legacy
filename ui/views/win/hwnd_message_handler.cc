@@ -105,7 +105,7 @@ class MoveLoopMouseWatcher {
   void Unhook();
 
   // HWNDMessageHandler that created us.
-  raw_ptr<HWNDMessageHandler> host_;
+  raw_ptr<HWNDMessageHandler, DanglingUntriaged> host_;
 
   // Should the window be hidden when escape is pressed?
   const bool hide_on_escape_;
@@ -901,13 +901,21 @@ void HWNDMessageHandler::ClearNativeFocus() {
 }
 
 void HWNDMessageHandler::SetCapture() {
-  DCHECK(!HasCapture());
+  // We may need to change this to !HasCapture() || release_capture_errno_ to
+  // avoid checking when the call to `::ReleaseCapture` below fails.
+  // Logging release_capture_errno_ will tell us if the DCHECK below is caused
+  // by ::ReleaseCapture failing.
+  DCHECK(!HasCapture()) << " release capture error = "
+                        << logging::SystemErrorCodeToString(
+                               release_capture_errno_);
   ::SetCapture(hwnd());
 }
 
 void HWNDMessageHandler::ReleaseCapture() {
-  if (HasCapture())
-    ::ReleaseCapture();
+  if (HasCapture() && !::ReleaseCapture())
+    release_capture_errno_ = ::GetLastError();
+  else
+    release_capture_errno_ = 0;
 }
 
 bool HWNDMessageHandler::HasCapture() const {

@@ -10,7 +10,6 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/functional/callback_helpers.h"
-#include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/numerics/checked_math.h"
 #include "base/process/launch.h"
@@ -35,10 +34,10 @@
 #include "chrome/updater/test/integration_tests_impl.h"
 #include "chrome/updater/test/server.h"
 #include "chrome/updater/test_scope.h"
-#include "chrome/updater/unittest_util.h"
 #include "chrome/updater/update_service.h"
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/updater_version.h"
+#include "chrome/updater/util/unittest_util.h"
 #include "chrome/updater/util/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -94,17 +93,13 @@ class IntegrationTest : public ::testing::Test {
 
  protected:
   void SetUp() override {
-    logging::SetLogItems(true,    // enable_process_id
-                         true,    // enable_thread_id
-                         true,    // enable_timestamp
-                         false);  // enable_tickcount
-    CleanProcesses();
-    EXPECT_TRUE(WaitForUpdaterExit());
-    Clean();
-    ExpectClean();
+    ASSERT_NO_FATAL_FAILURE(CleanProcesses());
+    ASSERT_TRUE(WaitForUpdaterExit());
+    ASSERT_NO_FATAL_FAILURE(Clean());
+    ASSERT_NO_FATAL_FAILURE(ExpectClean());
     // TODO(crbug.com/1233612) - reenable the code when system tests pass.
     // SetUpTestService();
-    EnterTestMode(GURL("http://localhost:1234"));
+    ASSERT_NO_FATAL_FAILURE(EnterTestMode(GURL("http://localhost:1234")));
   }
 
   void TearDown() override {
@@ -258,9 +253,15 @@ class IntegrationTest : public ::testing::Test {
     test_commands_->UninstallApp(app_id);
   }
 
-  void RunWake(int exit_code) { test_commands_->RunWake(exit_code); }
+  void RunWake(int exit_code) {
+    EXPECT_TRUE(WaitForUpdaterExit());
+    test_commands_->RunWake(exit_code);
+  }
 
-  void RunWakeAll() { test_commands_->RunWakeAll(); }
+  void RunWakeAll() {
+    EXPECT_TRUE(WaitForUpdaterExit());
+    test_commands_->RunWakeAll();
+  }
 
   void RunWakeActive(int exit_code) {
     test_commands_->RunWakeActive(exit_code);
@@ -379,14 +380,7 @@ TEST_F(IntegrationTest, Install) {
   Uninstall();
 }
 
-// TODO(crbug.com/1341471): this test is disabled temporarily. Reenable after
-// the build for the current CL is published to CIPD.
-#if BUILDFLAG(IS_WIN)
-#define MAYBE_OverinstallWorking DISABLED_OverinstallWorking
-#else
-#define MAYBE_OverinstallWorking OverinstallWorking
-#endif
-TEST_F(IntegrationTest, MAYBE_OverinstallWorking) {
+TEST_F(IntegrationTest, OverinstallWorking) {
   ASSERT_NO_FATAL_FAILURE(SetupRealUpdaterLowerVersion());
   EXPECT_TRUE(WaitForUpdaterExit());
   ExpectVersionNotActive(kUpdaterVersion);
@@ -400,15 +394,13 @@ TEST_F(IntegrationTest, MAYBE_OverinstallWorking) {
   Uninstall();
 }
 
-#if BUILDFLAG(IS_WIN)
-// TODO(crbug.com/1395118): Breaks on Win10 Tests x64. Fix this.
-#define MAYBE_OverinstallBroken DISABLED_OverinstallBroken
-#else
-#define MAYBE_OverinstallBroken OverinstallBroken
-#endif
-TEST_F(IntegrationTest, MAYBE_OverinstallBroken) {
+TEST_F(IntegrationTest, OverinstallBroken) {
   ASSERT_NO_FATAL_FAILURE(SetupRealUpdaterLowerVersion());
   EXPECT_TRUE(WaitForUpdaterExit());
+
+  // TODO(crbug.com/1393788) - find a different way to break the CIPD build,
+  // maybe rename the directory then restore it back before uninstalling such
+  // that clean up is successful.
   DeleteUpdaterDirectory();
 
   // Since the old version is not working, the new version should install and
@@ -791,14 +783,7 @@ TEST_F(IntegrationTest, UnregisterUnownedApp) {
 
 #if BUILDFLAG(CHROMIUM_BRANDING) || BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #if !defined(COMPONENT_BUILD)
-// TODO(crbug.com/1341471): this test is disabled temporarily. Reenable after
-// the build for the current CL is published to CIPD.
-#if BUILDFLAG(IS_WIN)
-#define MAYBE_SelfUpdateFromOldReal DISABLED_SelfUpdateFromOldReal
-#else
-#define MAYBE_SelfUpdateFromOldReal SelfUpdateFromOldReal
-#endif
-TEST_F(IntegrationTest, MAYBE_SelfUpdateFromOldReal) {
+TEST_F(IntegrationTest, SelfUpdateFromOldReal) {
   ScopedServer test_server(test_commands_);
 
   ASSERT_NO_FATAL_FAILURE(SetupRealUpdaterLowerVersion());
@@ -824,17 +809,12 @@ TEST_F(IntegrationTest, MAYBE_SelfUpdateFromOldReal) {
 
 // Tests that installing and uninstalling an old version of the updater from
 // CIPD is possible.
-#if BUILDFLAG(IS_WIN)
-// TODO(crbug.com/1395118): Breaks on Win10 Tests x64. Fix this.
-#define MAYBE_InstallLowerVersion DISABLED_InstallLowerVersion
-#else
-#define MAYBE_InstallLowerVersion InstallLowerVersion
-#endif
-TEST_F(IntegrationTest, MAYBE_InstallLowerVersion) {
+TEST_F(IntegrationTest, InstallLowerVersion) {
   ASSERT_NO_FATAL_FAILURE(SetupRealUpdaterLowerVersion());
   ExpectVersionNotActive(kUpdaterVersion);
   Uninstall();
 
+  // TODO(crbug.com/1393788) - eliminate this special case of clean up.
 #if BUILDFLAG(IS_WIN)
   // This deletes a tree of empty subdirectories corresponding to the crash
   // handler of the lower version updater installed above. `Uninstall` runs

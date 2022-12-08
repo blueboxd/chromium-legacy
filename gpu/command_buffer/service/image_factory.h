@@ -6,6 +6,7 @@
 #define GPU_COMMAND_BUFFER_SERVICE_IMAGE_FACTORY_H_
 
 #include "base/memory/ref_counted.h"
+#include "build/buildflag.h"
 #include "gpu/gpu_export.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "ui/gfx/geometry/size.h"
@@ -16,11 +17,22 @@ class GLImage;
 }
 
 namespace gpu {
+namespace gles2 {
+class GLES2DecoderImpl;
+}
 
 class GPU_EXPORT ImageFactory {
- public:
+ protected:
   ImageFactory();
+  virtual ~ImageFactory();
 
+ private:
+  // This class is used by validating command decoder for NaCL swapchain and
+  // IOSurfaceImageBackingFactory for getting IOSurface from GMB.
+  friend class gles2::GLES2DecoderImpl;
+  friend class IOSurfaceImageBackingFactory;
+
+#if BUILDFLAG(IS_MAC)
   // Creates a GLImage instance for GPU memory buffer identified by |handle|.
   // |client_id| should be set to the client requesting the creation of instance
   // and can be used by factory implementation to verify access rights.
@@ -32,9 +44,11 @@ class GPU_EXPORT ImageFactory {
       gfx::BufferPlane plane,
       int client_id,
       SurfaceHandle surface_handle) = 0;
+#endif
 
   // Create an anonymous GLImage backed by a GpuMemoryBuffer that doesn't have a
-  // client_id. It can't be passed to other processes.
+  // client_id. It can't be passed to other processes. Used only by validating
+  // command decoder to support NaCL swap chain.
   virtual bool SupportsCreateAnonymousImage() const;
   virtual scoped_refptr<gl::GLImage> CreateAnonymousImage(
       const gfx::Size& size,
@@ -48,9 +62,6 @@ class GPU_EXPORT ImageFactory {
 
   // Whether a created image can have format GL_RGB.
   virtual bool SupportsFormatRGB();
-
- protected:
-  virtual ~ImageFactory();
 };
 
 }  // namespace gpu

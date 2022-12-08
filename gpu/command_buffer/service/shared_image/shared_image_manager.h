@@ -73,7 +73,8 @@ class GPU_GLES2_EXPORT SharedImageManager
       const Mailbox& mailbox,
       MemoryTypeTracker* ref,
       WGPUDevice device,
-      WGPUBackendType backend_type);
+      WGPUBackendType backend_type,
+      std::vector<WGPUTextureFormat> view_formats);
   std::unique_ptr<OverlayImageRepresentation> ProduceOverlay(
       const Mailbox& mailbox,
       MemoryTypeTracker* ref);
@@ -105,6 +106,8 @@ class GPU_GLES2_EXPORT SharedImageManager
   bool display_context_on_another_thread() const {
     return display_context_on_another_thread_;
   }
+
+  static bool SupportsScanoutImages();
 
   // Returns the NativePixmap backing |mailbox|. Returns null if the SharedImage
   // doesn't exist or is not backed by a NativePixmap. The caller is not

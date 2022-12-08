@@ -44,6 +44,7 @@
 #include "components/translate/core/common/language_detection_details.h"
 #include "components/translate/core/common/translate_constants.h"
 #include "components/translate/core/common/translate_switches.h"
+#include "components/translate/core/common/translate_util.h"
 #include "components/variations/variations_associated_data.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/mime_util.h"
@@ -181,12 +182,6 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
   GetActiveTranslateMetricsLogger()->LogInitialState();
 }
 
-void TranslateManager::OnAutofillAssistantFinished() {
-  if (!page_language_code_.empty()) {
-    InitiateTranslation(page_language_code_);
-  }
-}
-
 bool TranslateManager::CanManuallyTranslate(bool menuLogging) {
   bool can_translate = true;
 
@@ -248,12 +243,7 @@ bool TranslateManager::CanManuallyTranslate(bool menuLogging) {
             kSourceLangUnknown);
     can_translate = false;
   }
-  // Manual translation of unknown source language pages is not supported on
-  // iOS.
-  bool unknown_source_supported = true;
-#if BUILDFLAG(IS_IOS)
-  unknown_source_supported = false;
-#endif
+  bool unknown_source_supported = translate::IsForceTranslateEnabled();
   if (!unknown_source_supported &&
       source_language == translate::kUnknownLanguageCode) {
     if (!menuLogging)
@@ -394,17 +384,15 @@ void TranslateManager::TranslatePage(const std::string& original_source_lang,
 
   if (source_lang == target_lang) {
     // If the languages are the same, try the translation using the unknown
-    // language code on Desktop and Android. iOS doesn't support unknown source
-    // language, so this silently falls back to 'auto' when making the
-    // translation request. The source and target languages should only be equal
-    // if the translation was manually triggered by the user. Rather than show
-    // them the error, we should attempt to send the page for translation. For
-    // page with multiple languages we often detect same language, but the
-    // Translation service is able to translate the various languages using it's
-    // own language detection.
-#if !BUILDFLAG(IS_IOS)
-    source_lang = translate::kUnknownLanguageCode;
-#endif
+    // language code on Desktop and Android. The source and target languages
+    // should only be equal if the translation was manually triggered by the
+    // user. Rather than show them the error, we should attempt to send th
+    // page for translation. For page with multiple languages we often detect
+    // same language, but the Translation service is able to translate the
+    // various languages using it's own language detection.
+    if (translate::IsForceTranslateEnabled()) {
+      source_lang = translate::kUnknownLanguageCode;
+    }
     TranslateBrowserMetrics::ReportInitiationStatus(
         TranslateBrowserMetrics::
             INITIATION_STATUS_IDENTICAL_LANGUAGE_USE_SOURCE_LANGUAGE_UNKNOWN);
@@ -875,17 +863,6 @@ void TranslateManager::FilterIsTranslatePossible(
         TranslateBrowserMetrics::INITIATION_STATUS_NO_NETWORK);
     GetActiveTranslateMetricsLogger()->LogTriggerDecision(
         TriggerDecision::kDisabledOffline);
-  }
-
-  // Skip translation if autofill assistant is running.
-  if (translate_client_->IsAutofillAssistantRunning()) {
-    page_language_code_ = page_language_code;
-    decision->PreventAllTriggering();
-    decision->initiation_statuses.push_back(
-        TranslateBrowserMetrics::
-            INITIATION_STATUS_DISABLED_BY_AUTOFILL_ASSISTANT);
-    GetActiveTranslateMetricsLogger()
-        ->LogAutofillAssistantDeferredTriggerDecision();
   }
 
   if (!ignore_missing_key_for_testing_ &&

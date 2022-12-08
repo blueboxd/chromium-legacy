@@ -145,21 +145,6 @@ void TooltipController::RemoveObserver(wm::TooltipObserver* observer) {
   state_manager_->RemoveObserver(observer);
 }
 
-void TooltipController::UpdateAndShow(aura::Window* window,
-                                      const std::u16string& text,
-                                      const gfx::Point& position,
-                                      const TooltipTrigger trigger,
-                                      const base::TimeDelta& show_delay,
-                                      const base::TimeDelta& hide_delay) {
-  // Use passed `show_delay` value regardless of `show_delay_enabled_` state.
-  state_manager_->Show(window, text, position, trigger, show_delay, hide_delay);
-}
-
-void TooltipController::HideAndReset() {
-  state_manager_->HideAndReset();
-  SetObservedWindow(nullptr);
-}
-
 int TooltipController::GetMaxWidth(const gfx::Point& location) const {
   return state_manager_->GetMaxWidth(location);
 }
@@ -283,9 +268,11 @@ void TooltipController::OnMouseEvent(ui::MouseEvent* event) {
       if ((event->flags() & ui::EF_IS_NON_CLIENT) == 0) {
         aura::Window* target = static_cast<aura::Window*>(event->target());
         // We don't get a release for non-client areas.
-        tooltip_window_at_mouse_press_ = target;
-        if (target)
+        tooltip_window_at_mouse_press_tracker_.RemoveAll();
+        if (target) {
+          tooltip_window_at_mouse_press_tracker_.Add(target);
           tooltip_text_at_mouse_press_ = wm::GetTooltipText(target);
+        }
       }
       state_manager_->HideAndReset();
       break;
@@ -365,6 +352,11 @@ void TooltipController::OnWindowActivated(ActivationReason reason,
 ////////////////////////////////////////////////////////////////////////////////
 // TooltipController private:
 
+void TooltipController::HideAndReset() {
+  state_manager_->HideAndReset();
+  SetObservedWindow(nullptr);
+}
+
 void TooltipController::UpdateIfRequired(TooltipTrigger trigger) {
   if (!tooltips_enabled_ || aura::Env::GetInstance()->IsMouseButtonDown() ||
       IsDragDropInProgress() ||
@@ -380,7 +372,7 @@ void TooltipController::UpdateIfRequired(TooltipTrigger trigger) {
     state_manager_->HideAndReset();
     return;
   }
-  tooltip_window_at_mouse_press_ = nullptr;
+  tooltip_window_at_mouse_press_tracker_.RemoveAll();
 
   if (trigger == TooltipTrigger::kCursor)
     anchor_point_ = last_mouse_loc_;
@@ -464,15 +456,15 @@ void TooltipController::RemoveHideTooltipTimeoutFromMap(aura::Window* window) {
 
 void TooltipController::ResetWindowAtMousePressedIfNeeded(aura::Window* target,
                                                           bool force_reset) {
-  // Reset |tooltip_window_at_mouse_press_| if the cursor moved within the same
+  // Reset tooltip_window_at_mouse_press() if the cursor moved within the same
   // window but over a region that has different tooltip text. This handles the
   // case of clicking on a view, moving within the same window but over a
   // different view, then back to the original view.
   if (force_reset ||
-      (tooltip_window_at_mouse_press_ &&
-       target == tooltip_window_at_mouse_press_ &&
+      (tooltip_window_at_mouse_press() &&
+       target == tooltip_window_at_mouse_press() &&
        wm::GetTooltipText(target) != tooltip_text_at_mouse_press_)) {
-    tooltip_window_at_mouse_press_ = nullptr;
+    tooltip_window_at_mouse_press_tracker_.RemoveAll();
   }
 }
 
@@ -493,8 +485,8 @@ bool TooltipController::ShouldHideBecauseMouseWasOncePressed() {
   if (wm::GetTooltipText(observed_window_).empty())
     return false;
 
-  return tooltip_window_at_mouse_press_ &&
-         observed_window_ == tooltip_window_at_mouse_press_ &&
+  return tooltip_window_at_mouse_press() &&
+         observed_window_ == tooltip_window_at_mouse_press() &&
          wm::GetTooltipText(observed_window_) == tooltip_text_at_mouse_press_;
 }
 

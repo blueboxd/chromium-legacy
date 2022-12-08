@@ -587,6 +587,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // that this may not equate to the feature being enabled.
   bool IsPrerender2Disabled();
 
+  void AboutToBeDiscarded(WebContents* new_contents) override;
+
   // RenderFrameHostDelegate ---------------------------------------------------
   bool OnMessageReceived(RenderFrameHostImpl* render_frame_host,
                          const IPC::Message& message) override;
@@ -1346,7 +1348,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   ui::mojom::VirtualKeyboardMode GetVirtualKeyboardMode() const;
 
  private:
-  using FrameTreeIterationCallback = base::RepeatingCallback<void(FrameTree*)>;
+  using FrameTreeIterationCallback = base::RepeatingCallback<void(FrameTree&)>;
   using RenderViewHostIterationCallback =
       base::RepeatingCallback<void(RenderViewHostImpl*)>;
 

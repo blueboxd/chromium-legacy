@@ -10,7 +10,6 @@
 // #import {loadTimeData} from '../i18n_setup.js';
 // #import {Oobe} from '../cr_ui.js'
 // #import {$} from 'chrome://resources/ash/common/util.js';
-// #import './debug_util.js';
 // #import {AssistantNativeIconType} from '../../assistant_optin/utils.m.js';
 
 // #import {MessageType, ProblemType} from 'chrome://resources/ash/common/quick_unlock/setup_pin_keyboard.js';
@@ -1893,7 +1892,7 @@ cr.define('cr.ui.login.debug', function() {
       ];
       LANGUAGES.forEach(function(pair) {
         new DebugButton(langPanel.content, pair[0], function(locale) {
-          chrome.send('WelcomeScreen.setLocaleId', [locale]);
+          chrome.send('login.WelcomeScreen.userActed', ['setLocaleId', locale]);
         }.bind(null, pair[1]));
       });
     }

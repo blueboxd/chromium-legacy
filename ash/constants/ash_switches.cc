@@ -779,8 +779,10 @@ const char kOobeTriggerSyncTimeoutForTests[] =
     "oobe-trigger-sync-timeout-for-tests";
 
 // Removes the condition that a network has had to existed for at least two
-// weeks and increase the frequency at which the HiddenNetworkHandler class
-// checks for and removes wrongly hidden networks.
+// weeks and allows the user to provide the frequency at which the
+// HiddenNetworkHandler class checks for and removes wrongly hidden networks.
+// The frequency should be provided in seconds, should follow the format
+// "--force-hidden-network-migration=#", and should be >= 1.
 const char kForceHiddenNetworkMigration[] = "force-hidden-network-migration";
 
 // If set to "true", the profile requires policy during restart (policy load
@@ -794,6 +796,9 @@ const char kPublicAccountsSamlAclUrl[] = "public-accounts-saml-acl-url";
 
 // Adds fake Bluetooth devices to the quick settings menu for UI testing.
 const char kQsAddFakeBluetoothDevices[] = "qs-add-fake-bluetooth-devices";
+
+// Adds fake Cast devices to the quick settings menu for UI testing.
+const char kQsAddFakeCastDevices[] = "qs-add-fake-cast-devices";
 
 // The name of the per-model directory which contains per-region
 // subdirectories with regulatory label files for this model.

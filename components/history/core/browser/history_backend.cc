@@ -60,6 +60,7 @@
 #include "components/history/core/browser/sync/typed_url_sync_bridge.h"
 #include "components/history/core/browser/url_utils.h"
 #include "components/sync/base/features.h"
+#include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/model/client_tag_based_model_type_processor.h"
 #include "components/url_formatter/url_formatter.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -239,6 +240,27 @@ class DeleteForeignVisitsDBTask : public HistoryDBTask {
   void DoneRunOnMainThread() override {}
 };
 
+// Does base::debug::DumpWithoutCrashing(), but on Canary/Dev only, and at a
+// throttled rate. This is because our dump volume is high, and that can mask
+// OTHER crashes. This is similar to ReportUnrecoverableError() in Sync code.
+// https://crbug.com/1377512
+void SelectiveDumpWithoutCrashing(version_info::Channel channel) {
+  if (channel != version_info::Channel::CANARY &&
+      channel != version_info::Channel::DEV) {
+    return;
+  }
+
+  // We only want to upload |kErrorUploadRatio| ratio of errors.
+  const double kErrorUploadRatio = 0.1;
+  if (kErrorUploadRatio <= 0.0)
+    return;  // We are not allowed to upload errors.
+  double random_number = base::RandDouble();
+  if (random_number > kErrorUploadRatio)
+    return;
+
+  base::debug::DumpWithoutCrashing();
+}
+
 }  // namespace
 
 std::u16string FormatUrlForRedirectComparison(const GURL& url) {
@@ -365,16 +387,18 @@ void HistoryBackend::Init(
   typed_url_sync_bridge_ = std::make_unique<TypedURLSyncBridge>(
       this, db_ ? db_->GetTypedURLMetadataDB() : nullptr,
       std::make_unique<ClientTagBasedModelTypeProcessor>(
-          syncer::TYPED_URLS, /*dump_stack=*/base::RepeatingClosure()));
+          syncer::TYPED_URLS,
+          base::BindRepeating(&syncer::ReportUnrecoverableError,
+                              history_database_params.channel)));
   typed_url_sync_bridge_->Init();
 
   if (base::FeatureList::IsEnabled(syncer::kSyncEnableHistoryDataType)) {
-    // TODO(crbug.com/1318028): Plumb in syncer::ReportUnrecoverableError as the
-    // dump_stack callback.
     history_sync_bridge_ = std::make_unique<HistorySyncBridge>(
         this, db_ ? db_->GetHistoryMetadataDB() : nullptr,
         std::make_unique<ClientTagBasedModelTypeProcessor>(
-            syncer::HISTORY, /*dump_stack=*/base::RepeatingClosure()));
+            syncer::HISTORY,
+            base::BindRepeating(&syncer::ReportUnrecoverableError,
+                                history_database_params.channel)));
   }
 
   if (base::FeatureList::IsEnabled(kDeleteForeignVisitsOnStartup) && db_) {
@@ -1009,7 +1033,12 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
     recent_redirects_.Put(request.url, extended_redirect_chain);
   }
 
-  if (request.context_annotations) {
+  // The below code assumes that last_visit_id should be populated with the
+  // VisitID for the visit that is being added by this method.
+  bool current_visit_was_successfully_added =
+      last_visit_id != kInvalidVisitID && last_visit_id != from_visit_id;
+
+  if (current_visit_was_successfully_added && request.context_annotations) {
     // The `request` contains only the on-visit annotation fields; all other
     // fields aren't known yet. Leave them empty.
     VisitContextAnnotations annotations;
@@ -1032,7 +1061,7 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
                                     ui::PAGE_TRANSITION_AUTO_SUBFRAME) &&
       !ui::PageTransitionCoreTypeIs(request_transition,
                                     ui::PAGE_TRANSITION_MANUAL_SUBFRAME) &&
-      !is_keyword_generated) {
+      !is_keyword_generated && current_visit_was_successfully_added) {
     tracker_.AddVisit(request.context_id, request.nav_entry_id, request.url,
                       last_visit_id);
   }
@@ -1052,6 +1081,7 @@ void HistoryBackend::InitImpl(
 
   // Compute the file names.
   history_dir_ = history_database_params.history_dir;
+  channel_ = history_database_params.channel;
 
 #if DCHECK_IS_ON()
   DCHECK(!HistoryPathsTracker::GetInstance()->HasPath(history_dir_))
@@ -1506,6 +1536,11 @@ VisitID HistoryBackend::AddSyncedVisit(
       visit.opener_visit, title, visit.visit_duration,
       visit.originator_cache_guid, visit.originator_visit_id,
       visit.originator_referring_visit, visit.originator_opener_visit);
+
+  if (visit_id == kInvalidVisitID) {
+    // Adding the page visit failed, do not continue.
+    return 0;
+  }
 
   if (context_annotations) {
     AddContextAnnotationsForVisit(visit_id, *context_annotations);
@@ -2888,7 +2923,7 @@ void HistoryBackend::BeginSingletonTransaction() {
 
     // TODO(crbug.com/1321483): Remove DumpWithoutCrashing after fixing
     // transaction related bugs in History.
-    base::debug::DumpWithoutCrashing();
+    SelectiveDumpWithoutCrashing(channel_);
   }
 }
 
@@ -2926,7 +2961,7 @@ void HistoryBackend::CommitSingletonTransactionIfItExists() {
     error_message_key.Set(diagnostics_.error_message);
     // TODO(crbug.com/1321483): Remove DumpWithoutCrashing after fixing
     // transaction related bugs in History.
-    base::debug::DumpWithoutCrashing();
+    SelectiveDumpWithoutCrashing(channel_);
   }
   singleton_transaction_.reset();
 }

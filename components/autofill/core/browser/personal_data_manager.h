@@ -63,7 +63,6 @@ class PersonalDatabaseHelper;
 }  // namespace autofill
 
 namespace autofill_helper {
-void SetProfiles(int, std::vector<autofill::AutofillProfile>*);
 void SetCreditCards(int, std::vector<autofill::CreditCard>*);
 }  // namespace autofill_helper
 
@@ -311,6 +310,8 @@ class PersonalDataManager : public KeyedService,
   virtual std::vector<AutofillProfile*> GetProfilesFromSource(
       AutofillProfile::Source profile_source) const;
   // Returns just SERVER_PROFILES.
+  // TODO(crbug.com/1348294): Server profiles are only accessed in tests and the
+  // concept should be removed.
   virtual std::vector<AutofillProfile*> GetServerProfiles() const;
   // Returns just LOCAL_CARD cards.
   virtual std::vector<CreditCard*> GetLocalCreditCards() const;
@@ -490,13 +491,15 @@ class PersonalDataManager : public KeyedService,
   // Returns true if the PDM is in the off-the-record mode.
   bool IsOffTheRecord() { return is_off_the_record_; }
 
-  // Partitions `new_profiles` by their sources and sets `web_profiles_` and
-  // `account_profiles_` to the corresponding profiles. Updates the web database
-  // by adding, updating and removing profiles, depending on the difference of
-  // the current state and `new_profiles`.
-  // `web_profiles_` and `account_profiles_` need to be updated at the end of
-  // the function, since some tasks cannot tolerate database delays.
-  virtual void SetProfiles(std::vector<AutofillProfile>* new_profiles);
+  // Partitions `new_profiles` by their sources and sets
+  // `synced_local_profiles_` and `account_profiles_` to the corresponding
+  // profiles. Updates the web database by adding, updating and removing
+  // profiles, depending on the difference of the current state and
+  // `new_profiles`. `synced_local_profiles_` and `account_profiles_` need to be
+  // updated at the end of the function, since some tasks cannot tolerate
+  // database delays.
+  virtual void SetProfilesForAllSources(
+      std::vector<AutofillProfile>* new_profiles);
 
   // Returns true if the import of new profiles should be blocked on `url`.
   // Returns false if the strike database is not available, the `url` is not
@@ -597,9 +600,6 @@ class PersonalDataManager : public KeyedService,
   friend class VirtualCardEnrollmentManagerTest;
   friend class ::RemoveAutofillTester;
   friend std::default_delete<PersonalDataManager>;
-  friend void autofill_helper::SetProfiles(
-      int,
-      std::vector<autofill::AutofillProfile>*);
   friend void autofill_helper::SetCreditCards(
       int,
       std::vector<autofill::CreditCard>*);
@@ -622,10 +622,10 @@ class PersonalDataManager : public KeyedService,
   // database by adding, updating and removing credit cards.
   void SetCreditCards(std::vector<CreditCard>* credit_cards);
 
-  // Like `SetProfiles()`, but assumes that all profiles in `new_profiles` have
-  // the given `source`.
+  // Like `SetProfilesForAllSources()`, but assumes that all profiles in
+  // `new_profiles` have the given `source`.
   // Returns true if a change happened.
-  virtual bool SetProfilesFromSource(
+  virtual bool SetProfilesForSource(
       base::span<const AutofillProfile> new_profiles,
       AutofillProfile::Source source);
 
@@ -684,7 +684,8 @@ class PersonalDataManager : public KeyedService,
   virtual void FetchImagesForURLs(base::span<const GURL> updated_urls) const;
 
   // The PersonalDataManager supports two types of AutofillProfiles, stored in
-  // `web_profiles_` and `account_profiles_` and distinguished by their source.
+  // `synced_local_profiles_` and `account_profiles_` and distinguished by their
+  // source.
   // Several function need to read/write from the correct vector, depending
   // on the source of the profile they are dealing with. This helper function
   // returns the vector where profiles of the given `source` are stored.
@@ -704,13 +705,13 @@ class PersonalDataManager : public KeyedService,
   bool is_data_loaded_ = false;
 
   // The loaded profiles from the AutofillTable come from two sources:
-  // - kLocalOrSyncable: Stored in `web_profiles_`.
+  // - kLocalOrSyncable: Stored in `synced_local_profiles_`.
   // - kAccount: Stored in `account_profiles_`.
-  std::vector<std::unique_ptr<AutofillProfile>> web_profiles_;
+  std::vector<std::unique_ptr<AutofillProfile>> synced_local_profiles_;
   std::vector<std::unique_ptr<AutofillProfile>> account_profiles_;
 
-  // Profiles read from the user's account stored on the server.
-  std::vector<std::unique_ptr<AutofillProfile>> server_profiles_;
+  // Address profiles associated to the user's payment profile.
+  std::vector<std::unique_ptr<AutofillProfile>> credit_card_billing_addresses_;
 
   // Stores the PaymentsCustomerData obtained from the database.
   std::unique_ptr<PaymentsCustomerData> payments_customer_data_;
@@ -740,9 +741,9 @@ class PersonalDataManager : public KeyedService,
   // is queried on another sequence, we record the query handle until we
   // get called back.  We store handles for both profile and credit card queries
   // so they can be loaded at the same time.
-  WebDataServiceBase::Handle pending_local_profiles_query_ = 0;
+  WebDataServiceBase::Handle pending_synced_local_profiles_query_ = 0;
   WebDataServiceBase::Handle pending_account_profiles_query_ = 0;
-  WebDataServiceBase::Handle pending_server_profiles_query_ = 0;
+  WebDataServiceBase::Handle pending_creditcard_billing_addresses_query_ = 0;
   WebDataServiceBase::Handle pending_creditcards_query_ = 0;
   WebDataServiceBase::Handle pending_server_creditcards_query_ = 0;
   WebDataServiceBase::Handle pending_server_creditcard_cloud_token_data_query_ =

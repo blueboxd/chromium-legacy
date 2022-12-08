@@ -22,7 +22,9 @@
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client_test_helper.h"
 #include "chrome/browser/ui/webui/ash/login/app_launch_splash_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/fake_app_launch_splash_screen_handler.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/account_id/account_id.h"
+#include "components/crash/core/common/crash_key.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/policy_constants.h"
 #include "components/session_manager/core/session_manager.h"
@@ -100,12 +102,18 @@ class KioskLaunchControllerTest : public extensions::ExtensionServiceTestBase {
     disable_wait_timer_and_login_operations_for_testing_ =
         KioskLaunchController::DisableWaitTimerAndLoginOperationsForTesting();
 
-    auto app_launcher = std::make_unique<MockWebKioskAppLauncher>();
+    auto app_launcher = std::make_unique<MockWebKioskAppLauncher>(&profile_);
     app_launcher_ = app_launcher.get();
 
     view_ = std::make_unique<FakeAppLaunchSplashScreenHandler>();
     controller_ = KioskLaunchController::CreateForTesting(
         view_.get(), std::move(app_launcher));
+
+    // We can't call `crash_reporter::ResetCrashKeysForTesting()` to reset crash
+    // keys since it destroys the storage for static crash keys. Instead we set
+    // the initial state to `KioskLaunchState::kStartLaunch` before testing.
+    SetKioskLaunchStateCrashKey(KioskLaunchState::kStartLaunch);
+
     kiosk_app_id_ = KioskAppId::ForWebApp(EmptyAccountId());
   }
 
@@ -162,7 +170,13 @@ class KioskLaunchControllerTest : public extensions::ExtensionServiceTestBase {
     launch_controls().OnAppPrepared();
   }
 
+  void VerifyLaunchStateCrashKey(KioskLaunchState state) {
+    EXPECT_EQ(crash_reporter::GetCrashKeyValue(kKioskLaunchStateCrashKey),
+              KioskLaunchStateToString(state));
+  }
+
  private:
+  TestingProfile profile_;
   session_manager::SessionManager session_manager_;
   std::unique_ptr<ChromeKeyboardControllerClientTestHelper>
       keyboard_controller_client_;
@@ -178,6 +192,7 @@ class KioskLaunchControllerTest : public extensions::ExtensionServiceTestBase {
 
 TEST_F(KioskLaunchControllerTest, ProfileLoadedShouldInitializeLauncher) {
   controller().Start(kiosk_app_id(), /*auto_launch=*/false);
+  VerifyLaunchStateCrashKey(KioskLaunchState::kLauncherStarted);
   EXPECT_THAT(controller(), HasState(AppState::kCreatingProfile,
                                      NetworkUIState::kNotShowing));
 
@@ -187,6 +202,7 @@ TEST_F(KioskLaunchControllerTest, ProfileLoadedShouldInitializeLauncher) {
 
 TEST_F(KioskLaunchControllerTest, AppInstallingShouldUpdateSplashScreen) {
   controller().Start(kiosk_app_id(), /*auto_launch=*/false);
+  VerifyLaunchStateCrashKey(KioskLaunchState::kLauncherStarted);
   profile_controls().OnProfileLoaded(profile());
 
   launch_controls().OnAppInstalling();
@@ -291,6 +307,7 @@ TEST_F(KioskLaunchControllerTest,
 TEST_F(KioskLaunchControllerTest,
        UserRequestedNetworkConfigShouldWaitForProfileLoad) {
   controller().Start(kiosk_app_id(), /*auto_launch=*/false);
+  VerifyLaunchStateCrashKey(KioskLaunchState::kLauncherStarted);
   EXPECT_THAT(controller(), HasState(AppState::kCreatingProfile,
                                      NetworkUIState::kNotShowing));
 
@@ -298,6 +315,7 @@ TEST_F(KioskLaunchControllerTest,
   OnNetworkConfigRequested();
   EXPECT_THAT(controller(), HasState(AppState::kCreatingProfile,
                                      NetworkUIState::kNeedToShow));
+  VerifyLaunchStateCrashKey(KioskLaunchState::kLauncherStarted);
 
   EXPECT_CALL(launcher(), Initialize()).Times(1);
   profile_controls().OnProfileLoaded(profile());
@@ -311,6 +329,7 @@ TEST_F(KioskLaunchControllerTest,
 TEST_F(KioskLaunchControllerTest, ConfigureNetworkDuringInstallation) {
   SetOnline(false);
   controller().Start(kiosk_app_id(), /*auto_launch=*/false);
+  VerifyLaunchStateCrashKey(KioskLaunchState::kLauncherStarted);
   EXPECT_THAT(controller(), HasState(AppState::kCreatingProfile,
                                      NetworkUIState::kNotShowing));
 
@@ -351,6 +370,7 @@ TEST_F(KioskLaunchControllerTest, KioskProfileLoadFailedObserverShouldBeFired) {
       .Times(1);
   profile_controls().OnProfileLoadFailed(
       KioskAppLaunchError::Error::kUnableToMount);
+  VerifyLaunchStateCrashKey(KioskLaunchState::kLaunchFailed);
 
   controller().RemoveKioskProfileLoadFailedObserver(
       &profile_load_failed_observer);
@@ -361,6 +381,7 @@ TEST_F(KioskLaunchControllerTest, KioskProfileLoadErrorShouldBeStored) {
 
   profile_controls().OnProfileLoadFailed(
       KioskAppLaunchError::Error::kUnableToMount);
+  VerifyLaunchStateCrashKey(KioskLaunchState::kLaunchFailed);
 
   const base::Value::Dict& dict =
       g_browser_process->local_state()->GetDict("kiosk");

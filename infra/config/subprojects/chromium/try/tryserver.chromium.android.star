@@ -24,9 +24,6 @@ try_.defaults.set(
     reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     service_account = try_.DEFAULT_SERVICE_ACCOUNT,
-
-    # TODO(crbug.com/1362440): remove this.
-    omit_python2 = False,
 )
 
 consoles.list_view(
@@ -40,9 +37,6 @@ try_.builder(
         "ci/android-10-arm64-rel",
     ],
     goma_backend = None,
-
-    # TODO(crbug.com/1362440): remove this after confirm py3 works on this builder.
-    omit_python2 = True,
 )
 
 try_.builder(
@@ -52,9 +46,6 @@ try_.builder(
     ],
     goma_backend = None,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
-
-    # TODO(crbug.com/1362440): remove this after confirm py3 works on this builder.
-    omit_python2 = True,
 )
 
 try_.builder(
@@ -65,9 +56,6 @@ try_.builder(
     ],
     goma_backend = None,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
-
-    # TODO(crbug.com/1362440): remove this after confirm py3 works on this builder.
-    omit_python2 = True,
 )
 
 try_.orchestrator_builder(
@@ -82,9 +70,6 @@ try_.orchestrator_builder(
     tryjob = try_.job(
         experiment_percentage = 60,
     ),
-
-    # TODO(crbug.com/1362440): remove this after confirm py3 works on this builder.
-    omit_python2 = True,
 )
 
 try_.compilator_builder(
@@ -102,16 +87,13 @@ try_.builder(
         "ci/Android x64 Builder (dbg)",
         "ci/android-12l-x64-dbg-tests",
     ],
-
-    # TODO(crbug.com/1362440): remove this after confirm py3 works on this builder.
-    omit_python2 = True,
 )
 
 try_.orchestrator_builder(
     name = "android-arm64-rel",
     mirrors = [
         "ci/Android Release (Nexus 5X)",  # Nexus 5X on Nougat
-        #"ci/android-pie-arm64-rel",  # Pixel 2 on Pie
+        "ci/android-pie-arm64-rel",  # Pixel 1, 2 on Pie
     ],
     description_html = "This builder may trigger tests on multiple Android versions.",
     try_settings = builder_config.try_settings(
@@ -121,24 +103,37 @@ try_.orchestrator_builder(
     ),
     compilator = "android-arm64-rel-compilator",
     check_for_flakiness = True,
-    # TODO(crbug.com/1367393): Enable on branch once not experimental.
-    # branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
-    tryjob = try_.job(
-        experiment_percentage = 100,
-    ),
-    experiments = {
-        "chromium_rts.inverted_rts": 100,
-    },
+    tryjob = try_.job(),
     # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
     # use_orchestrator_pool = True,
 )
 
+try_.orchestrator_builder(
+    name = "android-arm64-rel-inverse-fyi",
+    mirrors = [
+        "ci/Android Release (Nexus 5X)",  # Nexus 5X on Nougat
+        "ci/android-pie-arm64-rel",  # Pixel 1, 2 on Pie
+    ],
+    try_settings = builder_config.try_settings(
+        rts_config = builder_config.rts_config(
+            condition = builder_config.rts_condition.QUICK_RUN_ONLY,
+        ),
+    ),
+    experiments = {
+        "chromium_rts.inverted_rts": 100,
+        "chromium_rts.inverted_rts_bail_early": 100,
+    },
+    compilator = "android-arm64-rel-compilator",
+    check_for_flakiness = True,
+    use_orchestrator_pool = True,
+)
+
 try_.compilator_builder(
     name = "android-arm64-rel-compilator",
-    # TODO(crbug.com/1367393): Enable on branch once not experimental.
-    # branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.STANDARD_MILESTONE,
     check_for_flakiness = True,
     main_list_view = "try",
     # TODO (gatong): Remove once we've migrated to n2s
@@ -187,6 +182,9 @@ try_.builder(
     },
     tryjob = try_.job(),
     ssd = True,
+
+    # TODO(crbug.com/1362440): remove this.
+    omit_python2 = False,
 )
 
 try_.builder(
@@ -304,12 +302,18 @@ try_.builder(
     name = "android-deterministic-dbg",
     executable = "recipe:swarming/deterministic_build",
     execution_timeout = 6 * time.hour,
+
+    # TODO(crbug.com/1362440): remove this.
+    omit_python2 = False,
 )
 
 try_.builder(
     name = "android-deterministic-rel",
     executable = "recipe:swarming/deterministic_build",
     execution_timeout = 6 * time.hour,
+
+    # TODO(crbug.com/1362440): remove this.
+    omit_python2 = False,
 )
 
 try_.builder(
@@ -337,9 +341,6 @@ try_.orchestrator_builder(
     branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
     tryjob = try_.job(),
-    experiments = {
-        "chromium_rts.inverted_rts": 100,
-    },
     # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
     # use_orchestrator_pool = True,
@@ -416,9 +417,6 @@ try_.builder(
         "ci/Android arm64 Builder (dbg)",
         "ci/android-pie-arm64-dbg",
     ],
-
-    # TODO(crbug.com/1362440): remove this after confirm py3 works on this builder.
-    omit_python2 = True,
 )
 
 # TODO(crbug/1182468) Remove when experiment is done.
@@ -435,68 +433,12 @@ try_.builder(
     ),
 )
 
-# TODO(crbug.com/1367393): Remove after android-arm64-rel is fully enabled.
-try_.orchestrator_builder(
-    name = "android-pie-arm64-rel",
-    mirrors = [
-        "ci/android-pie-arm64-rel",
-    ],
-    try_settings = builder_config.try_settings(
-        rts_config = builder_config.rts_config(
-            condition = builder_config.rts_condition.QUICK_RUN_ONLY,
-        ),
-    ),
-    experiments = {
-        "chromium_rts.inverted_rts": 100,
-    },
-    compilator = "android-pie-arm64-rel-compilator",
-    check_for_flakiness = True,
-    branch_selector = branches.STANDARD_MILESTONE,
-    main_list_view = "try",
-    tryjob = try_.job(),
-    # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
-    # are addressed
-    # use_orchestrator_pool = True,
-)
-
-try_.orchestrator_builder(
-    name = "android-pie-arm64-rel-inverse-fyi",
-    mirrors = [
-        "ci/android-pie-arm64-rel",
-    ],
-    try_settings = builder_config.try_settings(
-        rts_config = builder_config.rts_config(
-            condition = builder_config.rts_condition.QUICK_RUN_ONLY,
-        ),
-    ),
-    experiments = {
-        "chromium_rts.inverted_rts": 100,
-        "chromium_rts.inverted_rts_bail_early": 100,
-    },
-    compilator = "android-pie-arm64-rel-compilator",
-    check_for_flakiness = True,
-    use_orchestrator_pool = True,
-)
-
-try_.compilator_builder(
-    name = "android-pie-arm64-rel-compilator",
-    branch_selector = branches.STANDARD_MILESTONE,
-    check_for_flakiness = True,
-    goma_backend = None,
-    main_list_view = "try",
-    # TODO (gatong): Remove once we've migrated to n2s
-    cores = "16|32",
-)
-
 try_.builder(
     name = "android-pie-x86-rel",
     mirrors = [
         "ci/android-pie-x86-rel",
     ],
     goma_backend = None,
-
-    # TODO(crbug.com/1362440): remove this after confirm py3 works on this builder.
-    omit_python2 = True,
 )
 
 # TODO(crbug/1182468) Remove when coverage is enabled on CQ.

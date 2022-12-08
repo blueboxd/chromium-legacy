@@ -776,7 +776,6 @@ class RawPtrRewriter {
         constexpr_var_initializer_writer(output_helper,
                                          "constexpr-var-initializer"),
         macro_field_decl_writer(output_helper, "macro"),
-        char_ptr_field_decl_writer(output_helper, "const-char"),
         global_scope_rewriter(output_helper, "global-scope"),
         union_field_decl_writer(output_helper, "union"),
         reinterpret_cast_struct_writer(output_helper,
@@ -997,17 +996,6 @@ class RawPtrRewriter {
 
     match_finder.addMatcher(macro_field_decl_matcher, &macro_field_decl_writer);
 
-    // See the doc comment for the anyCharType matcher
-    // and the testcases in tests/gen-char-test.cc.
-    auto char_ptr_field_decl_matcher =
-        fieldDecl(allOf(field_decl_matcher,
-                        hasType(pointerType(pointee(qualType(allOf(
-                            isConstQualified(),
-                            hasUnqualifiedDesugaredType(anyCharType()))))))));
-
-    match_finder.addMatcher(char_ptr_field_decl_matcher,
-                            &char_ptr_field_decl_writer);
-
     // See the testcases in tests/gen-global-scope-test.cc.
     auto global_scope_matcher =
         varDecl(allOf(hasGlobalStorage(),
@@ -1080,7 +1068,6 @@ class RawPtrRewriter {
   FilteredExprWriter constexpr_ctor_field_initializer_writer;
   FilteredExprWriter constexpr_var_initializer_writer;
   FilteredExprWriter macro_field_decl_writer;
-  FilteredExprWriter char_ptr_field_decl_writer;
   FilteredExprWriter global_scope_rewriter;
   FilteredExprWriter union_field_decl_writer;
   FilteredExprWriter reinterpret_cast_struct_writer;
@@ -1095,7 +1082,9 @@ class RawRefRewriter {
                  FilterFile& fields_to_exclude,
                  FilterFile& paths_to_exclude)
       : match_finder(finder),
-        field_decl_rewriter(output_helper, "raw_ref<{0}> ", kRawRefIncludePath),
+        field_decl_rewriter(output_helper,
+                            "const raw_ref<{0}> ",
+                            kRawRefIncludePath),
         affected_expr_operator_rewriter(output_helper,
                                         affectedMemberExprOperatorFct_),
         affected_expr_rewriter(output_helper, affectedMemberExprFct_),
@@ -1113,6 +1102,9 @@ class RawRefRewriter {
         paths_to_exclude(paths_to_exclude) {}
 
   void addMatchers() {
+    auto anonymous_struct_field_decl_matcher =
+        fieldDecl(hasParent(cxxRecordDecl(isAnonymousStructOrUnion())));
+
     // Field declarations =========
     // Given
     //   struct S {
@@ -1125,6 +1117,7 @@ class RawRefRewriter {
     //   matched by --exclude-paths cmdline param
     // - "implicit" fields (i.e. field decls that are not explicitly present in
     //   the source code)
+    // - fields in anonymous structs.
 
     auto field_decl_matcher =
         fieldDecl(allOf(has(referenceTypeLoc().bind("affectedFieldDeclType")),
@@ -1133,7 +1126,8 @@ class RawRefRewriter {
                             isInThirdPartyLocation(), isInGeneratedLocation(),
                             isInLocationListedInFilterFile(&paths_to_exclude),
                             isFieldDeclListedInFilterFile(&fields_to_exclude),
-                            ImplicitFieldDeclaration()))))
+                            ImplicitFieldDeclaration(),
+                            anonymous_struct_field_decl_matcher))))
             .bind("affectedFieldDecl");
 
     match_finder.addMatcher(field_decl_matcher, &field_decl_rewriter);
@@ -1155,7 +1149,7 @@ class RawRefRewriter {
                             &affected_expr_operator_rewriter);
 
     // Matches expressions that used to have |SomeType&| as return type and
-    // became |raw_ref<SomeType>| after the rewrite.
+    // became |const raw_ref<SomeType>| after the rewrite.
     auto affected_member_expr =
         memberExpr(
             member(fieldDecl(hasExplicitFieldDecl(field_decl_matcher))),
@@ -1276,7 +1270,8 @@ class RawRefRewriter {
 
  private:
   // Rewrites |SomeClass& field| (matched as "affectedFieldDecl") as
-  // |raw_ref<SomeClass> field| and for each file rewritten in such way adds an
+  // |const raw_ref<SomeClass> field| and for each file rewritten in such way
+  // adds an
   // |#include "base/memory/raw_ref.h"|.
   class RawRefFieldDeclRewriter : public FieldDeclRewriter {
    public:
@@ -1311,9 +1306,9 @@ class RawRefRewriter {
   // "affectedMemberExprWithParentheses") as
   // |(*my_struct.ref_field)|.
   // Examples on why this is needed:
-  //  1- std::vector<T>& v; => raw_ref<std::vector<T>> v;
+  //  1- std::vector<T>& v; => const raw_ref<std::vector<T>> v;
   //     v[0] => needs to be rewritten as (*v)[0] after the rewrite.
-  //  2- key_compare& comp_; => raw_ref<key_compare> comp_;
+  //  2- key_compare& comp_; => const raw_ref<key_compare> comp_;
   //     comp_(a, b) => needs to be rewritten as (*comp_)(a,b) after the
   //     rewrite.
   std::function<std::pair<clang::SourceRange, std::string>(
@@ -1400,7 +1395,7 @@ int main(int argc, const char* argv[]) {
 
   llvm::cl::opt<bool> enable_raw_ref_rewrite(
       "enable_raw_ref_rewrite", llvm::cl::init(false),
-      llvm::cl::desc("Rewrite T& into raw_ref<T>"));
+      llvm::cl::desc("Rewrite T& into const raw_ref<T>"));
 
   llvm::cl::opt<bool> enable_raw_ptr_rewrite(
       "enable_raw_ptr_rewrite", llvm::cl::init(false),
@@ -1412,8 +1407,8 @@ int main(int argc, const char* argv[]) {
   clang::tooling::ClangTool tool(options->getCompilations(),
                                  options->getSourcePathList());
 
-  // Rewrite both T& and T* into raw_ref<T> and raw_ptr<T> respectively if no
-  // argument is provided.
+  // Rewrite both T& and T* into const raw_ref<T> and raw_ptr<T> respectively if
+  // no argument is provided.
   bool rewrite_raw_ref_and_ptr =
       !enable_raw_ref_rewrite && !enable_raw_ptr_rewrite;
   MatchFinder match_finder;

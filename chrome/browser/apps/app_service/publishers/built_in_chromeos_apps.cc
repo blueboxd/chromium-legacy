@@ -17,8 +17,8 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
 #include "chrome/browser/apps/app_service/metrics/app_service_metrics.h"
+#include "chrome/browser/ash/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/services/app_service/public/cpp/app_types.h"
@@ -205,14 +205,6 @@ void BuiltInChromeOsApps::Connect(
   // mojo::RemoteSet<apps::mojom::Subscriber> subscribers_) after this
   // function returns. The list of built-in Chrome OS apps is fixed for the
   // lifetime of the Chrome OS session. There won't be any further updates.
-}
-
-void BuiltInChromeOsApps::GetMenuModel(const std::string& app_id,
-                                       apps::mojom::MenuType menu_type,
-                                       int64_t display_id,
-                                       GetMenuModelCallback callback) {
-  GetMenuModel(app_id, ConvertMojomMenuTypeToMenuType(menu_type), display_id,
-               MenuItemsToMojomMenuItemsCallback(std::move(callback)));
 }
 
 }  // namespace apps

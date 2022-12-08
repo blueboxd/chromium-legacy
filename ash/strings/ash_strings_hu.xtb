@@ -31,7 +31,6 @@
 <translation id="1148499908455722006">Információs párbeszédpanel, <ph name="USER_NAME" /></translation>
 <translation id="1150989369772528668">Naptár</translation>
 <translation id="1153356358378277386">Párosított eszközök</translation>
-<translation id="1165712434476988950">A frissítés alkalmazásához az eszköz újraindítása szükséges.</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Előfordulhat, hogy az USB-C kábellel nem csatlakoztathatók megfelelően a kijelzők</translation>
 <translation id="1175572348579024023">Görgetés</translation>
@@ -358,7 +357,6 @@
 <translation id="296762781903199866">Nem sikerült letölteni a(z) <ph name="LANGUAGE" /> nyelvű beszédfájlokat</translation>
 <translation id="2970920913501714344">Alkalmazások, bővítmények és témák telepítése</translation>
 <translation id="2977598380246111477">Következő szám</translation>
-<translation id="2981684127883932071">Javaslatok megjelenítve</translation>
 <translation id="2985148236010982088">Összes alkalmazás megjelenítése</translation>
 <translation id="2992327365391326550">Az eszköz mikrofongombját kikapcsolták.</translation>
 <translation id="2996462380875591307">Dokkolt nagyító bekapcsolva. A kikapcsoláshoz nyomja le ismét a Ctrl+Keresés+D billentyűparancsot.</translation>
@@ -670,6 +668,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="4666082839192943839">Ha azt szeretné, hogy az összes kamera, mindig le legyen tiltva, kapcsolja ki az eszköz kamerájához való hozzáférést.</translation>
 <translation id="4666911709726371538">További alkalmazások</translation>
 <translation id="4667099493359681081"><ph name="FILENAME" /> letöltése</translation>
+<translation id="468293128311738995">Alkalmazások a telefonjáról</translation>
 <translation id="4690510401873698237">A polc alul található</translation>
 <translation id="4696813013609194136">Zárolás feloldása szülői kóddal</translation>
 <translation id="4702647871202761252">Az adatvédelmi képernyő ki van kapcsolva</translation>
@@ -926,12 +925,10 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="6103838137565245112">rendszer</translation>
 <translation id="6107292179555508368">A mikrofon- és a kamera-hozzáférés ki van kapcsolva ezen az eszközön</translation>
 <translation id="6114505516289286752"><ph name="LANGUAGE" /> nyelvű beszédfájlok letöltve</translation>
-<translation id="6116825164611323644">A kamera-hozzáférés ki van kapcsolva ezen az eszközön</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042">A(z) <ph name="FILENAME" /> fájl letöltésének megerősítése</translation>
 <translation id="612734058257491180">A Google Segéd nem áll rendelkezésre Vendég-munkafolyamatban.</translation>
 <translation id="6129953537138746214">Szóköz</translation>
-<translation id="6134259848159370930">Kereshet az eszközén, az alkalmazások és a beállítások között, valamint az interneten.</translation>
 <translation id="6137566720514957455">Eltávolítási párbeszédpanel megnyitása, <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6141988275892716286">Letöltés megerősítése</translation>
 <translation id="6154006699632741460">A periféria nem támogatott</translation>
@@ -1292,6 +1289,7 @@ Frissen telepítve</translation>
 <translation id="8142441511840089262">Dupla kattintás</translation>
 <translation id="8142699993796781067">Privát hálózat</translation>
 <translation id="8144760705599030999">Mentse <ph name="NAME" /> eszközét a fiókjába (<ph name="EMAIL" />) a többi eszközével való gyorsabb párosítás érdekében</translation>
+<translation id="8144914663975476336">Felvételi formátum kiválasztása</translation>
 <translation id="8149413265954228307">Bluetooth-beállítások megjelenítése. <ph name="STATE_TEXT" />.</translation>
 <translation id="8152092012181020186">A bezáráshoz nyomja meg a Ctrl + W billentyűkódot.</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, automatikus kiegészítés</translation>
@@ -1389,7 +1387,6 @@ Frissen telepítve</translation>
 <translation id="8666856788528804727">Nyissa meg a(z) <ph name="NAME" /> alkalmazást az eszköz beállításához</translation>
 <translation id="8676770494376880701">Kis teljesítményű töltő csatlakoztatva</translation>
 <translation id="8683506306463609433">A teljesítménykövetés aktív</translation>
-<translation id="8685326675965865247">Kereshet eszközén, az alkalmazások és a beállítások között, valamint az interneten. A nyílbillentyűkkel navigálhat az alkalmazások között.</translation>
 <translation id="8703634754197148428">Indítsa el a rögzítést. A rögzítés elindítása után nyissa meg az Alt+Shift+L billentyűkombináció segítségével a polcot, és keresse meg a felvétel leállítása gombot.</translation>
 <translation id="8721053961083920564">Hang ki-, illetve bekapcsolása. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">Felvétel készítése a teljes képernyőről</translation>
@@ -1398,7 +1395,6 @@ Frissen telepítve</translation>
 <translation id="8735678380411481005">Billentyűzet háttérvilágításának színe</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />,
         <ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8752416742247198423">Kapcsolja be a kamerához való hozzáférést, ha engedélyezni szeretné a kamerahasználati engedéllyel rendelkező alkalmazások és weboldalak számára az eszközhöz csatlakoztatott kamera vagy kamerák használatát.</translation>
 <translation id="8755498163081687682">Igazolja személyazonosságát, a következő szeretne meggyőződni a személyazonosságáról: <ph name="ORIGIN_NAME" /></translation>
 <translation id="875593634123171288">VPN-beállítások megjelenítése</translation>
 <translation id="8759408218731716181">Nem lehet beállítani a többfiókos bejelentkezést</translation>
@@ -1465,7 +1461,6 @@ Frissen telepítve</translation>
 <translation id="9089416786594320554">Beviteli módszerek</translation>
 <translation id="9091626656156419976">A(z) <ph name="DISPLAY_NAME" /> kijelző eltávolítva</translation>
 <translation id="9098969848082897657">Telefon némítása</translation>
-<translation id="9099154003160514616">Lacros-frissítés áll rendelkezésre</translation>
 <translation id="9100887602489003640">A profil hozzáadása folyamatban van. Várjon néhány percet.</translation>
 <translation id="9105450214093926548">Második felhasználó bejelentkezése nem támogatott a Lacros böngésző futtatása közben. Bejelentkezés helyett használjon második böngészőprofilt, vagy zárja be a Lacrost, és próbálja újra.</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> vagy <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>

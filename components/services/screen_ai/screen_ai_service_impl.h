@@ -84,20 +84,25 @@ class LibraryFunctions {
   // returns the main content ids. The input is in form of a serialized
   // ViewHierarchy proto. `content_node_ids` will be allocated for the outputs
   // and the ownership of the array will be passed to the caller function.
-  typedef bool (*ExtractMainContent)(
+  typedef bool (*ExtractMainContentFn)(
       const char* /*serialized_view_hierarchy*/,
       uint32_t /*serialized_view_hierarchy_length*/,
       int32_t*& /*&content_node_ids*/,
       uint32_t& /*content_node_ids_length*/);
-  ExtractMainContent extract_main_content_ = nullptr;
+  ExtractMainContentFn extract_main_content_ = nullptr;
 
   // Enables the debug mode which stores all i/o protos in the temp folder.
-  typedef void (*EnableDebugMode)();
-  EnableDebugMode enable_debug_mode_ = nullptr;
+  typedef void (*EnableDebugModeFn)();
+  EnableDebugModeFn enable_debug_mode_ = nullptr;
+
+  // Sets a function to receive library logs and add them to Chrome logs.
+  typedef void (*SetLoggerFn)(void (*logger_func)(int /*severity*/,
+                                                  const char* /*message*/));
+  SetLoggerFn set_logger_ = nullptr;
 
   // Gets the library version number.
-  typedef void (*GetLibraryVersion)(char*& version_string);
-  GetLibraryVersion get_library_version_ = nullptr;
+  typedef void (*GetLibraryVersionFn)(uint32_t& major, uint32_t& minor);
+  GetLibraryVersionFn get_library_version_ = nullptr;
 
  private:
   base::ScopedNativeLibrary library_;
@@ -124,9 +129,14 @@ class ScreenAIService : public mojom::ScreenAIService,
   std::unique_ptr<LibraryFunctions> library_functions_;
 
   // mojom::ScreenAIAnnotator:
-  void Annotate(const SkBitmap& image,
-                const ui::AXTreeID& parent_tree_id,
-                AnnotationCallback callback) override;
+  void ExtractSemanticLayout(const SkBitmap& image,
+                             const ui::AXTreeID& parent_tree_id,
+                             AnnotationCallback callback) override;
+
+  // mojom::ScreenAIAnnotator:
+  void PerformOcr(const SkBitmap& image,
+                  const ui::AXTreeID& parent_tree_id,
+                  AnnotationCallback callback) override;
 
   // mojom::Screen2xMainContentExtractor:
   void ExtractMainContent(const ui::AXTreeUpdate& snapshot,
@@ -150,14 +160,26 @@ class ScreenAIService : public mojom::ScreenAIService,
       mojo::PendingReceiver<mojom::Screen2xMainContentExtractor>
           main_content_extractor) override;
 
+  // Common section of PerformOcr and ExtractSemanticLayout functions.
+  void PerformVisualAnnotation(const SkBitmap& image,
+                               const ui::AXTreeID& parent_tree_id,
+                               AnnotationCallback callback,
+                               bool run_ocr,
+                               bool run_layout_extraction);
+
   // Wrapper functions for task scheduler.
-  void OcrInternal(const SkBitmap& image,
-                   const ui::AXTreeID& parent_tree_id,
-                   ui::AXTreeUpdate* annotation);
+  void VisualAnnotationInternal(const SkBitmap& image,
+                                const ui::AXTreeID& parent_tree_id,
+                                bool run_ocr,
+                                bool run_layout_extraction,
+                                ui::AXTreeUpdate* annotation);
   void ExtractMainContentInternal(const ui::AXTreeUpdate& snapshot,
                                   std::vector<int32_t>* content_node_ids);
 
   // Library function calls are isolated to have specific compiler directives.
+  bool CallLibraryLayoutExtractionFunction(const SkBitmap& image,
+                                           char*& annotation_proto,
+                                           uint32_t& annotation_proto_length);
   bool CallLibraryOcrFunction(const SkBitmap& image,
                               char*& annotation_proto,
                               uint32_t& annotation_proto_length);

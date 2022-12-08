@@ -1072,7 +1072,7 @@ void RenderViewContextMenu::InitMenu() {
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
   if (features::IsPdfOcrEnabled() &&
       accessibility_state_utils::IsScreenReaderEnabled() &&
-      screen_ai::ScreenAIInstallState::GetInstance()->is_component_ready() &&
+      screen_ai::ScreenAIInstallState::GetInstance()->IsComponentReady() &&
       IsFrameInPdfViewer(GetRenderFrameHost())) {
     AppendPdfOcrItem();
   }
@@ -1744,7 +1744,8 @@ void RenderViewContextMenu::AppendVideoItems() {
                                   IDS_CONTENT_CONTEXT_SAVEVIDEOAS);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYAVLOCATION,
                                   IDS_CONTENT_CONTEXT_COPYVIDEOLOCATION);
-  AppendPictureInPictureItem();
+  menu_model_.AddCheckItemWithStringId(IDC_CONTENT_CONTEXT_PICTUREINPICTURE,
+                                       IDS_CONTENT_CONTEXT_PICTUREINPICTURE);
   AppendMediaRouterItem();
 }
 
@@ -2152,12 +2153,6 @@ void RenderViewContextMenu::AppendPasswordItems() {
 
   if (add_separator)
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
-}
-
-void RenderViewContextMenu::AppendPictureInPictureItem() {
-  if (base::FeatureList::IsEnabled(media::kPictureInPicture))
-    menu_model_.AddCheckItemWithStringId(IDC_CONTENT_CONTEXT_PICTUREINPICTURE,
-                                         IDS_CONTENT_CONTEXT_PICTUREINPICTURE);
 }
 
 void RenderViewContextMenu::AppendSharingItems() {
@@ -3855,9 +3850,6 @@ void RenderViewContextMenu::ExecProtocolHandlerSettings(int event_flags) {
 }
 
 void RenderViewContextMenu::ExecPictureInPicture() {
-  if (!base::FeatureList::IsEnabled(media::kPictureInPicture))
-    return;
-
   bool picture_in_picture_active =
       IsCommandIdChecked(IDC_CONTENT_CONTEXT_PICTUREINPICTURE);
 

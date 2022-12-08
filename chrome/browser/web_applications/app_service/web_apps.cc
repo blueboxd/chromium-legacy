@@ -8,6 +8,7 @@
 
 #include "base/feature_list.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
+#include "chrome/browser/apps/app_service/app_icon/app_icon_util.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/profiles/profile.h"
@@ -70,7 +71,7 @@ void WebApps::Shutdown() {
 
 const WebApp* WebApps::GetWebApp(const AppId& app_id) const {
   DCHECK(provider_);
-  return provider_->registrar().GetAppById(app_id);
+  return provider_->registrar_unsafe().GetAppById(app_id);
 }
 
 void WebApps::Initialize(
@@ -102,14 +103,12 @@ void WebApps::LoadIcon(const std::string& app_id,
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 void WebApps::GetCompressedIconData(const std::string& app_id,
-                                    IconEffects icon_effects,
                                     apps::IconType icon_type,
                                     int32_t size_in_dip,
                                     ui::ResourceScaleFactor scale_factor,
                                     apps::LoadIconCallback callback) {
-  publisher_helper().GetCompressedIconData(app_id, icon_effects, icon_type,
-                                           size_in_dip, scale_factor,
-                                           std::move(callback));
+  publisher_helper().GetCompressedIconData(app_id, icon_type, size_in_dip,
+                                           scale_factor, std::move(callback));
 }
 #endif
 
@@ -356,7 +355,7 @@ std::vector<apps::AppPtr> WebApps::CreateWebApps() {
   DCHECK(provider_);
 
   std::vector<apps::AppPtr> apps;
-  for (const WebApp& web_app : provider_->registrar().GetApps()) {
+  for (const WebApp& web_app : provider_->registrar_unsafe().GetApps()) {
     apps.push_back(publisher_helper().CreateWebApp(&web_app));
   }
   return apps;
@@ -368,7 +367,7 @@ void WebApps::ConvertWebApps(std::vector<apps::mojom::AppPtr>* apps_out) {
     return;
   }
 
-  for (const WebApp& web_app : provider_->registrar().GetApps()) {
+  for (const WebApp& web_app : provider_->registrar_unsafe().GetApps()) {
     apps_out->push_back(publisher_helper().ConvertWebApp(&web_app));
   }
 }
@@ -410,15 +409,6 @@ void WebApps::UnpauseApp(const std::string& app_id) {
 
 void WebApps::StopApp(const std::string& app_id) {
   publisher_helper().StopApp(app_id);
-}
-
-void WebApps::GetMenuModel(const std::string& app_id,
-                           apps::mojom::MenuType menu_type,
-                           int64_t display_id,
-                           GetMenuModelCallback callback) {
-  GetMenuModel(app_id, apps::ConvertMojomMenuTypeToMenuType(menu_type),
-               display_id,
-               apps::MenuItemsToMojomMenuItemsCallback(std::move(callback)));
 }
 
 void WebApps::GetAppShortcutMenuModel(

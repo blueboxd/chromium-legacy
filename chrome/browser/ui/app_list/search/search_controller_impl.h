@@ -16,9 +16,9 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/ash/app_list/search/ranking/launch_data.h"
+#include "chrome/browser/ash/app_list/search/ranking/ranker_manager.h"
 #include "chrome/browser/ui/app_list/search/burnin_controller.h"
-#include "chrome/browser/ui/app_list/search/ranking/launch_data.h"
-#include "chrome/browser/ui/app_list/search/ranking/ranker_manager.h"
 #include "chrome/browser/ui/app_list/search/search_controller.h"
 
 class AppListControllerDelegate;
@@ -34,6 +34,7 @@ enum class AppListSearchResultType;
 namespace app_list {
 
 class SearchMetricsManager;
+class SearchSessionMetricsManager;
 class SearchProvider;
 
 namespace test {
@@ -148,6 +149,7 @@ class SearchControllerImpl : public SearchController {
   ResultsChangedCallback results_changed_callback_for_test_;
 
   std::unique_ptr<SearchMetricsManager> metrics_manager_;
+  std::unique_ptr<SearchSessionMetricsManager> session_metrics_manager_;
   std::unique_ptr<AppSearchDataSource> app_search_data_source_;
   using Providers = std::vector<std::unique_ptr<SearchProvider>>;
   Providers providers_;

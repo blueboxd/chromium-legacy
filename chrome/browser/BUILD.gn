@@ -177,12 +177,6 @@ static_library("browser") {
     "autocomplete/shortcuts_backend_factory.h",
     "autocomplete/zero_suggest_cache_service_factory.cc",
     "autocomplete/zero_suggest_cache_service_factory.h",
-    "autofill_assistant/assistant_field_trial_util_chrome.cc",
-    "autofill_assistant/assistant_field_trial_util_chrome.h",
-    "autofill_assistant/common_dependencies_chrome.cc",
-    "autofill_assistant/common_dependencies_chrome.h",
-    "autofill_assistant/platform_dependencies_desktop.cc",
-    "autofill_assistant/platform_dependencies_desktop.h",
     "background_fetch/background_fetch_delegate_factory.cc",
     "background_fetch/background_fetch_delegate_factory.h",
     "background_fetch/background_fetch_delegate_impl.cc",
@@ -591,8 +585,6 @@ static_library("browser") {
     "history/top_sites_factory.h",
     "history/web_history_service_factory.cc",
     "history/web_history_service_factory.h",
-    "history_clusters/entity_image_service.cc",
-    "history_clusters/entity_image_service.h",
     "history_clusters/history_clusters_metrics_logger.cc",
     "history_clusters/history_clusters_metrics_logger.h",
     "history_clusters/history_clusters_service_factory.cc",
@@ -1877,6 +1869,8 @@ static_library("browser") {
     "webid/federated_identity_api_permission_context.h",
     "webid/federated_identity_api_permission_context_factory.cc",
     "webid/federated_identity_api_permission_context_factory.h",
+    "webid/federated_identity_identity_provider_signin_status_context.cc",
+    "webid/federated_identity_identity_provider_signin_status_context.h",
     "webid/federated_identity_permission_context.cc",
     "webid/federated_identity_permission_context.h",
     "webid/federated_identity_permission_context_factory.cc",
@@ -2053,9 +2047,6 @@ static_library("browser") {
     "//components/assist_ranker",
     "//components/autofill/content/browser",
     "//components/autofill/core/browser",
-    "//components/autofill_assistant/browser/",
-    "//components/autofill_assistant/browser/public:password_change",
-    "//components/autofill_assistant/browser/public:public",
     "//components/back_forward_cache",
     "//components/background_fetch",
     "//components/background_sync",
@@ -2147,6 +2138,7 @@ static_library("browser") {
     "//components/history/metrics",
     "//components/history_clusters/core",
     "//components/history_clusters/history_clusters_internals/webui",
+    "//components/image_service",
     "//components/infobars/content",
     "//components/infobars/core",
     "//components/invalidation/impl",
@@ -2484,8 +2476,6 @@ static_library("browser") {
       "accessibility/ax_screen_ai_annotator.h",
       "accessibility/ax_screen_ai_annotator_factory.cc",
       "accessibility/ax_screen_ai_annotator_factory.h",
-      "component_updater/screen_ai_component_installer.cc",
-      "component_updater/screen_ai_component_installer.h",
     ]
     deps += [
       "//components/services/screen_ai",
@@ -2494,6 +2484,13 @@ static_library("browser") {
       "//components/services/screen_ai/public/cpp:utilities",
       "//components/services/screen_ai/public/mojom",
     ]
+
+    if (!is_chromeos_ash) {
+      sources += [
+        "component_updater/screen_ai_component_installer.cc",
+        "component_updater/screen_ai_component_installer.h",
+      ]
+    }
   }
 
   if (is_linux || is_chromeos) {
@@ -2537,10 +2534,6 @@ static_library("browser") {
       "android/android_theme_resources.h",
       "android/autocomplete/tab_matcher_android.cc",
       "android/autocomplete/tab_matcher_android.h",
-      "android/autofill_assistant/dependencies_android_chrome.cc",
-      "android/autofill_assistant/dependencies_android_chrome.h",
-      "android/autofill_assistant/platform_dependencies_android.cc",
-      "android/autofill_assistant/platform_dependencies_android.h",
       "android/background_sync_launcher_android.cc",
       "android/background_sync_launcher_android.h",
       "android/background_tab_manager.cc",
@@ -3251,6 +3244,10 @@ static_library("browser") {
       "touch_to_fill/payments/android/touch_to_fill_credit_card_controller.h",
       "touch_to_fill/touch_to_fill_controller.cc",
       "touch_to_fill/touch_to_fill_controller.h",
+      "touch_to_fill/touch_to_fill_controller_autofill_delegate.cc",
+      "touch_to_fill/touch_to_fill_controller_autofill_delegate.h",
+      "touch_to_fill/touch_to_fill_controller_delegate.cc",
+      "touch_to_fill/touch_to_fill_controller_delegate.h",
       "touch_to_fill/touch_to_fill_webauthn_credential.cc",
       "touch_to_fill/touch_to_fill_webauthn_credential.h",
       "translate/android/translate_bridge.cc",
@@ -3263,8 +3260,8 @@ static_library("browser") {
       "webauthn/android/cable_module_android.cc",
       "webauthn/android/chrome_webauthn_client_android.cc",
       "webauthn/android/chrome_webauthn_client_android.h",
-      "webauthn/android/conditional_ui_delegate_android.cc",
-      "webauthn/android/conditional_ui_delegate_android.h",
+      "webauthn/android/webauthn_request_delegate_android.cc",
+      "webauthn/android/webauthn_request_delegate_android.h",
     ]
     public_deps += [
       "//chrome/android/features/dev_ui:buildflags",
@@ -3338,11 +3335,6 @@ static_library("browser") {
       "//chrome/browser/video_tutorials/internal:jni_headers",
       "//chrome/common:non_code_constants",
       "//chrome/services/media_gallery_util/public/cpp",
-      "//components/autofill_assistant/browser:proto",
-      "//components/autofill_assistant/browser/android",
-      "//components/autofill_assistant/browser/android:dependencies_android",
-      "//components/autofill_assistant/browser/public:proto",
-      "//components/autofill_assistant/browser/public/fast_checkout/proto:proto",
       "//components/background_sync",
       "//components/bookmarks/common/android",
       "//components/browser_ui/accessibility/android",
@@ -3494,10 +3486,6 @@ static_library("browser") {
       "accessibility/live_caption_unavailability_notifier.h",
       "accessibility/live_translate_controller_factory.cc",
       "accessibility/live_translate_controller_factory.h",
-      "accuracy_tips/accuracy_service_delegate.cc",
-      "accuracy_tips/accuracy_service_delegate.h",
-      "accuracy_tips/accuracy_service_factory.cc",
-      "accuracy_tips/accuracy_service_factory.h",
       "apps/app_service/app_icon/app_icon_factory.cc",
       "apps/app_service/app_icon/app_icon_factory.h",
       "apps/app_service/app_icon/app_icon_loader.cc",
@@ -3785,6 +3773,8 @@ static_library("browser") {
       "feedback/system_logs/log_sources/device_event_log_source.h",
       "feedback/system_logs/log_sources/memory_details_log_source.cc",
       "feedback/system_logs/log_sources/memory_details_log_source.h",
+      "feedback/system_logs/log_sources/performance_log_source.cc",
+      "feedback/system_logs/log_sources/performance_log_source.h",
       "first_run/first_run.cc",
       "first_run/first_run.h",
       "first_run/first_run_dialog.h",
@@ -4100,8 +4090,6 @@ static_library("browser") {
       "resource_coordinator/lifecycle_unit_source_base.cc",
       "resource_coordinator/lifecycle_unit_source_base.h",
       "resource_coordinator/lifecycle_unit_source_observer.h",
-      "resource_coordinator/tab_activity_watcher.cc",
-      "resource_coordinator/tab_activity_watcher.h",
       "resource_coordinator/tab_lifecycle_observer.h",
       "resource_coordinator/tab_lifecycle_unit.cc",
       "resource_coordinator/tab_lifecycle_unit.h",
@@ -4421,7 +4409,6 @@ static_library("browser") {
       "//chrome/browser/ui/webui/image_editor:mojo_bindings",
       "//chrome/browser/ui/webui/new_tab_page:mojo_bindings",
       "//chrome/browser/ui/webui/new_tab_page_third_party:mojo_bindings",
-      "//chrome/browser/ui/webui/realbox:mojo_bindings",
       "//chrome/browser/ui/webui/side_panel/bookmarks:mojo_bindings",
       "//chrome/browser/ui/webui/side_panel/customize_chrome:mojo_bindings",
       "//chrome/browser/ui/webui/side_panel/reading_list:mojo_bindings",
@@ -4435,7 +4422,6 @@ static_library("browser") {
       "//chrome/common/importer:interfaces",
       "//chrome/common/themes:autogenerated_theme_util",
       "//chrome/services/media_gallery_util/public/cpp",
-      "//components/accuracy_tips",
       "//components/app_constants",
       "//components/commerce/core:cart_db_content_proto",
       "//components/commerce/core:coupon_db_content_proto",
@@ -4450,6 +4436,7 @@ static_library("browser") {
       "//components/keep_alive_registry",
       "//components/live_caption",
       "//components/memory_pressure",
+      "//components/omnibox/browser:mojo_bindings",
       "//components/services/app_service:lib",
       "//components/services/app_service/public/cpp:app_file_handling",
       "//components/services/app_service/public/cpp:app_share_target",
@@ -8092,6 +8079,10 @@ grit("dev_ui_browser_resources") {
   if (is_android || is_linux || is_chromeos || is_win) {
     deps += [ "//chrome/browser/resources/sandbox_internals:build_ts" ]
   }
+
+  if (is_android) {
+    deps += [ "//chrome/browser/resources/internals/query_tiles:build_ts" ]
+  }
 }
 
 action("expired_flags_list_gen") {
@@ -8296,8 +8287,18 @@ static_library("test_support") {
     sources += [
       "apps/app_service/webapk/webapk_test_server.cc",
       "apps/app_service/webapk/webapk_test_server.h",
+      "ash/accessibility/caret_bounds_changed_waiter.cc",
+      "ash/accessibility/caret_bounds_changed_waiter.h",
+      "ash/accessibility/html_test_utils.cc",
+      "ash/accessibility/html_test_utils.h",
       "ash/accessibility/service/fake_accessibility_service.cc",
       "ash/accessibility/service/fake_accessibility_service.h",
+      "ash/app_list/test/chrome_app_list_test_support.cc",
+      "ash/app_list/test/chrome_app_list_test_support.h",
+      "ash/app_list/test/test_app_list_controller.cc",
+      "ash/app_list/test/test_app_list_controller.h",
+      "ash/app_list/test/test_app_list_controller_delegate.cc",
+      "ash/app_list/test/test_app_list_controller_delegate.h",
       "ash/app_mode/fake_cws.cc",
       "ash/app_mode/fake_cws.h",
       "ash/arc/extensions/fake_arc_support.cc",
@@ -8346,12 +8347,6 @@ static_library("test_support") {
       "sharesheet/sharesheet_test_util.h",
       "speech/speech_recognition_test_helper.cc",
       "speech/speech_recognition_test_helper.h",
-      "ui/app_list/test/chrome_app_list_test_support.cc",
-      "ui/app_list/test/chrome_app_list_test_support.h",
-      "ui/app_list/test/test_app_list_controller.cc",
-      "ui/app_list/test/test_app_list_controller.h",
-      "ui/app_list/test/test_app_list_controller_delegate.cc",
-      "ui/app_list/test/test_app_list_controller_delegate.h",
     ]
     configs += [ "//build/config/linux/dbus" ]
     deps += [

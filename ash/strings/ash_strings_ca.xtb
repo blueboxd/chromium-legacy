@@ -31,7 +31,6 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="1148499908455722006">Obre el quadre de diàleg d'informació per a <ph name="USER_NAME" /></translation>
 <translation id="1150989369772528668">Calendari</translation>
 <translation id="1153356358378277386">Dispositius vinculats</translation>
-<translation id="1165712434476988950">Cal reiniciar el dispositiu per aplicar l'actualització.</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">És possible que el teu cable USB-C no es connecti correctament a les pantalles.</translation>
 <translation id="1175572348579024023">Desplaça</translation>
@@ -358,7 +357,6 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="296762781903199866">No s'han pogut baixar els fitxers de veu en <ph name="LANGUAGE" /></translation>
 <translation id="2970920913501714344">Instal·lar aplicacions, extensions i temes.</translation>
 <translation id="2977598380246111477">Número següent</translation>
-<translation id="2981684127883932071">S'estan mostrant suggeriments</translation>
 <translation id="2985148236010982088">Mostra totes les aplicacions</translation>
 <translation id="2992327365391326550">El botó del micròfon del dispositiu està desactivat.</translation>
 <translation id="2996462380875591307">La lupa acoblada està activada. Torna a prémer Ctrl+Cerca+D per desactivar-la.</translation>
@@ -669,6 +667,7 @@ Connecta el dispositiu a l'alimentació.</translation>
 <translation id="4666082839192943839">Desactiva l'accés a la càmera en aquest dispositiu per bloquejar sempre totes les càmeres.</translation>
 <translation id="4666911709726371538">Més aplicacions</translation>
 <translation id="4667099493359681081">S'està baixant <ph name="FILENAME" /></translation>
+<translation id="468293128311738995">Aplicacions del telèfon</translation>
 <translation id="4690510401873698237">El prestatge és a la part inferior</translation>
 <translation id="4696813013609194136">Desbloqueja el dispositiu amb el codi parental</translation>
 <translation id="4702647871202761252">La pantalla de privadesa està desactivada</translation>
@@ -925,12 +924,10 @@ Connecta el dispositiu a l'alimentació.</translation>
 <translation id="6103838137565245112">sistema</translation>
 <translation id="6107292179555508368">Els accessos al micròfon i a la càmera estan desactivats en aquest dispositiu</translation>
 <translation id="6114505516289286752">S'han baixat fitxers de veu en <ph name="LANGUAGE" /></translation>
-<translation id="6116825164611323644">L'accés a la càmera està desactivat en aquest dispositiu</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" />.</translation>
 <translation id="6121838516699723042">Confirma la baixada del fitxer <ph name="FILENAME" /></translation>
 <translation id="612734058257491180">L'Assistent de Google no està disponible a les sessions de convidat.</translation>
 <translation id="6129953537138746214">Espai</translation>
-<translation id="6134259848159370930">Cerca al dispositiu, en aplicacions, a la configuració i al web.</translation>
 <translation id="6137566720514957455">Obre el quadre de diàleg per suprimir <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6141988275892716286">Confirma la baixada</translation>
 <translation id="6154006699632741460">Perifèric no admès</translation>
@@ -1288,6 +1285,7 @@ Instal·lació nova</translation>
 <translation id="8142441511840089262">Fes doble clic</translation>
 <translation id="8142699993796781067">Xarxa privada</translation>
 <translation id="8144760705599030999">Desa el dispositiu <ph name="NAME" /> a <ph name="EMAIL" /> perquè es vinculi ràpidament als teus altres dispositius</translation>
+<translation id="8144914663975476336">Selecciona el format de gravació</translation>
 <translation id="8149413265954228307">Mostra la configuració del Bluetooth. <ph name="STATE_TEXT" />.</translation>
 <translation id="8152092012181020186">Prem Ctrl+W per tancar.</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, compleció automàtica</translation>
@@ -1385,7 +1383,6 @@ Instal·lació nova</translation>
 <translation id="8666856788528804727">Obre <ph name="NAME" /> per configurar el dispositiu</translation>
 <translation id="8676770494376880701">S'ha connectat un carregador de baix consum</translation>
 <translation id="8683506306463609433">Traça del rendiment activa</translation>
-<translation id="8685326675965865247">Fes cerques al dispositiu, en aplicacions, a la configuració i al web. Fes servir les tecles de fletxa per navegar per les aplicacions.</translation>
 <translation id="8703634754197148428">Inicia la gravació. Quan la gravació hagi començat, prem Alt+Maj+L per navegar fins al prestatge i trobar el botó per aturar-la.</translation>
 <translation id="8721053961083920564">Activa o desactiva el volum. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">Captura de pantalla completa</translation>
@@ -1394,7 +1391,6 @@ Instal·lació nova</translation>
 <translation id="8735678380411481005">Color de la retroil·luminació del teclat</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />,
         <ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8752416742247198423">Activa l'accés a la càmera per permetre que les aplicacions i les pàgines web que tinguin permís per accedir a la càmera utilitzin les càmeres connectades a aquest dispositiu.</translation>
 <translation id="8755498163081687682">Verifica la teva identitat: <ph name="ORIGIN_NAME" /> vol confirmar que ets tu</translation>
 <translation id="875593634123171288">Mostra la configuració de la VPN</translation>
 <translation id="8759408218731716181">No es pot configurar l'inici de sessió múltiple</translation>
@@ -1461,7 +1457,6 @@ Instal·lació nova</translation>
 <translation id="9089416786594320554">Mètodes d'entrada</translation>
 <translation id="9091626656156419976">S'ha suprimit la pantalla <ph name="DISPLAY_NAME" /></translation>
 <translation id="9098969848082897657">Silencia el telèfon</translation>
-<translation id="9099154003160514616">Hi ha una actualització de Lacros disponible</translation>
 <translation id="9100887602489003640">S'està afegint el perfil. Espera uns minuts.</translation>
 <translation id="9105450214093926548">Mentre s'executa el navegador Lacros, no s'admet l'inici de sessió amb un segon usuari. Utilitza un altre perfil del navegador o tanca Lacros i torna-ho a provar.</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> o <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>

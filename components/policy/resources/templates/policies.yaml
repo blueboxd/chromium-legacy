@@ -1039,6 +1039,8 @@ policies:
   1038: PdfLocalFileAccessAllowedForDomains
   1039: FloatingWorkspaceV2Enabled
   1040: DeviceKeyboardBrightness
+  1041: NewBaseUrlInheritanceBehaviorAllowed
+  1042: ShowCastSessionsStartedByOtherDevices
 atomic_groups:
   1: Homepage
   2: RemoteAccess

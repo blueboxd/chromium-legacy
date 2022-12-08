@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.OnScrollListener;
 
 import org.chromium.base.Callback;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.feed.FeedActionDelegate;
 import org.chromium.chrome.browser.feed.FeedAutoplaySettingsDelegate;
 import org.chromium.chrome.browser.feed.FeedContentFirstLoadWatcher;
@@ -28,7 +29,9 @@ import org.chromium.chrome.browser.feed.StreamKind;
 import org.chromium.chrome.browser.feed.webfeed.WebFeedBridge;
 import org.chromium.chrome.browser.feed.webfeed.WebFeedBridge.WebFeedMetadata;
 import org.chromium.chrome.browser.feed.webfeed.WebFeedSubscriptionStatus;
+import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncher;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.xsurface.FeedLaunchReliabilityLogger;
 import org.chromium.chrome.browser.xsurface.HybridListRenderer;
@@ -43,6 +46,7 @@ import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
+import org.chromium.ui.util.ColorUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -124,13 +128,22 @@ public class CreatorCoordinator
 
         mMediator = new CreatorMediator(mActivity, mCreatorModel);
     }
-    public void initFeedStream(FeedActionDelegate feedActionDelegate) {
-        // Create a FeedStream and bind it to the RecyclerView
-        mStream = createCreatorFeedStream(feedActionDelegate);
+
+    // Create a FeedStream and bind it to the RecyclerView
+    public void initFeedStream(FeedActionDelegate feedActionDelegate,
+            HelpAndFeedbackLauncher helpAndFeedbackLauncher,
+            Supplier<ShareDelegate> shareDelegateSupplier) {
+        mStream = new FeedStream(mActivity, mSnackbarManager, mBottomSheetController,
+                /* isPlaceholderShownInitially */ false, mWindowAndroid,
+                /* shareSupplier */ shareDelegateSupplier, StreamKind.SINGLE_WEB_FEED,
+                /* FeedAutoplaySettingsDelegate */ this, feedActionDelegate,
+                helpAndFeedbackLauncher,
+                /* FeedContentFirstLoadWatcher */ this,
+                /* streamsMediator */ null, mWebFeedId);
 
         mStream.bind(mRecyclerView, mContentManager, /*FeedScrollState*/ null, mSurfaceScope,
-                mHybridListRenderer, new FeedLaunchReliabilityLogger() {},
-                /* HeaderCount */ mHeaderCount, /* shouldScrollToTop */ false);
+                mHybridListRenderer, new FeedLaunchReliabilityLogger() {}, mHeaderCount,
+                /* shouldScrollToTop */ false);
     }
 
     public ViewGroup getView() {
@@ -151,8 +164,8 @@ public class CreatorCoordinator
         ProcessScope processScope = FeedSurfaceTracker.getInstance().getXSurfaceProcessScope();
 
         if (processScope != null) {
-            mDependencyProvider =
-                    new FeedSurfaceScopeDependencyProvider(mActivity, mActivity, false);
+            mDependencyProvider = new FeedSurfaceScopeDependencyProvider(
+                    mActivity, mActivity, ColorUtils.inNightMode(mActivity));
             mSurfaceScope = processScope.obtainSurfaceScope(mDependencyProvider);
         } else {
             mDependencyProvider = null;
@@ -240,17 +253,6 @@ public class CreatorCoordinator
                                 > 0);
             }
         });
-    }
-
-    FeedStream createCreatorFeedStream(FeedActionDelegate feedActionDelegate) {
-        return new FeedStream(mActivity, mSnackbarManager, mBottomSheetController,
-                /* isPlaceholderShownInitially */ false, mWindowAndroid,
-                /* shareSupplier */ null, StreamKind.SINGLE_WEB_FEED,
-                /* FeedAutoplaySettingsDelegate */ this,
-                /* actionDelegate */ feedActionDelegate,
-                /* helpAndFeedbackLauncher */ null,
-                /* FeedContentFirstLoadWatcher */ this,
-                /* streamsMediator */ null, mWebFeedId);
     }
 
     /** Launches autoplay settings activity. */

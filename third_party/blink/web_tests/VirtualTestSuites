@@ -528,7 +528,8 @@
               "http/tests/workers",
               "inspector-protocol/worker"
             ],
-    "args": ["--enable-features=PlzDedicatedWorker"],
+    "args": ["--enable-features=PlzDedicatedWorker",
+             "--disable-features=PrivateNetworkAccessForWorkersWarningOnly"],
     "expires": "Jul 1, 2023"
   },
   {
@@ -544,9 +545,8 @@
     "bases": ["external/wpt/direct-sockets",
     	      "wpt_internal/direct-sockets"],
     "exclusive_tests": "ALL",
-    "args": ["--enable-features=IsolatedWebApps",
-             "--isolated-app-origins=https://web-platform.test"],
-    "expires": "Jul 1, 2023"
+    "args": ["--isolated-context-origins=https://web-platform.test"],
+    "expires": "never"
   },
   {
     "prefix": "display-compositor-pixel-dump",
@@ -1172,7 +1172,10 @@
       "Win"
     ],
     "bases": [
-      "external/wpt/performance-timeline/cross-origin-non-tao-image.sub.html"
+      "external/wpt/largest-contentful-paint/non-tao-image-load-after-fcp.tentative.html",
+      "external/wpt/largest-contentful-paint/non-tao-image-load-before-fcp-render-after.tentative.html",
+      "external/wpt/largest-contentful-paint/non-tao-image-load-before-fcp-render-at-fcp.tentative.html",
+      "external/wpt/largest-contentful-paint/non-tao-image-subsequent-lcp-candidate.tentative.html"
     ],
     "exclusive_tests": "ALL",
     "args": [

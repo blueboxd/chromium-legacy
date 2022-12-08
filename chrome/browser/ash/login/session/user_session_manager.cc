@@ -38,6 +38,7 @@
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/ash/account_manager/account_manager_util.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ash/app_restore/full_restore_service.h"
 #include "chrome/browser/ash/arc/arc_migration_guide_notification.h"
 #include "chrome/browser/ash/arc/arc_util.h"
@@ -112,7 +113,6 @@
 #include "chrome/browser/sync/desk_sync_service_factory.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/startup/launch_mode_recorder.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/common/channel_info.h"
@@ -1326,7 +1326,9 @@ void UserSessionManager::PrepareProfile(const base::FilePath& profile_path) {
       base::BindOnce(
           [](base::WeakPtr<UserSessionManager> self,
              const UserContext& user_context, Profile* profile) {
-            CHECK(profile);
+            // `profile` might be null, meaning that the creation failed.
+            if (!profile)
+              return;
             // Profile is created, extensions and promo resources
             // are initialized. At this point all other Chrome OS
             // services will be notified that it is safe to use
@@ -1338,7 +1340,9 @@ void UserSessionManager::PrepareProfile(const base::FilePath& profile_path) {
       base::BindOnce(
           [](base::WeakPtr<UserSessionManager> self,
              const UserContext& user_context, Profile* profile) {
-            CHECK(profile);
+            // `profile` might be null, meaning that the creation failed.
+            if (!profile)
+              return;
             // Profile created but before initializing extensions and
             // promo resources.
             self->InitProfilePreferences(profile, user_context);

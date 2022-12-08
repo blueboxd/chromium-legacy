@@ -4,7 +4,7 @@
 
 /** @fileoverview Test implementation of PasswordManagerProxy. */
 
-import {BlockedSite, BlockedSitesListChangedListener, CredentialsChangedListener, PasswordCheckInteraction, PasswordCheckStatusChangedListener, PasswordManagerProxy} from 'chrome://password-manager/password_manager.js';
+import {BlockedSite, BlockedSitesListChangedListener, CredentialsChangedListener, PasswordCheckInteraction, PasswordCheckStatusChangedListener, PasswordManagerProxy, PasswordsFileExportProgressListener} from 'chrome://password-manager/password_manager.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 
 import {makePasswordCheckStatus} from './test_util.js';
@@ -27,6 +27,8 @@ export class TestPasswordManagerProxy extends TestBrowserProxy implements
     savedPasswordListChangedListener: CredentialsChangedListener|null,
     passwordCheckStatusListener: PasswordCheckStatusChangedListener|null,
     insecureCredentialsListener: CredentialsChangedListener|null,
+    passwordsFileExportProgressListener: PasswordsFileExportProgressListener|
+    null,
   };
 
   private requestCredentialsDetailsResponse_:
@@ -34,6 +36,7 @@ export class TestPasswordManagerProxy extends TestBrowserProxy implements
 
   constructor() {
     super([
+      'exportPasswords',
       'getBlockedSitesList',
       'getCredentialGroups',
       'getInsecureCredentials',
@@ -42,6 +45,8 @@ export class TestPasswordManagerProxy extends TestBrowserProxy implements
       'recordPasswordCheckInteraction',
       'removeBlockedSite',
       'requestCredentialsDetails',
+      'requestExportProgressStatus',
+      'requestPlaintextPassword',
       'startBulkPasswordCheck',
     ]);
 
@@ -60,6 +65,7 @@ export class TestPasswordManagerProxy extends TestBrowserProxy implements
       blockedSitesListChangedListener: null,
       savedPasswordListChangedListener: null,
       insecureCredentialsListener: null,
+      passwordsFileExportProgressListener: null,
     };
   }
 
@@ -154,7 +160,34 @@ export class TestPasswordManagerProxy extends TestBrowserProxy implements
     this.requestCredentialsDetailsResponse_ = credentials;
   }
 
+  requestPlaintextPassword(
+      id: number, reason: chrome.passwordsPrivate.PlaintextReason) {
+    this.methodCalled('requestPlaintextPassword', {id, reason});
+    return Promise.resolve('plainTextPassword');
+  }
+
   removeBlockedSite(id: number) {
     this.methodCalled('removeBlockedSite', id);
+  }
+
+  requestExportProgressStatus() {
+    this.methodCalled('requestExportProgressStatus');
+    return Promise.resolve(
+        chrome.passwordsPrivate.ExportProgressStatus.NOT_STARTED);
+  }
+
+  exportPasswords() {
+    this.methodCalled('exportPasswords');
+    return Promise.resolve();
+  }
+
+  addPasswordsFileExportProgressListener(
+      listener: PasswordsFileExportProgressListener) {
+    this.listeners.passwordsFileExportProgressListener = listener;
+  }
+
+  removePasswordsFileExportProgressListener(
+      _listener: PasswordsFileExportProgressListener) {
+    this.listeners.passwordsFileExportProgressListener = null;
   }
 }

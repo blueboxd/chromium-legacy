@@ -33,12 +33,33 @@ namespace {
 
 constexpr base::TimeDelta kMaxWriteToTheFuture = base::Days(2);
 
+// Redirect chains have theoretically unbounded size, and in excessive cases
+// they can become so large that the whole entity may fail to sync due to its
+// size. Avoid even trying to commit such entities.
+constexpr int kMaxRedirectsPerEntity = 10;
+
 // Some pages embed the favicon image itself in the URL, using the data: scheme.
 // These cases, or more generally any favicon URL that is unreasonably large,
 // should simply be ignored, because it otherwise runs into the risk that the
 // whole entity may fail to sync due to max size limits imposed by the sync
 // server. And after all, the favicon is somewhat optional.
 constexpr int kMaxFaviconUrlSizeToSync = 2048;
+
+bool ShouldSync(const GURL& url) {
+  // Note: Several types of uninteresting/undesired URLs are already excluded by
+  // the history system itself via CanAddURLToHistory(). No need to exclude them
+  // again here.
+  // "file:", "filesystem:", or "blob:" URLs don't make sense to sync.
+  if (url.SchemeIsFile() || url.SchemeIsFileSystem() || url.SchemeIsBlob()) {
+    return false;
+  }
+  // "data:" URLs can be arbitrarily large, and thus shouldn't be synced.
+  // (It's also questionable if it'd be at all useful to sync them.)
+  if (url.SchemeIs(url::kDataScheme)) {
+    return false;
+  }
+  return true;
+}
 
 std::string GetStorageKeyFromVisitRow(const VisitRow& row) {
   DCHECK(!row.visit_time.is_null());
@@ -55,7 +76,7 @@ enum class SyncHistoryDatabaseError {
   // Deprecated (call sites were removed):
   // kOnURLVisitedGetVisit = 4,
   // kOnURLsDeletedReadMetadata = 5,
-  kOnVisitUpdatedGetURL = 6,
+  // kOnVisitUpdatedGetURL = 6,
   kGetAllDataReadMetadata = 7,
   kMaxValue = kGetAllDataReadMetadata
 };
@@ -252,6 +273,7 @@ absl::optional<VisitContentAnnotations> MakeContentAnnotations(
 std::unique_ptr<syncer::EntityData> MakeEntityData(
     const std::string& local_cache_guid,
     const std::vector<AnnotatedVisit>& redirect_visits,
+    bool redirect_chain_middle_trimmed,
     const GURL& referrer_url,
     const std::vector<GURL>& favicon_urls) {
   DCHECK(!local_cache_guid.empty());
@@ -322,6 +344,8 @@ std::unique_ptr<syncer::EntityData> MakeEntityData(
   // end up being false here. However, in some cases (notably, client
   // redirects), a single redirect chain may be split up over multiple entities,
   // in which case one (or even both) might be true.
+
+  history->set_redirect_chain_middle_trimmed(redirect_chain_middle_trimmed);
 
   // Referring visit and opener visit are taken from the *first* visit in the
   // chain, since they only make sense for that one.
@@ -399,6 +423,8 @@ absl::optional<SpecificsError> GetSpecificsError(
       specifics.redirect_entries_size() == 0) {
     return SpecificsError::kMissingRequiredFields;
   }
+
+  // TODO(crbug.com/1364576): Filter out URLs that shouldn't be synced.
 
   base::Time visit_time = GetVisitTime(specifics);
 
@@ -838,6 +864,13 @@ void HistorySyncBridge::MaybeCommit(const VisitRow& visit_row) {
     return;
   }
 
+  // If this visit originally came from a different device, don't update it.
+  // This shouldn't usually happen, but if it does happen for some reason (e.g.
+  // due to a bug elsewhere), better not to mess up other clients.
+  if (!visit_row.originator_cache_guid.empty()) {
+    return;
+  }
+
   // All conditions are fulfilled - convert the visit into Sync's format and
   // send it on.
   std::vector<std::unique_ptr<syncer::EntityData>> entity_data_list =
@@ -888,11 +921,20 @@ HistorySyncBridge::QueryRedirectChainAndMakeEntityData(
         std::make_move_iterator(subchain_begin),
         std::make_move_iterator(subchain_end));
 
+    // If the redirect chain is excessively long, trim it at the middle.
+    bool chain_middle_trimmed = false;
+    if (subchain_visits.size() > kMaxRedirectsPerEntity) {
+      int keep = kMaxRedirectsPerEntity / 2;
+      subchain_visits.erase(subchain_visits.begin() + keep,
+                            subchain_visits.end() - keep);
+      chain_middle_trimmed = true;
+    }
+
     // Make `subchain_begin` point to the beginning of the *next* subchain, for
     // the next iteration.
     subchain_begin = subchain_end;
 
-    // Convert the current subchain into a SyncEntity.
+    // Query the URL and annotation info for the current subchain.
     std::vector<AnnotatedVisit> annotated_visits =
         history_backend_->ToAnnotatedVisits(subchain_visits);
     if (annotated_visits.empty()) {
@@ -900,13 +942,25 @@ HistorySyncBridge::QueryRedirectChainAndMakeEntityData(
       // skip this subchain but still try to handle any others.
       continue;
     }
+
+    // If there are any unsyncable URLs in the chain, skip the whole thing.
+    // (Typically, unsyncable URLs like file:// or data:// shouldn't have
+    // redirects anyway.)
+    for (const AnnotatedVisit& visit : annotated_visits) {
+      if (!ShouldSync(visit.url_row.url())) {
+        return {};
+      }
+    }
+
+    // Convert the current subchain into a SyncEntity.
     GURL referrer_url =
         GetURLForVisit(annotated_visits.front().visit_row.referring_visit);
     std::vector<GURL> favicon_urls = history_backend_->GetFaviconURLsForURL(
         annotated_visits.back().url_row.url());
     // Note: `favicon_urls` may legitimately be empty, that's fine.
     entities.push_back(MakeEntityData(GetLocalCacheGuid(), annotated_visits,
-                                      referrer_url, favicon_urls));
+                                      chain_middle_trimmed, referrer_url,
+                                      favicon_urls));
   }
   return entities;
 }

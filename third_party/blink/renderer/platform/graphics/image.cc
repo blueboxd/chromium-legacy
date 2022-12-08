@@ -51,12 +51,14 @@
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/skia_conversions.h"
@@ -194,6 +196,10 @@ Image::SizeAvailability Image::SetData(scoped_refptr<SharedBuffer> data,
 
 String Image::FilenameExtension() const {
   return String();
+}
+
+const AtomicString& Image::MimeType() const {
+  return g_empty_atom;
 }
 
 namespace {

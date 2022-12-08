@@ -298,11 +298,6 @@ BASE_FEATURE(kEnableTabMuting,
              "EnableTabMuting",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enable Picture-in-Picture.
-BASE_FEATURE(kPictureInPicture,
-             "PictureInPicture",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 #if BUILDFLAG(ENABLE_PLATFORM_HEVC)
 // Enables HEVC hardware accelerated decoding.
 BASE_FEATURE(kPlatformHEVCDecoderSupport,
@@ -456,6 +451,16 @@ const base::FeatureParam<bool> kChromeWideEchoCancellationAllowAllSampleRates{
 BASE_FEATURE(kMemoryPressureBasedSourceBufferGC,
              "MemoryPressureBasedSourceBufferGC",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables binding software video NV12/P010 GMBs as separate shared images.
+BASE_FEATURE(kMultiPlaneSoftwareVideoSharedImages,
+             "MultiPlaneSoftwareVideoSharedImages",
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+             base::FEATURE_ENABLED_BY_DEFAULT
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+);
 
 // Enable binding multiple shared images to a single GpuMemoryBuffer for video
 // frames created by video capture.
@@ -922,12 +927,7 @@ BASE_FEATURE(kUseRealColorSpaceForAndroidVideo,
 // Enable hardware AV1 decoder on ChromeOS.
 BASE_FEATURE(kChromeOSHWAV1Decoder,
              "ChromeOSHWAV1Decoder",
-#if defined(ARCH_CPU_X86_FAMILY)
-             base::FEATURE_ENABLED_BY_DEFAULT
-#else
-             base::FEATURE_DISABLED_BY_DEFAULT
-#endif  // defined(ARCH_CPU_X86_FAMILY)
-);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable Variable Bitrate encoding with hardware accelerated encoders on
 // ChromeOS.
@@ -1076,10 +1076,20 @@ const base::FeatureParam<MediaFoundationClearRenderingStrategy>
 #endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(ENABLE_PLATFORM_ENCRYPTED_DOLBY_VISION)
-// When ENABLE_PLATFORM_ENCRYPTED_DOLBY_VISION is true, encrypted Dolby Vision
-// is allowed in Media Source while clear Dolby Vision is not allowed. This
-// feature allows the support of clear Dolby Vision in Media Source, which is
-// useful to work around some JavaScript player limitations.
+// When ENABLE_PLATFORM_ENCRYPTED_DOLBY_VISION is enabled at build time, allow
+// the support of encrypted Dolby Vision. Have no effect when
+// ENABLE_PLATFORM_ENCRYPTED_DOLBY_VISION is disabled.
+BASE_FEATURE(kPlatformEncryptedDolbyVision,
+             "PlatformEncryptedDolbyVision",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// When ENABLE_PLATFORM_ENCRYPTED_DOLBY_VISION is enabled at build time and
+// `kPlatformEncryptedDolbyVision` is enabled at run time, encrypted Dolby
+// Vision is allowed in Media Source while clear Dolby Vision is not allowed.
+// In this case, this feature allows the support of clear Dolby Vision in Media
+// Source, which is useful to work around some JavaScript player limitations.
+// Otherwise, this feature has no effect and neither encrypted nor clear Dolby
+// Vision is allowed.
 BASE_FEATURE(kAllowClearDolbyVisionInMseWhenPlatformEncryptedDvEnabled,
              "AllowClearDolbyVisionInMseWhenPlatformEncryptedDvEnabled",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1260,16 +1270,6 @@ BASE_FEATURE(kFuchsiaMediacodecVideoEncoder,
              "FuchsiaMediacodecVideoEncoder",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_FUCHSIA)
-
-// Enables binding software NV12 GMBs as separate shared images.
-BASE_FEATURE(kMultiPlaneSoftwareVideoSharedImages,
-             "MultiPlaneSoftwareVideoSharedImages",
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
-             base::FEATURE_ENABLED_BY_DEFAULT
-#else
-             base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-);
 
 bool IsChromeWideEchoCancellationEnabled() {
 #if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)

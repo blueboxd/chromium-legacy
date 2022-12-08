@@ -14,6 +14,9 @@
 #include "chrome/browser/ui/webui/app_home/mock_app_home_page.h"
 #include "chrome/browser/web_applications/os_integration/web_app_shortcut.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -22,6 +25,7 @@
 #include "content/public/test/test_web_ui.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/manifest_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/views/test/dialog_test.h"
 #include "ui/views/widget/any_widget_observer.h"
@@ -82,8 +86,14 @@ class TestAppHomePageHandler : public AppHomePageHandler {
   ~TestAppHomePageHandler() override = default;
 
   void Wait() {
+    // TODO(crbug.com/1350406): Define specific Wait for each
+    // listener.
     run_loop_->Run();
     run_loop_ = std::make_unique<base::RunLoop>();
+  }
+
+  void WaitForRunOnOsLoginModeChanged(base::OnceClosure handle) {
+    run_on_os_login_mode_changed_handle_ = std::move(handle);
   }
 
  private:
@@ -111,7 +121,16 @@ class TestAppHomePageHandler : public AppHomePageHandler {
                                                reason);
   }
 
+  void OnWebAppRunOnOsLoginModeChanged(
+      const web_app::AppId& app_id,
+      web_app::RunOnOsLoginMode run_on_os_login_mode) override {
+    std::move(run_on_os_login_mode_changed_handle_).Run();
+    AppHomePageHandler::OnWebAppRunOnOsLoginModeChanged(app_id,
+                                                        run_on_os_login_mode);
+  }
+
   std::unique_ptr<base::RunLoop> run_loop_;
+  base::OnceClosure run_on_os_login_mode_changed_handle_;
 };
 
 std::unique_ptr<WebAppInstallInfo> BuildWebAppInfo() {
@@ -177,8 +196,19 @@ class AppHomePageHandlerTest : public InProcessBrowserTest {
   }
 
   scoped_refptr<const extensions::Extension> InstallTestExtensionApp() {
-    scoped_refptr<const extensions::Extension> extension =
-        extensions::ExtensionBuilder(kTestAppName).Build();
+    base::DictionaryValue manifest;
+    manifest.SetString(extensions::manifest_keys::kName, kTestAppName);
+    manifest.SetString(extensions::manifest_keys::kVersion, "0.0.0.0");
+    manifest.SetString(extensions::manifest_keys::kApp, "true");
+    manifest.SetString(extensions::manifest_keys::kPlatformAppBackgroundPage,
+                       std::string());
+
+    std::string error;
+    scoped_refptr<extensions::Extension> extension =
+        extensions::Extension::Create(
+            base::FilePath(), extensions::mojom::ManifestLocation::kUnpacked,
+            manifest, 0, &error);
+
     extension_service()->AddExtension(extension.get());
     return extension;
   }
@@ -406,6 +436,26 @@ IN_PROC_BROWSER_TEST_F(AppHomePageHandlerTest, CreateExtensionAppShortcut) {
   ASSERT_TRUE(widget != nullptr);
   views::test::AcceptDialog(widget);
 #endif
+}
+
+IN_PROC_BROWSER_TEST_F(AppHomePageHandlerTest, SetRunOnOsLoginMode) {
+  std::unique_ptr<TestAppHomePageHandler> page_handler =
+      GetAppHomePageHandler();
+  EXPECT_CALL(page_, AddApp(MatchAppName(kTestAppName)))
+      .Times(testing::AtLeast(1));
+  AppId installed_app_id = InstallTestWebApp();
+  page_handler->Wait();
+
+  page_handler->SetRunOnOsLoginMode(installed_app_id,
+                                    web_app::RunOnOsLoginMode::kWindowed);
+  base::RunLoop loop;
+  page_handler->WaitForRunOnOsLoginModeChanged(loop.QuitClosure());
+  loop.Run();
+  EXPECT_EQ(web_app::RunOnOsLoginMode::kWindowed,
+            web_app::WebAppProvider::GetForWebApps(profile())
+                ->registrar()
+                .GetAppRunOnOsLoginMode(installed_app_id)
+                .value);
 }
 
 }  // namespace webapps

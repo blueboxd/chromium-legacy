@@ -31,7 +31,6 @@ Evo nekoliko stvari koje možete da probate za početak.</translation>
 <translation id="1148499908455722006">Otvara dijalog sa informacijama za korisnika <ph name="USER_NAME" /></translation>
 <translation id="1150989369772528668">Kalendar</translation>
 <translation id="1153356358378277386">Upareni uređaji</translation>
-<translation id="1165712434476988950">Restartujte uređaj da biste primenili ažuriranje.</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">USB-C kabl se ne povezuje pravilno sa ekranima</translation>
 <translation id="1175572348579024023">Pomeraj</translation>
@@ -358,7 +357,6 @@ Evo nekoliko stvari koje možete da probate za početak.</translation>
 <translation id="296762781903199866">Preuzimanje fajlova sa govorom na jeziku <ph name="LANGUAGE" /> nije uspelo</translation>
 <translation id="2970920913501714344">Instalirajte aplikacije, dodatke i teme</translation>
 <translation id="2977598380246111477">Sledeći broj</translation>
-<translation id="2981684127883932071">Prikazuju se predlozi</translation>
 <translation id="2985148236010982088">Prikaži sve aplikacije</translation>
 <translation id="2992327365391326550">Dugme za mikrofon na uređaju je isključeno.</translation>
 <translation id="2996462380875591307">Montirana lupa ekrana je omogućena. Pritisnite Ctrl + taster za pretragu + D ponovo da biste je isključili.</translation>
@@ -670,6 +668,7 @@ Probajte ponovo u režimu laptopa.</translation>
 <translation id="4666082839192943839">Isključite pristup kameri na ovom uređaju da biste blokirali sve kamere sve vreme.</translation>
 <translation id="4666911709726371538">Još aplikacija</translation>
 <translation id="4667099493359681081">Preuzima se fajl <ph name="FILENAME" /></translation>
+<translation id="468293128311738995">Aplikacije sa telefona</translation>
 <translation id="4690510401873698237">Polica u dnu</translation>
 <translation id="4696813013609194136">Otključajte uređaj pomoću koda roditelja</translation>
 <translation id="4702647871202761252">Ekran za privatnost je isključen</translation>
@@ -926,12 +925,10 @@ Probajte ponovo u režimu laptopa.</translation>
 <translation id="6103838137565245112">sistem</translation>
 <translation id="6107292179555508368">Pristup mikrofonu i kameri je isključen na ovom uređaju</translation>
 <translation id="6114505516289286752">Preuzeti su fajlovi sa govorom na jeziku <ph name="LANGUAGE" /></translation>
-<translation id="6116825164611323644">Pristup kameri je isključen na ovom uređaju</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042">Potvrdite preuzimanje fajla <ph name="FILENAME" /></translation>
 <translation id="612734058257491180">Google pomoćnik nije dostupan u sesiji gosta.</translation>
 <translation id="6129953537138746214">Razmak</translation>
-<translation id="6134259848159370930">Pretražujte uređaj, aplikacije, podešavanja i veb.</translation>
 <translation id="6137566720514957455">Otvara nalog za uklanjanje za korisnika <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6141988275892716286">Potvrdite preuzimanje</translation>
 <translation id="6154006699632741460">Periferni uređaj nije podržan</translation>
@@ -1292,6 +1289,7 @@ Novo instaliranje</translation>
 <translation id="8142441511840089262">Dvostruki klik</translation>
 <translation id="8142699993796781067">Privatna mreža</translation>
 <translation id="8144760705599030999">Sačuvajte uređaj <ph name="NAME" /> na <ph name="EMAIL" /> radi bržeg uparivanja sa drugim uređajima</translation>
+<translation id="8144914663975476336">Izaberite format snimka</translation>
 <translation id="8149413265954228307">Pregledajte Bluetooth podešavanja. <ph name="STATE_TEXT" />.</translation>
 <translation id="8152092012181020186">Pritisnite Ctrl + W da biste zatvorili.</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, automatsko dovršavanje</translation>
@@ -1389,7 +1387,6 @@ Novo instaliranje</translation>
 <translation id="8666856788528804727">Otvorite <ph name="NAME" /> da biste podesili uređaj</translation>
 <translation id="8676770494376880701">Povezan je punjač male snage</translation>
 <translation id="8683506306463609433">Praćenje učinka je aktivno</translation>
-<translation id="8685326675965865247">Pretražujte uređaj, aplikacije, podešavanja i veb. Koristite tastere sa strelicama da biste se kretali kroz aplikacije.</translation>
 <translation id="8703634754197148428">Započnite snimanje. Kada snimanje počne, koristite Alt + Shift + L da biste se kretali do police i pronašli dugme za zaustavljanje snimanja</translation>
 <translation id="8721053961083920564">Uključite/isključite zvuk. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">Snimanje celog ekrana</translation>
@@ -1398,7 +1395,6 @@ Novo instaliranje</translation>
 <translation id="8735678380411481005">Boja pozadinskog osvetljenja tastature</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />,
         <ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8752416742247198423">Uključite pristup kameri da biste dozvolili aplikacijama i veb-stranicama sa dozvolom za kameru da koriste kamere povezane sa ovim uređajem.</translation>
 <translation id="8755498163081687682">Verifikujte identitet: <ph name="ORIGIN_NAME" /> želi da potvrdi da ste to vi</translation>
 <translation id="875593634123171288">Pregledajte podešavanja VPN-a</translation>
 <translation id="8759408218731716181">Nije moguće podesiti višestruko prijavljivanje</translation>
@@ -1465,7 +1461,6 @@ Novo instaliranje</translation>
 <translation id="9089416786594320554">Metodi unosa</translation>
 <translation id="9091626656156419976">Uklonjen je prikaz <ph name="DISPLAY_NAME" /></translation>
 <translation id="9098969848082897657">Isključi zvuk telefona</translation>
-<translation id="9099154003160514616">Dostupno je ažuriranje za Lacros</translation>
 <translation id="9100887602489003640">Dodaje se profil. Sačekajte nekoliko minuta.</translation>
 <translation id="9105450214093926548">Prijavljivanje drugog korisnika nije podržano dok je Lacros pregledač aktivan. Bolje da koristite drugi profil za pregledač u Lacros-u ili da zatvorite Lacros i probate ponovo.</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> ili <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>

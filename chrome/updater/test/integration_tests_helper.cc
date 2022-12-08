@@ -30,6 +30,7 @@
 #include "chrome/updater/constants.h"
 #include "chrome/updater/test/integration_tests_impl.h"
 #include "chrome/updater/updater_scope.h"
+#include "chrome/updater/util/unittest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
@@ -381,20 +382,17 @@ int IntegrationTestsHelperMain(int argc, char** argv) {
   base::PlatformThread::SetName("IntegrationTestsHelperMain");
   base::CommandLine::Init(argc, argv);
 
-  // `test_suite` must be defined before setting log items.
+  // Use the ${ISOLATED_OUTDIR} as a log destination. `test_suite` must be
+  // defined before setting log items.
   base::TestSuite test_suite(argc, argv);
-  logging::SetLogItems(/*enable_process_id=*/true,
-                       /*enable_thread_id=*/true,
-                       /*enable_timestamp=*/true,
-                       /*enable_tickcount=*/false);
+  updater::test::InitLoggingForUnitTest();
 #if BUILDFLAG(IS_WIN)
   auto scoped_com_initializer =
       std::make_unique<base::win::ScopedCOMInitializer>(
           base::win::ScopedCOMInitializer::kMTA);
-  if (FAILED(DisableCOMExceptionHandling())) {
-    // Failing to disable COM exception handling is a critical error.
-    CHECK(false) << "Failed to disable COM exception handling.";
-  }
+  // Failing to disable COM exception handling is a critical error.
+  CHECK(SUCCEEDED(DisableCOMExceptionHandling()))
+      << "Failed to disable COM exception handling.";
 #endif
   chrome::RegisterPathProvider();
   TestEventListeners& listeners = UnitTest::GetInstance()->listeners();

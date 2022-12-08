@@ -4,6 +4,8 @@
 
 #include "components/reading_list/core/fake_reading_list_model_storage.h"
 
+#include "components/sync/model/metadata_batch.h"
+
 FakeReadingListModelStorage::FakeScopedBatchUpdate::FakeScopedBatchUpdate(
     Observer* observer)
     : observer_(observer) {}
@@ -25,6 +27,11 @@ void FakeReadingListModelStorage::FakeScopedBatchUpdate::RemoveEntry(
   }
 }
 
+syncer::MetadataChangeList* FakeReadingListModelStorage::FakeScopedBatchUpdate::
+    GetSyncMetadataChangeList() {
+  return &sync_metadata_change_list;
+}
+
 FakeReadingListModelStorage::FakeReadingListModelStorage()
     : FakeReadingListModelStorage(/*observer=*/nullptr) {}
 
@@ -43,8 +50,15 @@ bool FakeReadingListModelStorage::TriggerLoadCompletion(
   return true;
 }
 
-bool FakeReadingListModelStorage::TriggerLoadCompletion() {
-  return TriggerLoadCompletion(LoadResult());
+bool FakeReadingListModelStorage::TriggerLoadCompletion(
+    std::vector<ReadingListEntry> entries) {
+  LoadResult result;
+  result.second = std::make_unique<syncer::MetadataBatch>();
+  for (ReadingListEntry& entry : entries) {
+    GURL url = entry.URL();
+    result.first.emplace(entry.URL(), std::move(entry));
+  }
+  return TriggerLoadCompletion(std::move(result));
 }
 
 void FakeReadingListModelStorage::Load(base::Clock* clock,
@@ -55,8 +69,4 @@ void FakeReadingListModelStorage::Load(base::Clock* clock,
 std::unique_ptr<ReadingListModelStorage::ScopedBatchUpdate>
 FakeReadingListModelStorage::EnsureBatchCreated() {
   return std::make_unique<FakeScopedBatchUpdate>(observer_);
-}
-
-ReadingListSyncBridge* FakeReadingListModelStorage::GetSyncBridge() {
-  return nullptr;
 }

@@ -123,4 +123,21 @@ BASE_FEATURE(kExtensionSourceUrlEnforcement,
              "ExtensionSourceUrlEnforcement",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Controls the <webview> tag behaviour changes proposed as part of the guest
+// view MPArch migration. See
+// https://docs.google.com/document/d/1RVbtvklXUg9QCNvMT0r-1qDwJNeQFGoTCOD1Ur9mDa4/edit?usp=sharing
+// for details.
+BASE_FEATURE(kWebviewTagMPArchBehavior,
+             "WebviewTagMPArchBehavior",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, only manifest v3 extensions is allowed while v2 will be disabled.
+// Note that this feature is now only checked by `ExtensionManagement` which
+// represents enterprise extension configurations. Flip the feature will block
+// mv2 extension by default but the error messages will improperly mention
+// enterprise policy.
+BASE_FEATURE(kExtensionsManifestV3Only,
+             "kExtensionsManifestV3Only",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 }  // namespace extensions_features

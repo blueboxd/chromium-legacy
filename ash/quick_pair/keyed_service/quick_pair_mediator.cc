@@ -43,7 +43,12 @@ namespace {
 
 Mediator::Factory* g_test_factory = nullptr;
 
-}
+constexpr base::TimeDelta kDismissedDiscoveryNotificationBanTime =
+    base::Seconds(2);
+constexpr base::TimeDelta kShortBanDiscoveryNotificationBanTime =
+    base::Minutes(5);
+
+}  // namespace
 
 // static
 std::unique_ptr<Mediator> Mediator::Factory::Create() {
@@ -160,12 +165,64 @@ void Mediator::OnFastPairEnabledChanged(bool is_enabled) {
   }
 }
 
+bool Mediator::IsDeviceCurrentlyShowingNotification(
+    scoped_refptr<Device> device) {
+  // BLE addresses could have rotated, causing this check to return false for
+  // the same device. Fast Pair considers a device different if they have
+  // different BLE addresses. Similarly, the this check will fail if it is the
+  // same physical device under different scenarios: for example, if a device
+  // is found via the initial scenario and via the subsequent scenario, Fast
+  // Pair does not consider them the same device.
+  return device_currently_showing_notification_ &&
+         device_currently_showing_notification_->metadata_id ==
+             device->metadata_id &&
+         device_currently_showing_notification_->ble_address ==
+             device->ble_address &&
+         device_currently_showing_notification_->protocol == device->protocol;
+}
+
+bool Mediator::IsDeviceBlockedForDiscoveryNotifications(
+    scoped_refptr<Device> device) {
+  auto it = discovery_notification_block_list_.find(
+      std::make_pair(device->metadata_id, device->protocol));
+  if (it == discovery_notification_block_list_.end())
+    return false;
+
+  DiscoveryNotificationDismissalState notification_state = it->second.first;
+
+  // We can reference |ban_expire_time|'s value' directly since we check for
+  // `kLongBan` beforehand, and |ban_expire_time| is expected to have a value in
+  // all cases except `kLongBan`.
+  absl::optional<base::Time> ban_expire_time = it->second.second;
+  return (notification_state == DiscoveryNotificationDismissalState::kLongBan ||
+          base::Time::Now() < ban_expire_time.value());
+}
+
 void Mediator::OnDeviceFound(scoped_refptr<Device> device) {
   QP_LOG(INFO) << __func__ << ": " << device;
 
-  if (device_currently_showing_notification_) {
-    QP_LOG(INFO) << __func__ << ": already showing notification for "
+  if (IsDeviceCurrentlyShowingNotification(device)) {
+    QP_LOG(INFO) << __func__
+                 << ": Extending notification for re-discovered device="
                  << device_currently_showing_notification_;
+    ui_broker_->ExtendNotification();
+    return;
+  } else if (device_currently_showing_notification_) {
+    QP_LOG(INFO) << __func__
+                 << ": Already showing a notification for a different device="
+                 << device_currently_showing_notification_;
+    return;
+  }
+
+  // Because we expect advertisements to be emitted 100ms for discoverable
+  // advertisements and 250ms for not discoverable advertisements according to
+  // the Fast Pair spec
+  // (https://developers.google.com/nearby/fast-pair/specifications/service/provider#advertising_interval_when_discoverable),
+  // this means we expect the Mediator’s `OnDeviceFound` event to be triggered
+  // frequently for the same device.
+  if (IsDeviceBlockedForDiscoveryNotifications(device)) {
+    QP_LOG(INFO) << __func__
+                 << ": device is currently blocked for discovery notifications";
     return;
   }
 
@@ -188,21 +245,16 @@ void Mediator::OnDeviceFound(scoped_refptr<Device> device) {
 
 void Mediator::OnDeviceLost(scoped_refptr<Device> device) {
   QP_LOG(INFO) << __func__ << ": " << device;
-  ui_broker_->RemoveNotifications(
-      /*clear_already_shown_discovery_notification_cache=*/false);
-  FastPairHandshakeLookup::GetInstance()->Erase(device);
-
-  if (ash::features::
-          IsFastPairPreventNotificationsForRecentlyLostDeviceEnabled()) {
-    ui_broker_->StartDeviceLostTimer(device);
-  }
 }
 
 void Mediator::OnRetroactivePairFound(scoped_refptr<Device> device) {
   QP_LOG(INFO) << __func__ << ": " << device;
 
-  if (device_currently_showing_notification_) {
-    QP_LOG(INFO) << __func__ << ": already showing notification for "
+  if (device_currently_showing_notification_ &&
+      !IsDeviceCurrentlyShowingNotification(device)) {
+    QP_LOG(INFO) << __func__
+                 << ": first come first serve: already showing notification "
+                    "for different device="
                  << device_currently_showing_notification_;
     return;
   }
@@ -225,14 +277,9 @@ void Mediator::SetFastPairState(bool is_enabled) {
   }
 
   scanner_broker_->StopScanning(Protocol::kFastPairInitial);
-
-  // Dismiss all UI notifications and reset the cache of devices that we prevent
-  // showing notifications for again. We only reset the cache when the Bluetooth
-  // toggle or when the Fast Pair scanning toggle are toggled, or when the user
-  // signs out -> signs in (although sign out/sign in is handled by the
-  // destruction of chrome resetting the cache).
-  ui_broker_->RemoveNotifications(
-      /*clear_already_shown_discovery_notification_cache=*/true);
+  ui_broker_->RemoveNotifications();
+  discovery_notification_block_list_.clear();
+  device_currently_showing_notification_ = nullptr;
 }
 
 void Mediator::CancelPairing() {
@@ -245,27 +292,16 @@ void Mediator::CancelPairing() {
 
 void Mediator::OnDevicePaired(scoped_refptr<Device> device) {
   QP_LOG(INFO) << __func__ << ": Device=" << device;
-  ui_broker_->RemoveNotifications(
-      /*clear_already_shown_discovery_notification_cache=*/false);
+  ui_broker_->RemoveNotifications();
   device_currently_showing_notification_ = nullptr;
   scanner_broker_->OnDevicePaired(device);
   fast_pair_repository_->PersistDeviceImages(device);
-
-  if (ash::features::
-          IsFastPairPreventNotificationsForRecentlyLostDeviceEnabled()) {
-    ui_broker_->RemoveDeviceFromAlreadyShownDiscoveryNotificationCache(device);
-  }
 }
 
 void Mediator::OnPairFailure(scoped_refptr<Device> device,
                              PairFailure failure) {
   QP_LOG(INFO) << __func__ << ": Device=" << device << ",Failure=" << failure;
   ui_broker_->ShowPairingFailed(device);
-
-  if (ash::features::
-          IsFastPairPreventNotificationsForRecentlyLostDeviceEnabled()) {
-    ui_broker_->RemoveDeviceFromAlreadyShownDiscoveryNotificationCache(device);
-  }
 }
 
 void Mediator::OnAccountKeyWrite(scoped_refptr<Device> device,
@@ -277,6 +313,47 @@ void Mediator::OnAccountKeyWrite(scoped_refptr<Device> device,
 
   QP_LOG(INFO) << __func__ << ": Device=" << device
                << ",Error=" << error.value();
+}
+
+void Mediator::UpdateDiscoveryBlockList(scoped_refptr<Device> device) {
+  auto it = discovery_notification_block_list_.find(
+      std::make_pair(device->metadata_id, device->protocol));
+
+  // If this is the first time we are seeing this device, create a new value in
+  // the block-list.
+  if (it == discovery_notification_block_list_.end()) {
+    discovery_notification_block_list_[std::make_pair(device->metadata_id,
+                                                      device->protocol)] =
+        std::make_pair(
+            DiscoveryNotificationDismissalState::kDismissed,
+            absl::make_optional(base::Time::Now() +
+                                kDismissedDiscoveryNotificationBanTime));
+    return;
+  }
+
+  // If the device is already in the block-list, update the state and the
+  // expire timestamp.
+  DiscoveryNotificationDismissalState dismissal_state = it->second.first;
+  switch (dismissal_state) {
+    case DiscoveryNotificationDismissalState::kDismissed:
+      it->second = std::make_pair(
+          DiscoveryNotificationDismissalState::kShortBan,
+          absl::make_optional(base::Time::Now() +
+                              kShortBanDiscoveryNotificationBanTime));
+      return;
+    case DiscoveryNotificationDismissalState::kShortBan:
+      // Since `IsDeviceBlockedForDiscoveryNotifications` has an explicit
+      // check for `kLongBan`, the timestamp is absl::nullopt. The `kLongBan`
+      // does not have an expiration timeout.
+      it->second = std::make_pair(DiscoveryNotificationDismissalState::kLongBan,
+                                  absl::nullopt);
+      return;
+    case DiscoveryNotificationDismissalState::kLongBan:
+      // If the device had the state `kLongBan`, it should have never been
+      // shown again, so we are expected to never get to this state when a
+      // `kLongBan` was shown, and then dismissed by user.
+      NOTREACHED();
+  }
 }
 
 void Mediator::OnDiscoveryAction(scoped_refptr<Device> device,
@@ -293,11 +370,14 @@ void Mediator::OnDiscoveryAction(scoped_refptr<Device> device,
 
       pairer_broker_->PairDevice(device);
     } break;
-    case DiscoveryAction::kAlreadyDisplayed:
     case DiscoveryAction::kDismissedByOs:
       break;
-    case DiscoveryAction::kDismissedByTimeout:
     case DiscoveryAction::kDismissedByUser:
+      // When the user explicitly dismisses the discovery notification, update
+      // the device's block-list value accordingly.
+      UpdateDiscoveryBlockList(device);
+      [[fallthrough]];
+    case DiscoveryAction::kDismissedByTimeout:
       // When the notification is dismissed by timeout or dismissed by user,
       // there will be no more notifications for |device|. We reset
       // |device_currently_showing_notification_| to enforce the first come,
@@ -308,6 +388,7 @@ void Mediator::OnDiscoveryAction(scoped_refptr<Device> device,
       // in a terminal state, and we do not want to permit other notifications
       // during this time.
       device_currently_showing_notification_ = nullptr;
+      FastPairHandshakeLookup::GetInstance()->Erase(device);
       break;
     case DiscoveryAction::kLearnMore:
       break;
@@ -332,8 +413,7 @@ void Mediator::OnAssociateAccountAction(scoped_refptr<Device> device,
   switch (action) {
     case AssociateAccountAction::kAssoicateAccount:
       pairer_broker_->PairDevice(device);
-      ui_broker_->RemoveNotifications(
-          /*clear_already_shown_discovery_notification_cache=*/false);
+      ui_broker_->RemoveNotifications();
       device_currently_showing_notification_ = nullptr;
       break;
     case AssociateAccountAction::kDismissedByOs:

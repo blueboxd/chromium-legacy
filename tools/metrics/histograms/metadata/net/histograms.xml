@@ -68,7 +68,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="HttpCache.BeforeSend" units="ms" expires_after="2023-03-19">
+<histogram name="HttpCache.BeforeSend" units="ms" expires_after="2023-06-04">
   <owner>morlovich@chromium.org</owner>
   <owner>yhirano@chromium.org</owner>
   <summary>
@@ -207,7 +207,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.AlternateProtocolUsageGoogle"
-    enum="AlternateProtocolUsage" expires_after="2023-03-19">
+    enum="AlternateProtocolUsage" expires_after="2023-06-04">
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/OWNERS</owner>
   <summary>
@@ -337,7 +337,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.CertificateTransparency.SCT.VerificationTime"
-    units="microseconds" expires_after="2023-03-19">
+    units="microseconds" expires_after="2023-06-04">
   <owner>estark@chromium.org</owner>
   <owner>rsleevi@chromium.org</owner>
   <summary>
@@ -349,7 +349,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.CertificateTransparency.SCTOrigin" enum="SCTOrigin"
-    expires_after="2023-03-19">
+    expires_after="2023-06-04">
   <owner>estark@chromium.org</owner>
   <owner>trusty-transport@chromium.org</owner>
   <summary>
@@ -608,7 +608,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.Cors.PreflightCacheResult" enum="CorsPreflightCacheResult"
-    expires_after="2023-03-19">
+    expires_after="2023-06-04">
   <owner>toyoshim@chromium.org</owner>
   <owner>src/services/network/OWNERS</owner>
   <summary>
@@ -618,7 +618,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.Cors.PreflightCheckError2" enum="CorsAccessCheckError"
-    expires_after="2023-03-19">
+    expires_after="2023-06-04">
   <owner>toyoshim@chromium.org</owner>
   <owner>src/services/network/OWNERS</owner>
   <summary>
@@ -630,7 +630,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.Cors.PreflightCheckWarning" enum="CorsAccessCheckError"
-    expires_after="2023-03-19">
+    expires_after="2023-06-04">
   <owner>titouan@chromium.org</owner>
   <owner>clamy@chromium.org</owner>
   <owner>src/services/network/OWNERS</owner>
@@ -643,7 +643,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.CountOfBrokenAlternativeServices" units="services"
-    expires_after="2023-03-26">
+    expires_after="2023-06-04">
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/OWNERS</owner>
   <summary>
@@ -825,7 +825,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.DNS.DnsConfig.SecureDnsMode" enum="SecureDnsModeDetails"
-    expires_after="2023-03-19">
+    expires_after="2023-06-04">
   <owner>ericorth@chromium.org</owner>
   <owner>doh-core@google.com</owner>
   <summary>
@@ -843,6 +843,33 @@ chromium-metrics-reviews@google.com.
     considered compatible with Chrome and the reason why it is considered
     incompatible. Reported whenever the DNS configuration setting of Windows is
     read by Chrome.
+  </summary>
+</histogram>
+
+<histogram name="Net.DNS.DnsHosts.Count" units="count" expires_after="M113">
+  <owner>horo@chromium.org</owner>
+  <owner>net-dev@chromium.org</owner>
+  <summary>
+    The number of hosts parsed from a Hosts file. Reported whenever a Hosts file
+    is read and parsed.
+  </summary>
+</histogram>
+
+<histogram name="Net.DNS.DnsHosts.EstimateMemoryUsage" units="bytes"
+    expires_after="M113">
+  <owner>horo@chromium.org</owner>
+  <owner>net-dev@chromium.org</owner>
+  <summary>
+    Estimated memory usage to keep the parsed result of a Hosts file. Reported
+    whenever a Hosts file is read and parsed.
+  </summary>
+</histogram>
+
+<histogram name="Net.DNS.DnsHosts.FileSize" units="bytes" expires_after="M113">
+  <owner>horo@chromium.org</owner>
+  <owner>net-dev@chromium.org</owner>
+  <summary>
+    The file size of a Hosts file. Reported whenever a Hosts file is read.
   </summary>
 </histogram>
 
@@ -915,7 +942,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Net.DNS.DnsTransaction.Insecure.FailureTime"
-    units="ms" expires_after="2023-01-14">
+    units="ms" expires_after="2023-06-14">
 <!-- Name completed by histogram_suffixes
    name="DohProviderId" -->
 
@@ -927,7 +954,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Net.DNS.DnsTransaction.Insecure.SuccessTime"
-    units="ms" expires_after="2023-01-14">
+    units="ms" expires_after="2023-06-14">
 <!-- Name completed by histogram_suffixes
    name="DohProviderId" -->
 
@@ -940,7 +967,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram base="true"
     name="Net.DNS.DnsTransaction.SecureNotValidated.FailureError"
-    enum="NetErrorCodes" expires_after="2023-01-14">
+    enum="NetErrorCodes" expires_after="2023-06-14">
 <!-- Name completed by histogram_suffixes
    name="DohProviderId" -->
 
@@ -955,7 +982,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram base="true"
     name="Net.DNS.DnsTransaction.SecureNotValidated.FailureTime" units="ms"
-    expires_after="2023-01-14">
+    expires_after="2023-06-14">
 <!-- Name completed by histogram_suffixes
    name="DohProviderId" -->
 
@@ -970,7 +997,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram base="true"
     name="Net.DNS.DnsTransaction.SecureNotValidated.SuccessTime" units="ms"
-    expires_after="2023-01-14">
+    expires_after="2023-06-14">
 <!-- Name completed by histogram_suffixes
    name="DohProviderId" -->
 
@@ -985,7 +1012,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram base="true"
     name="Net.DNS.DnsTransaction.SecureValidated.FailureError"
-    enum="NetErrorCodes" expires_after="2023-01-14">
+    enum="NetErrorCodes" expires_after="2023-06-14">
 <!-- Name completed by histogram_suffixes
    name="DohProviderId" -->
 
@@ -1001,7 +1028,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram base="true"
     name="Net.DNS.DnsTransaction.SecureValidated.FailureTime" units="ms"
-    expires_after="2023-01-14">
+    expires_after="2023-06-14">
 <!-- Name completed by histogram_suffixes
    name="DohProviderId" -->
 
@@ -1016,7 +1043,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram base="true"
     name="Net.DNS.DnsTransaction.SecureValidated.SuccessTime" units="ms"
-    expires_after="2023-01-14">
+    expires_after="2023-06-14">
 <!-- Name completed by histogram_suffixes
    name="DohProviderId" -->
 
@@ -1162,7 +1189,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.DNS.JobQueueTime.PerTransaction" units="ms"
-    expires_after="2023-03-19">
+    expires_after="2023-06-04">
   <owner>dmcardle@chromium.org</owner>
   <owner>ericorth@chromium.org</owner>
   <summary>
@@ -1186,7 +1213,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.DNS.ProbeSequence.ConfigChange.Failure.AttemptTime"
-    units="ms" expires_after="2023-01-11">
+    units="ms" expires_after="2023-06-11">
   <owner>awillia@chromium.org</owner>
   <owner>doh-core@google.com</owner>
   <summary>
@@ -1196,7 +1223,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.DNS.ProbeSequence.ConfigChange.Success.AttemptTime"
-    units="ms" expires_after="2023-01-11">
+    units="ms" expires_after="2023-06-11">
   <owner>awillia@chromium.org</owner>
   <owner>doh-core@google.com</owner>
   <summary>
@@ -1206,7 +1233,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.DNS.ProbeSequence.NetworkChange.Failure.AttemptTime"
-    units="ms" expires_after="2023-01-11">
+    units="ms" expires_after="2023-06-11">
   <owner>awillia@chromium.org</owner>
   <owner>doh-core@google.com</owner>
   <summary>
@@ -1216,7 +1243,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.DNS.ProbeSequence.NetworkChange.Success.AttemptTime"
-    units="ms" expires_after="2023-01-11">
+    units="ms" expires_after="2023-06-11">
   <owner>awillia@chromium.org</owner>
   <owner>doh-core@google.com</owner>
   <summary>
@@ -1353,7 +1380,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.DNS.SecureDnsTask.DnsModeAutomatic.FailureTime" units="ms"
-    expires_after="2023-01-14">
+    expires_after="2023-06-14">
   <owner>awillia@chromium.org</owner>
   <owner>doh-core@google.com</owner>
   <summary>
@@ -1409,7 +1436,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.DNS.UI.ProbeAttemptSuccess" enum="Boolean"
-    expires_after="2023-01-14">
+    expires_after="2023-06-14">
   <owner>awillia@chromium.org</owner>
   <owner>doh-core@google.com</owner>
   <summary>
@@ -1419,8 +1446,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.DNS.UI.ValidationAttemptSuccess" enum="Boolean"
-    expires_after="2022-12-18">
-  <owner>ericorth@chromium.org</owner>
+    expires_after="2023-06-18">
+  <owner>awillia@chromium.org</owner>
   <owner>doh-core@google.com</owner>
   <summary>
     Records the outcome of a formatting validation attempt on the custom text
@@ -1460,7 +1487,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.DNS.UpgradeConfig.Ineligible.UnhandledOptions"
-    enum="Boolean" expires_after="2023-01-14">
+    enum="Boolean" expires_after="2023-06-14">
   <owner>awillia@chromium.org</owner>
   <owner>doh-core@google.com</owner>
   <summary>
@@ -1627,7 +1654,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.ExpectCT.HeaderPresentOnResponse" enum="BooleanPresent"
-    expires_after="2023-03-19">
+    expires_after="2023-06-04">
   <owner>estark@chromium.org</owner>
   <owner>trusty-transport@chromium.org</owner>
   <summary>
@@ -2029,7 +2056,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.NumQuicSessionsAtShutdown" units="units"
-    expires_after="2023-03-19">
+    expires_after="2023-06-04">
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>
@@ -2497,7 +2524,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.QuicSession.AcceptChForOrigin" enum="Boolean"
-    expires_after="2023-03-19">
+    expires_after="2023-06-04">
   <owner>bnc@chromium.org</owner>
   <owner>src/net/OWNERS</owner>
   <summary>
@@ -2509,7 +2536,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.QuicSession.AcceptChFrameReceivedViaAlps"
-    enum="AcceptChEntries" expires_after="2023-03-19">
+    enum="AcceptChEntries" expires_after="2023-06-04">
   <owner>bnc@chromium.org</owner>
   <owner>src/net/OWNERS</owner>
   <summary>
@@ -2727,7 +2754,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.QuicSession.ConnectionClose.NumOpenStreams.TimedOut"
-    units="units" expires_after="2023-03-19">
+    units="units" expires_after="2023-06-04">
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>The number of streams open when a QUIC session timed out.</summary>
@@ -2755,7 +2782,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.QuicSession.ConnectionCloseErrorCodeClientGoogle"
-    enum="QuicErrorCodes" expires_after="2023-03-19">
+    enum="QuicErrorCodes" expires_after="2023-06-04">
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>
@@ -2775,7 +2802,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.QuicSession.ConnectionCloseErrorCodeServerGoogle"
-    enum="QuicErrorCodes" expires_after="2023-03-19">
+    enum="QuicErrorCodes" expires_after="2023-06-04">
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>
@@ -2907,7 +2934,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.QuicSession.ConnectionMigration"
-    enum="QuicConnectionMigrationStatus" expires_after="2023-03-19">
+    enum="QuicConnectionMigrationStatus" expires_after="2023-06-04">
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>
@@ -3529,7 +3556,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.QuicSession.PortMigration"
-    enum="QuicConnectionMigrationStatus" expires_after="2023-03-19">
+    enum="QuicConnectionMigrationStatus" expires_after="2023-06-04">
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>The result of a QUIC port migration attempt.</summary>
@@ -3656,14 +3683,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.QuicSession.QuicVersion" units="units"
-    expires_after="2023-03-19">
+    expires_after="2023-06-04">
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>Version of the QUIC protocol used for this connection.</summary>
 </histogram>
 
 <histogram name="Net.QuicSession.ReadError" enum="NetErrorCodes"
-    expires_after="2023-03-26">
+    expires_after="2023-06-04">
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>
@@ -3673,7 +3700,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.QuicSession.ReadError.CurrentNetwork.HandshakeConfirmed"
-    enum="NetErrorCodes" expires_after="2023-03-26">
+    enum="NetErrorCodes" expires_after="2023-06-04">
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>
@@ -3839,7 +3866,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.QuicSession.SmoothedRTT" units="ms"
-    expires_after="2023-03-19">
+    expires_after="2023-06-04">
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>
@@ -3919,7 +3946,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.QuicSession.StreamCloseErrorCodeServer.HandshakeConfirmed"
-    enum="QuicErrorCodes" expires_after="2023-03-19">
+    enum="QuicErrorCodes" expires_after="2023-06-04">
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>
@@ -4144,7 +4171,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.QuicSession.ZeroRttReason"
-    enum="SSLHandshakeEarlyDataReason" expires_after="2023-03-19">
+    enum="SSLHandshakeEarlyDataReason" expires_after="2023-06-04">
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>
@@ -4154,7 +4181,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.QuicSession.ZeroRttReasonGoogle"
-    enum="SSLHandshakeEarlyDataReason" expires_after="2023-03-19">
+    enum="SSLHandshakeEarlyDataReason" expires_after="2023-06-04">
   <owner>renjietang@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>
@@ -4176,7 +4203,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.QuicSession.ZeroRttState" enum="ZeroRttState"
-    expires_after="2023-03-19">
+    expires_after="2023-06-04">
   <owner>renjietang@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>Whether 0-RTT was successfully used in the connection.</summary>
@@ -4379,7 +4406,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.Reporting.UploadHeaderType"
-    enum="NetReportingUploadHeaderType" expires_after="2023-02-18">
+    enum="NetReportingUploadHeaderType" expires_after="2023-06-04">
   <owner>rodneyding@google.com</owner>
   <owner>src/net/reporting/OWNERS</owner>
   <summary>
@@ -4538,7 +4565,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.SpdySession.AlpsAcceptChEntries" enum="AcceptChEntries"
-    expires_after="2023-03-19">
+    expires_after="2023-06-04">
   <owner>bnc@chromium.org</owner>
   <owner>src/net/OWNERS</owner>
   <summary>
@@ -4584,7 +4611,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.SpdySession.ClosedOnError" enum="NetErrorCodes"
-    expires_after="2023-03-19">
+    expires_after="2023-06-04">
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/OWNERS</owner>
   <summary>Net error codes when SpdySession was closed.</summary>
@@ -4634,7 +4661,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.SpdySessionErrorDetails2" enum="SpdyProtocolErrorDetails2"
-    expires_after="2023-01-15">
+    expires_after="2023-12-06">
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/OWNERS</owner>
   <summary>The type of SPDY Protocol error encountered.</summary>
@@ -4680,7 +4707,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.SpdyStreamsPerSession" units="units"
-    expires_after="2023-01-15">
+    expires_after="2023-12-06">
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/OWNERS</owner>
   <summary>The number of streams issued over a single session.</summary>
@@ -4886,7 +4913,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.SSLNegotiatedAlpnProtocol"
-    enum="SSLNegotiatedAlpnProtocol" expires_after="2023-03-19">
+    enum="SSLNegotiatedAlpnProtocol" expires_after="2023-06-04">
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/OWNERS</owner>
   <summary>
@@ -4909,7 +4936,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.SSLRSAKeyUsage.UnknownRoot" enum="RSAKeyUsage"
-    expires_after="2023-03-19">
+    expires_after="2023-06-04">
   <owner>davidben@chromium.org</owner>
   <summary>
     For each TLS connection which uses a unknown root, an RSA key, and TLS 1.2
@@ -5018,7 +5045,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.TcpConnectAttempt.Latency.Error" units="ms"
-    expires_after="2023-01-15">
+    expires_after="2023-12-06">
   <owner>bashi@chromium.org</owner>
   <owner>src/net/OWNERS</owner>
   <summary>
@@ -5029,7 +5056,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.TcpConnectAttempt.Latency.Success" units="ms"
-    expires_after="2023-01-15">
+    expires_after="2023-12-06">
   <owner>bashi@chromium.org</owner>
   <owner>src/net/OWNERS</owner>
   <summary>
@@ -5088,8 +5115,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram
-    name="Net.TrustTokens.Operation{TimeSpan}Time.{Outcome}.{Type}{OptionalPlatformProvided}"
+<histogram name="Net.TrustTokens.Operation{TimeSpan}Time.{Outcome}.{Type}"
     units="ms" expires_after="2022-01-15">
   <owner>davidvc@chromium.org</owner>
   <owner>privacy-sandbox-dev@chromium.org</owner>
@@ -5120,10 +5146,6 @@ chromium-metrics-reviews@google.com.
     <variant name="Issuance"/>
     <variant name="Redemption"/>
     <variant name="Signing"/>
-  </token>
-  <token key="OptionalPlatformProvided">
-    <variant name=""/>
-    <variant name=".PlatformProvided"/>
   </token>
 </histogram>
 

@@ -268,13 +268,13 @@ class PrivateNetworkAccessWithFeatureEnabledBrowserTest
                 features::kBlockInsecurePrivateNetworkRequestsDeprecationTrial,
                 features::kPrivateNetworkAccessSendPreflights,
                 features::kPrivateNetworkAccessForWorkers,
-                is_warning_only
-                    ? features::kPrivateNetworkAccessForWorkersWarningOnly
-                    : features::kPrivateNetworkAccessForWorkers,
                 dom_distiller::kReaderMode,
             },
-            {}) {}
-
+            is_warning_only
+                ? std::vector<base::test::FeatureRef>()
+                : std::vector<base::test::FeatureRef>({
+                      features::kPrivateNetworkAccessForWorkersWarningOnly,
+                  })) {}
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PrivateNetworkAccessBrowserTestBase::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnableDomDistiller);
@@ -313,11 +313,12 @@ class PrivateNetworkAccessRespectPreflightResultsBrowserTest
                 features::kPrivateNetworkAccessSendPreflights,
                 features::kPrivateNetworkAccessRespectPreflightResults,
                 features::kPrivateNetworkAccessForWorkers,
-                GetParam().is_warning_only
-                    ? features::kPrivateNetworkAccessForWorkersWarningOnly
-                    : features::kPrivateNetworkAccessForWorkers,
             },
-            {}) {}
+            GetParam().is_warning_only
+                ? std::vector<base::test::FeatureRef>()
+                : std::vector<base::test::FeatureRef>({
+                      features::kPrivateNetworkAccessForWorkersWarningOnly,
+                  })) {}
 };
 
 // ================
@@ -1101,6 +1102,52 @@ IN_PROC_BROWSER_TEST_P(
       {
           {WebFeature::kPrivateNetworkAccessFetchedWorkerScript, 1},
       }));
+}
+
+// This test verifies that a UseCounter is recorded when a document makes a
+// private network request to load a service worker script from treat-as-public
+// to local.
+IN_PROC_BROWSER_TEST_F(
+    PrivateNetworkAccessWithFeatureEnabledBrowserTest,
+    RecordsFeatureForServiceWorkerScriptFetchFromTreatAsPublicToLocal) {
+  std::unique_ptr<net::EmbeddedTestServer> server = NewServer();
+
+  EXPECT_TRUE(content::NavigateToURL(web_contents(), PublicSecureURL(*server)));
+
+  WebFeatureHistogramTester feature_histogram_tester;
+
+  EXPECT_EQ(true, content::EvalJs(web_contents(), R"(
+    navigator.serviceWorker.register('/service_worker/empty.js')
+      .then(navigator.serviceWorker.ready)
+      .then(() => true);
+  )"));
+
+  feature_histogram_tester.ExpectCounts(AddFeatureCounts(
+      AllZeroFeatureCounts(AllAddressSpaceFeatures()),
+      {
+          {WebFeature::kPrivateNetworkAccessFetchedWorkerScript, 1},
+      }));
+}
+
+// This test verifies that a UseCounter is not recorded when a document makes a
+// private network request to load a service worker script from local to local.
+IN_PROC_BROWSER_TEST_F(
+    PrivateNetworkAccessWithFeatureEnabledBrowserTest,
+    ShouldNotRecordFeatureForServiceWorkerScriptFetchFromLocalToLocal) {
+  std::unique_ptr<net::EmbeddedTestServer> server = NewServer();
+
+  EXPECT_TRUE(content::NavigateToURL(web_contents(), LocalSecureURL(*server)));
+
+  WebFeatureHistogramTester feature_histogram_tester;
+
+  EXPECT_EQ(true, content::EvalJs(web_contents(), R"(
+    navigator.serviceWorker.register('/service_worker/empty.js')
+      .then(navigator.serviceWorker.ready)
+      .then(() => true);
+  )"));
+
+  feature_histogram_tester.ExpectCounts(
+      AllZeroFeatureCounts(AllAddressSpaceFeatures()));
 }
 
 INSTANTIATE_TEST_SUITE_P(,

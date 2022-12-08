@@ -21,6 +21,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_util.h"
+#include "base/feature_list.h"
 #include "base/files/scoped_file.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
@@ -43,6 +44,7 @@
 #include "components/services/screen_ai/buildflags/buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
+#include "sandbox/policy/features.h"
 #include "sandbox/policy/mac/audio.sb.h"
 #include "sandbox/policy/mac/cdm.sb.h"
 #include "sandbox/policy/mac/common.sb.h"
@@ -183,6 +185,23 @@ std::string GetSandboxProfile(sandbox::mojom::Sandbox sandbox_type) {
       break;
   }
   return profile;
+}
+
+bool CanCacheSandboxPolicy(sandbox::mojom::Sandbox sandbox_type) {
+  static const bool feature_enabled =
+      base::FeatureList::IsEnabled(features::kCacheMacSandboxProfiles);
+  if (!feature_enabled)
+    return false;
+
+  switch (sandbox_type) {
+    case sandbox::mojom::Sandbox::kRenderer:
+    case sandbox::mojom::Sandbox::kService:
+    case sandbox::mojom::Sandbox::kServiceWithJit:
+    case sandbox::mojom::Sandbox::kUtility:
+      return true;
+    default:
+      return false;
+  }
 }
 
 }  // namespace policy

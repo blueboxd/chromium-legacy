@@ -25,6 +25,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
+#include "components/named_mojo_ipc_server/connection_info.h"
 #include "components/named_mojo_ipc_server/named_mojo_ipc_server_client_util.h"
 #include "components/named_mojo_ipc_server/named_mojo_ipc_test_util.h"
 #include "components/named_mojo_ipc_server/testing.test-mojom.h"
@@ -132,8 +133,9 @@ void NamedMojoIpcServerTest::SetUp() {
 }
 
 void NamedMojoIpcServerTest::TearDown() {
-  if (ipc_server_)
+  if (ipc_server_) {
     ipc_server_->StopServer();
+  }
   task_environment_.RunUntilIdle();
 }
 
@@ -142,7 +144,9 @@ void NamedMojoIpcServerTest::CreateIpcServer() {
       test_server_name_,
       GetParam() ? NamedMojoIpcServerBase::kUseIsolatedConnection
                  : kTestMessagePipeId,
-      this, base::BindRepeating([](base::ProcessId) { return true; }));
+      base::BindRepeating([](test::mojom::Echo* impl,
+                             std::unique_ptr<ConnectionInfo>) { return impl; },
+                          this));
   ipc_server_->set_on_server_endpoint_created_callback_for_testing(
       base::BindRepeating(&NamedMojoIpcServerTest::OnServerEndpointCreated,
                           base::Unretained(this)));
@@ -294,6 +298,9 @@ TEST_P(NamedMojoIpcServerTest, RemoteProcessTerminated_ConnectionRemoved) {
   ASSERT_EQ(0u, ipc_server_->GetNumberOfActiveConnectionsForTesting());
 }
 
+// On Windows the server endpoint must be recreated between connections. The
+// following tests check this behavior.
+#if BUILDFLAG(IS_WIN)
 TEST_P(NamedMojoIpcServerTest,
        RemoteTerminatedBeforeBound_NewServerEndpointCreated) {
   base::Process child_process =
@@ -308,6 +315,7 @@ TEST_P(NamedMojoIpcServerTest,
       LaunchClientProcess(kClientProcessHangAfterConnectSwitch);
   WaitForServerEndpointCreated();
 }
+#endif
 
 TEST_P(NamedMojoIpcServerTest, ParallelIpcs) {
   base::MockCallback<EchoStringHandler> mock_echo_string_handler;
@@ -325,8 +333,11 @@ TEST_P(NamedMojoIpcServerTest, ParallelIpcs) {
       });
 
   base::Process child_process_1 = LaunchClientProcess();
+#if BUILDFLAG(IS_WIN)
+  // Wait for the named pipe to be recreated. Otherwise, the next client
+  // connection races this event.
   WaitForServerEndpointCreated();
-
+#endif
   base::Process child_process_2 = LaunchClientProcess();
 
   WaitForProcessExit(child_process_1);

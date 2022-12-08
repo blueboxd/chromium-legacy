@@ -8,7 +8,7 @@ import {eventToPromise} from 'chrome://webui-test/test_util.js';
 import {waitForElementUpdate} from '../common/js/unittest_util.js';
 
 import {XfTree} from './xf_tree.js';
-import {TreeItemCollapsedEvent, TreeItemExpandedEvent, XfTreeItem} from './xf_tree_item.js';
+import {TREE_ITEM_INDENT, TreeItemCollapsedEvent, TreeItemExpandedEvent, TreeItemRenamedEvent, XfTreeItem} from './xf_tree_item.js';
 
 /** Construct a single tree item. */
 async function setUpSingleTreeItem() {
@@ -105,7 +105,7 @@ export async function testRenderWithSingleTreeItem(done: () => void) {
   assertEquals(treeLabel.id, root.getAttribute('aria-labelledby'));
 
   // Test inner elements.
-  assertEquals('0px', treeRow.style.paddingInlineStart);
+  assertEquals('0px', window.getComputedStyle(treeRow).paddingInlineStart);
   assertEquals('hidden', window.getComputedStyle(expandIcon).visibility);
   assertEquals('item1', treeLabel.textContent);
   assertEquals('group', treeChildren.getAttribute('role'));
@@ -172,11 +172,34 @@ export async function testTreeItemLevel(done: () => void) {
   const item1bi = getTreeItemById('item1bi');
   const item2 = getTreeItemById('item2');
 
+  const tree = getTree();
+  tree.style.setProperty('--xf-tree-item-indent', TREE_ITEM_INDENT.toString());
+
+  const {treeRow: treeRow1} = getTreeItemInnerElements(item1);
   assertEquals(1, item1.level);
+  assertEquals('0px', window.getComputedStyle(treeRow1).paddingInlineStart);
+
+  const {treeRow: treeRow1a} = getTreeItemInnerElements(item1a);
   assertEquals(2, item1a.level);
+  assertEquals(
+      `${TREE_ITEM_INDENT}px`,
+      window.getComputedStyle(treeRow1a).paddingInlineStart);
+
+  const {treeRow: treeRow1b} = getTreeItemInnerElements(item1b);
   assertEquals(2, item1b.level);
+  assertEquals(
+      `${TREE_ITEM_INDENT}px`,
+      window.getComputedStyle(treeRow1b).paddingInlineStart);
+
+  const {treeRow: treeRow1bi} = getTreeItemInnerElements(item1bi);
   assertEquals(3, item1bi.level);
+  assertEquals(
+      `${TREE_ITEM_INDENT * 2}px`,
+      window.getComputedStyle(treeRow1bi).paddingInlineStart);
+
+  const {treeRow: treeRow2} = getTreeItemInnerElements(item2);
   assertEquals(1, item2.level);
+  assertEquals('0px', window.getComputedStyle(treeRow2).paddingInlineStart);
 
   done();
 }
@@ -392,6 +415,112 @@ export async function testRemoveSelectedItem(done: () => void) {
 
   // item1 will be selected instead.
   assertTrue(item1.selected);
+
+  done();
+}
+
+/** Tests rename of the tree item. */
+export async function testRenameTreeItem(done: () => void) {
+  await setUpSingleTreeItem();
+
+  // Check input should not exist by default.
+  const item1 = getTreeItemById('item1');
+  assertFalse(item1.editing);
+  assertEquals(null, item1.shadowRoot!.querySelector('.rename'));
+
+  // Rename item1 by enable editing mode.
+  item1.editing = true;
+  await waitForElementUpdate(item1);
+  let renameInput =
+      item1.shadowRoot!.querySelector<HTMLInputElement>('.rename')!;
+  assertNotEquals(null, renameInput);
+
+  // Rename input should be focused and text should be selected.
+  assertEquals(renameInput, item1.shadowRoot!.activeElement);
+  assertEquals(0, renameInput.selectionStart);
+  assertEquals(item1.label.length, renameInput.selectionEnd);
+
+  // Change text then cancel the rename.
+  renameInput.value = 'rename1';
+  renameInput.dispatchEvent(new KeyboardEvent('keydown', {key: 'Escape'}));
+  await waitForElementUpdate(item1);
+
+  // Check rename input is disappeared and the label is not changed.
+  assertEquals(null, item1.shadowRoot!.querySelector('.rename'));
+  const {treeLabel} = getTreeItemInnerElements(item1);
+  assertEquals(item1, document.activeElement);
+  assertFalse(item1.editing);
+  assertEquals('item1', treeLabel.textContent);
+  assertEquals('item1', item1.label);
+
+  // Rename again and commit the change.
+  const renamedEventPromise: Promise<TreeItemRenamedEvent> =
+      eventToPromise(XfTreeItem.events.TREE_ITEM_RENAMED, item1);
+  item1.editing = true;
+  await waitForElementUpdate(item1);
+  renameInput = item1.shadowRoot!.querySelector<HTMLInputElement>('.rename')!;
+  renameInput.value = 'rename2';
+  renameInput.dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter'}));
+  await waitForElementUpdate(item1);
+
+  // Check event is triggered and the label is changed.
+  assertEquals(null, item1.shadowRoot!.querySelector('.rename'));
+  const {treeLabel: treeLabelAfterRename} = getTreeItemInnerElements(item1);
+  assertEquals(item1, document.activeElement);
+  assertFalse(item1.editing);
+  assertEquals('rename2', treeLabelAfterRename.textContent);
+  assertEquals('rename2', item1.label);
+  const renamedEvent = await renamedEventPromise;
+  assertEquals(item1, renamedEvent.detail.item);
+  assertEquals('item1', renamedEvent.detail.oldLabel);
+  assertEquals('rename2', renamedEvent.detail.newLabel);
+
+  done();
+}
+
+/** Tests that blur of rename input will commit the rename. */
+export async function testBlurToCommitRename(done: () => void) {
+  await setUpSingleTreeItem();
+
+  // Rename item1 by enable editing mode.
+  const item1 = getTreeItemById('item1');
+  item1.editing = true;
+  await waitForElementUpdate(item1);
+  const renameInput =
+      item1.shadowRoot!.querySelector<HTMLInputElement>('.rename')!;
+  renameInput.value = 'new name';
+
+  // Check blur() should commit the rename.
+  renameInput.blur();
+  await waitForElementUpdate(item1);
+  const {treeLabel} = getTreeItemInnerElements(item1);
+  assertFalse(item1.editing);
+  assertEquals('new name', treeLabel.textContent);
+  assertEquals('new name', item1.label);
+
+  done();
+}
+
+/** Tests that empty string won't commit the rename. */
+export async function testNoRenameWithEmptyString(done: () => void) {
+  await setUpSingleTreeItem();
+
+  // Rename item1 by enable editing mode.
+  const item1 = getTreeItemById('item1');
+  item1.editing = true;
+  await waitForElementUpdate(item1);
+  const renameInput =
+      item1.shadowRoot!.querySelector<HTMLInputElement>('.rename')!;
+  renameInput.value = '   ';
+
+  // Check pressing Enter with empty string shouldn't commit the rename.
+  renameInput.dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter'}));
+  await waitForElementUpdate(item1);
+  const {treeLabel} = getTreeItemInnerElements(item1);
+  assertEquals(item1, document.activeElement);
+  assertFalse(item1.editing);
+  assertEquals('item1', treeLabel.textContent);
+  assertEquals('item1', item1.label);
 
   done();
 }

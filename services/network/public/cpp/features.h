@@ -13,7 +13,6 @@
 namespace network {
 namespace features {
 
-COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kExpectCTReporting);
 COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kNetworkErrorLogging);
 COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kReporting);
 COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kThrottleDelayable);
@@ -48,7 +47,6 @@ COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::FeatureParam<TrustTokenOriginTrialSpec>
     kTrustTokenOperationsRequiringOriginTrial;
 COMPONENT_EXPORT(NETWORK_CPP)
-extern const base::FeatureParam<bool> kPlatformProvidedTrustTokenIssuance;
 
 COMPONENT_EXPORT(NETWORK_CPP)
 BASE_DECLARE_FEATURE(kWebSocketReassembleShortMessages);

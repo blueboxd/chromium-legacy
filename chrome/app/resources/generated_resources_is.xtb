@@ -71,6 +71,7 @@
 <translation id="1067048845568873861">Búið til</translation>
 <translation id="1067661089446014701">Til að auka öryggi geturðu dulkóðað aðgangsorð í tækinu þínu áður en þau eru vistuð á Google reikningnum þínum</translation>
 <translation id="1067922213147265141">Önnur Google þjónusta</translation>
+<translation id="106814709658156573">Til að skrá fingrafar skaltu láta barnið snerta fingrafaralesarann neðst í vinstra horni lyklaborðsins. Fingrafaragögn barnsins eru í öruggri geymslu og fara aldrei út fyrir þetta <ph name="DEVICE_TYPE" />-tæki.</translation>
 <translation id="1069104208554708737">Þessi aðgangslykill verður aðeins vistaður í þessu tæki</translation>
 <translation id="1069355737714877171">Fjarlægja eSIM-prófílinn <ph name="PROFILE_NAME" /></translation>
 <translation id="1069814191880976658">Veldu annan skjá</translation>
@@ -804,7 +805,6 @@ Heimildir sem þú hefur þegar veitt forritum kunna að gilda á þessum reikni
 <translation id="1719312230114180055">Athugaðu: Fingrafar kann að vera ótraustari aðferð en sterkt aðgangsorð eða PIN-númer.</translation>
 <translation id="1720318856472900922">Auðkenning TLS WWW-þjóns</translation>
 <translation id="172123215662733643">Leita að myndum með <ph name="VISUAL_SEARCH_PROVIDER" /></translation>
-<translation id="1721312023322545264"><ph name="NAME" /> þarf að veita þér heimild til að fara á þetta vefsvæði</translation>
 <translation id="1722460139690167654"><ph name="ENROLLMENT_DOMAIN" /> <ph name="BEGIN_LINK" />hefur umsjón með <ph name="DEVICE_TYPE" /><ph name="END_LINK" /></translation>
 <translation id="1723824996674794290">&amp;Nýr gluggi</translation>
 <translation id="1724801751621173132">Innfærsluaðferð</translation>
@@ -1011,6 +1011,7 @@ Heimildir sem þú hefur þegar veitt forritum kunna að gilda á þessum reikni
 <translation id="1892341345406963517">Hæ, <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">Önnur tungumál</translation>
 <translation id="1895658205118569222">Slökkva</translation>
+<translation id="1896043844785689584">Til að skrá fingrafar skaltu láta barnið snerta fingrafaralesarann neðst í hægra horni lyklaborðsins. Fingrafaragögn barnsins eru í öruggri geymslu og fara aldrei út fyrir þetta <ph name="DEVICE_TYPE" />-tæki.</translation>
 <translation id="1897120393475391208">Nota traust aðgangsorð</translation>
 <translation id="1900305421498694955">Forrit frá Google Play kunna að gera kröfu um fullan aðgang að skráakerfinu til að geta lesið og skrifað skrár á lausum geymslumiðlum. Allir sem nota lausa drifið geta séð skrár og möppur sem búnar eru til í þessu tæki. <ph name="LINK_BEGIN" />Frekari upplýsingar<ph name="LINK_END" /></translation>
 <translation id="1901303067676059328">Velja &amp;allt</translation>
@@ -1971,6 +1972,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="275662540872599901">slökkt á skjánum</translation>
 <translation id="2757161511365746634">Skoða prentara</translation>
 <translation id="2757338480560142065">Gakktu úr skugga um að aðgangsorðið sem þú ert að vista passi við aðgangsorðið fyrir <ph name="WEBSITE" />.</translation>
+<translation id="2761632996810146912"><ph name="HASHTAG_SETTINGS" /> Engar leitarniðurstöður fundust fyrir <ph name="SEARCH_QUERY" /></translation>
 <translation id="2762441749940182211">Lokað á myndavél</translation>
 <translation id="2764786626780673772">Upplýsingar um VPN-netið</translation>
 <translation id="2764920001292228569">Sláðu inn prófílnafn</translation>
@@ -2239,6 +2241,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="3000378525979847272">Leyfði <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /></translation>
 <translation id="3000461861112256445">Einóma hljóð</translation>
 <translation id="3001144475369593262">Barnareikningar</translation>
+<translation id="3001835006423291524">Snertu fingrafaralesarann neðst í hægra horni lyklaborðsins. Fingrafaragögnin þín eru í öruggri geymslu og fara aldrei út fyrir <ph name="DEVICE_TYPE" />-tækið þitt.</translation>
 <translation id="3003144360685731741">Kjörnetkerfi</translation>
 <translation id="3003623123441819449">CSS-skyndiminni</translation>
 <translation id="3003828226041301643">Ekki tókst að tengja tækið við lénið. Athugaðu reikninginn þinn til að ganga úr skugga um að þú hafir réttindi til að bæta við tækjum.</translation>
@@ -2320,6 +2323,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="3071624960923923138">Þú getur smellt hér til að opna nýjan flipa</translation>
 <translation id="3072775339180057696">Viltu leyfa þessu svæði að skoða <ph name="FILE_NAME" />?</translation>
 <translation id="3074499504015191586">Þýða alla síðuna</translation>
+<translation id="3075144191779656260">Snertu fingrafaralesarann vinstra megin í <ph name="DEVICE_TYPE" />. Fingrafaragögnin þín eru í öruggri geymslu og fara aldrei út fyrir <ph name="DEVICE_TYPE" />-tækið þitt.</translation>
 <translation id="3075874217500066906">Endurræsingar er krafist til að hefja djúphreinsun. Að endurræsingu lokinni þarftu að staðfesta að þú viljir halda áfram.</translation>
 <translation id="3076909148546628648"><ph name="DOWNLOAD_RECEIVED" />/<ph name="DOWNLOAD_TOTAL" /></translation>
 <translation id="3076966043108928831">Vista aðeins á þessu tæki</translation>
@@ -2641,6 +2645,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="3406290648907941085">Mega nota sýndarveruleikatæki og -gögn</translation>
 <translation id="3406396172897554194">Leita eftir tungumáli eða innslegnu heiti</translation>
 <translation id="3406605057700382950">&amp;Sýna bókamerkjastiku</translation>
+<translation id="3407967630066378878">Til að skrá fingrafar skaltu láta barnið snerta fingrafaralesarann vinstra megin í <ph name="DEVICE_TYPE" />. Fingrafaragögn barnsins eru í öruggri geymslu og fara aldrei út fyrir þetta <ph name="DEVICE_TYPE" />-tæki.</translation>
 <translation id="3408849592677950451">{NUM_PASSWORDS,plural, =1{1 aðgangsorð var flutt inn í Google aðgangsorðastjórnun fyrir <ph name="USER_EMAIL" />}one{{NUM_PASSWORDS} aðgangsorð var flutt inn í Google aðgangsorðastjórnun fyrir <ph name="USER_EMAIL" />}other{{NUM_PASSWORDS} aðgangsorð voru flutt inn í Google aðgangsorðastjórnun fyrir <ph name="USER_EMAIL" />}}</translation>
 <translation id="3409785640040772790">Kort</translation>
 <translation id="3412265149091626468">Fara í val</translation>
@@ -2865,6 +2870,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="3616741288025931835">Hreinsa vafragögn...</translation>
 <translation id="3617891479562106823">Bakgrunnar eru ekki tiltækir. Reyndu aftur síðar.</translation>
 <translation id="3619115746895587757">Cappuccino</translation>
+<translation id="3620136223548713675">Staðsetningarmerking</translation>
 <translation id="3621807901162200696">Hjálpa til við að bæta eiginleika og afköst ChromeOS</translation>
 <translation id="362266093274784978">{COUNT,plural, =1{forrit}one{# forrit}other{# forrit}}</translation>
 <translation id="362333465072914957">Bíður eftir útgáfu vottorðs frá útgefanda</translation>
@@ -3765,6 +3771,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="4451479197788154834">Aðgangsorðið þitt er vistað í þessu tæki og á Google reikningnum þínum</translation>
 <translation id="4451757071857432900">Lokað fyrir á vefsvæðum sem sýna ágengar eða villandi auglýsingar (ráðlagt)</translation>
 <translation id="4452898361839215358">eða veldu PPD. <ph name="LINK_BEGIN" />Nánar<ph name="LINK_END" /></translation>
+<translation id="4453430595102511050">Snertu fingrafaralesarann efst í hægra horni lyklaborðsins. Fingrafaragögnin þín eru í öruggri geymslu og fara aldrei út fyrir <ph name="DEVICE_TYPE" />-tækið þitt.</translation>
 <translation id="4453946976636652378">Leitaðu á <ph name="SEARCH_ENGINE_NAME" /> eða sláðu inn vefslóð</translation>
 <translation id="4458535500699390320">Minnissparnaður losaði um minni fyrir önnur verk á meðan þessi flipi var óvirkur. Þú getur breytt þessu hvenær sem er í stillingunum.</translation>
 <translation id="4459169140545916303">Virkt fyrir <ph name="DEVICE_LAST_ACTIVATED_TIME" /> dögum</translation>
@@ -5278,6 +5285,7 @@ Notaðu Ctrl + Alt + minnka birtustig til að minnka aðdrátt.</translation>
 <translation id="5886112770923972514">Tengja og setja upp nálæg tæki með hraðpörun á skjótan hátt</translation>
 <translation id="5886384907280980632">Slökkva núna</translation>
 <translation id="5889282057229379085">Hámarksfjöldi CA-millistigsvottorða: <ph name="NUM_INTERMEDIATE_CA" /></translation>
+<translation id="5889629805140803638">Dulkóða samstillt gögn með eigin <ph name="BEGIN_LINK" />aðgangsorði samstillingar<ph name="END_LINK" />. Upplýsingar um greiðslumáta og heimilisföng frá Google Pay verða ekki dulkóðaðar. Vafraferill Chrome samstillist ekki.</translation>
 <translation id="5891688036610113830">Wi-Fi forgangsnet</translation>
 <translation id="5895138241574237353">Endurræsa</translation>
 <translation id="5895335062901455404">Vistaðar kjörstillingar og virkni verða til reiðu í öllum ChromeOS Flex tækjum þegar þú skráir þig inn með Google reikningnum þínum. Þú getur alltaf valið hvað á að samstilla í stillingunum.</translation>
@@ -5923,6 +5931,7 @@ Notaðu Ctrl + Alt + minnka birtustig til að minnka aðdrátt.</translation>
 <translation id="6508248480704296122">Tengist <ph name="NAME_PH" /></translation>
 <translation id="6508261954199872201">Forrit: <ph name="APP_NAME" /></translation>
 <translation id="6509207748479174212">Margmiðlunarleyfi</translation>
+<translation id="6511279028091289182">Ákvarðar hvernig á að tengjast vefsvæðum um örugga tengingu. Þetta notar stýrðan þjónustuaðila á <ph name="DNS_SERVER_TEMPLATE_WITH_IDENTIFIER" /></translation>
 <translation id="6511827214781912955">Íhugaðu að eyða <ph name="FILENAME" /> til að aðrir notendur tækisins geti ekki skoðað aðgangsorðin þín</translation>
 <translation id="6512808201725371249">Aðgangsorð fyrir þennan reikning er nú þegar vistað í Google-aðgangsorðastjórnun (<ph name="USER_EMAIL" />)</translation>
 <translation id="6513247462497316522">Google Chrome notar farsímagögn ef þú ert ekki með tengingu við annað net.</translation>
@@ -5992,6 +6001,7 @@ Notaðu Ctrl + Alt + minnka birtustig til að minnka aðdrátt.</translation>
 <translation id="6568283005472142698">Flipaleit</translation>
 <translation id="65711204837946324">Þarf heimild til að sækja</translation>
 <translation id="6571772921213691236">Breyta innskráningargögnum</translation>
+<translation id="657229725818377235">Fáðu aukna vernd gegn hættulegum vefsvæðum og niðurhali</translation>
 <translation id="6573096386450695060">Leyfa alltaf</translation>
 <translation id="6573497332121198392">Ekki er hægt að fjarlægja flýtileið</translation>
 <translation id="657402800789773160">Endu&amp;rhlaða þessa síðu</translation>
@@ -6039,6 +6049,7 @@ Notaðu Ctrl + Alt + minnka birtustig til að minnka aðdrátt.</translation>
 <translation id="6607831829715835317">F&amp;leiri verkfæri</translation>
 <translation id="6607890859198268021"><ph name="USER_EMAIL" /> er þegar stjórnað af <ph name="DOMAIN" />. Skráðu þig út eftir uppsetningu og veldu „Bæta notanda við“ á innskráningarskjánum til að nota barnalæsingar á öðrum Google reikningi.</translation>
 <translation id="6608166463665411119">Endurstilla eSIM</translation>
+<translation id="6608773371844092260">Til að skrá fingrafar skaltu láta barnið snerta fingrafaralesarann hægra megin í <ph name="DEVICE_TYPE" />. Fingrafaragögn barnsins eru í öruggri geymslu og fara aldrei út fyrir þetta <ph name="DEVICE_TYPE" />-tæki.</translation>
 <translation id="6609478180749378879">Innskráningargögn verða geymd í þessu tæki eftir að þú lokar huliðsstillingu. Þú getur skráð þig aftur inn á þetta vefsvæði með tækinu þínu síðar.</translation>
 <translation id="6610002944194042868">Valkostir þýðinga</translation>
 <translation id="6611907964265870728">Gakktu úr skugga um að tækið sé nettengt</translation>
@@ -6684,6 +6695,7 @@ Notaðu Ctrl + Alt + minnka birtustig til að minnka aðdrátt.</translation>
 <translation id="7225082563376899794">Nota Windows Hello við útfyllingu aðgangsorða</translation>
 <translation id="7225179976675429563">Tegund nets vantar</translation>
 <translation id="7227458944009118910">Forrit á eftirfarandi lista geta einnig unnið úr tenglum samskiptareglu. Önnur forrit munu biðja um heimild.</translation>
+<translation id="7228056665272655255">Til að skrá fingrafar skaltu láta barnið snerta fingrafaralesarann efst í hægra horni lyklaborðsins. Fingrafaragögn barnsins eru í öruggri geymslu og fara aldrei út fyrir þetta <ph name="DEVICE_TYPE" />-tæki.</translation>
 <translation id="7228523857728654909">Skjálás og innskráning</translation>
 <translation id="7230222852462421043">&amp;Endurheimta glugga</translation>
 <translation id="7231260028442989757">Skoðaðu, hunsaðu og svaraðu tilkynningum símans</translation>
@@ -6811,6 +6823,7 @@ Notaðu Ctrl + Alt + minnka birtustig til að minnka aðdrátt.</translation>
 <translation id="7360233684753165754"><ph name="PAGE_NUMBER" /> síður með <ph name="PRINTER_NAME" /></translation>
 <translation id="7360257054721917104">Skoðar vistuð skrifborð og sniðmát. Ýttu á dálkalykilinn (Tab) til að fletta.</translation>
 <translation id="7361297102842600584">Hægrismelltu til að keyra <ph name="PLUGIN_NAME" /></translation>
+<translation id="7361914392989692067">Snertu aflrofann með fingrinum. Fingrafaragögnin þín eru í öruggri geymslu og fara aldrei út fyrir <ph name="DEVICE_TYPE" />-tækið þitt.</translation>
 <translation id="7362387053578559123">Vefsvæði geta beðið um að tengjast Bluetooth-tækjum</translation>
 <translation id="7363349185727752629">Leiðarvísir persónuverndarstillinga</translation>
 <translation id="7364591875953874521">Beðið um aðgang</translation>
@@ -6935,6 +6948,7 @@ Notaðu Ctrl + Alt + minnka birtustig til að minnka aðdrátt.</translation>
 <translation id="7465635034594602553">Eitthvað fór úrskeiðis. Bíddu í nokkrar mínútur og keyrðu <ph name="APP_NAME" /> aftur.</translation>
 <translation id="7465778193084373987">Afturköllunarslóð Netscape-vottorðs</translation>
 <translation id="7466431077154602932">Þjappað yfirlit</translation>
+<translation id="7466556884531675354">Engar glósur vistaðar</translation>
 <translation id="746861123368584540">Viðbót var hlaðið inn</translation>
 <translation id="7470424110735398630">Mega sjá klippiborðið</translation>
 <translation id="747114903913869239">Villa: Ekki er hægt að afkóða viðbót</translation>
@@ -7509,7 +7523,6 @@ Notaðu Ctrl + Alt + minnka birtustig til að minnka aðdrátt.</translation>
 <translation id="7978450511781612192">Þetta skráir þig út af Google reikningnum þínum. Bókamerki, ferill, aðgangsorð og fleira verður ekki lengur samstillt.</translation>
 <translation id="7980084013673500153">Auðkenni eignar: <ph name="ASSET_ID" /></translation>
 <translation id="7981313251711023384">Forhlaða síðum til að geta leitað hraðar á netinu</translation>
-<translation id="798145602633458219">Hengja tillöguna <ph name="SUGGESTION_NAME" /> við leitarreit</translation>
 <translation id="7981662863948574132">Sýna sprettiglugga EID- og QR-kóða</translation>
 <translation id="7981670705071137488">Héðan í frá munu hugbúnaðaruppfærslur fara fram í bakgrunni. Þú getur yfirfarið uppfærslustillingar í stillingunum.</translation>
 <translation id="7982083145464587921">Endurræstu tækið til að lagfæra þessa villu.</translation>
@@ -7862,6 +7875,7 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
 <translation id="8299319456683969623">Þú ert ekki á netinu.</translation>
 <translation id="8300011035382349091">Breyta bókamerki fyrir þennan flipa</translation>
 <translation id="8300374739238450534">Dökkblár</translation>
+<translation id="8301242268274839723">Snertu fingrafaralesarann neðst í vinstra horni lyklaborðsins. Fingrafaragögnin þín eru í öruggri geymslu og fara aldrei út fyrir <ph name="DEVICE_TYPE" />-tækið þitt.</translation>
 <translation id="8303616404642252802">{COUNT,plural, =1{Heimilisfang}one{# heimilisfang}other{# heimilisföng}}</translation>
 <translation id="8304383784961451596">Þú hefur ekki leyfi til að nota þetta tæki. Hafðu samband við kerfisstjórann til að fá innskráningarheimild eða skráðu þig inn með Google reikningi sem Family Link hefur umsjón með.</translation>
 <translation id="8306885873692337975">Fáðu nýjustu eiginleikana og öryggisúrbætur.</translation>
@@ -7913,6 +7927,7 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
 <translation id="8351316842353540018">Sýna alltaf a11y valkosti</translation>
 <translation id="8351419472474436977">Þessi viðbót hefur tekið að sér stjórn yfir proxy-stillingunum þínum, sem þýðir að hún getur breytt, slitið eða hlerað allt sem þú gerir á netinu. Ef þú veist ekki hvernig þetta gerðist er þetta líklega eitthvað sem þú vilt ekki.</translation>
 <translation id="8351630282875799764">Rafhlaðan er ekki að hlaðast</translation>
+<translation id="8352287103893778223">Heiti flipahóps</translation>
 <translation id="835238322900896202">Villa kom upp við fjarlægingu. Fjarlægðu gegnum stöðina.</translation>
 <translation id="8353683614194668312">Þetta getur gert eftirfarandi:</translation>
 <translation id="8354034204605718473">PIN-númeri barnsins var bætt við</translation>
@@ -8589,10 +8604,12 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
 <translation id="8993059306046735527">Ef þú gleymir aðgangsorðinu að <ph name="DEVICE_TYPE" /> geturðu samt sem áður endurheimt staðbundin gögn. Þú þarft að skrá þig inn á Google-reikninginn þinn eða nota endurheimt reiknings.</translation>
 <translation id="8993737615451556423">Notað til að hraða, hægja á og gera hlé á talröddinni</translation>
 <translation id="899384117894244799">Fjarlægja takmarkaðan notanda</translation>
+<translation id="8993945059918628059">Snertu fingrafaralesarann með fingrinum. Fingrafaragögnin þín eru í öruggri geymslu og fara aldrei út fyrir <ph name="DEVICE_TYPE" />-tækið þitt.</translation>
 <translation id="899403249577094719">Grunnslóð Netscape-vottorðs</translation>
 <translation id="899657321862108550">Chrome fyrir þig, hvar sem þú ert</translation>
 <translation id="8998078711690114234">Þessi skráartegund gæti verið skaðleg. Vistaðu aðeins skrána ef þú treystir <ph name="ORIGIN" /></translation>
 <translation id="8999560016882908256">Málskipunarvilla hluta: <ph name="ERROR_LINE" /></translation>
+<translation id="9000185763019430629">Snertu fingrafaralesarann hægra megin í <ph name="DEVICE_TYPE" />. Fingrafaragögnin þín eru í öruggri geymslu og fara aldrei út fyrir <ph name="DEVICE_TYPE" />-tækið þitt.</translation>
 <translation id="9003185744423389627">Ekki náðist tenging við þjón tækjastjórnunar með stöðunni „<ph name="STATUS_TEXT" />“ <ph name="FAILURE_TIME" /></translation>
 <translation id="9003647077635673607">Leyfa á öllum vefsvæðum</translation>
 <translation id="9003677638446136377">Prófa aftur</translation>

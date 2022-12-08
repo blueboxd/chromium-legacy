@@ -26,7 +26,7 @@ import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bu
 import {assert} from 'chrome://resources/js/assert_ts.js';
 
 // <if expr="chromeos_ash">
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {getAccountAdditionOptionsFromJSON} from 'chrome://chrome-signin/arc_account_picker/arc_util.js';
 // </if>
 
@@ -240,7 +240,7 @@ export class InlineLoginAppElement extends InlineLoginAppElementBase {
         (data: AuthParams) => this.loadAuthExtension_(data));
     this.addWebUiListener(
         'send-lst-fetch-results',
-        (arg: string) => this.sendLSTFetchResults_(arg));
+        (arg: string) => this.sendLstFetchResults_(arg));
     this.addWebUiListener('close-dialog', () => this.closeDialog_());
     // <if expr="chromeos_ash">
     this.addWebUiListener(
@@ -345,7 +345,7 @@ export class InlineLoginAppElement extends InlineLoginAppElementBase {
    * @param arg The string representation of the json data returned by
    *    the sign in dialog after it has finished the sign in process.
    */
-  private sendLSTFetchResults_(arg: string) {
+  private sendLstFetchResults_(arg: string) {
     this.browserProxy_.lstFetchResults(arg);
   }
 

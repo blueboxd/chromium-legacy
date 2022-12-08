@@ -41,7 +41,7 @@ export class FileHandlerPageElement extends HTMLElement {
       const [dialogArgs, {installed: isOfficePwaInstalled}] =
           await Promise.all([
             this.proxy.handler.getDialogArgs(),
-            this.proxy.handler.isOfficePWAInstalled(),
+            this.proxy.handler.isOfficeWebAppInstalled(),
           ]);
       assert(dialogArgs.args);
 
@@ -90,7 +90,8 @@ export class FileHandlerPageElement extends HTMLElement {
 
   private getUserChoice() {
     if (this.shadowRoot!.querySelector<HTMLInputElement>('#drive')!.checked) {
-      return UserAction.kSetUpGoogleDrive;
+      // TODO(petermarshall): Remove the kSetUpGoogleDrive step or use it here.
+      return UserAction.kConfirmOrUploadToGoogleDrive;
     } else {
       return UserAction.kSetUpOneDrive;
     }

@@ -27,6 +27,14 @@
 #include "ui/gl/gl_angle_util_win.h"
 #endif
 
+#if BUILDFLAG(IS_OZONE)
+#include "ui/ozone/public/ozone_platform.h"
+#endif
+
+#if BUILDFLAG(IS_ANDROID)
+#include "base/android/android_hardware_buffer_compat.h"
+#endif
+
 #if DCHECK_IS_ON()
 #define CALLED_ON_VALID_THREAD()                      \
   do {                                                \
@@ -205,7 +213,8 @@ std::unique_ptr<DawnImageRepresentation> SharedImageManager::ProduceDawn(
     const Mailbox& mailbox,
     MemoryTypeTracker* tracker,
     WGPUDevice device,
-    WGPUBackendType backend_type) {
+    WGPUBackendType backend_type,
+    std::vector<WGPUTextureFormat> view_formats) {
   CALLED_ON_VALID_THREAD();
 
   AutoLock autolock(this);
@@ -216,8 +225,8 @@ std::unique_ptr<DawnImageRepresentation> SharedImageManager::ProduceDawn(
     return nullptr;
   }
 
-  auto representation =
-      (*found)->ProduceDawn(this, tracker, device, backend_type);
+  auto representation = (*found)->ProduceDawn(
+      this, tracker, device, backend_type, std::move(view_formats));
   if (!representation) {
     LOG(ERROR) << "SharedImageManager::ProduceDawn: Trying to produce a "
                   "Dawn representation from an incompatible mailbox.";
@@ -436,6 +445,22 @@ scoped_refptr<gfx::NativePixmap> SharedImageManager::GetNativePixmap(
   if (found == images_.end())
     return nullptr;
   return (*found)->GetNativePixmap();
+}
+
+bool SharedImageManager::SupportsScanoutImages() {
+#if BUILDFLAG(IS_MAC)
+  return true;
+#elif BUILDFLAG(IS_ANDROID)
+  return base::AndroidHardwareBufferCompat::IsSupportAvailable();
+#elif BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
+  return ui::OzonePlatform::GetInstance()
+      ->GetPlatformRuntimeProperties()
+      .supports_native_pixmaps;
+#elif BUILDFLAG(IS_WIN)
+  return false;
+#else
+  return false;
+#endif
 }
 
 }  // namespace gpu

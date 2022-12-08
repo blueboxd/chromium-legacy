@@ -31,7 +31,6 @@
 <translation id="1148499908455722006"><ph name="USER_NAME" /> എന്നതിനുള്ള വിവരങ്ങളുടെ ഡയലോഗ് തുറക്കുക</translation>
 <translation id="1150989369772528668">കലണ്ടർ</translation>
 <translation id="1153356358378277386">ജോടിയാക്കിയ ഉപകരണങ്ങൾ</translation>
-<translation id="1165712434476988950">അപ്‌ഡേറ്റ് ബാധകമാക്കാൻ ഉപകരണം റീസ്‌റ്റാർട്ട് ചെയ്യേണ്ടതുണ്ട്.</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">നിങ്ങളുടെ USB-C കേബിൾ, ഡിസ്‌പ്ലേകളിലേക്ക് ശരിയായി കണക്റ്റ് ആയേക്കില്ല</translation>
 <translation id="1175572348579024023">സ്‌ക്രോൾ ചെയ്യുക</translation>
@@ -358,7 +357,6 @@
 <translation id="296762781903199866"><ph name="LANGUAGE" /> സംഭാഷണ ഫയലുകൾ ഡൗൺലോഡ് ചെയ്യാനായില്ല</translation>
 <translation id="2970920913501714344">ആപ്പുകൾ, വിപുലീകരണങ്ങൾ, തീമുകൾ എന്നിവ ഇന്‍സ്‌റ്റാള്‍ ചെയ്യുക</translation>
 <translation id="2977598380246111477">അടുത്ത നമ്പർ</translation>
-<translation id="2981684127883932071">നിർദ്ദേശങ്ങൾ കാണിക്കുന്നു</translation>
 <translation id="2985148236010982088">എല്ലാ ആപ്പുകളും കാണുക</translation>
 <translation id="2992327365391326550">ഉപകരണത്തിന്റെ മൈക്രോഫോൺ ബട്ടൺ ഓഫാണ്.</translation>
 <translation id="2996462380875591307">ഡോക്ക് ചെയ്‌ത മാഗ്നിഫയർ പ്രവർത്തനക്ഷമമാക്കി. ഇത് മാറ്റാൻ, കൺട്രോൾ+തിരയൽ+D വീണ്ടും അമർത്തുക.</translation>
@@ -669,6 +667,7 @@
 <translation id="4666082839192943839">എല്ലാ സമയത്തും എല്ലാ ക്യാമറകളും ബ്ലോക്ക് ചെയ്യാൻ ഈ ഉപകരണത്തിൽ ക്യാമറ ആക്‌സസ് ഓഫാക്കുക.</translation>
 <translation id="4666911709726371538">കൂടുതൽ ആപ്പുകൾ</translation>
 <translation id="4667099493359681081"><ph name="FILENAME" /> ഡൗൺലോഡ് ചെയ്യുന്നു</translation>
+<translation id="468293128311738995">നിങ്ങളുടെ ഫോണിലെ ആപ്പുകൾ</translation>
 <translation id="4690510401873698237">സ്‌ക്രീനിൻ്റെ ചുവടെയാണ് ഷെൽഫ്</translation>
 <translation id="4696813013609194136">രക്ഷാകർതൃ കോഡ് ഉപയോഗിച്ച് ഉപകരണം അൺലോക്ക് ചെയ്യുക</translation>
 <translation id="4702647871202761252">സ്വകാര്യതാ സ്‌ക്രീൻ ഓഫാണ്</translation>
@@ -925,12 +924,10 @@
 <translation id="6103838137565245112">സിസ്റ്റം</translation>
 <translation id="6107292179555508368">ഈ ഉപകരണത്തിൽ മൈക്രോഫോണിന്റെയും ക്യാമറയുടെയും ആക്‌സസുകൾ ഓഫാണ്</translation>
 <translation id="6114505516289286752"><ph name="LANGUAGE" /> സംഭാഷണ ഫയലുകൾ ഡൗൺലോഡ് ചെയ്‌തു</translation>
-<translation id="6116825164611323644">ഈ ഉപകരണത്തിൽ ക്യാമറ ആക്‌സസ് ഓഫാണ്</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042">ഡൗൺലോഡ് സ്ഥിരീകരിക്കുക <ph name="FILENAME" /></translation>
 <translation id="612734058257491180">അതിഥി സെഷനിൽ Google അസി‌സ്‌റ്റന്റ് ലഭ്യമല്ല.</translation>
 <translation id="6129953537138746214">സ്പെയ്സ്</translation>
-<translation id="6134259848159370930">നിങ്ങളുടെ ഉപകരണവും ആപ്പുകളും ക്രമീകരണവും വെബും തിരയുക.</translation>
 <translation id="6137566720514957455"><ph name="USER_EMAIL_ADDRESS" /> -നുള്ള ഡയലോഗ് നീക്കം ചെയ്യുക തുറക്കുക</translation>
 <translation id="6141988275892716286">ഡൗൺലോഡ് സ്ഥിരീകരിക്കുക</translation>
 <translation id="6154006699632741460">പെരിഫറലിനെ പിന്തുണയ്ക്കുന്നില്ല</translation>
@@ -1291,6 +1288,7 @@
 <translation id="8142441511840089262">ഡബിൾ ക്ലിക്ക് ചെയ്യുക</translation>
 <translation id="8142699993796781067">സ്വകാര്യനെറ്റ്‌വര്‍ക്ക്</translation>
 <translation id="8144760705599030999">നിങ്ങളുടെ മറ്റ് ഉപകരണങ്ങളുമായി കൂടുതൽ വേഗത്തിൽ ജോടിയാക്കുന്നതിന് <ph name="EMAIL" /> എന്നതിൽ നിങ്ങളുടെ <ph name="NAME" /> സംരക്ഷിക്കുക</translation>
+<translation id="8144914663975476336">റെക്കോർഡിംഗ് ഫോർമാറ്റ് തിരഞ്ഞെടുക്കുക</translation>
 <translation id="8149413265954228307">Bluetooth ക്രമീകരണം കാണിക്കുക. <ph name="STATE_TEXT" />.</translation>
 <translation id="8152092012181020186">അടയ്‌ക്കാൻ Ctrl + W അമർത്തുക.</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, സ്വയമേവ പൂർത്തിയാക്കുക</translation>
@@ -1388,7 +1386,6 @@
 <translation id="8666856788528804727">നിങ്ങളുടെ ഉപകരണം സജ്ജീകരിക്കാൻ <ph name="NAME" /> തുറക്കുക</translation>
 <translation id="8676770494376880701">കുറഞ്ഞ തോതിൽ വൈദ്യുതി പ്രവഹിക്കുന്ന ചാർജർ കണക്റ്റുചെയ്‌തു</translation>
 <translation id="8683506306463609433">പ്രകടനം പിന്തുടരൽ സജീവം</translation>
-<translation id="8685326675965865247">നിങ്ങളുടെ ഉപകരണവും ആപ്പുകളും ക്രമീകരണവും വെബും തിരയുക. നിങ്ങളുടെ ആപ്പുകൾ നാവിഗേറ്റ് ചെയ്യാൻ അമ്പടയാള കീകൾ ഉപയോഗിക്കുക.</translation>
 <translation id="8703634754197148428">റെക്കോർഡിംഗ് ആരംഭിക്കൂ. റെക്കോർഡിംഗ് ആരംഭിച്ചുകഴിഞ്ഞാൽ, ഷെൽഫിലേക്ക് പോയി റെക്കോർഡിംഗ് നിർത്തുക ബട്ടൺ കണ്ടെത്താൻ Alt + Shift + L ഉപയോഗിക്കുക</translation>
 <translation id="8721053961083920564">വോളിയം മാറ്റുക. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">പൂർണ്ണ സ്ക്രീൻ ക്യാപ്‌ചർ ചെയ്യൽ</translation>
@@ -1397,7 +1394,6 @@
 <translation id="8735678380411481005">കീബോർഡ് ബാക്ക്‌ലൈറ്റ് നിറം</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />,
         <ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8752416742247198423">ഈ ഉപകരണത്തിലേക്ക് കണക്‌റ്റ് ചെയ്‌തിരിക്കുന്ന ക്യാമറ(കൾ) ഉപയോഗിക്കാൻ ക്യാമറ അനുമതിയുള്ള ആപ്പുകളെയും വെബ്‌പേജുകളെയും അനുവദിക്കാൻ ക്യാമറ ആക്‌സസ് ഓണാക്കുക.</translation>
 <translation id="8755498163081687682">നിങ്ങളുടെ ഐഡന്റിറ്റി പരിശോധിച്ചുറപ്പിക്കുക: ഇത് നിങ്ങൾ തന്നെയാണെന്ന് സ്ഥിരീകരിക്കാൻ <ph name="ORIGIN_NAME" /> ആഗ്രഹിക്കുന്നു</translation>
 <translation id="875593634123171288">VPN ക്രമീകരണം കാണിക്കുക</translation>
 <translation id="8759408218731716181">ഒന്നിലധികം സൈൻ ഇൻ സജ്ജമാക്കാനാവില്ല</translation>
@@ -1464,7 +1460,6 @@
 <translation id="9089416786594320554">ഇൻപുട്ട്  രീതികൾ</translation>
 <translation id="9091626656156419976"><ph name="DISPLAY_NAME" /> ഡിസ്‌പ്ലേ നീക്കംചെയ്‌തു</translation>
 <translation id="9098969848082897657">ഫോൺ നിശബ്ദമാക്കുക</translation>
-<translation id="9099154003160514616">Lacros അപ്ഡേറ്റ് ലഭ്യമാണ്</translation>
 <translation id="9100887602489003640">പ്രൊഫെെൽ ചേർക്കുന്നു. അൽപ്പസമയം കാത്തിരിക്കുക.</translation>
 <translation id="9105450214093926548">Lacros ബ്രൗസർ റൺ ചെയ്യുമ്പോൾ രണ്ടാമത്തെ ഉപയോക്താവ് സൈൻ ഇൻ ചെയ്യുന്നത് പിന്തുണയ്ക്കുന്നില്ല. പകരം Lacros-ൽ രണ്ടാമത്തെ ബ്രൗസർ പ്രൊഫൈൽ ഉപയോഗിക്കുകയോ Lacros അടച്ച ശേഷം വീണ്ടും ശ്രമിക്കുകയോ ചെയ്യുക.</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> അല്ലെങ്കിൽ <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>

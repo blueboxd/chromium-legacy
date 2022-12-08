@@ -140,6 +140,7 @@
 <translation id="2161394479394250669">ביטול משימת ההדפסה</translation>
 <translation id="2163937499206714165">הפעלת המצב הכהה</translation>
 <translation id="2180197493692062006">משהו השתבש. צריך לנסות לפתוח את האפליקציה מחדש.</translation>
+<translation id="2184005227776731758">APN</translation>
 <translation id="2209788852729124853">איפוס מוני התנועה</translation>
 <translation id="2212733584906323460">רזולוציית שם</translation>
 <translation id="2217935453350629363">מהירות נוכחית</translation>
@@ -164,6 +165,7 @@
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2391082728065870591">שליחת דוח המשוב</translation>
 <translation id="2407209115954268704">‏סטטוס נעילת ה-SIM</translation>
+<translation id="241419523391571119">צריך לפתוח את המכסה כדי לבצע את הבדיקה</translation>
 <translation id="2414886740292270097">כהה</translation>
 <translation id="2418150275289244458">פתיחה בהגדרות</translation>
 <translation id="2421798028054665193">תמונה <ph name="CURRENT_PAGE" /> מתוך <ph name="TOTAL_PAGES" /></translation>
@@ -174,6 +176,7 @@
 <translation id="2491955442992294626">המקשים לא נבדקים כשמשתמשים בחלון אחר</translation>
 <translation id="2493126929778606526">התמונות הטובות ביותר שלך שנבחרו באופן אוטומטי</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
+<translation id="2498950423397131220">צף</translation>
 <translation id="2505327257735685095">רענון של תמונת הטפט</translation>
 <translation id="2513396635448525189">תמונת המשתמש המחובר</translation>
 <translation id="2517472476991765520">סריקה</translation>
@@ -204,6 +207,7 @@
 <translation id="2878387241690264070">בוצעה פריקה של <ph name="RATE" /> ב-<ph name="NUM_SECONDS" /> שניות.</translation>
 <translation id="2902312830803030883">פעולות נוספות</translation>
 <translation id="2926057806159140518">‏צריך להזין את שם המשתמש והסיסמה או לסרוק את קוד ה-QR</translation>
+<translation id="2940811910881150316">לא ניתן לבדוק את המכשיר. צריך לפתוח את המכסה כדי לבצע את הבדיקה.</translation>
 <translation id="3008341117444806826">רענון</translation>
 <translation id="3009958530611748826">בחירת תיקייה לשמירה</translation>
 <translation id="3017079585324758401">רקע</translation>
@@ -218,7 +222,7 @@
 <translation id="3102119246920354026">מטמון</translation>
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3124039320086536031">המכשיר מחובר.</translation>
-<translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{להסיר את הדף?}=1{להסיר את דף {PAGE_NUMBER}?}two{להסיר את דף {PAGE_NUMBER}?}many{להסיר את דף {PAGE_NUMBER}?}other{להסיר את דף {PAGE_NUMBER}?}}</translation>
+<translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{להסיר את הדף?}=1{להסיר את דף {PAGE_NUMBER}?}one{להסיר את דף {PAGE_NUMBER}?}two{להסיר את דף {PAGE_NUMBER}?}other{להסיר את דף {PAGE_NUMBER}?}}</translation>
 <translation id="315116470104423982">נתוני נייד</translation>
 <translation id="3156846309055100599">מתבצעת סריקה של עמוד <ph name="PAGE_NUMBER" />...</translation>
 <translation id="315738237743207937">זוהה פורטל שבוי</translation>
@@ -232,7 +236,7 @@
 <translation id="3246869037381808805">משימות הדפסה בנות יותר מיום אחד יוסרו</translation>
 <translation id="3268178239013324452">נכשלה – דלת המדפסת פתוחה</translation>
 <translation id="3275729367986477355">תמונת הדמות</translation>
-<translation id="3283504360622356314">{0,plural, =1{עריכת הקובץ}two{עריכת הקבצים}many{עריכת הקבצים}other{עריכת הקבצים}}</translation>
+<translation id="3283504360622356314">{0,plural, =1{עריכת הקובץ}one{עריכת הקבצים}two{עריכת הקבצים}other{עריכת הקבצים}}</translation>
 <translation id="3286515922899063534">GHz <ph name="CURRENT" /></translation>
 <translation id="3291996639387199448">כיוון המפתח</translation>
 <translation id="3294437725009624529">אורח</translation>
@@ -284,6 +288,7 @@
 <translation id="3820172043799983114">‏PIN לא חוקי.</translation>
 <translation id="3824259034819781947">צירוף קבצים</translation>
 <translation id="3838338534323494292">סיסמה חדשה</translation>
+<translation id="3845880861638660475">‏כדי לסגור את תיבת הדו-שיח, מקישים על <ph name="ALT_SHORTCUT_START" />Alt<ph name="ALT_SHORTCUT_END" /> +‏ <ph name="ESC_SHORTCUT_START" />Esc<ph name="ESC_SHORTCUT_END" />.</translation>
 <translation id="385051799172605136">חזרה</translation>
 <translation id="3858860766373142691">שם</translation>
 <translation id="3862598938296403232">יש להזין תיאור</translation>
@@ -291,6 +296,7 @@
 <translation id="3866249974567520381">תיאור</translation>
 <translation id="387301095347517405">מספר הפעמים שבהן הסוללה נטענה במלואה</translation>
 <translation id="3885327323343477505">החלפת שומר המסך</translation>
+<translation id="391412459402535266">לא ניתן לבדוק את המכשיר. צריך לעבור למצב מחשב נייד כדי לבצע את הבדיקה.</translation>
 <translation id="3923184630988645767">שימוש בחבילת הגלישה</translation>
 <translation id="3932043219784172185">אין מכשיר מחובר</translation>
 <translation id="3941014780699102620">לא ניתן היה להתאים את נתוני המארח</translation>
@@ -303,6 +309,7 @@
 <translation id="39823212440917567">משימות הדפסה בנות יותר מ-<ph name="NUMBER_OF_DAYS" /> ימים יוסרו</translation>
 <translation id="3993704782688964914">עכשיו המכשיר <ph name="DEVICE_NAME" /> מעודכן</translation>
 <translation id="4003384961948020559">נכשלה – מגש הפלט מלא</translation>
+<translation id="4021031199988160623">צריך לעבור למצב מחשב נייד כדי לבצע את הבדיקה</translation>
 <translation id="4034824040120875894">מדפסת</translation>
 <translation id="4044093238444069296">לא ניתן ליצור קשר עם השער</translation>
 <translation id="4046123991198612571">הרצועה הבאה</translation>
@@ -335,6 +342,7 @@
 <translation id="4289849978083912975">מצגת</translation>
 <translation id="4297501883039923494">הפסיקה – שגיאה לא ידועה</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> תמונות</translation>
+<translation id="4311195029067684288">מלא</translation>
 <translation id="4333390807948134856">בוצעה לחיצה על המקש <ph name="KEY_NAME" /></translation>
 <translation id="435692326371619097">‏ניהול הגדרות APN של הרשת. נקודות APN יוצרות חיבור בין רשת סלולרית לבין האינטרנט. <ph name="BEGIN_LINK" />מידע נוסף<ph name="END_LINK" /></translation>
 <translation id="4378373042927530923">לא הופעל</translation>
@@ -399,7 +407,7 @@
 <translation id="484790837831576105">‏רזולוציית DNS ‏(Android)</translation>
 <translation id="4848429997038228357">הבדיקה מתבצעת</translation>
 <translation id="4854586501323951986">מסך מגע מובנה</translation>
-<translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" />. נותר ניסיון אחד ({0})}two{<ph name="ERROR_MESSAGE" />. נותרו {0} ניסיונות}many{<ph name="ERROR_MESSAGE" />. נותרו {0} ניסיונות}other{<ph name="ERROR_MESSAGE" />. נותרו {0} ניסיונות}}</translation>
+<translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" />. נותר ניסיון אחד ({0})}one{<ph name="ERROR_MESSAGE" />. נותרו {0} ניסיונות}two{<ph name="ERROR_MESSAGE" />. נותרו {0} ניסיונות}other{<ph name="ERROR_MESSAGE" />. נותרו {0} ניסיונות}}</translation>
 <translation id="4873827928179867585">האלגוריתם לאימות</translation>
 <translation id="4880328057631981605">‏שם נקודת גישה (APN)</translation>
 <translation id="4885705234041587624">MSCHAPv2</translation>
@@ -414,7 +422,9 @@
 <translation id="4921665434385737356">התבצעה טעינה של <ph name="RATE" /> ב-<ph name="NUM_SECONDS" /> שניות.</translation>
 <translation id="4930320165497208503">כדי להגדיר או לעדכן חיבור, צריך לעבור ל<ph name="BEGIN_LINK" />הגדרות<ph name="END_LINK" />.</translation>
 <translation id="4932733599132424254">תאריך</translation>
+<translation id="4937657825850660613">חצי</translation>
 <translation id="4950314376641394653">הקושחה במכשיר <ph name="DEVICE_NAME" /> עודכנה לגרסה <ph name="VERSION" /></translation>
+<translation id="4971925105143343452">חלקי</translation>
 <translation id="498186245079027698">יש לבדוק את הסורק ולנסות שוב. חשוב לוודא שיש במכשיר מספיק מקום לשמור את הקבצים הסרוקים.</translation>
 <translation id="4985509611418653372">הרצה</translation>
 <translation id="4987769320337599931">חומת אש</translation>
@@ -473,7 +483,7 @@
 <translation id="5431318178759467895">צבע</translation>
 <translation id="5457599981699367932">גלישה כאורח</translation>
 <translation id="54609108002486618">מנוהל</translation>
-<translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{נותר ניסיון אחד ({0})}two{נותרו {0} ניסיונות}many{נותרו {0} ניסיונות}other{נותרו {0} ניסיונות}}</translation>
+<translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{נותר ניסיון אחד ({0})}one{נותרו {0} ניסיונות}two{נותרו {0} ניסיונות}other{נותרו {0} ניסיונות}}</translation>
 <translation id="5493614766091057239"><ph name="VERDICT" />: <ph name="PROBLEMS" /></translation>
 <translation id="5499114900554609492">לא ניתן היה להשלים את הסריקה</translation>
 <translation id="5499762266711462226">צבע המקלדת מבוסס על הטפט</translation>
@@ -518,7 +528,7 @@
 <translation id="5907649332524363701">הצבע העיקרי</translation>
 <translation id="5916084858004523819">אסור</translation>
 <translation id="5916664084637901428">פועל</translation>
-<translation id="5921506667911082617">{COUNT,plural, =1{הקובץ נסרק בהצלחה ונשמר בתיקייה <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}two{הקבצים נסרקו בהצלחה ונשמרו בתיקייה <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}many{הקבצים נסרקו בהצלחה ונשמרו בתיקייה <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}other{הקבצים נסרקו בהצלחה ונשמרו בתיקייה <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}}</translation>
+<translation id="5921506667911082617">{COUNT,plural, =1{הקובץ נסרק בהצלחה ונשמר בתיקייה <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}one{הקבצים נסרקו בהצלחה ונשמרו בתיקייה <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}two{הקבצים נסרקו בהצלחה ונשמרו בתיקייה <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}other{הקבצים נסרקו בהצלחה ונשמרו בתיקייה <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}}</translation>
 <translation id="5931523347251946569">הקובץ לא נמצא</translation>
 <translation id="5939518447894949180">איפוס</translation>
 <translation id="594552776027197022">יצירת זוג מפתחות רנדומלי</translation>
@@ -580,7 +590,7 @@
 <translation id="6439505561246192797">חלש (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">מעבר אל הגדרות החשבון</translation>
 <translation id="6456394469623773452">טוב</translation>
-<translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{לסרוק את הדף מחדש?}=1{לסרוק מחדש את דף {PAGE_NUMBER}?}two{לסרוק מחדש את דף {PAGE_NUMBER}?}many{לסרוק מחדש את דף {PAGE_NUMBER}?}other{לסרוק מחדש את דף {PAGE_NUMBER}?}}</translation>
+<translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{לסרוק את הדף מחדש?}=1{לסרוק מחדש את דף {PAGE_NUMBER}?}one{לסרוק מחדש את דף {PAGE_NUMBER}?}two{לסרוק מחדש את דף {PAGE_NUMBER}?}other{לסרוק מחדש את דף {PAGE_NUMBER}?}}</translation>
 <translation id="6472207088655375767">OTP</translation>
 <translation id="6480327114083866287">מנוהל על ידי <ph name="MANAGER" /></translation>
 <translation id="649050271426829538">הפסיקה – חסימת נייר</translation>
@@ -644,7 +654,7 @@
 <translation id="710028965487274708">נכשל – ההרשאה נכשלה</translation>
 <translation id="7103252855940681301">מכשיר <ph name="INDEX" /> מתוך <ph name="COUNT" /> בשם <ph name="NAME" />.</translation>
 <translation id="7130438335435247835">‏שם נקודת גישה (APN)</translation>
-<translation id="7134436342991564651">{0,plural, =1{שרת שמות}two{שרתי שמות}many{שרתי שמות}other{שרתי שמות}}</translation>
+<translation id="7134436342991564651">{0,plural, =1{שרת שמות}one{שרתי שמות}two{שרתי שמות}other{שרתי שמות}}</translation>
 <translation id="7143207342074048698">מתבצע חיבור</translation>
 <translation id="7144878232160441200">יש לנסות שוב</translation>
 <translation id="714876143603641390">‏קישוריות LAN</translation>
@@ -678,7 +688,7 @@
 <translation id="741244894080940828">המרה</translation>
 <translation id="7415801143053185905">‏משך זמן ההמתנה ל-HTTP ארוך מאוד</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
-<translation id="7435977162516949853">{NUMBER_OF_PAGES,plural, =1{הסריקה הושלמה. נסרק עמוד אחד}two{הסריקה הושלמה. נסרקו {NUMBER_OF_PAGES} עמודים}many{הסריקה הושלמה. נסרקו {NUMBER_OF_PAGES} עמודים}other{הסריקה הושלמה. נסרקו {NUMBER_OF_PAGES} עמודים}}</translation>
+<translation id="7435977162516949853">{NUMBER_OF_PAGES,plural, =1{הסריקה הושלמה. נסרק עמוד אחד}one{הסריקה הושלמה. נסרקו {NUMBER_OF_PAGES} עמודים}two{הסריקה הושלמה. נסרקו {NUMBER_OF_PAGES} עמודים}other{הסריקה הושלמה. נסרקו {NUMBER_OF_PAGES} עמודים}}</translation>
 <translation id="7469648432129124067">זוהה פורטל</translation>
 <translation id="7481312909269577407">קדימה</translation>
 <translation id="7487067081878637334">טכנולוגיה</translation>
@@ -768,6 +778,7 @@
 <translation id="8372477600026034341">מארחים נוספים</translation>
 <translation id="8395584934117017006"><ph name="DEVICE_TYPE" /> זה מנוהל על ידי ארגון</translation>
 <translation id="8398927464629426868">קצב הטעינה או קצב הפריקה הנוכחיים של המכשיר</translation>
+<translation id="8410244574650205435">זיהוי אוטומטי</translation>
 <translation id="8420955526972171689">הרצת בדיקות ופתרון בעיות בחומרה</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8431300646573772016">‏מה חדש ב-ChromeOS</translation>
@@ -830,7 +841,7 @@
 <translation id="8968751544471797276">שיעור הטעינה</translation>
 <translation id="8970109610781093811">הפעל שוב</translation>
 <translation id="8983038754672563810">HSPA</translation>
-<translation id="8987565828374052507">{NUMBER_OF_PAGES,plural, =0{סריקה}=1{סריקת דף {NUMBER_OF_PAGES}}two{סריקת דף {NUMBER_OF_PAGES}}many{סריקת דף {NUMBER_OF_PAGES}}other{סריקת דף {NUMBER_OF_PAGES}}}</translation>
+<translation id="8987565828374052507">{NUMBER_OF_PAGES,plural, =0{סריקה}=1{סריקת דף {NUMBER_OF_PAGES}}one{סריקת דף {NUMBER_OF_PAGES}}two{סריקת דף {NUMBER_OF_PAGES}}other{סריקת דף {NUMBER_OF_PAGES}}}</translation>
 <translation id="8997710128084572139">רמת הטעינה של הסוללה במכשיר: %<ph name="BATTERY_PERCENTAGE" />.</translation>
 <translation id="9003704114456258138">תדר</translation>
 <translation id="9025198690966128418">שימוש בתור מכשיר אישי</translation>

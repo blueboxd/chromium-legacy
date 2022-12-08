@@ -31,7 +31,6 @@
 <translation id="1148499908455722006"><ph name="USER_NAME" /> ਲਈ ਜਾਣਕਾਰੀ ਵਿੰਡੋ ਖੋਲ੍ਹੋ</translation>
 <translation id="1150989369772528668">Calendar</translation>
 <translation id="1153356358378277386">ਜੋੜਾਬੱਧ ਕੀਤੀਆਂ ਡੀਵਾਈਸਾਂ</translation>
-<translation id="1165712434476988950">ਅੱਪਡੇਟ ਲਾਗੂ ਕਰਨ ਲਈ ਡੀਵਾਈਸ ਨੂੰ ਮੁੜ-ਸ਼ੁਰੂ ਕਰਨ ਦੀ ਲੋੜ ਹੈ।</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">ਹੋ ਸਕਦਾ ਹੈ ਕਿ ਤੁਹਾਡੀ USB-C ਕੇਬਲ ਡਿਸਪਲੇਆਂ ਨਾਲ ਠੀਕ ਤਰ੍ਹਾਂ ਕਨੈਕਟ ਨਾ ਹੋਵੇ</translation>
 <translation id="1175572348579024023">ਸਕ੍ਰੋਲ</translation>
@@ -358,7 +357,6 @@
 <translation id="296762781903199866"><ph name="LANGUAGE" /> ਦੀਆਂ ਬੋਲੀ ਵਾਲੀਆਂ ਫ਼ਾਈਲਾਂ ਨੂੰ ਡਾਊਨਲੋਡ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ</translation>
 <translation id="2970920913501714344">ਐਪਾਂ, ਐਕਸਟੈਂਸ਼ਨਾਂ ਅਤੇ ਥੀਮਾਂ ਨੂੰ ਸਥਾਪਤ ਕਰੋ</translation>
 <translation id="2977598380246111477">ਅਗਲਾ ਨੰਬਰ</translation>
-<translation id="2981684127883932071">ਸੁਝਾਵਾਂ ਨੂੰ ਦਿਖਾਇਆ ਜਾ ਰਿਹਾ ਹੈ</translation>
 <translation id="2985148236010982088">ਸਭ ਐਪਾਂ ਦੇਖੋ</translation>
 <translation id="2992327365391326550">ਡੀਵਾਈਸ ਦਾ ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਬਟਨ ਬੰਦ ਹੈ।</translation>
 <translation id="2996462380875591307">'ਡੌਕ ਕੀਤਾ ਵਿਸਤਾਰਕ' ਚਾਲੂ ਕੀਤਾ ਗਿਆ। ਇਸਨੂੰ ਬੰਦ 'ਤੇ ਟੌਗਲ ਕਰਨ ਲਈ ਦੁਬਾਰਾ Ctrl+Search+D ਦਬਾਓ।</translation>
@@ -669,6 +667,7 @@
 <translation id="4666082839192943839">ਹਰ ਸਮੇਂ ਸਾਰੇ ਕੈਮਰਿਆਂ ਨੂੰ ਬਲਾਕ ਕਰਨ ਲਈ ਇਸ ਡੀਵਾਈਸ 'ਤੇ ਕੈਮਰਾ ਪਹੁੰਚ ਨੂੰ ਬੰਦ ਕਰੋ।</translation>
 <translation id="4666911709726371538">ਹੋਰ ਐਪਾਂ</translation>
 <translation id="4667099493359681081"><ph name="FILENAME" /> ਨੂੰ ਡਾਊਨਲੋਡ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ</translation>
+<translation id="468293128311738995">ਤੁਹਾਡੇ ਫ਼ੋਨ ਤੋਂ ਐਪਾਂ</translation>
 <translation id="4690510401873698237">ਹੇਠਲੇ 'ਤੇ ਸ਼ੈਲਫ਼</translation>
 <translation id="4696813013609194136">ਮਾਂ-ਪਿਓ ਦੇ ਕੋਡ ਨਾਲ ਡੀਵਾਈਸ ਅਣਲਾਕ ਕਰੋ</translation>
 <translation id="4702647871202761252">ਪਰਦੇਦਾਰੀ ਸਕ੍ਰੀਨ ਬੰਦ ਹੈ</translation>
@@ -926,12 +925,10 @@
 <translation id="6103838137565245112">ਸਿਸਟਮ</translation>
 <translation id="6107292179555508368">ਇਸ ਡੀਵਾਈਸ 'ਤੇ ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਅਤੇ ਕੈਮਰਾ ਪਹੁੰਚਾਂ ਬੰਦ ਹਨ</translation>
 <translation id="6114505516289286752"><ph name="LANGUAGE" /> ਦੀਆਂ ਬੋਲੀ ਵਾਲੀਆਂ ਫ਼ਾਈਲਾਂ ਨੂੰ ਡਾਊਨਲੋਡ ਕੀਤਾ ਗਿਆ</translation>
-<translation id="6116825164611323644">ਇਸ ਡੀਵਾਈਸ 'ਤੇ ਕੈਮਰਾ ਪਹੁੰਚ ਬੰਦ ਹੈ</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />। <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042"><ph name="FILENAME" /> ਡਾਊਨਲੋਡ ਦੀ ਤਸਦੀਕ ਕਰੋ</translation>
 <translation id="612734058257491180">Google Assistant ਮਹਿਮਾਨ ਸੈਸ਼ਨ ਵਿੱਚ ਉਪਲਬਧ ਨਹੀਂ ਹੈ।</translation>
 <translation id="6129953537138746214">ਸਪੇਸ</translation>
-<translation id="6134259848159370930">ਆਪਣਾ ਡੀਵਾਈਸ, ਐਪਾਂ, ਸੈਟਿੰਗਾਂ ਅਤੇ ਵੈੱਬ ਖੋਜੋ।</translation>
 <translation id="6137566720514957455"><ph name="USER_EMAIL_ADDRESS" /> ਲਈ 'ਹਟਾਓ' ਵਿੰਡੋ ਖੋਲ੍ਹੋ</translation>
 <translation id="6141988275892716286">ਡਾਊਨਲੋਡ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ</translation>
 <translation id="6154006699632741460">ਪੈਰੀਫੈਰਲ ਸਮਰਥਿਤ ਨਹੀਂ ਹੈ</translation>
@@ -1292,6 +1289,7 @@
 <translation id="8142441511840089262">ਡਬਲ ਕਲਿੱਕ ਕਰੋ</translation>
 <translation id="8142699993796781067">ਨਿੱਜੀ ਨੈੱਟਵਰਕ</translation>
 <translation id="8144760705599030999">ਤੁਹਾਡੇ ਦੂਜੇ ਡੀਵਾਈਸਾਂ ਨਾਲ ਤੇਜ਼ ਜੋੜਾਬੰਦੀ ਲਈ <ph name="NAME" /> ਨੂੰ <ph name="EMAIL" /> 'ਤੇ ਰੱਖਿਅਤ ਕਰੋ</translation>
+<translation id="8144914663975476336">ਰਿਕਾਰਡਿੰਗ ਦਾ ਫਾਰਮੈਟ ਚੁਣੋ</translation>
 <translation id="8149413265954228307">ਬਲੂਟੁੱਥ ਸੈਟਿੰਗਾਂ ਨੂੰ ਦਿਖਾਓ। <ph name="STATE_TEXT" />.</translation>
 <translation id="8152092012181020186">ਬੰਦ ਕਰਨ ਲਈ Ctrl + W ਦਬਾਓ।</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, ਸਵੈ-ਮੁਕੰਮਲ</translation>
@@ -1389,7 +1387,6 @@
 <translation id="8666856788528804727">ਆਪਣੇ ਡੀਵਾਈਸ ਦਾ ਸੈੱਟਅੱਪ ਕਰਨ ਲਈ <ph name="NAME" /> ਖੋਲ੍ਹੋ</translation>
 <translation id="8676770494376880701">ਘੱਟ-ਪਾਵਰ ਦਾ ਚਾਰਜਰ ਕਨੈਕਟ ਕੀਤਾ</translation>
 <translation id="8683506306463609433">ਪ੍ਰਦਰਸ਼ਨ ਟ੍ਰੇਸਿੰਗ ਕਿਰਿਆਸ਼ੀਲ ਹੈ</translation>
-<translation id="8685326675965865247">ਆਪਣਾ ਡੀਵਾਈਸ, ਐਪਾਂ, ਸੈਟਿੰਗਾਂ ਅਤੇ ਵੈੱਬ ਖੋਜੋ। ਆਪਣੀਆਂ ਐਪਾਂ ਵਿੱਚ ਨੈਵੀਗੇਟ ਕਰਨ ਲਈ ਤੀਰ ਕੁੰਜੀਆਂ ਵਰਤੋ।</translation>
 <translation id="8703634754197148428">ਰਿਕਾਰਡਿੰਗ ਸ਼ੁੁਰੂ ਕਰੋ। ਇੱਕ ਵਾਰ ਰਿਕਾਰਡਿੰਗ ਸ਼ੁਰੂ ਹੋਣ ਤੋਂ ਬਾਅਦ, ਸ਼ੈਲਫ 'ਤੇ ਜਾਣ ਲਈ ਅਤੇ 'ਰਿਕਾਰਡਿੰਗ ਬੰਦ ਕਰੋ' ਬਟਨ ਲੱਭਣ ਲਈ Alt + Shift + L ਦੀ ਵਰਤੋਂ ਕਰੋ</translation>
 <translation id="8721053961083920564">ਅਵਾਜ਼ ਨੂੰ ਟੌਗਲ ਕਰੋ। <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">ਪੂਰੀ-ਸਕ੍ਰੀਨ ਕੈਪਚਰ</translation>
@@ -1398,7 +1395,6 @@
 <translation id="8735678380411481005">ਕੀ-ਬੋਰਡ ਦੀ ਬੈਕਲਾਈਟ ਦਾ ਰੰਗ</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />,
         <ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8752416742247198423">ਇਸ ਡੀਵਾਈਸ ਨਾਲ ਕਨੈਕਟ ਕੀਤੇ ਕੈਮਰਿਆਂ ਦੀ ਵਰਤੋਂ ਕਰਨ ਲਈ ਕੈਮਰਾ ਇਜਾਜ਼ਤਾਂ ਵਾਲੀਆਂ ਐਪਾਂ ਅਤੇ ਵੈੱਬ-ਪੰਨਿਆਂ ਨੂੰ ਆਗਿਆ ਦੇਣ ਲਈ ਕੈਮਰਾ ਤੱਕ ਪਹੁੰਚ ਨੂੰ ਚਾਲੂ ਕਰੋ।</translation>
 <translation id="8755498163081687682">ਆਪਣੀ ਪਛਾਣ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ: <ph name="ORIGIN_NAME" /> ਤੁਹਾਡੀ ਪਛਾਣ ਦੀ ਪੁਸ਼ਟੀ ਕਰਨਾ ਚਾਹੁੰਦੀ ਹੈ</translation>
 <translation id="875593634123171288">VPN ਸੈਟਿੰਗਾਂ ਦਿਖਾਓ</translation>
 <translation id="8759408218731716181">ਬਹੁ-ਗਿਣਤੀ ਸਾਈਨ-ਇਨ ਸੈੱਟ ਅੱਪ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ</translation>
@@ -1465,7 +1461,6 @@
 <translation id="9089416786594320554">ਇਨਪੁਟ ਵਿਧੀਆਂ</translation>
 <translation id="9091626656156419976">ਡਿਲਪਲੇ <ph name="DISPLAY_NAME" /> ਨੂੰ ਹਟਾਇਆ ਗਿਆ</translation>
 <translation id="9098969848082897657">ਫ਼ੋਨ ਖਮੋਸ਼ ਕਰੋ</translation>
-<translation id="9099154003160514616">Lacros ਅੱਪਡੇਟ ਉਪਲਬਧ ਹੈ</translation>
 <translation id="9100887602489003640">ਪ੍ਰੋਫਾਈਲ ਨੂੰ ਸ਼ਾਮਲ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ। ਕੁਝ ਮਿੰਟਾਂ ਲਈ ਉਡੀਕ ਕਰੋ।</translation>
 <translation id="9105450214093926548">Lacros ਬ੍ਰਾਊਜ਼ਰ ਚੱਲਣ ਦੌਰਾਨ ਦੂਜੇ ਵਰਤੋਂਕਾਰ ਨੂੰ ਸਾਈਨ-ਇਨ ਕਰਨ ਦਾ ਸਮਰਥਨ ਨਹੀਂ ਕੀਤਾ ਜਾਂਦਾ। ਕਿਰਪਾ ਕਰਕੇ ਇਸਦੀ ਬਜਾਏ Lacros ਵਿੱਚ ਦੂਜੇ ਬ੍ਰਾਊਜ਼ਰ ਪ੍ਰੋਫਾਈਲ ਦੀ ਵਰਤੋਂ ਕਰੋ ਜਾਂ Lacros ਨੂੰ ਬੰਦ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> ਜਾਂ <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>

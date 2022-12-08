@@ -499,6 +499,28 @@ TEST_F(SpeculationRuleSetTest, ReferrerPolicy) {
                         Not(SetsReferrerPolicy()))));
 }
 
+TEST_F(SpeculationRuleSetTest, EmptyReferrerPolicy) {
+  ScopedSpeculationRulesReferrerPolicyKeyForTest enable_referrer_policy_key{
+      true};
+
+  // If an empty string is used for referrer_policy, treat this as if the key
+  // were omitted.
+  auto* rule_set = CreateRuleSet(
+      R"({
+        "prefetch": [{
+          "source": "list",
+          "urls": ["https://example.com/index2.html"],
+          "referrer_policy": ""
+        }]
+      })",
+      KURL("https://example.com/"), execution_context());
+  ASSERT_TRUE(rule_set);
+  EXPECT_THAT(
+      rule_set->prefetch_rules(),
+      ElementsAre(AllOf(MatchesListOfURLs("https://example.com/index2.html"),
+                        Not(SetsReferrerPolicy()))));
+}
+
 TEST_F(SpeculationRuleSetTest, PropagatesToDocument) {
   // A <script> with a case-insensitive type match should be propagated to the
   // document.
@@ -1898,6 +1920,12 @@ TEST_F(DocumentRulesTest, ReferrerPolicy) {
 // Tests that a link's referrer-policy value is used if one is not specified
 // in the document rule.
 TEST_F(DocumentRulesTest, LinkReferrerPolicy) {
+  // This test does not use the "referrer_policy" key itself. This is used to
+  // disable a temporary workaround related to the use of a lax policy. See
+  // https://crbug.com/1398772.
+  ScopedSpeculationRulesReferrerPolicyKeyForTest enable_referrer_policy_key{
+      true};
+
   DummyPageHolder page_holder;
   StubSpeculationHost speculation_host;
   Document& document = page_holder.GetDocument();

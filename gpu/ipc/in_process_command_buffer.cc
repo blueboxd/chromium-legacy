@@ -351,8 +351,8 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
           this, command_buffer_.get(), task_executor_->outputter(),
           task_executor_->gpu_feature_info(), task_executor_->gpu_preferences(),
           context_group_->memory_tracker(),
-          task_executor_->shared_image_manager(), params.image_factory,
-          context_state_, true /*is_privileged*/));
+          task_executor_->shared_image_manager(), context_state_,
+          true /*is_privileged*/));
     } else {
       // TODO(khushalsagar): A lot of this initialization code is duplicated in
       // GpuChannelManager. Pull it into a common util method.
@@ -393,9 +393,9 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
         return ContextResult::kTransientFailure;
       }
 
-      decoder_.reset(gles2::GLES2Decoder::Create(this, command_buffer_.get(),
-                                                 task_executor_->outputter(),
-                                                 context_group_.get()));
+      decoder_.reset(gles2::GLES2Decoder::Create(
+          this, command_buffer_.get(), task_executor_->outputter(),
+          context_group_.get(), /*image_factory_for_nacl_swapchain=*/nullptr));
       if (use_virtualized_gl_context_) {
         context_ = base::MakeRefCounted<GLContextVirtual>(
             gl_share_group_.get(), real_context.get(), decoder_->AsWeakPtr());

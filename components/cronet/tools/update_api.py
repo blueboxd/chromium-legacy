@@ -33,7 +33,7 @@ INTERFACE_API_VERSION_FILENAME = os.path.abspath(os.path.join(
 
 # Regular expression that catches the beginning of lines that declare classes.
 # The first group returned by a match is the class name.
-CLASS_RE = re.compile(r'.*class ([^ ]*) .*\{')
+CLASS_RE = re.compile(r'.*(class|interface) ([^ ]*) .*\{')
 
 # Regular expression that matches a string containing an unnamed class name,
 # for example 'Foo$1'.
@@ -41,7 +41,8 @@ UNNAMED_CLASS_RE = re.compile(r'.*\$[0-9]')
 
 # javap still prints internal (package private, nested...) classes even though
 # -protected is passed so they need to be filtered out.
-INTERNAL_CLASS_RE = re.compile(r'^(?!public ((final|abstract) )?class).*')
+INTERNAL_CLASS_RE = re.compile(
+    r'^(?!public ((final|abstract) )?(class|interface)).*')
 
 JAR_PATH = os.path.join(build_utils.JAVA_HOME, 'bin', 'jar')
 JAVAP_PATH = os.path.join(build_utils.JAVA_HOME, 'bin', 'javap')
@@ -161,24 +162,37 @@ def main(args):
                       help='Path to API jar (i.e. cronet_api.jar)',
                       required=True,
                       metavar='path/to/cronet_api.jar')
+  parser.add_argument('--ignore_check_errors',
+                      help='If true, ignore errors from verification checks',
+                      required=False,
+                      default=False,
+                      action='store_true')
   opts = parser.parse_args(args)
 
   if check_up_to_date(opts.api_jar):
     return True
 
   [_, temp_filename] = tempfile.mkstemp()
-  if (generate_api(opts.api_jar, temp_filename) and
-      check_api_update(API_FILENAME, temp_filename)):
-    # Update API version number to new version number
-    with open(INTERFACE_API_VERSION_FILENAME,'r+') as f:
-      version = int(f.read())
-      f.seek(0)
-      f.write(str(version + 1))
-    # Update API file to new API
-    shutil.move(temp_filename, API_FILENAME)
-    return True
-  os.remove(temp_filename)
-  return False
+  if not generate_api(opts.api_jar, temp_filename):
+    os.remove(temp_filename)
+    return False
+
+  update_ok = check_api_update(API_FILENAME, temp_filename)
+  if not update_ok:
+    if opts.ignore_check_errors:
+      print('ignore_check_errors set, updating API anyway')
+    else:
+      os.remove(temp_filename)
+      return False
+
+  # Update API version number to new version number
+  with open(INTERFACE_API_VERSION_FILENAME, 'r+') as f:
+    version = int(f.read())
+    f.seek(0)
+    f.write(str(version + 1))
+  # Update API file to new API
+  shutil.move(temp_filename, API_FILENAME)
+  return True
 
 
 if __name__ == '__main__':

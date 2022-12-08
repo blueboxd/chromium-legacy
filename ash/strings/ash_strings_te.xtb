@@ -31,7 +31,6 @@
 <translation id="1148499908455722006"><ph name="USER_NAME" /> కోసం సమాచార డైలాగ్‌ను తెరవండి</translation>
 <translation id="1150989369772528668">క్యాలెండర్</translation>
 <translation id="1153356358378277386">జత చేసిన పరికరాలు</translation>
-<translation id="1165712434476988950">అప్‌డేట్‌ను వర్తింపజేయడానికి పరికరాన్ని రీస్టార్ట్ చేయాలి.</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">మీ USB-C కేబుల్, డిస్‌ప్లేలకు సరిగ్గా కనెక్ట్ కాకపోవచ్చు</translation>
 <translation id="1175572348579024023">స్క్రోల్ చేస్తుంది</translation>
@@ -358,7 +357,6 @@
 <translation id="296762781903199866"><ph name="LANGUAGE" /> స్పీచ్ ఫైల్‌లను డౌన్‌లోడ్ చేయడం సాధ్యపడలేదు</translation>
 <translation id="2970920913501714344">యాప్‌లు, ఎక్స్‌టెన్షన్‌లు, థీమ్‌లను ఇన్‌స్టాల్ చేయండి</translation>
 <translation id="2977598380246111477">తర్వాతి నంబర్</translation>
-<translation id="2981684127883932071">సూచనలను ప్రదర్శిస్తోంది</translation>
 <translation id="2985148236010982088">అన్ని యాప్‌లను చూడండి</translation>
 <translation id="2992327365391326550">పరికర మైక్రోఫోన్ బటన్ ఆఫ్ చేయబడింది.</translation>
 <translation id="2996462380875591307">డాక్ చేయబడిన మాగ్నిఫైయర్ ప్రారంభించబడింది. దాన్ని టోగుల్ ఆఫ్ చేయడానికి మళ్లీ Ctrl+Search+Dని నొక్కండి.</translation>
@@ -670,6 +668,7 @@
 <translation id="4666082839192943839">అన్ని కెమెరాలను అన్నివేళలా బ్లాక్ చేయడానికి ఈ పరికరంలో కెమెరా యాక్సెస్‌ను ఆఫ్ చేయండి.</translation>
 <translation id="4666911709726371538">మరిన్ని యాప్‌లు</translation>
 <translation id="4667099493359681081"><ph name="FILENAME" />ను డౌన్‌లోడ్ చేస్తోంది</translation>
+<translation id="468293128311738995">మీ ఫోన్‌లోని యాప్‌లు</translation>
 <translation id="4690510401873698237">అర కింది భాగంలో ఉంది</translation>
 <translation id="4696813013609194136">తల్లి/తండ్రి కోడ్‌తో పరికరాన్ని అన్‌లాక్ చేయండి</translation>
 <translation id="4702647871202761252">గోప్యతా స్క్రీన్ ఆఫ్‌లో ఉంది</translation>
@@ -926,12 +925,10 @@
 <translation id="6103838137565245112">సిస్టమ్</translation>
 <translation id="6107292179555508368">ఈ పరికరంలో మైక్రోఫోన్, కెమెరా యాక్సెస్‌లు రెండూ ఆఫ్‌లో ఉన్నాయి</translation>
 <translation id="6114505516289286752"><ph name="LANGUAGE" /> స్పీచ్ ఫైల్‌లు డౌన్‌లోడ్ చేయబడ్డాయి</translation>
-<translation id="6116825164611323644">ఈ పరికరంలో కెమెరా యాక్సెస్ ఆఫ్ చేయబడింది</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042"><ph name="FILENAME" /> డౌన్‌లోడ్‌ను నిర్ధారించండి</translation>
 <translation id="612734058257491180">అతిథి సెషన్‌లో Google Assistant పని చేయదు.</translation>
 <translation id="6129953537138746214">ఖాళీ</translation>
-<translation id="6134259848159370930">మీ పరికరం, యాప్‌లు, సెట్టింగ్‌లు, వెబ్‌ను వెతకండి.</translation>
 <translation id="6137566720514957455"><ph name="USER_EMAIL_ADDRESS" /> కోసం 'డైలాగ్‌ను తీసివేయండి'ని తెరవండి</translation>
 <translation id="6141988275892716286">డౌన్‌లోడ్‌ను నిర్ధారించండి</translation>
 <translation id="6154006699632741460">పెరిఫెరల్ సపోర్ట్ చేయదు</translation>
@@ -1292,6 +1289,7 @@
 <translation id="8142441511840089262">రెండు సార్లు క్లిక్ చేయండి</translation>
 <translation id="8142699993796781067">ప్రైవే. నెట్‌వర్క్</translation>
 <translation id="8144760705599030999">మీ ఇతర పరికరాలతో ఫాస్ట్ పెయిరింగ్ కోసం మీ <ph name="NAME" />ను <ph name="EMAIL" />కు సేవ్ చేయండి</translation>
+<translation id="8144914663975476336">రికార్డింగ్ ఫార్మాట్‌ను ఎంచుకోండి</translation>
 <translation id="8149413265954228307">బ్లూటూత్ సెట్టింగ్‌లను చూడండి. <ph name="STATE_TEXT" />.</translation>
 <translation id="8152092012181020186">మూసివేయడానికి Ctrl + W నొక్కండి.</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, ఆటోఫిల్</translation>
@@ -1389,7 +1387,6 @@
 <translation id="8666856788528804727"><ph name="NAME" />ను తెరిచి మీ పరికరాన్ని సెటప్ చేయండి</translation>
 <translation id="8676770494376880701">తక్కువ-పవర్ గల ఛార్జర్ కనెక్ట్ చేయబడింది</translation>
 <translation id="8683506306463609433">పనితీరు స్థితిగతి కనుగొనడం యాక్టివ్‌గా ఉంది</translation>
-<translation id="8685326675965865247">మీ పరికరం, యాప్‌లు, సెట్టింగ్‌లు, వెబ్‌ను వెతకండి. మీ యాప్‌లను నావిగేట్ చేయడానికి బాణం గుర్తు ఉన్న కీలను ఉపయోగించండి.</translation>
 <translation id="8703634754197148428">రికార్డింగ్‌ను ప్రారంభించండి. ఒకసారి రికార్డింగ్ ప్రారంభమయిన తర్వాత, Alt + Shift + Lను ఉపయోగించి, షెల్ఫ్‌కు నావిగేట్ అయి, రికార్డింగ్‌ను ఆపివేసే బటన్‌ను కనుగొనండి</translation>
 <translation id="8721053961083920564">వాల్యూమ్‌ను టోగుల్ చేయండి. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">ఫుల్ స్క్రీన్ క్యాప్చర్</translation>
@@ -1398,7 +1395,6 @@
 <translation id="8735678380411481005">కీబోర్డ్ బ్యాక్‌లైట్ రంగు</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />,
         <ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8752416742247198423">కెమెరా యాక్సెస్‌ను ఆన్ చేయండి, తద్వారా కెమెరా అనుమతి ఉన్న యాప్‌లు, వెబ్‌పేజీలు ఈ పరికరానికి కనెక్ట్ చేయబడిన కెమెరా(ల)ను ఉపయోగించగలవు.</translation>
 <translation id="8755498163081687682">మీ గుర్తింపును వెరిఫై చేయండి: <ph name="ORIGIN_NAME" /> అది మీరేనని నిర్ధారించాలనుకుంటుంది</translation>
 <translation id="875593634123171288">VPN సెట్టింగ్‌లను చూపుతుంది</translation>
 <translation id="8759408218731716181">బహుళ సైన్-ఇన్‌ను సెటప్ చేయలేరు</translation>
@@ -1465,7 +1461,6 @@
 <translation id="9089416786594320554">ఇన్‌పుట్ పద్ధతులు</translation>
 <translation id="9091626656156419976">డిస్‌ప్లే <ph name="DISPLAY_NAME" /> తీసివేయబడింది</translation>
 <translation id="9098969848082897657">ఫోన్‌ను సైలెంట్ చేయండి</translation>
-<translation id="9099154003160514616">Lacros అప్‌డేట్ అందుబాటులో ఉంది</translation>
 <translation id="9100887602489003640">ప్రొఫైల్‌ను జోడిస్తోంది. కొన్ని నిమిషాలు వేచి ఉండండి.</translation>
 <translation id="9105450214093926548">Lacros బ్రౌజర్ రన్ అవుతున్నప్పుడు రెండవ యూజర్ సైన్ ఇన్ చేయడానికి సపోర్ట్ లేదు. దయచేసి బదులుగా Lacrosలో రెండవ బ్రౌజర్ ప్రొఫైల్‌ను ఉపయోగించండి లేదా Lacrosను మూసివేసి మళ్లీ ట్రై చేయండి.</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> లేదా <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>

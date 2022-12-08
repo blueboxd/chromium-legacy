@@ -16,10 +16,10 @@ import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/polymer/v3_0/iron-media-query/iron-media-query.js';
 import '../../icons.html.js';
 import '../../prefs/prefs.js';
-import '../../settings_page/settings_animated_pages.js';
-import '../../settings_page/settings_section.js';
-import '../../settings_page/settings_subpage.js';
-import '../../settings_page_styles.css.js';
+import '../os_settings_page/os_settings_animated_pages.js';
+import '../os_settings_page/os_settings_section.js';
+import '../os_settings_page/os_settings_subpage.js';
+import '../os_settings_page_styles.css.js';
 import '../../settings_shared.css.js';
 import '../os_settings_icons.html.js';
 import '../os_reset_page/os_powerwash_dialog.js';
@@ -363,8 +363,8 @@ class OsSettingsAboutPageElement extends OsSettingsAboutPageBaseElement {
     this.aboutBrowserProxy_.refreshUpdateStatus();
     this.addWebUiListener(
         'tpm-firmware-update-status-changed',
-        this.onTPMFirmwareUpdateStatusChanged_.bind(this));
-    this.aboutBrowserProxy_.refreshTPMFirmwareUpdateStatus();
+        this.onTpmFirmwareUpdateStatusChanged_.bind(this));
+    this.aboutBrowserProxy_.refreshTpmFirmwareUpdateStatus();
   }
 
   private onUpdateStatusChanged_(event: UpdateStatusChangedEvent) {
@@ -678,12 +678,12 @@ class OsSettingsAboutPageElement extends OsSettingsAboutPageBaseElement {
     this.hasCheckedForUpdates_ = false;
   }
 
-  private onTPMFirmwareUpdateStatusChanged_(
+  private onTpmFirmwareUpdateStatusChanged_(
       event: TpmFirmwareUpdateStatusChangedEvent) {
     this.showTPMFirmwareUpdateLineItem_ = event.updateAvailable;
   }
 
-  private onTPMFirmwareUpdateClick_() {
+  private onTpmFirmwareUpdateClick_() {
     this.showTPMFirmwareUpdateDialog_ = true;
   }
 

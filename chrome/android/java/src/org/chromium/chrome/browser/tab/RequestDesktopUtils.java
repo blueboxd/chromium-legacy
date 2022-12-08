@@ -70,6 +70,9 @@ public class RequestDesktopUtils {
     static final double DEFAULT_GLOBAL_SETTING_DEFAULT_ON_DISPLAY_SIZE_THRESHOLD_INCHES = 12.0;
     static final String PARAM_GLOBAL_SETTING_DEFAULT_ON_ON_LOW_END_DEVICES =
             "default_on_on_low_end_devices";
+    static final String PARAM_GLOBAL_SETTING_DEFAULT_ON_SMALLEST_SCREEN_WIDTH =
+            "default_on_smallest_screen_width";
+    static final int DEFAULT_GLOBAL_SETTING_DEFAULT_ON_SMALLEST_SCREEN_WIDTH_THRESHOLD_DP = 600;
     static final String PARAM_GLOBAL_SETTING_DEFAULT_ON_MEMORY_LIMIT = "default_on_memory_limit";
     static final int DEFAULT_GLOBAL_SETTING_DEFAULT_ON_MEMORY_LIMIT_THRESHOLD_MB = 0;
     static final String PARAM_SHOW_MESSAGE_ON_GLOBAL_SETTING_DEFAULT_ON =
@@ -83,6 +86,9 @@ public class RequestDesktopUtils {
             "opt_in_display_size_max_threshold_inches";
     static final double DEFAULT_GLOBAL_SETTING_OPT_IN_DISPLAY_SIZE_MAX_THRESHOLD_INCHES =
             Double.MAX_VALUE;
+    static final String PARAM_GLOBAL_SETTING_OPT_IN_SMALLEST_SCREEN_WIDTH =
+            "opt_in_smallest_screen_width";
+    static final int DEFAULT_GLOBAL_SETTING_OPT_IN_SMALLEST_SCREEN_WIDTH_THRESHOLD_DP = 600;
     static final String PARAM_GLOBAL_SETTING_OPT_IN_MEMORY_LIMIT = "opt_in_memory_limit";
     static final int DEFAULT_GLOBAL_SETTING_OPT_IN_MEMORY_LIMIT_THRESHOLD_MB = 0;
 
@@ -311,9 +317,10 @@ public class RequestDesktopUtils {
      * Also contains logic to support extra GWS visibility for the Finch experiment; see
      * crbug.com/1362914 for details.
      * @param displaySizeInInches The device primary display size, in inches.
+     * @param context The current context.
      * @return Whether the desktop site global setting should be default-enabled.
      */
-    static boolean shouldDefaultEnableGlobalSetting(double displaySizeInInches) {
+    static boolean shouldDefaultEnableGlobalSetting(double displaySizeInInches, Context context) {
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.REQUEST_DESKTOP_SITE_DEFAULTS)
                 && !ChromeFeatureList.isEnabled(
                         ChromeFeatureList.REQUEST_DESKTOP_SITE_DEFAULTS_CONTROL)) {
@@ -348,6 +355,14 @@ public class RequestDesktopUtils {
         if (memoryLimitMB != 0
                 && SysUtils.amountOfPhysicalMemoryKB()
                         < memoryLimitMB * ConversionUtils.KILOBYTES_PER_MEGABYTE) {
+            return false;
+        }
+
+        // If the smallest screen size in dp is below threshold, avoid default-enabling the setting.
+        if (context.getResources().getConfiguration().smallestScreenWidthDp
+                < ChromeFeatureList.getFieldTrialParamByFeatureAsInt(feature,
+                        PARAM_GLOBAL_SETTING_DEFAULT_ON_SMALLEST_SCREEN_WIDTH,
+                        DEFAULT_GLOBAL_SETTING_DEFAULT_ON_SMALLEST_SCREEN_WIDTH_THRESHOLD_DP)) {
             return false;
         }
 
@@ -388,11 +403,12 @@ public class RequestDesktopUtils {
      * returns true.
      * @param displaySizeInInches The device primary display size, in inches.
      * @param profile The current {@link Profile}.
+     * @param context The current context.
      * @return Whether the desktop site global setting was default-enabled.
      */
     public static boolean maybeDefaultEnableGlobalSetting(
-            double displaySizeInInches, Profile profile) {
-        if (!shouldDefaultEnableGlobalSetting(displaySizeInInches)) {
+            double displaySizeInInches, Profile profile, Context context) {
+        if (!shouldDefaultEnableGlobalSetting(displaySizeInInches, context)) {
             return false;
         }
 
@@ -523,10 +539,11 @@ public class RequestDesktopUtils {
      * crbug.com/1362914 for details.
      * @param displaySizeInInches The device primary display size, in inches.
      * @param profile The current {@link Profile}.
+     * @param context The current context.
      * @return Whether the message to opt-in to the desktop site global setting should be shown.
      */
     static boolean shouldShowGlobalSettingOptInMessage(
-            double displaySizeInInches, Profile profile) {
+            double displaySizeInInches, Profile profile, Context context) {
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.REQUEST_DESKTOP_SITE_DEFAULTS)
                 && !ChromeFeatureList.isEnabled(
                         ChromeFeatureList.REQUEST_DESKTOP_SITE_DEFAULTS_CONTROL)) {
@@ -554,6 +571,14 @@ public class RequestDesktopUtils {
         if (memoryLimitMB != 0
                 && SysUtils.amountOfPhysicalMemoryKB()
                         < memoryLimitMB * ConversionUtils.KILOBYTES_PER_MEGABYTE) {
+            return false;
+        }
+
+        // If the smallest screen size in dp is below threshold, avoid presenting the message.
+        if (context.getResources().getConfiguration().smallestScreenWidthDp
+                < ChromeFeatureList.getFieldTrialParamByFeatureAsInt(feature,
+                        PARAM_GLOBAL_SETTING_OPT_IN_SMALLEST_SCREEN_WIDTH,
+                        DEFAULT_GLOBAL_SETTING_OPT_IN_SMALLEST_SCREEN_WIDTH_THRESHOLD_DP)) {
             return false;
         }
 
@@ -613,7 +638,7 @@ public class RequestDesktopUtils {
             ObservableSupplier<Tab> currentTabSupplier) {
         if (messageDispatcher == null) return false;
 
-        if (!shouldShowGlobalSettingOptInMessage(displaySizeInInches, profile)) {
+        if (!shouldShowGlobalSettingOptInMessage(displaySizeInInches, profile, context)) {
             return false;
         }
 

@@ -31,7 +31,6 @@ Evo nekih stvari koje možete pokušati pokrenuti.</translation>
 <translation id="1148499908455722006">Otvorite dijaloški okvir s podacima o računu <ph name="USER_NAME" /></translation>
 <translation id="1150989369772528668">Kalendar</translation>
 <translation id="1153356358378277386">Upareni uređaji</translation>
-<translation id="1165712434476988950">Da bi se primijenilo ažuriranje, potrebno je ponovo pokrenuti uređaj.</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Vaš kabel USB-C možda nije ispravno povezan sa zaslonima</translation>
 <translation id="1175572348579024023">Pomicanje</translation>
@@ -101,6 +100,7 @@ Evo nekih stvari koje možete pokušati pokrenuti.</translation>
 <translation id="1447641497144572814">Čuvar zaslona se pokreće</translation>
 <translation id="1455242230282523554">Prikaz postavki jezika</translation>
 <translation id="1460620680449458626">Isključen je zvuk.</translation>
+<translation id="14648076227129703">To omogućuje pristup kameri za aplikacije <ph name="APP1_NAME" /> i <ph name="APP2_NAME" /> te sve aplikacije i web-lokacije s dopuštenjem za kameru</translation>
 <translation id="1467432559032391204">Ulijevo</translation>
 <translation id="146902737843070955">Ovu promjenu zatražio je vaš administrator</translation>
 <translation id="147310119694673958">Baterija telefona <ph name="BATTERY_PERCENTAGE" />%</translation>
@@ -160,6 +160,7 @@ Evo nekih stvari koje možete pokušati pokrenuti.</translation>
 <translation id="1797271123677381264">Zaboravljena zaporka</translation>
 <translation id="181103072419391116">Jačina signala <ph name="SIGNAL_STRENGTH" />, upravlja administrator</translation>
 <translation id="1812997170047690955">Što je na mojem zaslonu?</translation>
+<translation id="1816896987747843206">To omogućuje pristup kameri za sve aplikacije i web-lokacije s dopuštenjem za kameru</translation>
 <translation id="1823280932251546115">Traka statusa, vrijeme <ph name="TIME" />,
         <ph name="BATTERY" />
         <ph name="CHANNEL" />
@@ -358,7 +359,6 @@ Evo nekih stvari koje možete pokušati pokrenuti.</translation>
 <translation id="296762781903199866">Nije uspjelo preuzimanje govornih datoteka za <ph name="LANGUAGE" /></translation>
 <translation id="2970920913501714344">Instaliranje aplikacija, proširenja i tema</translation>
 <translation id="2977598380246111477">Sljedeći broj</translation>
-<translation id="2981684127883932071">Prikazuju se prijedlozi</translation>
 <translation id="2985148236010982088">Pogledajte sve aplikacije</translation>
 <translation id="2992327365391326550">Gumb mikrofona na uređaju je isključen.</translation>
 <translation id="2996462380875591307">Usidreno je povećalo omogućeno. Ponovo pritisnite Ctrl + Search + D da biste ga isključili.</translation>
@@ -599,6 +599,7 @@ Priključite uređaj na napajanje.</translation>
 <translation id="4316910396681052118">SVE APLIKACIJE</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4322742403972824594">Promijenjen je tipkovni prečac Ctrl + Alt + strelica prema gore. Da biste upotrijebili tipku za povratak na početnu stranicu, pritisnite tipku <ph name="LAUNCHER_KEY_NAME" /> + strelica lijevo.</translation>
+<translation id="4324840740119394760">To omogućuje pristup kameri za aplikaciju <ph name="APP_NAME" /> i sve aplikacije i web-lokacije s dopuštenjem za kameru</translation>
 <translation id="4333628967105022692">Lacros nije podržan dok je prijavljeno više korisnika.</translation>
 <translation id="4338109981321384717">Povećalo</translation>
 <translation id="4351433414020964307">Asistent se učitava...</translation>
@@ -668,6 +669,7 @@ Priključite uređaj na napajanje.</translation>
 <translation id="4666082839192943839">Isključite pristup kameri na ovom uređaju da biste blokirali sve kamere cijelo vrijeme.</translation>
 <translation id="4666911709726371538">Više aplikacija</translation>
 <translation id="4667099493359681081">Preuzima se <ph name="FILENAME" /></translation>
+<translation id="468293128311738995">Aplikacije s telefona</translation>
 <translation id="4690510401873698237">Polica pri dnu</translation>
 <translation id="4696813013609194136">Otključajte uređaj roditeljskim kodom</translation>
 <translation id="4702647871202761252">Zaslon privatnosti je isključen</translation>
@@ -791,6 +793,7 @@ Priključite uređaj na napajanje.</translation>
 <translation id="5356963482258194581">Prebacite se na tamnu ili svijetlu temu. Desnim klikom kliknite radnu površinu i odaberite stavku Pozadine i stilovi.</translation>
 <translation id="536019650977002321">Vaš administrator ne dopušta snimanje zvuka. Za više informacija obratite se administratoru.</translation>
 <translation id="5363163447017455357"><ph name="DELIMITER" /> Otvorite ovu karticu</translation>
+<translation id="5377367976106153749">Želite li uključiti pristup kameri?</translation>
 <translation id="5379115545237091094">Previše pokušaja</translation>
 <translation id="5391307769715781764">Želite li zamijeniti spremljenu radnu površinu?</translation>
 <translation id="5393156353051693207">Dodirnite i držite bilo gdje da biste promijenili redoslijed svojih aplikacija</translation>
@@ -924,12 +927,10 @@ Priključite uređaj na napajanje.</translation>
 <translation id="6103838137565245112">sustav</translation>
 <translation id="6107292179555508368">Na ovom je uređaju isključen pristup mikrofonu i kameri</translation>
 <translation id="6114505516289286752">Preuzete su govorne datoteke za <ph name="LANGUAGE" /></translation>
-<translation id="6116825164611323644">Pristup fotoaparatu isključen je na ovom uređaju</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042">Potvrdite preuzimanje datoteke <ph name="FILENAME" /></translation>
 <translation id="612734058257491180">Google asistent nije dostupan u gostujućoj sesiji.</translation>
 <translation id="6129953537138746214">Razmak</translation>
-<translation id="6134259848159370930">Pretražite uređaj, aplikacije, postavke i web.</translation>
 <translation id="6137566720514957455">Otvorite dijalog za uklanjanje za <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6141988275892716286">Potvrda preuzimanja</translation>
 <translation id="6154006699632741460">Periferni uređaj nije podržan</translation>
@@ -1290,6 +1291,7 @@ Novo instaliranje</translation>
 <translation id="8142441511840089262">Dvostruki klik</translation>
 <translation id="8142699993796781067">Privatna mreža</translation>
 <translation id="8144760705599030999">Spremite uređaj <ph name="NAME" /> na račun <ph name="EMAIL" /> radi bržeg uparivanja s ostalim uređajima</translation>
+<translation id="8144914663975476336">Odaberite format snimanja</translation>
 <translation id="8149413265954228307">Prikažite postavke Bluetootha. <ph name="STATE_TEXT" />.</translation>
 <translation id="8152092012181020186">Pritisnite Ctrl + W da biste zatvorili.</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, samodovrši</translation>
@@ -1387,7 +1389,6 @@ Novo instaliranje</translation>
 <translation id="8666856788528804727">Otvorite <ph name="NAME" /> da biste postavili uređaj</translation>
 <translation id="8676770494376880701">Priključen je punjač male snage</translation>
 <translation id="8683506306463609433">Aktivno je praćenje izvedbe</translation>
-<translation id="8685326675965865247">Pretražite uređaj, aplikacije, postavke i web. Za kretanje po aplikacijama koristite tipke sa strelicama.</translation>
 <translation id="8703634754197148428">Početak snimanja. Kad snimanje započne, pomoću Alt + Shift + L možete se pomaknuti do police i pronaći gumb za zaustavljanje snimanja</translation>
 <translation id="8721053961083920564">Uključivanje ili isključivanje zvuka. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">Snimka cijelog zaslona</translation>
@@ -1396,7 +1397,6 @@ Novo instaliranje</translation>
 <translation id="8735678380411481005">Boja pozadinskog svjetla tipkovnice</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />,
         <ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8752416742247198423">Uključite pristup fotoaparatu da biste aplikacijama i web-stranicama s dopuštenjem za fotoaparat dopustili upotrebu fotoaparata povezanih s ovim uređajem.</translation>
 <translation id="8755498163081687682">Potvrdite svoj identitet: <ph name="ORIGIN_NAME" /> želi potvrditi da ste to vi</translation>
 <translation id="875593634123171288">Prikaz postavki VPN-a</translation>
 <translation id="8759408218731716181">Nije moguće postaviti višestruku prijavu</translation>
@@ -1463,7 +1463,6 @@ Novo instaliranje</translation>
 <translation id="9089416786594320554">Načini unosa</translation>
 <translation id="9091626656156419976">Zaslon <ph name="DISPLAY_NAME" /> uklonjen je</translation>
 <translation id="9098969848082897657">Utišaj telefon</translation>
-<translation id="9099154003160514616">Dostupno je ažuriranje za Lacros</translation>
 <translation id="9100887602489003640">Dodaje se profil. Pričekajte nekoliko minuta.</translation>
 <translation id="9105450214093926548">Prijava drugog korisnika nije podržana tijekom izvođenja preglednika Lacros. Umjesto toga upotrijebite drugi profil preglednika u Lacrosu ili zatvorite Lacros i pokušajte ponovo.</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> ili <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>

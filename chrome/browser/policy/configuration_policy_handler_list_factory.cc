@@ -276,6 +276,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kThrottleNonVisibleCrossOriginIframesAllowed,
     prefs::kThrottleNonVisibleCrossOriginIframesAllowed,
     base::Value::Type::BOOLEAN },
+  { key::kNewBaseUrlInheritanceBehaviorAllowed,
+    prefs::kNewBaseUrlInheritanceBehaviorAllowed,
+    base::Value::Type::BOOLEAN },
 // Policies for all platforms - End
 #if BUILDFLAG(IS_ANDROID)
   { key::kAuthAndroidNegotiateAccountType,
@@ -604,6 +607,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
   { key::kShowCastIconInToolbar,
     prefs::kShowCastIconInToolbar,
+    base::Value::Type::BOOLEAN },
+  { key::kShowCastSessionsStartedByOtherDevices,
+    media_router::prefs::kMediaRouterShowCastSessionsStartedByOtherDevices,
     base::Value::Type::BOOLEAN },
   { key::kShowFullUrlsInAddressBar,
     omnibox::kPreventUrlElisionsInOmnibox,

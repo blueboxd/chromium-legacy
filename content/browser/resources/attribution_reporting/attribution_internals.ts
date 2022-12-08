@@ -296,7 +296,8 @@ class SourceTableModel extends TableModel<Source> {
       new ValueColumn<Source, string>('Source Origin', (e) => e.sourceOrigin),
       new ValueColumn<Source, string>(
           'Destination', (e) => e.attributionDestination),
-      new ValueColumn<Source, string>('Report To', (e) => e.reportingOrigin),
+      new ValueColumn<Source, string>(
+          'Reporting Origin', (e) => e.reportingOrigin),
       new DateColumn<Source>('Source Registration Time', (e) => e.sourceTime),
       new DateColumn<Source>('Expiry Time', (e) => e.expiryTime),
       new DateColumn<Source>(
@@ -357,66 +358,17 @@ class Trigger {
   triggerTime: Date;
   destinationOrigin: string;
   reportingOrigin: string;
-  filters: string;
-  notFilters: string;
-  debugKey: string;
-  eventTriggers: string;
+  registrationJson: string;
   eventLevelStatus: string;
   aggregatableStatus: string;
-  aggregatableTriggers: string;
-  aggregatableValues: string;
-  aggregatableDedupKey: string;
-  debugReportingEnabled: boolean;
 
   constructor(mojo: WebUITrigger) {
     this.triggerTime = new Date(mojo.triggerTime);
     this.destinationOrigin = originToText(mojo.destinationOrigin);
     this.reportingOrigin = originToText(mojo.reportingOrigin);
-    this.filters = JSON.stringify(mojo.filters, null, ' ');
-    this.notFilters = JSON.stringify(mojo.notFilters, null, ' ');
-    this.debugKey = mojo.debugKey ? mojo.debugKey.value.toString() : '';
-
-    this.eventTriggers = JSON.stringify(
-        mojo.eventTriggers.map((e) => {
-          // Omit the dedup key, filters, and not filters if they are empty for
-          // brevity.
-          return {
-            'data': e.data,
-            'priority': e.priority,
-            'deduplication_key': e.dedupKey ? e.dedupKey.value : undefined,
-            'filters': Object.entries(e.filters).length > 0 ? e.filters :
-                                                              undefined,
-            'not_filters': Object.entries(e.notFilters).length > 0 ?
-                e.notFilters :
-                undefined,
-          };
-        }),
-        bigintReplacer, ' ');
-
-    this.aggregatableTriggers = JSON.stringify(
-        mojo.aggregatableTriggers.map((e) => {
-          // Omit the filters and not filters if they are empty for brevity.
-          return {
-            'key_piece': e.keyPiece,
-            'source_keys': e.sourceKeys,
-            'filters': Object.entries(e.filters).length > 0 ? e.filters :
-                                                              undefined,
-            'not_filters': Object.entries(e.notFilters).length > 0 ?
-                e.notFilters :
-                undefined,
-          };
-        }),
-        bigintReplacer, ' ');
-
-    this.aggregatableValues =
-        JSON.stringify(mojo.aggregatableValues, null, ' ');
-
-    this.aggregatableDedupKey = mojo.aggregatableDedupKey ?
-        mojo.aggregatableDedupKey.value.toString() : '';
-
+    this.registrationJson = mojo.registrationJson;
     this.eventLevelStatus = triggerStatusToText(mojo.eventLevelStatus);
     this.aggregatableStatus = triggerStatusToText(mojo.aggregatableStatus);
-    this.debugReportingEnabled = mojo.debugReportingEnabled;
   }
 }
 
@@ -434,20 +386,9 @@ class TriggerTableModel extends TableModel<Trigger> {
           'Aggregatable Status', (e) => e.aggregatableStatus),
       new ValueColumn<Trigger, string>(
           'Destination', (e) => e.destinationOrigin),
-      new ValueColumn<Trigger, string>('Report To', (e) => e.reportingOrigin),
-      new ValueColumn<Trigger, string>('Debug Key', (e) => e.debugKey),
-      new CodeColumn<Trigger>('Filters', (e) => e.filters),
-      new CodeColumn<Trigger>('Negated Filters', (e) => e.notFilters),
-      new CodeColumn<Trigger>('Event Triggers', (e) => e.eventTriggers),
-      new CodeColumn<Trigger>(
-          'Aggregatable Triggers', (e) => e.aggregatableTriggers),
-      new CodeColumn<Trigger>(
-          'Aggregatable Values', (e) => e.aggregatableValues),
       new ValueColumn<Trigger, string>(
-          'Aggregatable Dedup Key', (e) => e.aggregatableDedupKey),
-      new ValueColumn<Trigger, string>(
-          'Verbose Debug Reporting',
-          (e) => e.debugReportingEnabled ? 'enabled' : 'disabled'),
+          'Reporting Origin', (e) => e.reportingOrigin),
+      new CodeColumn<Trigger>('Registration JSON', (e) => e.registrationJson),
     ];
 
     this.emptyRowText = 'No triggers.';
@@ -786,11 +727,11 @@ class DebugReportTableModel extends TableModel<DebugReport> {
 
 abstract class Log {
   readonly timestamp: Date;
-  readonly reportTo: string;
+  readonly reportingOrigin: string;
 
   constructor(mojo: {time: number, reportingOrigin: Origin}) {
     this.timestamp = new Date(mojo.time);
-    this.reportTo = originToText(mojo.reportingOrigin);
+    this.reportingOrigin = originToText(mojo.reportingOrigin);
   }
 
   abstract renderDescription(td: HTMLElement): void;
@@ -802,7 +743,8 @@ const CLEARED_DEBUG_KEY_COLS: Array<Column<ClearedDebugKeyLog>> = [
   new ValueColumn<ClearedDebugKeyLog, string>(
       'Cleared Debug Key', e => e.clearedDebugKey),
   new ValueColumn<ClearedDebugKeyLog, string>('From', e => e.clearedFrom),
-  new ValueColumn<ClearedDebugKeyLog, string>('Report To', e => e.reportTo),
+  new ValueColumn<ClearedDebugKeyLog, string>(
+      'Reporting Origin', e => e.reportingOrigin),
 ];
 
 class ClearedDebugKeyLog extends Log {
@@ -845,7 +787,7 @@ const FAILED_SOURCE_REGISTRATION_COLS:
       new ValueColumn<FailedSourceRegistrationLog, string>(
           'Failure Reason', e => e.failureReason),
       new ValueColumn<FailedSourceRegistrationLog, string>(
-          'Report To', e => e.reportTo),
+          'Reporting Origin', e => e.reportingOrigin),
       new CodeColumn<FailedSourceRegistrationLog>(
           'Attribution-Reporting-Register-Source Header', e => e.headerValue),
     ];

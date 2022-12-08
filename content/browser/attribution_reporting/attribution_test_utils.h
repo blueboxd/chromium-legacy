@@ -108,7 +108,8 @@ class MockAttributionHost : public AttributionHost {
   MOCK_METHOD(
       void,
       RegisterDataHost,
-      (mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host),
+      (mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host,
+       blink::mojom::AttributionRegistrationType),
       (override));
 
   MOCK_METHOD(
@@ -172,7 +173,8 @@ class MockDataHostManager : public AttributionDataHostManager {
       RegisterDataHost,
       (mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host,
        attribution_reporting::SuitableOrigin context_origin,
-       bool is_within_fenced_frame),
+       bool is_within_fenced_frame,
+       blink::mojom::AttributionRegistrationType),
       (override));
 
   MOCK_METHOD(
@@ -1003,6 +1005,8 @@ struct TriggerRegistrationMatcherConfig {
       aggregatable_trigger_data = ::testing::_;
   ::testing::Matcher<const attribution_reporting::AggregatableValues&>
       aggregatable_values = ::testing::_;
+  ::testing::Matcher<::aggregation_service::mojom::AggregationCoordinator>
+      aggregation_coordinator = ::testing::_;
 
   TriggerRegistrationMatcherConfig() = delete;
   explicit TriggerRegistrationMatcherConfig(
@@ -1022,7 +1026,9 @@ struct TriggerRegistrationMatcherConfig {
           const attribution_reporting::AggregatableTriggerDataList&>
           aggregatable_trigger_data = ::testing::_,
       ::testing::Matcher<const attribution_reporting::AggregatableValues&>
-          aggregatable_values = ::testing::_);
+          aggregatable_values = ::testing::_,
+      ::testing::Matcher<::aggregation_service::mojom::AggregationCoordinator>
+          aggregation_coordinator = ::testing::_);
   ~TriggerRegistrationMatcherConfig();
 };
 

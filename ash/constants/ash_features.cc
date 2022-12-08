@@ -111,7 +111,7 @@ constexpr base::FeatureParam<bool> kAmbientModeStreetArtAlbumEnabled{
 // Controls whether to enable AutoEnrollment for Kiosk in OOBE
 BASE_FEATURE(kAutoEnrollmentKioskInOobe,
              "AutoEnrollmentKioskInOobe",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether to allow Dev channel to use Prod server feature.
 BASE_FEATURE(kAmbientModeDevUseProdFeature,
@@ -152,9 +152,9 @@ BASE_FEATURE(kArcInputOverlayBeta,
              "ArcInputOverlayBeta",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Controls whether to enable support for ARC Input Overlay Alpha Two.
-BASE_FEATURE(kArcInputOverlayAlphaTwo,
-             "ArcInputOverlayAlphaTwo",
+// Controls whether to enable support for ARC Input Overlay Alpha v2.
+BASE_FEATURE(kArcInputOverlayAlphaV2,
+             "ArcInputOverlayAlphaV2",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls whether to enable support for ARC ADB sideloading for managed
@@ -693,6 +693,12 @@ BASE_FEATURE(kEcheSWADisableStunServer,
              "EcheSWADisableStunServer",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Allows CrOS to analyze Android
+// network information to provide more context on connection errors.
+BASE_FEATURE(kEcheSWACheckAndroidNetworkInfo,
+             "EcheSWACheckAndroidNetworkInfo",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // If enabled, allows the creation of up to 16 desks (default is 8).
 BASE_FEATURE(kEnable16Desks,
              "Enable16Desks",
@@ -842,7 +848,7 @@ BASE_FEATURE(kExoHapticFeedbackSupport,
 // WSI, which otherwise falls back to software rendering.
 BASE_FEATURE(kExoLinuxDmabufV3,
              "ExoLinuxDmabufV3",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables version 4 of the zwp_linux_dmabuf_v1 Wayland protocol.
 // This version adds support for dynamic feedback, allowing the compositor to
@@ -850,7 +856,7 @@ BASE_FEATURE(kExoLinuxDmabufV3,
 // e.g. available KMS hardware planes.
 BASE_FEATURE(kExoLinuxDmabufV4,
              "ExoLinuxDmabufV4",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables sending explicit modifiers for the zwp_linux_dmabuf_v1 Wayland
 // protocol. This option only has an effect with version 3 or 4 of the protocol.
@@ -1514,11 +1520,6 @@ BASE_FEATURE(kOobeMaterialNext,
              "OobeMaterialNext",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// If enabled, the new recommend apps screen is shown.
-BASE_FEATURE(kOobeNewRecommendApps,
-             "OobeNewRecommendApps",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Removes "Shut down" button from OOBE, except first login screen and
 // successful enrollment step.
 BASE_FEATURE(kOobeRemoveShutdownButton,
@@ -1721,6 +1722,9 @@ BASE_FEATURE(kProjectorViewerUseSecondaryAccount,
 BASE_FEATURE(kProjectorAccountSwitchNotification,
              "ProjectorAccountSwitchNotification",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Controls whether to show promise icons during app installations.
+BASE_FEATURE(kPromiseIcons, "PromiseIcons", base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls whether the quick dim prototype is enabled.
 BASE_FEATURE(kQuickDim, "QuickDim", base::FEATURE_ENABLED_BY_DEFAULT);
@@ -2221,6 +2225,10 @@ bool AreDesksTemplatesEnabled() {
   return base::FeatureList::IsEnabled(kDesksTemplates);
 }
 
+bool ArePromiseIconsEnabled() {
+  return base::FeatureList::IsEnabled(kPromiseIcons);
+}
+
 bool AreSystemSoundsEnabled() {
   return base::FeatureList::IsEnabled(kSystemSounds);
 }
@@ -2297,8 +2305,8 @@ bool IsArcInputOverlayBetaEnabled() {
   return base::FeatureList::IsEnabled(kArcInputOverlayBeta);
 }
 
-bool IsArcInputOverlayAlphaTwoEnabled() {
-  return base::FeatureList::IsEnabled(kArcInputOverlayAlphaTwo);
+bool IsArcInputOverlayAlphaV2Enabled() {
+  return base::FeatureList::IsEnabled(kArcInputOverlayAlphaV2);
 }
 
 bool IsArcNetworkDiagnosticsButtonEnabled() {
@@ -2856,10 +2864,6 @@ bool IsOobeConsolidatedConsentEnabled() {
 
 bool IsOobeQuickStartEnabled() {
   return base::FeatureList::IsEnabled(kOobeQuickStart);
-}
-
-bool IsOobeNewRecommendAppsEnabled() {
-  return base::FeatureList::IsEnabled(kOobeNewRecommendApps);
 }
 
 bool IsOobeRemoveShutdownButtonEnabled() {

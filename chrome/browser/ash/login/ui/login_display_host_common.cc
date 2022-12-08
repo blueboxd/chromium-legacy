@@ -55,6 +55,7 @@
 #include "chrome/browser/ui/webui/ash/login/user_creation_screen_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/ash/components/login/auth/auth_metrics_recorder.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/strings/grit/components_strings.h"
 #include "extensions/common/features/feature_session_type.h"
@@ -193,6 +194,7 @@ LoginDisplayHostCommon::LoginDisplayHostCommon()
       browser_shutdown::AddAppTerminatingCallback(base::BindOnce(
           &LoginDisplayHostCommon::OnAppTerminating, base::Unretained(this)));
   BrowserList::AddObserver(this);
+  AuthMetricsRecorder::Get()->ResetLoginData();
 }
 
 LoginDisplayHostCommon::~LoginDisplayHostCommon() {
@@ -269,6 +271,9 @@ void LoginDisplayHostCommon::StartKiosk(const KioskAppId& kiosk_app_id,
                                         bool is_auto_launch) {
   VLOG(1) << "Login >> start kiosk of type "
           << static_cast<int>(kiosk_app_id.type);
+
+  SetKioskLaunchStateCrashKey(KioskLaunchState::kAttemptToLaunch);
+
   SetStatusAreaVisible(false);
 
   // Wait for the `CrosSettings` to become either trusted or permanently
@@ -293,6 +298,8 @@ void LoginDisplayHostCommon::StartKiosk(const KioskAppId& kiosk_app_id,
     // shown by the DeviceDisablingManager.
     return;
   }
+
+  SetKioskLaunchStateCrashKey(KioskLaunchState::kStartLaunch);
 
   OnStartAppLaunch();
 

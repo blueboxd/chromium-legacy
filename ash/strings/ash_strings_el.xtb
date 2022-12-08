@@ -31,7 +31,6 @@
 <translation id="1148499908455722006">Άνοιγμα παραθύρου διαλόγου πληροφοριών για <ph name="USER_NAME" /></translation>
 <translation id="1150989369772528668">Ημερολόγιο</translation>
 <translation id="1153356358378277386">Συσκευές σε σύζευξη</translation>
-<translation id="1165712434476988950">Απαιτείται επανεκκίνηση της συσκευής για την εφαρμογή της ενημέρωσης.</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Το καλώδιο USB-C που έχετε ενδέχεται να μην μπορεί να συνδεθεί σωστά σε οθόνες</translation>
 <translation id="1175572348579024023">Κύλιση</translation>
@@ -358,7 +357,6 @@
 <translation id="296762781903199866">Δεν ήταν δυνατή η λήψη αρχείων ομιλίας στα <ph name="LANGUAGE" /></translation>
 <translation id="2970920913501714344">Εγκαταστήσει εφαρμογές, επεκτάσεις και θέματα</translation>
 <translation id="2977598380246111477">Επόμενος αριθμός</translation>
-<translation id="2981684127883932071">Προβολή προτάσεων</translation>
 <translation id="2985148236010982088">Εμφάνιση όλων των εφαρμογών</translation>
 <translation id="2992327365391326550">Το κουμπί μικροφώνου της συσκευής είναι απενεργοποιημένο.</translation>
 <translation id="2996462380875591307">Ο Μεγεθυντικός φακός σε παράθυρο ενεργοποιήθηκε. Πατήστε Ctrl+Αναζήτηση+D ξανά για να τον απενεργοποιήσετε.</translation>
@@ -669,6 +667,7 @@
 <translation id="4666082839192943839">Απενεργοποιήστε την πρόσβαση στην κάμερα σε αυτήν τη συσκευή, για να αποκλείετε όλες τις κάμερες συνεχώς.</translation>
 <translation id="4666911709726371538">Περισσότερες εφαρμογές</translation>
 <translation id="4667099493359681081">Λήψη <ph name="FILENAME" /></translation>
+<translation id="468293128311738995">Εφαρμογές από το τηλέφωνό σας</translation>
 <translation id="4690510401873698237">Ράφι στο κάτω μέρος</translation>
 <translation id="4696813013609194136">Ξεκλείδωμα συσκευής με κωδικό γονέα</translation>
 <translation id="4702647871202761252">Η οθόνη απορρήτου είναι απενεργοποιημένη.</translation>
@@ -925,12 +924,10 @@
 <translation id="6103838137565245112">σύστημα</translation>
 <translation id="6107292179555508368">Οι προσβάσεις μικροφώνου και κάμερας είναι απενεργοποιημένες σε αυτήν τη συσκευή</translation>
 <translation id="6114505516289286752">Έγινε λήψη των αρχείων ομιλίας στα <ph name="LANGUAGE" /></translation>
-<translation id="6116825164611323644">Η πρόσβαση στην κάμερα είναι απενεργοποιημένη σε αυτήν τη συσκευή</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" />.</translation>
 <translation id="6121838516699723042">Επιβεβαίωση λήψης <ph name="FILENAME" /></translation>
 <translation id="612734058257491180">Ο Βοηθός Google δεν είναι διαθέσιμος σε περιόδους σύνδεσης επισκέπτη.</translation>
 <translation id="6129953537138746214">Κενό</translation>
-<translation id="6134259848159370930">Κάντε αναζήτηση στη συσκευή, στις εφαρμογές, στις ρυθμίσεις και στον ιστό.</translation>
 <translation id="6137566720514957455">Άνοιγμα παραθύρου διαλόγου κατάργησης για το <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6141988275892716286">Επιβεβαίωση λήψης</translation>
 <translation id="6154006699632741460">Το περιφερειακό δεν υποστηρίζεται</translation>
@@ -1291,6 +1288,7 @@
 <translation id="8142441511840089262">Διπλό κλικ</translation>
 <translation id="8142699993796781067">Ιδιωτικό δίκτυο</translation>
 <translation id="8144760705599030999">Αποθηκεύστε τη συσκευή <ph name="NAME" /> στον λογαριασμό <ph name="EMAIL" /> για γρηγορότερη σύζευξη με άλλες συσκευές.</translation>
+<translation id="8144914663975476336">Επιλογή μορφής εγγραφής</translation>
 <translation id="8149413265954228307">Εμφάνιση ρυθμίσεων Bluetooth. <ph name="STATE_TEXT" />.</translation>
 <translation id="8152092012181020186">Πατήστε Ctrl + W για κλείσιμο.</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, αυτόματη συμπλήρωση</translation>
@@ -1388,7 +1386,6 @@
 <translation id="8666856788528804727">Ανοίξτε το <ph name="NAME" /> για να ρυθμίσετε τη συσκευή σας</translation>
 <translation id="8676770494376880701">Ο συνδεδεμένος φορτιστής παρέχει χαμηλή ισχύ</translation>
 <translation id="8683506306463609433">Ενεργή παρακολούθηση απόδοσης</translation>
-<translation id="8685326675965865247">Κάντε αναζήτηση στη συσκευή, στις εφαρμογές, στις ρυθμίσεις και στον ιστό. Χρησιμοποιήστε τα πλήκτρα βέλους για πλοήγηση στις εφαρμογές σας.</translation>
 <translation id="8703634754197148428">Έναρξη εγγραφής. Μόλις ξεκινήσει η εγγραφή, χρησιμοποιήστε τα πλήκτρα Alt + Shift + L για να πλοηγηθείτε στο ράφι και να βρείτε το κουμπί διακοπής εγγραφής.</translation>
 <translation id="8721053961083920564">Εναλλαγή έντασης ήχου. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">Λήψη ολόκληρης της οθόνης</translation>
@@ -1397,7 +1394,6 @@
 <translation id="8735678380411481005">Χρώμα οπίσθιου φωτισμού</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />,
         <ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8752416742247198423">Ενεργοποιήστε την πρόσβαση στην κάμερα για να επιτρέψετε σε εφαρμογές και ιστοσελίδες με άδεια κάμερας να χρησιμοποιούν τις κάμερες που είναι συνδεδεμένες σε αυτήν τη συσκευή.</translation>
 <translation id="8755498163081687682">Επαλήθευση της ταυτότητάς σας: Το <ph name="ORIGIN_NAME" /> θέλει να επαληθεύσει την ταυτότητά σας.</translation>
 <translation id="875593634123171288">Εμφάνιση ρυθμίσεων VPN</translation>
 <translation id="8759408218731716181">Δεν είναι δυνατή η δημιουργία πολλαπλών συνδέσεων</translation>
@@ -1464,7 +1460,6 @@
 <translation id="9089416786594320554">Μέθοδοι εισαγωγής</translation>
 <translation id="9091626656156419976">Κατάργηση οθόνης <ph name="DISPLAY_NAME" /></translation>
 <translation id="9098969848082897657">Σίγαση τηλεφώνου</translation>
-<translation id="9099154003160514616">Υπάρχει διαθέσιμη ενημέρωση Lacros</translation>
 <translation id="9100887602489003640">Προσθήκη προφίλ. Περιμένετε λίγα λεπτά.</translation>
 <translation id="9105450214093926548">Η σύνδεση δεύτερου χρήστη δεν υποστηρίζεται όσο εκτελείται το πρόγραμμα περιήγησης Lacros. Αντί αυτού, χρησιμοποιήστε ένα δεύτερο προφίλ προγράμματος περιήγησης στο Lacros ή κλείστε το Lacros και δοκιμάστε ξανά.</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> ή <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>

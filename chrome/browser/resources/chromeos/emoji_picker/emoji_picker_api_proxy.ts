@@ -1,31 +1,29 @@
 // Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import {addSingletonGetter} from 'chrome://resources/ash/common/cr_deprecated.js';
-
 import {PageHandlerFactory, PageHandlerRemote} from './emoji_picker.mojom-webui.js';
 
 /** @interface */
 export interface EmojiPickerApiProxy {
-  showUI(): void;
+  showUi(): void;
 
   insertEmoji(emoji: string, isVariant: boolean, searchLength: number): void;
 
   isIncognitoTextField(): Promise<{incognito: boolean}>;
 
-  getFeatureList(): Promise<{featureList: boolean[]}>;
+  getFeatureList(): Promise<{featureList: number[]}>;
 }
 
-/** @implements {EmojiPickerApiProxy} */
-export class EmojiPickerApiProxyImpl {
+export class EmojiPickerApiProxyImpl implements EmojiPickerApiProxy {
   handler = new PageHandlerRemote();
+  static instance: EmojiPickerApiProxy|null = null;
   constructor() {
     const factory = PageHandlerFactory.getRemote();
     factory.createPageHandler(this.handler.$.bindNewPipeAndPassReceiver());
   }
 
   /** @override */
-  showUI() {
+  showUi() {
     this.handler.showUI();
   }
   /** @override */
@@ -42,6 +40,11 @@ export class EmojiPickerApiProxyImpl {
   getFeatureList() {
     return this.handler.getFeatureList();
   }
-}
 
-addSingletonGetter(EmojiPickerApiProxyImpl);
+  static getInstance(): EmojiPickerApiProxy {
+    if (EmojiPickerApiProxyImpl.instance === null) {
+      EmojiPickerApiProxyImpl.instance = new EmojiPickerApiProxyImpl();
+    }
+    return EmojiPickerApiProxyImpl.instance;
+  }
+}

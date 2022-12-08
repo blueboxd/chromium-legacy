@@ -31,7 +31,6 @@
 <translation id="1148499908455722006"><ph name="USER_NAME" /> の情報ダイアログを開きます</translation>
 <translation id="1150989369772528668">カレンダー</translation>
 <translation id="1153356358378277386">ペア設定されたデバイス</translation>
-<translation id="1165712434476988950">アップデートを適用するにはデバイスの再起動が必要です。</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />、<ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">USB-C ケーブルがディスプレイに正しく接続されていない可能性があります</translation>
 <translation id="1175572348579024023">スクロール</translation>
@@ -358,7 +357,6 @@
 <translation id="296762781903199866"><ph name="LANGUAGE" />の音声ファイルをダウンロードできませんでした</translation>
 <translation id="2970920913501714344">アプリ、拡張機能、テーマをインストールする</translation>
 <translation id="2977598380246111477">次の番号</translation>
-<translation id="2981684127883932071">候補を表示しています</translation>
 <translation id="2985148236010982088">アプリをすべて表示</translation>
 <translation id="2992327365391326550">デバイスのマイクボタンはオフになっています。</translation>
 <translation id="2996462380875591307">ドッキング拡大鏡がオンになっています。オフにするには Ctrl+検索+D キーをもう一度押します。</translation>
@@ -669,6 +667,7 @@
 <translation id="4666082839192943839">このデバイスでカメラへのアクセスをオフにすると、すべてのカメラが常にブロックされます。</translation>
 <translation id="4666911709726371538">表示するアプリを増やす</translation>
 <translation id="4667099493359681081"><ph name="FILENAME" /> をダウンロードしています</translation>
+<translation id="468293128311738995">スマートフォンのアプリ</translation>
 <translation id="4690510401873698237">シェルフは一番下にあります</translation>
 <translation id="4696813013609194136">保護者のコードでデバイスをロック解除</translation>
 <translation id="4702647871202761252">プライバシー スクリーンはオフになっています</translation>
@@ -925,12 +924,10 @@
 <translation id="6103838137565245112">システム</translation>
 <translation id="6107292179555508368">このデバイスでは、マイクとカメラへのアクセスがオフになっています</translation>
 <translation id="6114505516289286752"><ph name="LANGUAGE" />の音声ファイルをダウンロードしました</translation>
-<translation id="6116825164611323644">このデバイスでは、カメラへのアクセスが無効になっています。</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />。<ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042"><ph name="FILENAME" /> のダウンロードの確認</translation>
 <translation id="612734058257491180">Google アシスタントは、ゲスト セッションではご利用いただけません。</translation>
 <translation id="6129953537138746214">Space</translation>
-<translation id="6134259848159370930">デバイス、アプリ、設定、ウェブを検索します。</translation>
 <translation id="6137566720514957455"><ph name="USER_EMAIL_ADDRESS" /> の削除ダイアログを開きます</translation>
 <translation id="6141988275892716286">ダウンロードの確認</translation>
 <translation id="6154006699632741460">サポートされていない周辺機器です</translation>
@@ -1292,6 +1289,7 @@
 <translation id="8142441511840089262">ダブルクリック</translation>
 <translation id="8142699993796781067">プライベート</translation>
 <translation id="8144760705599030999"><ph name="NAME" /> を <ph name="EMAIL" /> に保存すると、他のデバイスとすばやくペア設定できます</translation>
+<translation id="8144914663975476336">録音形式を選択</translation>
 <translation id="8149413265954228307">Bluetooth の設定を表示します。<ph name="STATE_TEXT" />。</translation>
 <translation id="8152092012181020186">閉じるには Ctrl+W キーを押します。</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />、オートコンプリート</translation>
@@ -1389,7 +1387,6 @@
 <translation id="8666856788528804727"><ph name="NAME" /> を開いてデバイスを設定してください</translation>
 <translation id="8676770494376880701">低電力の充電器に接続されています</translation>
 <translation id="8683506306463609433">パフォーマンス追跡機能が有効</translation>
-<translation id="8685326675965865247">デバイス、アプリ、設定、ウェブを検索します。アプリに移動するには矢印キーを使用します。</translation>
 <translation id="8703634754197148428">録画を開始します。録画を開始した後、シェルフにある [録画を停止] ボタンに移動するには、Alt+Shift+L キーを使用してください</translation>
 <translation id="8721053961083920564">音量を切り替えます。<ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">全画面キャプチャ</translation>
@@ -1397,7 +1394,6 @@
 <translation id="8734991477317290293">キー入力が読み取られる可能性があります</translation>
 <translation id="8735678380411481005">キーボードのバックライトの色</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />、<ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8752416742247198423">カメラへのアクセスを有効にすれば、カメラへのアクセス権限を持つアプリやウェブページが、デバイスに接続されているカメラを使用できるようになります。</translation>
 <translation id="8755498163081687682">本人確認: <ph name="ORIGIN_NAME" /> が本人確認をリクエストしています</translation>
 <translation id="875593634123171288">VPN 設定を表示</translation>
 <translation id="8759408218731716181">マルチログインを設定できません</translation>
@@ -1464,7 +1460,6 @@
 <translation id="9089416786594320554">入力方法</translation>
 <translation id="9091626656156419976">ディスプレイ「<ph name="DISPLAY_NAME" />」が取り外されました</translation>
 <translation id="9098969848082897657">スマートフォンを消音する</translation>
-<translation id="9099154003160514616">Lacros のアップデートがあります</translation>
 <translation id="9100887602489003640">プロファイルを追加しています。数分お待ちください。</translation>
 <translation id="9105450214093926548">Lacros ブラウザの実行中は 2 つ目のユーザーにログインできません。代わりに Lacros で 2 つ目のブラウザ プロフィールを使用するか、Lacros を閉じてログインしなおしてください。</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> または <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>

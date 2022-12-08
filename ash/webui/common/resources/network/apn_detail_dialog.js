@@ -22,20 +22,44 @@ import {ApnAuthenticationType, ApnIpType, ApnProperties, ApnType, CrosNetworkCon
 import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './apn_detail_dialog.html.js';
+import {ApnDetailDialogMode} from './cellular_utils.js';
 import {MojoInterfaceProviderImpl} from './mojo_interface_provider.js';
 
+/** @type {Array} */
 const AuthenticationTypes = [
   ApnAuthenticationType.kAutomatic,
   ApnAuthenticationType.kPap,
   ApnAuthenticationType.kChap,
 ];
 
+/** @type {Array} */
 const IpTypes = [
   ApnIpType.kAutomatic,
   ApnIpType.kIpv4,
   ApnIpType.kIpv6,
   ApnIpType.kIpv4Ipv6,
 ];
+
+/** @enum {number} */
+const UiElement = {
+  INPUT: 0,
+  ADD_BUTTON: 1,
+  DONE_BUTTON: 2,
+};
+
+/**
+ * Regular expression that is used to test for non-ASCII characters.
+ * @type {RegExp}
+ * @private
+ */
+const APN_NON_ASCII_REGEX = /[^\x00-\x7f]+/;
+
+/**
+ * Maximum allowed length of the APN input field.
+ * @type {number}
+ * @private
+ */
+const MAX_APN_INPUT_LENGTH = 63;
 
 /**
  * @constructor
@@ -57,6 +81,18 @@ export class ApnDetailDialog extends ApnDetailDialogElementBase {
 
   static get properties() {
     return {
+      /** @type {ApnProperties|undefined} */
+      apnProperties: {
+        type: Object,
+        observer: 'onApnPropertiesUpdated_',
+      },
+
+      /** @type {ApnDetailDialogMode} */
+      mode: {
+        type: Object,
+        value: ApnDetailDialogMode.CREATE,
+      },
+
       guid: {type: String},
 
       /** @private */
@@ -80,8 +116,16 @@ export class ApnDetailDialog extends ApnDetailDialogElementBase {
       },
 
       /**
+       * Enum used as an ID for specific UI elements.
+       * @type {!UiElement}
        * @private
        */
+      UiElement: {
+        type: Object,
+        value: UiElement,
+      },
+
+      /** @private */
       selectedAuthType_: {
         type: String,
         value: AuthenticationTypes[0].toString(),
@@ -97,6 +141,7 @@ export class ApnDetailDialog extends ApnDetailDialogElementBase {
       apn_: {
         type: String,
         value: '',
+        observer: 'onApnValueChanged_',
       },
 
       /** @private */
@@ -110,6 +155,32 @@ export class ApnDetailDialog extends ApnDetailDialogElementBase {
         type: String,
         value: '',
       },
+
+      /** @private */
+      isDefaultApnType_: {
+        type: Boolean,
+        value: true,
+      },
+
+      /** @private */
+      isAttachApnType_: {
+        type: Boolean,
+        value: false,
+      },
+
+      /** @private */
+      isApnInputInvalid_: {
+        type: Boolean,
+        value: false,
+        computed:
+            'computeIsApnInputInvalid_(apn_, isMaxApnInputLengthReached_)',
+      },
+
+      /** @private */
+      isMaxApnInputLengthReached_: {
+        type: Boolean,
+        value: false,
+      },
     };
   }
 
@@ -120,6 +191,68 @@ export class ApnDetailDialog extends ApnDetailDialogElementBase {
     /** @private {!CrosNetworkConfigRemote} */
     this.networkConfig_ =
         MojoInterfaceProviderImpl.getInstance().getMojoServiceRemote();
+  }
+
+  /**
+   * Observer method used to fill the apn detail dialog, with the provided apn.
+   * @private
+   */
+  onApnPropertiesUpdated_() {
+    this.apn_ = /** @type {string}*/ (this.apnProperties.accessPointName);
+    this.username_ = /** @type {string}*/ (this.apnProperties.username);
+    this.password_ = /** @type {string}*/ (this.apnProperties.password);
+    this.selectedIpType_ = this.apnProperties.ipType.toString();
+    this.selectedAuthType_ = this.apnProperties.authenticationType.toString();
+    this.isDefaultApnType_ = false;
+    this.isAttachApnType_ = false;
+
+    for (const apnType of this.apnProperties.apnTypes) {
+      if (apnType === ApnType.kDefault) {
+        this.isDefaultApnType_ = true;
+      } else if (apnType === ApnType.kAttach) {
+        this.isAttachApnType_ = true;
+      }
+    }
+  }
+
+  /**
+   * Observer for apn_ that is used for detecting whether the max apn length
+   * was reached or not and truncating it to MAX_APN_INPUT_LENGTH if so.
+   * @param {string} newValue
+   * @param {string} oldValue
+   * @private
+   */
+  onApnValueChanged_(newValue, oldValue) {
+    if (oldValue) {
+      // If oldValue.length > MAX_APN_INPUT_LENGTH, the user attempted to
+      // enter more than the max limit, this method was called and it was
+      // truncated, and then this method was called one more time.
+      this.isMaxApnInputLengthReached_ = oldValue.length > MAX_APN_INPUT_LENGTH;
+    } else {
+      this.isMaxApnInputLengthReached_ = false;
+    }
+
+    // Truncate the name to MAX_INPUT_LENGTH.
+    this.apn_ = this.apn_.substring(0, MAX_APN_INPUT_LENGTH);
+  }
+
+  /** @private */
+  computeIsApnInputInvalid_() {
+    return this.isMaxApnInputLengthReached_ ||
+        APN_NON_ASCII_REGEX.test(this.apn_);
+  }
+
+  /** @private */
+  getApnErrorMessage_() {
+    if (!this.isApnInputInvalid_) {
+      return '';
+    }
+    if (this.isMaxApnInputLengthReached_) {
+      // TODO(b/162365553): Replace with real string when available
+      return `APN cannot have more than 63 characters`;
+    }
+    // TODO(b/162365553): Replace with real string when available
+    return 'APN cannot have non-ASCII characters';
   }
 
   /**
@@ -155,17 +288,31 @@ export class ApnDetailDialog extends ApnDetailDialogElementBase {
   }
 
   /**
+   * @private
+   */
+  getDialogTitle_() {
+    switch (this.mode) {
+      case ApnDetailDialogMode.CREATE:
+        return this.i18n('apnDetailAddApnDialogTitle');
+      case ApnDetailDialogMode.VIEW:
+        return this.i18n('apnDetailViewApnDialogTitle');
+      case ApnDetailDialogMode.EDIT:
+        // TODO(b/162365553): Add edit mode for the apn detail dialog.
+        return '';
+    }
+  }
+  /**
    * Maps the checkboxes to an array of {@link ApnType}.
    * @returns {Array<ApnType>}
    * @private
    */
   getSelectedApnTypes_() {
     const apnTypes = [];
-    if (this.$.apnDefaultTypeCheckbox.checked) {
+    if (this.isDefaultApnType_) {
       apnTypes.push(ApnType.kDefault);
     }
 
-    if (this.$.apnAttachTypeCheckbox.checked) {
+    if (this.isAttachApnType_) {
       apnTypes.push(ApnType.kAttach);
     }
     return apnTypes;
@@ -217,6 +364,36 @@ export class ApnDetailDialog extends ApnDetailDialogElementBase {
    */
   isSelectedAuthType_(item) {
     return Number(this.selectedAuthType_) === item;
+  }
+
+  /**
+   * @param {!UiElement} uiElement
+   * @returns {boolean}
+   * @private
+   */
+  isUiElementDisabled_(uiElement) {
+    switch (uiElement) {
+      case UiElement.INPUT:
+        return this.mode === ApnDetailDialogMode.VIEW;
+      case UiElement.ADD_BUTTON:
+        return this.apn_.length === 0 || this.isApnInputInvalid_;
+    }
+    return false;
+  }
+
+  /**
+   * @param {!UiElement} uiElement
+   * @returns {boolean}
+   * @private
+   */
+  isUiElementVisible_(uiElement) {
+    switch (uiElement) {
+      case UiElement.DONE_BUTTON:
+        return this.mode === ApnDetailDialogMode.VIEW;
+      case UiElement.ADD_BUTTON:
+        return this.mode === ApnDetailDialogMode.CREATE;
+    }
+    return true;
   }
 }
 

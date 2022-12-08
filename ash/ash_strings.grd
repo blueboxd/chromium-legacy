@@ -825,12 +825,6 @@ Style notes:
       <message name="IDS_DIALOG_MESSAGE_SLOW_BOOT" desc="The body of the Slow Boot Shutdown Confirmation Dialog.">
         Your screen will go blank for longer than usual (up to a minute) during this update. Please don't press the power button while the update is in progress.
       </message>
-      <message name="IDS_UPDATE_NOTIFICATION_TITLE_LACROS" desc="The title of the notification to notify that the user should restart to get an update for the experimental 'Lacros' browser.">
-        Lacros update available
-      </message>
-      <message name="IDS_UPDATE_NOTIFICATION_MESSAGE_LACROS" desc="The body of the notification to notify that the user should restart to get an update for the experimental 'Lacros' browser.">
-        Device restart is required to apply the update.
-      </message>
       <message name="IDS_LACROS_CANNOT_LAUNCH_MULTI_SIGNIN_MESSAGE" desc="The body of the notification informing the user that the experimental 'Lacros' browser cannot launch.">
         Lacros is not supported while multiple users are signed in.
       </message>
@@ -4219,6 +4213,14 @@ Connect your device to power.
         Up next
       </message>
 
+      <message name="IDS_ASH_CALENDAR_UP_NEXT_SCROLL_LEFT_BUTTON" desc="The accessible/tooltip description of the calendar up next scroll left button.">
+        Scroll left
+      </message>
+
+      <message name="IDS_ASH_CALENDAR_UP_NEXT_SCROLL_RIGHT_BUTTON" desc="The accessible/tooltip description of the calendar up next scroll right button.">
+        Scroll right
+      </message>
+
       <message name="IDS_ASH_STATUS_TRAY_PROGRESS_BAR_ACCESSIBLE_NAME" desc="The accessible name for the progress bar shown in the status tray.">
         Loading
       </message>
@@ -4510,10 +4512,16 @@ Here are some things you can try to get started.
         Turn off the camera access on this device to block all cameras all the time.
       </message>
       <message name="IDS_PRIVACY_HUB_CAMERA_OFF_NOTIFICATION_TITLE" desc="Title for a notification shown to the users when an app tries to use the camera while the camera is disabled.">
-        Camera access is off on this device
+        Turn on camera access?
       </message>
       <message name="IDS_PRIVACY_HUB_CAMERA_OFF_NOTIFICATION_MESSAGE" desc="Message for a notification shown to the users when an app tries to use the camera while the camera is off.">
-        Turn on camera access to allow apps and webpages with the camera permission to use the camera(s) connected to this device.
+        This allows camera access for all apps and websites with the camera permission
+      </message>
+      <message name="IDS_PRIVACY_HUB_CAMERA_OFF_NOTIFICATION_MESSAGE_WITH_ONE_APP_NAME" desc="Message for a notification shown to the users when an app tries to use the camera while the camera is off.">
+        This allows camera access for <ph name="APP_NAME">$1<ex>Zoom</ex></ph> and all apps and websites with the camera permission
+      </message>
+      <message name="IDS_PRIVACY_HUB_CAMERA_OFF_NOTIFICATION_MESSAGE_WITH_TWO_APP_NAMES" desc="Message for a notification shown to the users when an app tries to use the camera while the camera is off.">
+        This allows camera access for <ph name="APP1_NAME">$1<ex>Zoom</ex></ph>, <ph name="APP2_NAME">$2<ex>Snapchat</ex></ph>, and all apps and websites with the camera permission
       </message>
       <message name="IDS_PRIVACY_HUB_TURN_OFF_CAMERA_ACTION_BUTTON" desc="Label for an action button that disables the camera.">
         Turn off camera access
@@ -5402,9 +5410,6 @@ New install
       <message name="IDS_APP_LIST_CLEAR_SEARCHBOX" desc="Tooltip for the button that clears all text from the search box in the app list.">
         Clear searchbox text
       </message>
-      <message name="IDS_APP_LIST_SEARCHBOX_RESULTS_ACCESSIBILITY_ANNOUNCEMENT_ZERO_STATE" desc="The accessibility announcement notifying the user that app list search is displaying a set of suggested items - i.e. items  shown as search results by default when the user has not entered any search query.">
-        Displaying suggestions
-      </message>
       <message name="IDS_APP_LIST_SEARCHBOX_RESULTS_ACCESSIBILITY_ANNOUNCEMENT" desc="The accessibility announcement notifying the user about the number of results shown in app list search, and the query for which the results are displayed.">
           Displaying <ph name="result_count">$1<ex>10</ex></ph> results for <ph name="query">$2<ex>search query</ex></ph>
       </message>
@@ -5499,12 +5504,6 @@ New install
       </message>
       <message name="IDS_APP_ACCESSIBILITY_APP_RECOMMENDATION_ARC" desc="Accessibility text to specify a search result is an app recommendation.">
         <ph name="APP_NAME">$1<ex>Instagram</ex></ph>, App recommendation
-      </message>
-      <message name="IDS_APP_LIST_SEARCH_BOX_ACCESSIBILITY_NAME_CLAMSHELL" desc="Hint text for the search box in fullscreen app list window with additional instructions to use the arrow keys in Accessibility mode.">
-        Search your device, apps, settings, and web. Use the arrow keys to navigate your apps.
-      </message>
-      <message name="IDS_APP_LIST_SEARCH_BOX_ACCESSIBILITY_NAME_TABLET" desc="Hint text for the search box in fullscreen app list window. Tablet mode only, so we don't mention the arrow keys.">
-        Search your device, apps, settings, and web.
       </message>
       <message name="IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER" desc="Placeholder text for the search box shown in the app list UI.">
         Search your device, apps, settings, web...

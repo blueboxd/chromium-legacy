@@ -308,7 +308,6 @@
 <translation id="168693727862418163">این مقدار خط‌مشی در رابطه با طرح آن تأیید نشده است و نادیده گرفته می‌شود.</translation>
 <translation id="168841957122794586">گواهی‌نامه سرور دارای یک کلید رمزنگاری ضعیف است.</translation>
 <translation id="1697532407822776718">همه چیز مرتب است.</translation>
-<translation id="1699570257714336246">اطلاعات از دست می‌رود</translation>
 <translation id="1702815194757674443">ROC 16K</translation>
 <translation id="1703835215927279855">Letter</translation>
 <translation id="1706625117072057435">سطوح بزرگ‌نمایی</translation>
@@ -1024,7 +1023,6 @@
 <translation id="3584299510153766161">دو سوراخ پایین</translation>
 <translation id="3586931643579894722">عدم نمایش جزئیات</translation>
 <translation id="3587738293690942763">وسط</translation>
-<translation id="3595645257662173296">چه شواهدی آن را تأیید می‌کند؟</translation>
 <translation id="3595699422137460894">{NUM_DAYS,plural, =0{هرزمان خواستید می‌توانید گروه را بازنشانی کنید. پیوستن به گروه جدید حدود یک روز طول می‌کشد.}=1{هرزمان خواستید می‌توانید گروه را بازنشانی کنید. پیوستن به گروه جدید حدود یک روز طول می‌کشد.}one{هرزمان خواستید می‌توانید گروه را بازنشانی کنید. پیوستن به گروه جدید {NUM_DAYS} روز طول می‌کشد.}other{هرزمان خواستید می‌توانید گروه را بازنشانی کنید. پیوستن به گروه جدید {NUM_DAYS} روز طول می‌کشد.}}</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />، <ph name="DOMAIN" />، <ph name="TIME" /></translation>
 <translation id="3603507503523709">سرپرست برنامه را مسدود کرده است</translation>
@@ -1164,7 +1162,6 @@
 <translation id="3961148744525529027">برگ کنترل‌کننده پرداخت نیمه‌باز است</translation>
 <translation id="3962859241508114581">آهنگ قبلی</translation>
 <translation id="3963721102035795474">حالت «خواننده»</translation>
-<translation id="3963837677003247395">به‌صورت دستی ادامه می‌دهید؟</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{هیچ‌کدام}=1{از ۱ سایت }one{از # سایت }other{از # سایت }}</translation>
 <translation id="3969052498612555048">نمی‌توانید کدتان را پیدا کنید؟ <ph name="BEGIN_LINK" />کد جدید دریافت کنید<ph name="END_LINK" /></translation>
 <translation id="397105322502079400">در حال محاسبه…</translation>
@@ -1366,7 +1363,6 @@
 <translation id="4434045419905280838">پنجره‌های بازشو و هدایت‌ها</translation>
 <translation id="443673843213245140">استفاده از پروکسی غیرفعال است اما یک پیکربندی خاص برای پروکسی تعیین شده است.</translation>
 <translation id="4441832193888514600">نادیده گرفته شد زیرا این خط‌مشی فقط می‌تواند به‌عنوان خط‌مشی کاربر ابری تنظیم شود.</translation>
-<translation id="4450893287417543264">دیگر نشان داده نشود</translation>
 <translation id="4451135742916150903">‏می‌تواند برای اتصال به دستگاه‌های HID درخواست دهد</translation>
 <translation id="4452328064229197696">‏گذرواژه‌ای که اکنون استفاده کردید مورد سرقت قرار گرفته است. برای حفظ امنیت حساب‌هایتان، «مدیر گذرواژه Google» توصیه می‌کند گذرواژه‌های ذخیره‌شده‌تان را بررسی کنید.</translation>
 <translation id="4460315069258617173">تا زمانی که برگه‌های این سایت را نبندید، مجاز است</translation>
@@ -1509,7 +1505,6 @@
 <translation id="4813512666221746211">خطای شبکه</translation>
 <translation id="4816492930507672669">متناسب با صفحه</translation>
 <translation id="4819347708020428563">یادداشت‌ها در نمای پیش‌فرض ویرایش شوند؟</translation>
-<translation id="4823325221257637040">درحال شروع</translation>
 <translation id="4825496307559726072">‏<ph name="CREATE_GOOGLE_SHEET_FOCUSED_FRIENDLY_MATCH_TEXT" />؛ برای ایجاد سریع «کاربرگ‌نگار Google» جدید، کلید «جهش» و سپس «ورود» را فشار دهید</translation>
 <translation id="4825507807291741242">نیرومند</translation>
 <translation id="483241715238664915">روشن کردن هشدارها</translation>
@@ -1943,7 +1938,6 @@
 <translation id="5937560539988385583">صفحه ترجمه شد</translation>
 <translation id="5938153366081463283">افزودن کارت مجازی</translation>
 <translation id="5938793338444039872">Troy</translation>
-<translation id="5946937721014915347">درحال باز کردن <ph name="SITE_NAME" />…</translation>
 <translation id="5947508410139465809">‏فایل‌هایی که بارگذاری یا پیوست می‌کنید برای تجریه‌وتحلیل به Google Cloud یا اشخاص ثالث ارسال می‌شود. مثلاً ممکن است این فایل‌ها ازنظر وجود داده‌های حساس یا بدافزار اسکن شود و براساس خط‌مشی‌های شرکت ذخیره شود.</translation>
 <translation id="5951495562196540101">نمی‌توان با حساب مصرف‌کننده ثبت‌نام کرد (مجوز بسته‌بندی دردسترس است).</translation>
 <translation id="5953516610448771166">«زیرنویس ناشنوایان زنده» برای این رسانه دردسترس نیست. برای دریافت زیرنویس ناشنوایان، <ph name="CONTENT_SETTINGS" /> را برای این سایت مسدود کنید.</translation>
@@ -1965,6 +1959,7 @@
 <translation id="5995727681868049093">‏مدیریت اطلاعات، حریم خصوصی، و امنیت در «حساب Google»</translation>
 <translation id="5997247540087773573">‏گذرواژه‌ای که اکنون استفاده کردید در سرقت اطلاعات شبکه پیدا شده است. برای حفظ امنیت حساب‌هایتان، «مدیر گذرواژه Google» توصیه می‌کند گذرواژه‌تان را همین‌حالا تغییر دهید و گذرواژه‌های ذخیره‌شده‌تان را بررسی کنید.</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> نتیجه برای «<ph name="SEARCH_TEXT" />»</translation>
+<translation id="6005765687956866568">اطلاعاتی که به‌طور خودکار تکمیل شده بود از فرم پاک شده است</translation>
 <translation id="6006365096047131769">۵ × ۳ اینچ</translation>
 <translation id="6006484371116297560">کلاسيک</translation>
 <translation id="6008122969617370890">‏ترتیب N تا ۱</translation>
@@ -2034,7 +2029,6 @@
 <translation id="6165508094623778733">بیشتر بدانید</translation>
 <translation id="6167577165590485365">آخرین تلاش برای واکشی:</translation>
 <translation id="6169916984152623906">اکنون می‌توانید به‌طور خصوصی مرور کنید و سایر افرادی که از این دستگاه استفاده می‌کنند فعالیت شما را نخواهند دید. بااین‌وجود بارگیری‌ها و نشانک‌ها ذخیره خواهند شد.</translation>
-<translation id="6176716740821145453">لحظه‌ای تأمل کنید و صحت اطلاعات را بسنجید</translation>
 <translation id="6177128806592000436">اتصال شما به این سایت امن نیست</translation>
 <translation id="6177531123306197852">پاکت سی۲</translation>
 <translation id="6180316780098470077">فاصله زمانی امتحان مجدد</translation>
@@ -2080,7 +2074,6 @@
 <translation id="6295618774959045776">CVC:</translation>
 <translation id="6300452962057769623">{0,plural, =0{دستگاه اکنون بازراه‌اندازی خواهد شد}=1{دستگاه یک ثانیه دیگر بازراه‌اندازی خواهد شد}one{دستگاه # ثانیه دیگر بازراه‌اندازی خواهد شد}other{دستگاه # ثانیه دیگر بازراه‌اندازی خواهد شد}}</translation>
 <translation id="6301104306974789820">دریافت اعلان‌های پیگیری قیمت</translation>
-<translation id="6302269476990306341">‏توقف «دستیار Google» در Chrome</translation>
 <translation id="6305205051461490394">دسترسی به <ph name="URL" /> امکان‌پذیر نیست.</translation>
 <translation id="6311165245110979290">کارت مجازی دردسترس است</translation>
 <translation id="6312113039770857350">صفحه وب در دسترس نیست</translation>
@@ -2275,6 +2268,7 @@
 <translation id="6826993739343257035">‏AR مجاز باشد؟</translation>
 <translation id="6828866289116430505">وراثت</translation>
 <translation id="6831043979455480757">ترجمه</translation>
+<translation id="6832753933931306326">فرم به‌طور خودکار تکمیل شده است</translation>
 <translation id="6842196666980060516">۲۶۰ × ۱۸۴ میلی‌متر</translation>
 <translation id="6846340164947227603">استفاده از شماره کارت مجازی...</translation>
 <translation id="6852204201400771460">برنامه بار کردن مجدد شود؟</translation>
@@ -2335,7 +2329,6 @@
 <translation id="6971439137020188025">‏ایجاد سریع ارائه جدید در «اسلایدنگار Google»</translation>
 <translation id="6972629891077993081">‏دستگاه‌های HID</translation>
 <translation id="6973656660372572881">‏هم سرورهای پروکسی ثابت و هم آدرس اسکریپت pac. مشخص شده‌اند.</translation>
-<translation id="6973932557599545801">متأسفم، نمی‌توانم کمک کنم، لطفاً خودتان ادامه دهید.</translation>
 <translation id="6973988895180423160">۵ × ۳٫۵ اینچ</translation>
 <translation id="6978236010531171013">درهرصورت هم‌رسانی شود</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -2531,7 +2524,6 @@
 <translation id="7451311239929941790">درباره این مشکل <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" />.</translation>
 <translation id="7455133967321480974">استفاده از پیش‌فرض جهانی (مسدود)</translation>
 <translation id="745640750744109667">A0x3</translation>
-<translation id="7460618730930299168">فیلم در حال نمایش با آنچه انتخاب کرده‌اید متفاوت است. ادامه می‌دهید؟</translation>
 <translation id="7461924472993315131">پین</translation>
 <translation id="7463075493919226237">فوتبال استرالیایی</translation>
 <translation id="7465963048299965912">۱۳ × ۱۰ اینچ</translation>
@@ -2540,7 +2532,6 @@
 <translation id="7481312909269577407">ارسال کردن</translation>
 <translation id="7481603210197454575">پاکت ایتالیایی</translation>
 <translation id="7485870689360869515">هیچ داده‌ای یافت نشد.</translation>
-<translation id="7485948220959728508">چه کسی مسئول این اطلاعات است؟</translation>
 <translation id="748745328507845862">کنسرت و جشنواره موسیقی</translation>
 <translation id="7489473601138133813">برنامه‌ریزی شغلی و منابع</translation>
 <translation id="7495528107193238112">این محتوا مسدود شده است. برای برطرف کردن مشکل با مالک سایت تماس بگیرید.</translation>
@@ -2646,7 +2637,6 @@
 <translation id="7682451652090915298">راگبی</translation>
 <translation id="7687186412095877299">فرم‌های پرداخت را با روش‌های پرداخت ذخیره‌شده‌تان پر می‌کند</translation>
 <translation id="7687305263118037187">پایان درنگ امتحان مجدد</translation>
-<translation id="7687451951329798396">منابع دیگر چه می‌گویند؟</translation>
 <translation id="7690647519407127574">کارت‌پستال اوفوکو هاگاکی</translation>
 <translation id="7693583928066320343">ترتیب صفحه دریافت شد</translation>
 <translation id="7696089921647603491">راک کلاسیک و قدیمی</translation>
@@ -2731,6 +2721,7 @@
 <translation id="7950027195171824198">‏مدیریت اولویت‌های کوکی در تنظیمات Chrome</translation>
 <translation id="7951415247503192394">(۳۲ بیت)</translation>
 <translation id="7952192831285741665">‏‫EDP اروپایی</translation>
+<translation id="7952804540472583406"><ph name="BEGIN_LINK" />درحال ورود به سیستم<ph name="END_LINK" /> شبکه.</translation>
 <translation id="7953569069500808819">دوختن لبه بالا</translation>
 <translation id="7956713633345437162">نشانک‌های تلفن‌ همراه</translation>
 <translation id="7961015016161918242">هرگز</translation>
@@ -2848,6 +2839,7 @@
 <translation id="8241707690549784388">صفحه‌ای که جستجو می‌کنید از اطلاعاتی استفاده می‌کند که شما وارد کرده‌اید. بازگشت به آن صفحه ممکن است باعث شود اقدامی را که قبلاً انجام دادید دوباره تکرار کنید. آیا می‌خواهید ادامه دهید؟</translation>
 <translation id="8241712895048303527">مسدود کردن در این سایت</translation>
 <translation id="8242426110754782860">ادامه دادن</translation>
+<translation id="8245703462678310750">برای خروج از حالت تمام‌صفحه و دیدن بارگیری، |<ph name="ACCELERATOR" />| را فشار دهید و نگه دارید.</translation>
 <translation id="8249296373107784235">لغو</translation>
 <translation id="8249463483885748674">آزمون استاندارد و پذیرش</translation>
 <translation id="8252991034201168845">‏دکمه «مدیریت تنظیمات دسترس‌پذیری»؛ برای شخصی کردن ابزارهای دسترس‌پذیری در تنظیمات ChromeOS، کلید «ورود» را فشار دهید</translation>
@@ -3220,7 +3212,6 @@
 <translation id="937457230470581909">باغ وحش، آکواریوم، منطقه حفاظت‌شده</translation>
 <translation id="939736085109172342">پوشهٔ جدید</translation>
 <translation id="940053046584497293">سفر و حمل‌ونقل</translation>
-<translation id="945522503751344254">ارسال بازخورد</translation>
 <translation id="945855313015696284">اطلاعات زیر را بررسی و کارت‌های نامعتبر را حذف کنید</translation>
 <translation id="947370374845726940">‏<ph name="CREATE_GOOGLE_SITE_FOCUSED_FRIENDLY_MATCH_TEXT" />؛ برای ایجاد سریع سایت جدید در Google Sites، کلید «جهش» و سپس «ورود» را فشار دهید</translation>
 <translation id="950736567201356821">سه سوراخ در بالا</translation>

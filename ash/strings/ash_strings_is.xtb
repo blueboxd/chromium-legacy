@@ -31,7 +31,6 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="1148499908455722006">Opna upplýsingaglugga fyrir <ph name="USER_NAME" /></translation>
 <translation id="1150989369772528668">Dagatal</translation>
 <translation id="1153356358378277386">Pöruð tæki</translation>
-<translation id="1165712434476988950">Endurræsa þarf tækið til að nota uppfærsluna.</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Ekki er víst að USB-C-snúran tengist skjáum á réttan hátt</translation>
 <translation id="1175572348579024023">Fletta</translation>
@@ -358,7 +357,6 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="296762781903199866">Ekki tókst að sækja <ph name="LANGUAGE" /> talskrár</translation>
 <translation id="2970920913501714344">Sett upp forrit, viðbætur og þemu</translation>
 <translation id="2977598380246111477">Næsta tala</translation>
-<translation id="2981684127883932071">Birtir tillögur</translation>
 <translation id="2985148236010982088">Sjá öll forrit</translation>
 <translation id="2992327365391326550">Slökkt er á hljóðnemahnappi tækisins.</translation>
 <translation id="2996462380875591307">Kveikt á stækkunargleri í föstum glugga. Ýttu aftur á Ctrl+leitarhnappinn+D til að loka því.</translation>
@@ -669,6 +667,7 @@ Tengdu tækið við rafmagn.</translation>
 <translation id="4666082839192943839">Slökktu á aðgangi að myndavél í tækinu til að hafa alltaf lokað fyrir allar myndavélar.</translation>
 <translation id="4666911709726371538">Fleiri forrit</translation>
 <translation id="4667099493359681081">Sækir <ph name="FILENAME" /></translation>
+<translation id="468293128311738995">Forrit úr símanum</translation>
 <translation id="4690510401873698237">Hilla neðst</translation>
 <translation id="4696813013609194136">Opna tæki með kóða foreldris</translation>
 <translation id="4702647871202761252">Slökkt er á persónuverndarskjá</translation>
@@ -925,12 +924,10 @@ Tengdu tækið við rafmagn.</translation>
 <translation id="6103838137565245112">kerfi</translation>
 <translation id="6107292179555508368">Slökkt er á aðgangi hljóðnema og myndavélar í þessu tæki</translation>
 <translation id="6114505516289286752">Talskrár sóttar fyrir: <ph name="LANGUAGE" /></translation>
-<translation id="6116825164611323644">Slökkt er á aðgangi að myndavél í tækinu</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042">Staðfesta niðurhal <ph name="FILENAME" /></translation>
 <translation id="612734058257491180">Google hjálparinn er ekki í boði í gestalotu.</translation>
 <translation id="6129953537138746214">Bil</translation>
-<translation id="6134259848159370930">Leitaðu í tækinu þínu, forritum, stillingum og á netinu.</translation>
 <translation id="6137566720514957455">Opna fjarlægingarglugga fyrir <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6141988275892716286">Staðfesta niðurhal</translation>
 <translation id="6154006699632741460">Jaðartæki er ekki stutt</translation>
@@ -1291,6 +1288,7 @@ Ný uppsetning</translation>
 <translation id="8142441511840089262">Smella tvisvar</translation>
 <translation id="8142699993796781067">Einkanet</translation>
 <translation id="8144760705599030999">Vistaðu <ph name="NAME" /> í <ph name="EMAIL" /> til að vera fljótari að para við önnur tæki</translation>
+<translation id="8144914663975476336">Veldu upptökusnið</translation>
 <translation id="8149413265954228307">Sýna Bluetooth-stillingar. <ph name="STATE_TEXT" />.</translation>
 <translation id="8152092012181020186">Ýttu á Ctrl + W til að loka.</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, sjálfvirk útfylling</translation>
@@ -1388,7 +1386,6 @@ Ný uppsetning</translation>
 <translation id="8666856788528804727">Opnaðu <ph name="NAME" /> til að setja tækið upp</translation>
 <translation id="8676770494376880701">Afllítið hleðslutæki tengt</translation>
 <translation id="8683506306463609433">Afkastarakning virk</translation>
-<translation id="8685326675965865247">Leitaðu í tækinu þínu, forritum, stillingum og á vefnum. Notaðu örvatakkana til að fletta í gegnum forritin þín.</translation>
 <translation id="8703634754197148428">Hefja upptöku. Eftir að upptaka hefst geturðu notað Alt + Shift + L til að fara á hilluna og finna hnappinn til að hætta upptöku</translation>
 <translation id="8721053961083920564">Kveikja/slökkva á hljóði. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">Upptaka á öllum skjánum</translation>
@@ -1397,7 +1394,6 @@ Ný uppsetning</translation>
 <translation id="8735678380411481005">Litur baklýsingar lyklaborðs</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />,
         <ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8752416742247198423">Kveiktu á aðgangi að myndavél til að leyfa forritum og vefsíðum með myndavélarheimild að nota myndavélina/-vélarnar sem eru tengdar tækinu.</translation>
 <translation id="8755498163081687682">Staðfestu hver þú ert: <ph name="ORIGIN_NAME" /> vill staðfesta að þetta sért þú</translation>
 <translation id="875593634123171288">Sýna VPN-stillingar</translation>
 <translation id="8759408218731716181">Ekki er hægt að setja upp margar innskráningar</translation>
@@ -1464,7 +1460,6 @@ Ný uppsetning</translation>
 <translation id="9089416786594320554">Innsláttaraðferðir</translation>
 <translation id="9091626656156419976">Skjárinn <ph name="DISPLAY_NAME" /> var fjarlægður</translation>
 <translation id="9098969848082897657">Slökkva á hljóði síma</translation>
-<translation id="9099154003160514616">Uppfærsla fyrir Lacros er í boði</translation>
 <translation id="9100887602489003640">Bætir prófíl við. Hinkraðu í nokkrar mínútur.</translation>
 <translation id="9105450214093926548">Innskráning annars notanda er ekki möguleg á meðan Lacros vafrinn er í gangi. Notaðu annan vafraprófíl í Lacros í staðinn eða lokaðu Lacros og reyndu aftur.</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> eða <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>

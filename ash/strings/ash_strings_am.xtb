@@ -31,7 +31,6 @@
 <translation id="1148499908455722006">የ<ph name="USER_NAME" /> የመረጃ መገናኛን ክፈት</translation>
 <translation id="1150989369772528668">ቀን መቁጠሪያ</translation>
 <translation id="1153356358378277386">የተጣመሩ መሣሪያዎች</translation>
-<translation id="1165712434476988950">ዝማኔውን ለመተግበር የመሣሪያ ዳግም ማስጀመር ያስፈልጋል።</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />፣ <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">የእርስዎ USB-C ገመድ ከማሳያዎች ጋር በትክክል ላይገናኝ ይችላል</translation>
 <translation id="1175572348579024023">ሸብልል</translation>
@@ -304,7 +303,7 @@
 <translation id="2653019840645008922">የመስኮት መቅረጽ</translation>
 <translation id="2653659639078652383">አስገባ</translation>
 <translation id="2658778018866295321">ጠቅ ያድርጉ እና ይጎትቱ</translation>
-<translation id="2665788051462227163"><ph name="UNAVAILABLE_APPS_ONE" /> እና <ph name="UNAVAILABLE_APPS_TWO" /> በዚህ መሳሪያ ላይ የሉም።</translation>
+<translation id="2665788051462227163"><ph name="UNAVAILABLE_APPS_ONE" /> እና <ph name="UNAVAILABLE_APPS_TWO" /> በዚህ መሣሪያ ላይ የሉም።</translation>
 <translation id="2673968385134502798">ጨዋታዎች</translation>
 <translation id="2678852583403169292">ለመናገር-ምረጥ ምናሌ</translation>
 <translation id="2689613560355655046">ዴስክ 8</translation>
@@ -358,7 +357,6 @@
 <translation id="296762781903199866">የ<ph name="LANGUAGE" /> የንግግር ፋይሎችን ማውረድ አልተቻለም</translation>
 <translation id="2970920913501714344">መተግበሪያዎችን፣ ቅጥያዎችን እና ገጽታዎችን ይጫኑ</translation>
 <translation id="2977598380246111477">ቀጣይ ቁጥር</translation>
-<translation id="2981684127883932071">ጥቆማ ሐሳቦችን በማሳየት ላይ</translation>
 <translation id="2985148236010982088">ሁሉንም መተግበሪያዎች ይመልከቱ</translation>
 <translation id="2992327365391326550">የመሣሪያው ማይክሮፎን አዝራር ጠፍቷል።</translation>
 <translation id="2996462380875591307">የተተከለ ማጉያ ነቅቷል። እንደገና እንዲጠፋ አድርጎ ለመቀያየር Ctrl+ፍለጋ+D ይጫኑ።</translation>
@@ -498,7 +496,7 @@
 <translation id="3708186454126126312">ከዚህ ቀደም የተገናኘ</translation>
 <translation id="371370241367527062">የፊት ማይክሮፎን</translation>
 <translation id="3713734891607377840">ሲጠናቀቅ ይክፈቱ</translation>
-<translation id="3726171378575546917"><ph name="UNAVAILABLE_APPS_ONE" />፣ <ph name="UNAVAILABLE_APPS_TWO" /> እና <ph name="UNAVAILABLE_APPS_COUNT" /> ሌሎች በዚህ መሳሪያ ላይ የሉም።</translation>
+<translation id="3726171378575546917"><ph name="UNAVAILABLE_APPS_ONE" />፣ <ph name="UNAVAILABLE_APPS_TWO" /> እና <ph name="UNAVAILABLE_APPS_COUNT" /> ሌሎች በዚህ መሣሪያ ላይ የሉም።</translation>
 <translation id="3735740477244556633">ደርድር በ</translation>
 <translation id="3742055079367172538">ቅጽበታዊ ገጽ እይታ ተነስቷል</translation>
 <translation id="3765841986579723851">ዛሬ አርትዖት ተደርጎበታል</translation>
@@ -667,6 +665,7 @@
 <translation id="4666082839192943839">ሁሉንም ካሜራዎች ሁልጊዜ ለማገድ የካሜራውን መዳረሻ በዚህ መሣሪያ ላይ ያጥፉ።</translation>
 <translation id="4666911709726371538">ተጨማሪ መተግበሪያዎች</translation>
 <translation id="4667099493359681081"><ph name="FILENAME" />ን በማውረድ ላይ</translation>
+<translation id="468293128311738995">መተግበሪያዎች ከስልክዎ</translation>
 <translation id="4690510401873698237">መደርደሪያ ከታች</translation>
 <translation id="4696813013609194136">በወላጅ ኮድ መሣሪያን ክፈት</translation>
 <translation id="4702647871202761252">የግላዊነት ማያ ገጽ ጠፍቷል</translation>
@@ -846,7 +845,7 @@
 <translation id="5691772641933328258">የጣት አሻራ አልታወቀም</translation>
 <translation id="5693255400847650006">ማይክሮፎን ሥራ ላይ ነው</translation>
 <translation id="570390244361237317">ሁሉም መተግበሪያዎች፣ ሁሉም መተግበሪያዎች ላይ ለመድረስ በቀስት ቁልፎች ያስሱ</translation>
-<translation id="5707775774148071965">የእርስዎ መሳሪያ ከገመድዎ የበለጠ የውሂብ መጠን ይደግፋል። የመሳሪያ አፈጻጸም የተገደበ ሊሆን ይችላል።</translation>
+<translation id="5707775774148071965">የእርስዎ መሣሪያ ከገመድዎ የበለጠ የውሂብ መጠን ይደግፋል። የመሣሪያ አፈጻጸም የተገደበ ሊሆን ይችላል።</translation>
 <translation id="5710450975648804523">አትረብሽ በርቷል</translation>
 <translation id="571295407079589142">የተንቀሳቃሽ ስልክ ውሂብ ጠፍቷል</translation>
 <translation id="573413375004481890">ይህ መሣሪያ ሁሉንም የእርስዎ ማሳያዎች መደገፍ ስለማይችል አንዱ ግንኙነቱ እንዲቋረጥ ተደርጓል</translation>
@@ -923,12 +922,10 @@
 <translation id="6103838137565245112">ሥርዓት</translation>
 <translation id="6107292179555508368">ማይክሮፎን እና የካሜራ መዳረሻዎች በዚህ መሣሪያ ላይ ጠፍተዋል</translation>
 <translation id="6114505516289286752"><ph name="LANGUAGE" /> የንግግር ፋይሎች ወርደዋል</translation>
-<translation id="6116825164611323644">በዚህ መሣሪያ ላይ የካሜራ መዳረሻ ጠፍቷል</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />። <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042"><ph name="FILENAME" /> ማውረድን ያረጋግጡ</translation>
 <translation id="612734058257491180">የGoogle ረዳቱ በእንግዳ ክፍለ-ጊዜ ውስጥ አይገኝም።</translation>
 <translation id="6129953537138746214">ባዶ ቦታ</translation>
-<translation id="6134259848159370930">የእርስዎን መሣሪያ፣ መተግበሪያዎች፣ ቅንብሮች እና ድር ይፈልጉ።</translation>
 <translation id="6137566720514957455">ለ<ph name="USER_EMAIL_ADDRESS" /> የአስወግድ መገናኛን ክፈት</translation>
 <translation id="6141988275892716286">ማውረድ ያረጋግጡ</translation>
 <translation id="6154006699632741460">መለዋወጫ አይደገፍም</translation>
@@ -1286,6 +1283,7 @@
 <translation id="8142441511840089262">ድርብ ጠቅታ</translation>
 <translation id="8142699993796781067">የግል አውታረ መረብ</translation>
 <translation id="8144760705599030999">ከሌሎች መሣሪያዎችዎ ጋር በፍጥነት ለማጣመር የእርስዎ <ph name="NAME" />ን ወደ <ph name="EMAIL" /> ላይ ያስቀምጡ</translation>
+<translation id="8144914663975476336">የመቅዳት ቅርጸትን ይምረጡ</translation>
 <translation id="8149413265954228307">የብሉቱዝ ቅንብሮችን አሳይ። <ph name="STATE_TEXT" />።</translation>
 <translation id="8152092012181020186">ለመዝጋት Ctrl + W ይጫኑ።</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />፣ ራስሰር ሙላ</translation>
@@ -1383,7 +1381,6 @@
 <translation id="8666856788528804727">መሣሪያዎን ለማዋቀር <ph name="NAME" />ን ይክፈቱ</translation>
 <translation id="8676770494376880701">አነስተኛ ኃይል ያለው ባትሪ መሙያ ተገናኝቷል</translation>
 <translation id="8683506306463609433">የአፈጻጸም ክትትል ገቢር ነው</translation>
-<translation id="8685326675965865247">የእርስዎን መሣሪያ፣ መተግበሪያዎች እና ድርን ይፈልጉ። በእርስዎ መተግበሪያዎች መካከል አሰሳ ለማድረግ የቀስት ቁልፎቹን ይጠቀሙ።</translation>
 <translation id="8703634754197148428">መቅዳት ጀምር። አንዴ ቀረጻው ከጀመረ በኋላ ወደ መደርደሪያው ለመሄድ እና ቀረፃውን አዝራር አቁምን ለማግኘት Alt + Shift + Lን ይጠቀሙ</translation>
 <translation id="8721053961083920564">ድምፅን ቀያይር። <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">ሙሉ የማያ ገጽ ቀረጻ</translation>
@@ -1392,7 +1389,6 @@
 <translation id="8735678380411481005">የቁልፍ ሰሌዳ የጀርባ ብርሃን ቀለም</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />፣
         <ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8752416742247198423">የካሜራ ፈቃድ ያላቸው መተግበሪያዎች እና ድረ-ገጾች ከዚህ መሣሪያ ጋር የተገናኘውን ካሜራ(ዎች) እንዲጠቀሙ ለመፍቀድ የካሜራ መዳረሻን ያብሩ።</translation>
 <translation id="8755498163081687682">የእርስዎን ማንነት ያረጋግጡ፦ <ph name="ORIGIN_NAME" /> እርስዎ መሆንዎን ማረጋገጥ ይፈልጋል</translation>
 <translation id="875593634123171288">የቪፒኤን ቅንብሮችን አሳይ</translation>
 <translation id="8759408218731716181">ባለብዙ መለያ መግቢያን ማዋቀር አልተቻለም</translation>
@@ -1459,7 +1455,6 @@
 <translation id="9089416786594320554">የግቤት ስልቶች</translation>
 <translation id="9091626656156419976">ማሳያ <ph name="DISPLAY_NAME" /> ተወግዷል</translation>
 <translation id="9098969848082897657">የስልክ ድምጽን አጥፋ</translation>
-<translation id="9099154003160514616">የLacros ዝማኔ አለ</translation>
 <translation id="9100887602489003640">መገለጫን በማከል ላይ። ጥቂት ደቂቃዎችን ይጠብቁ።</translation>
 <translation id="9105450214093926548">የLacros አሳሹ በሚሰራበት ጊዜ ወደ ሁለተኛው ተጠቃሚ በመለያ በመግባት አይደገፍም። እባክዎ በምትኩ በLacros ውስጥ ሁለተኛ የአሳሽ መገለጫ ይጠቀሙ ወይም Lacrosን ይዝጉ እና እንደገና ይሞክሩ።</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> ወይም <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>

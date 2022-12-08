@@ -25,6 +25,10 @@
       dark: '$cros.ref.primary80',
       generate_per_mode: true,
     },
+    'inverse-primary': {
+      light: '$cros.ref.primary80',
+      dark: '$cros.ref.primary40',
+    },
     'on-primary': {
       light: '$cros.ref.primary100',
       dark:  '$cros.ref.primary20',
@@ -194,12 +198,77 @@
       dark: '$cros.ref.primary10',
     },
 
+    /* Harmonized colors */
+    'on-positive-container': {
+      light: '$cros.ref.green30',
+      dark: '$cros.ref.green90',
+    },
+    'positive-container': {
+      light: '$cros.ref.green95',
+      dark: 'blend(rgba($cros.ref.green95.rgb, 0.20), $black)',
+    },
+    'positive': {
+      light: '$cros.ref.green50',
+      dark: '$cros.ref.green80',
+    },
+
+    'on-warning-container': {
+      light: '$cros.ref.yellow30',
+      dark: '$cros.ref.yellow80',
+    },
+    'warning-container': {
+      light: '$cros.ref.yellow90',
+      dark: 'blend(rgba($cros.ref.yellow90.rgb, 0.20), $black)',
+    },
+    'warning': {
+      light: '$cros.ref.yellow30',
+      dark: '$cros.ref.yellow80',
+    },
+
+    'on-error-container': {
+      light: '$cros.ref.red30',
+      dark: '$cros.ref.red80',
+    },
+    'error-container': {
+      light: '$cros.ref.red90',
+      dark: 'blend(rgba($cros.ref.red80.rgb, 0.20), $black)',
+    },
+    'error': {
+      light: '$cros.ref.red50',
+      dark: '$cros.ref.red80',
+    },
+
+    'on-progress-container': {
+      light: '$cros.ref.blue30',
+      dark: '$cros.ref.blue80',
+    },
+    'progress-container': {
+      light: '$cros.ref.blue90',
+      dark: 'blend(rgba($cros.ref.blue80.rgb, 0.20), $black)',
+    },
+    'progress': {
+      light: '$cros.ref.blue50',
+      dark: '$cros.ref.blue80',
+    },
+
+    'system-on-negative-container': {
+      light: '$cros.ref.red10',
+      dark: '$cros.ref.red10',
+    },
+    'system-negative-container': {
+      light: '$cros.ref.red80',
+      dark: '$cros.ref.red80',
+    },
 
     /* Text and icons */
     'on-surface': {
       light: '$cros.ref.neutral10',
       dark: '$cros.ref.neutral90',
       generate_per_mode: true,
+    },
+    'inverse-on-surface': {
+      light: '$cros.ref.neutral95',
+      dark: '$cros.ref.neutral10',
     },
     'on-surface-bodytext': {
       light: '$cros.ref.neutral40',

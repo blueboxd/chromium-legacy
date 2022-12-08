@@ -31,7 +31,6 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="1148499908455722006">Abrir a caixa de diálogo de informações de <ph name="USER_NAME" /></translation>
 <translation id="1150989369772528668">Calendário</translation>
 <translation id="1153356358378277386">Dispositivos sincronizados</translation>
-<translation id="1165712434476988950">É necessário reiniciar o dispositivo para aplicar a atualização.</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">O cabo USB-C pode não ser ligado a ecrãs corretamente</translation>
 <translation id="1175572348579024023">Deslocar</translation>
@@ -358,7 +357,6 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="296762781903199866">Não foi possível transferir os ficheiros de voz em <ph name="LANGUAGE" /></translation>
 <translation id="2970920913501714344">Instalar aplicações, extensões e temas</translation>
 <translation id="2977598380246111477">Número seguinte</translation>
-<translation id="2981684127883932071">A apresentar sugestões</translation>
 <translation id="2985148236010982088">Ver todas as apps</translation>
 <translation id="2992327365391326550">O botão do microfone do dispositivo está desativado.</translation>
 <translation id="2996462380875591307">Lupa ancorada ativada. Prima Ctrl + Pesquisa + D novamente para a desativar.</translation>
@@ -926,12 +924,10 @@ Ligue o dispositivo à corrente.</translation>
 <translation id="6103838137565245112">sistema</translation>
 <translation id="6107292179555508368">O acesso ao microfone e à câmara está desativado neste dispositivo</translation>
 <translation id="6114505516289286752">Ficheiros de voz em <ph name="LANGUAGE" /> transferidos</translation>
-<translation id="6116825164611323644">O acesso à câmara está desativado neste dispositivo</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042">Confirmar transferência de <ph name="FILENAME" /></translation>
 <translation id="612734058257491180">O Assistente Google não está disponível em sessões de convidado.</translation>
 <translation id="6129953537138746214">Espaço</translation>
-<translation id="6134259848159370930">Pesquise no dispositivo, nas apps, nas definições e na Web.</translation>
 <translation id="6137566720514957455">Abrir caixa de diálogo de remoção para <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6141988275892716286">Confirmar transferência</translation>
 <translation id="6154006699632741460">O periférico não é suportado</translation>
@@ -1292,6 +1288,7 @@ Nova instalação</translation>
 <translation id="8142441511840089262">Clicar duas vezes</translation>
 <translation id="8142699993796781067">Rede privada</translation>
 <translation id="8144760705599030999">Guarde o dispositivo <ph name="NAME" /> em <ph name="EMAIL" /> para permitir uma sincronização mais rápida com os outros dispositivos</translation>
+<translation id="8144914663975476336">Selecione o formato de gravação</translation>
 <translation id="8149413265954228307">Veja as definições de Bluetooth. <ph name="STATE_TEXT" />.</translation>
 <translation id="8152092012181020186">Prima Ctrl + W para fechar.</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, preenchimento automático</translation>
@@ -1389,7 +1386,6 @@ Nova instalação</translation>
 <translation id="8666856788528804727">Abra <ph name="NAME" /> para configurar o dispositivo</translation>
 <translation id="8676770494376880701">Carregador de baixo consumo ligado</translation>
 <translation id="8683506306463609433">O rastreio do desempenho está ativo.</translation>
-<translation id="8685326675965865247">Pesquise no dispositivo, nas apps e na Web. Utilize as teclas de seta para navegar nas apps.</translation>
 <translation id="8703634754197148428">Inicie a gravação. Assim que a gravação for iniciada, utilize Alt + Shift + L para navegar até à prateleira e localize o botão para parar a gravação.</translation>
 <translation id="8721053961083920564">Ative/desative o volume. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">Captura de ecrã total</translation>
@@ -1398,7 +1394,6 @@ Nova instalação</translation>
 <translation id="8735678380411481005">Cor da retroiluminação do teclado</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />,
         <ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8752416742247198423">Ative o acesso à câmara para permitir que as apps e as páginas Web com autorização de acesso à câmara usem as câmaras associadas a este dispositivo.</translation>
 <translation id="8755498163081687682">Valide a sua identidade: <ph name="ORIGIN_NAME" /> pretende confirmar a sua identidade.</translation>
 <translation id="875593634123171288">Mostrar definições da VPN</translation>
 <translation id="8759408218731716181">Não é possível configurar o início de sessão integrado</translation>
@@ -1465,7 +1460,6 @@ Nova instalação</translation>
 <translation id="9089416786594320554">Métodos de introd.</translation>
 <translation id="9091626656156419976">Ecrã <ph name="DISPLAY_NAME" /> removido</translation>
 <translation id="9098969848082897657">Silenciar telemóvel</translation>
-<translation id="9099154003160514616">Atualização do Lacros disponível</translation>
 <translation id="9100887602489003640">A adicionar o perfil. Aguarde alguns minutos.</translation>
 <translation id="9105450214093926548">Não é possível iniciar a sessão de um segundo utilizador enquanto o navegador Lacros estiver em execução. Em alternativa, utilize um segundo perfil de navegador no Lacros ou feche o Lacros e tente novamente.</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> ou <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>

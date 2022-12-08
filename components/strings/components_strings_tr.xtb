@@ -308,7 +308,6 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
 <translation id="168693727862418163">Bu politika değeri, şemasına göre doğrulanamadı, yok sayılacak.</translation>
 <translation id="168841957122794586">Sunucu sertifikasında zayıf bir şifreleme anahtarı var.</translation>
 <translation id="1697532407822776718">Artık hazırsınız!</translation>
-<translation id="1699570257714336246">Bilgi eksik</translation>
 <translation id="1702815194757674443">ROC 16K</translation>
 <translation id="1703835215927279855">Letter</translation>
 <translation id="1706625117072057435">Yakınlaştırma seviyeleri</translation>
@@ -1024,7 +1023,6 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
 <translation id="3584299510153766161">Altta ikili delik</translation>
 <translation id="3586931643579894722">Ayrıntıları gizle</translation>
 <translation id="3587738293690942763">Orta</translation>
-<translation id="3595645257662173296">Bunu destekleyen kanıtlar neler?</translation>
 <translation id="3595699422137460894">{NUM_DAYS,plural, =0{Grubunuzu istediğiniz zaman sıfırlayabilirsiniz. Yeni bir gruba katılmak yaklaşık bir gün sürer.}=1{Grubunuzu istediğiniz zaman sıfırlayabilirsiniz. Yeni bir gruba katılmak yaklaşık bir gün sürer.}other{Grubunuzu istediğiniz zaman sıfırlayabilirsiniz. Yeni bir gruba katılmak yaklaşık {NUM_DAYS} gün sürer.}}</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3603507503523709">Uygulama, yöneticiniz tarafından engellendi</translation>
@@ -1164,7 +1162,6 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
 <translation id="3961148744525529027">Ödeme işleyici sayfası yarım olarak açıldı</translation>
 <translation id="3962859241508114581">Önceki Parça</translation>
 <translation id="3963721102035795474">Okuyucu Modu</translation>
-<translation id="3963837677003247395">Manuel olarak devam edilsin mi?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{Yok}=1{1 siteden }other{# siteden }}</translation>
 <translation id="3969052498612555048">Kodunuzu bulamıyor musunuz? <ph name="BEGIN_LINK" />Yeni kod al<ph name="END_LINK" /></translation>
 <translation id="397105322502079400">Hesaplanııyor...</translation>
@@ -1366,7 +1363,6 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
 <translation id="4434045419905280838">Pop-up'lar ve yönlendirmeler</translation>
 <translation id="443673843213245140">Proxy kullanımı devre dışı, ancak açık bir proxy yapılandırması belirtildi.</translation>
 <translation id="4441832193888514600">Yalnızca bulut kullanıcı politikası olarak ayarlanabileceği için politika yoksayıldı.</translation>
-<translation id="4450893287417543264">Bir daha gösterme</translation>
 <translation id="4451135742916150903">HID cihazlarına bağlanmak isteyebilir</translation>
 <translation id="4452328064229197696">Az önce kullandığınız şifrenin bir veri ihlali sonucunda açığa çıktığı anlaşıldı. Google Şifre Yöneticisi, hesaplarınızın güvenliğini sağlamak için kayıtlı şifrelerinizi kontrol etmenizi öneriyor.</translation>
 <translation id="4460315069258617173">Bu siteye ait sekmeleri kapatana kadar izin verilir</translation>
@@ -1509,7 +1505,6 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
 <translation id="4813512666221746211">Ağ hatası</translation>
 <translation id="4816492930507672669">Sayfaya sığdır</translation>
 <translation id="4819347708020428563">Ek açıklamalar varsayılan görünümde düzenlensin mi?</translation>
-<translation id="4823325221257637040">Başlatılıyor</translation>
 <translation id="4825496307559726072"><ph name="CREATE_GOOGLE_SHEET_FOCUSED_FRIENDLY_MATCH_TEXT" />, hızlıca yeni bir Google E-Tablosu oluşturmak için Sekme'ye, ardından Enter'a basın</translation>
 <translation id="4825507807291741242">Güçlü</translation>
 <translation id="483241715238664915">Uyarıları açın</translation>
@@ -1943,7 +1938,6 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
 <translation id="5937560539988385583">Sayfa çevrildi</translation>
 <translation id="5938153366081463283">Sanal kart ekleyin</translation>
 <translation id="5938793338444039872">Troy</translation>
-<translation id="5946937721014915347"><ph name="SITE_NAME" /> açılıyor…</translation>
 <translation id="5947508410139465809">Yüklediğiniz veya eklediğiniz dosyalar analiz amacıyla Google Cloud ve üçüncü taraflara gönderilir. Örneğin, dosyalarınızın hassas veriler veya kötü amaçlı yazılım içerip içermediği kontrol edilir ve şirket politikalarına bağlı olarak bu dosyalar saklanabilir.</translation>
 <translation id="5951495562196540101">Tüketici hesabına kaydedilemiyor (paket lisans mevcut).</translation>
 <translation id="5953516610448771166">Canlı Altyazı bu medya içeriğinde kullanılamıyor. Altyazıları görmek için bu sitedeki <ph name="CONTENT_SETTINGS" /> ayarını engelleyin.</translation>
@@ -1965,6 +1959,7 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
 <translation id="5995727681868049093">Google Hesabınızda bilgilerinizi, gizliliğinizi ve güvenliğinizi yönetin</translation>
 <translation id="5997247540087773573">Az önce kullandığınız şifrenin bir veri ihlali sonucunda açığa çıktığı anlaşıldı. Google Şifre Yöneticisi, hesaplarınızın güvenliğini sağlamak için bu şifreyi hemen değiştirmenizi ve kayıtlı şifrelerinizi kontrol etmenizi öneriyor.</translation>
 <translation id="6000758707621254961">"<ph name="SEARCH_TEXT" />" için bulunan <ph name="RESULT_COUNT" /> sonuç gösteriliyor</translation>
+<translation id="6005765687956866568">Otomatik doldurulan bilgiler formdan silindi</translation>
 <translation id="6006365096047131769">3 x 5 inç</translation>
 <translation id="6006484371116297560">Klasik</translation>
 <translation id="6008122969617370890">N'den 1'e sıralı</translation>
@@ -2034,7 +2029,6 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
 <translation id="6165508094623778733">Daha fazla bilgi</translation>
 <translation id="6167577165590485365">Son getirme girişimi:</translation>
 <translation id="6169916984152623906">Artık gizli olarak göz atabilirsiniz ve bu cihazı kullanan diğer kişiler etkinliğinizi görmez. Yine de indirdikleriniz ve yer işaretleri kaydedilir.</translation>
-<translation id="6176716740821145453">Bilgilerin doğruluğunu düşünmek için bir dakikanızı ayırın</translation>
 <translation id="6177128806592000436">Bu siteye bağlantınız güvenli değil</translation>
 <translation id="6177531123306197852">Zarf C2</translation>
 <translation id="6180316780098470077">Deneme aralığı</translation>
@@ -2080,7 +2074,6 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
 <translation id="6295618774959045776">CVC:</translation>
 <translation id="6300452962057769623">{0,plural, =0{Cihazınız şimdi yeniden başlatılacak}=1{Cihazınız 1 saniye içinde yeniden başlatılacak}other{Cihazınız # saniye içinde yeniden başlatılacak}}</translation>
 <translation id="6301104306974789820">Fiyat takibi bildirimleri al</translation>
-<translation id="6302269476990306341">Chrome'da Google Asistan durduruluyor</translation>
 <translation id="6305205051461490394"><ph name="URL" /> adresine ulaşılamıyor.</translation>
 <translation id="6311165245110979290">Sanal kart mevcut</translation>
 <translation id="6312113039770857350">Web sayfası mevcut değil</translation>
@@ -2275,6 +2268,7 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
 <translation id="6826993739343257035">AR'a izin verilsin mi?</translation>
 <translation id="6828866289116430505">Genetik bilimi</translation>
 <translation id="6831043979455480757">Çevir</translation>
+<translation id="6832753933931306326">Form dolduruldu</translation>
 <translation id="6842196666980060516">184 x 260 mm</translation>
 <translation id="6846340164947227603">Sanal kart numarası kullanın...</translation>
 <translation id="6852204201400771460">Uygulama yeniden yüklensin mi?</translation>
@@ -2335,7 +2329,6 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
 <translation id="6971439137020188025">Slaytlar'da hızlıca yeni bir Google sunusu oluşturun</translation>
 <translation id="6972629891077993081">HID cihazlar</translation>
 <translation id="6973656660372572881">Hem sabit proxy sunucular hem de bir .pac komut dosyası URL'si belirtildi.</translation>
-<translation id="6973932557599545801">Maalesef daha fazla yardımcı olamıyorum, lütfen kendiniz devam edin.</translation>
 <translation id="6973988895180423160">3,5 x 5 inç</translation>
 <translation id="6978236010531171013">Yine de paylaş</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -2531,7 +2524,6 @@ Ek ayrıntılar:
 <translation id="7451311239929941790">Bu sorun hakkında <ph name="BEGIN_LINK" />daha fazla<ph name="END_LINK" /> bilgi edinme.</translation>
 <translation id="7455133967321480974">Genel varsayılanı kullan (Engelle)</translation>
 <translation id="745640750744109667">A0x3</translation>
-<translation id="7460618730930299168">Filtreleme sizin seçiminizden farklı. Devam etmek istiyor musunuz?</translation>
 <translation id="7461924472993315131">Sabitle</translation>
 <translation id="7463075493919226237">Avustralya futbolu</translation>
 <translation id="7465963048299965912">10 x 13 inç</translation>
@@ -2540,7 +2532,6 @@ Ek ayrıntılar:
 <translation id="7481312909269577407">İleri</translation>
 <translation id="7481603210197454575">Zarf Italian</translation>
 <translation id="7485870689360869515">Hiçbir veri bulunamadı.</translation>
-<translation id="7485948220959728508">Bu bilginin kaynağı kim?</translation>
 <translation id="748745328507845862">Konserler ve müzik festivalleri</translation>
 <translation id="7489473601138133813">Kariyer kaynakları ve planlama</translation>
 <translation id="7495528107193238112">Bu içerik engellenmiştir. Sorunu gidermek için site sahibiyle iletişime geçin.</translation>
@@ -2646,7 +2637,6 @@ Ek ayrıntılar:
 <translation id="7682451652090915298">Ragbi</translation>
 <translation id="7687186412095877299">Ödeme formlarını kayıtlı ödeme yöntemlerinizle doldurur</translation>
 <translation id="7687305263118037187">Tekrar deneme zaman aşımı</translation>
-<translation id="7687451951329798396">Diğer kaynaklar ne diyor?</translation>
 <translation id="7690647519407127574">Oufuku Hagaki Kartpostal</translation>
 <translation id="7693583928066320343">Sayfa sırası alındı</translation>
 <translation id="7696089921647603491">Klasik rock ve eski şarkılar</translation>
@@ -2731,6 +2721,7 @@ Ek ayrıntılar:
 <translation id="7950027195171824198">Chrome ayarlarında çerez tercihlerinizi yönetin</translation>
 <translation id="7951415247503192394">(32 bit)</translation>
 <translation id="7952192831285741665">European EDP</translation>
+<translation id="7952804540472583406">Ağda <ph name="BEGIN_LINK" />oturum açma<ph name="END_LINK" /></translation>
 <translation id="7953569069500808819">Üstte kenar dikişi</translation>
 <translation id="7956713633345437162">Mobil yer işaretleri</translation>
 <translation id="7961015016161918242">Hiçbir Zaman</translation>
@@ -2848,6 +2839,7 @@ Ek ayrıntılar:
 <translation id="8241707690549784388">Aradığınız sayfa, girdiğiniz bilgileri kullandı. O sayfaya dönmeniz, gerçekleştirdiğiniz işlemlerin tekrarlanmasına yol açabilir. Devam etmek istiyor musunuz?</translation>
 <translation id="8241712895048303527">Bu sitede engelle</translation>
 <translation id="8242426110754782860">Devam et</translation>
+<translation id="8245703462678310750">Tam ekrandan çıkıp indirme işlemini görmek için |<ph name="ACCELERATOR" />| tuşuna basılı tutun.</translation>
 <translation id="8249296373107784235">İptal Et</translation>
 <translation id="8249463483885748674">Standart testler ve giriş sınavları</translation>
 <translation id="8252991034201168845">Erişilebilirlik ayarlarını yönetin düğmesi, ChromeOS ayarlarında erişilebilirlik araçlarınızı kişiselleştirmek için Enter'a basın</translation>
@@ -3221,7 +3213,6 @@ Ek ayrıntılar:
 <translation id="937457230470581909">Hayvanat Bahçeleri, akvaryumlar ve doğa koruma alanları</translation>
 <translation id="939736085109172342">Yeni klasör</translation>
 <translation id="940053046584497293">Seyahat ve ulaşım</translation>
-<translation id="945522503751344254">Geri bildirim gönder</translation>
 <translation id="945855313015696284">Aşağıdaki bilgileri kontrol edin ve geçersiz kartları silin</translation>
 <translation id="947370374845726940"><ph name="CREATE_GOOGLE_SITE_FOCUSED_FRIENDLY_MATCH_TEXT" />, Google Sites'ta hızlıca yeni bir site oluşturmak için Sekme'ye, ardından Enter'a basın</translation>
 <translation id="950736567201356821">Üstte üçlü delik</translation>

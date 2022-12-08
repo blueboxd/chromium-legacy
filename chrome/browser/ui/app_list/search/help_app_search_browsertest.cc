@@ -13,10 +13,10 @@
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/ash/app_list/search/test/app_list_search_test_helper.h"
+#include "chrome/browser/ash/app_list/search/test/search_results_changed_waiter.h"
+#include "chrome/browser/ash/app_list/search/test/test_continue_files_search_provider.h"
 #include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
-#include "chrome/browser/ui/app_list/search/test/app_list_search_test_helper.h"
-#include "chrome/browser/ui/app_list/search/test/search_results_changed_waiter.h"
-#include "chrome/browser/ui/app_list/search/test/test_continue_files_search_provider.h"
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -261,6 +261,13 @@ IN_PROC_BROWSER_TEST_F(HelpAppSearchBrowserTest,
 // Test that the help app provider provides list search results.
 IN_PROC_BROWSER_TEST_F(HelpAppSearchBrowserTest,
                        HelpAppProviderProvidesListResults) {
+  // Show the app list and simulate search.
+  AppListClientImpl::GetInstance()->ShowAppList(
+      ash::AppListShowSource::kSearchKey);
+  ash::AppListTestApi().WaitForBubbleWindow(
+      /*wait_for_opening_animation=*/false);
+  ash::AppListTestApi().SimulateSearch(u"Fix");
+
   // Need this because it sets up the icon.
   ash::SystemWebAppManager::GetForTest(GetProfile())
       ->InstallSystemAppsForTesting();

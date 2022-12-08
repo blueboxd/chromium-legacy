@@ -34,6 +34,8 @@ source_set("web_applications") {
     "commands/sub_app_install_command.h",
     "commands/update_file_handler_command.cc",
     "commands/update_file_handler_command.h",
+    "commands/update_protocol_handler_approval_command.cc",
+    "commands/update_protocol_handler_approval_command.h",
     "commands/web_app_command.cc",
     "commands/web_app_command.h",
     "commands/web_app_uninstall_command.cc",
@@ -100,6 +102,8 @@ source_set("web_applications") {
     "os_integration/os_integration_manager.cc",
     "os_integration/os_integration_manager.h",
     "os_integration/os_integration_sub_manager.h",
+    "os_integration/shortcut_handling_sub_manager.cc",
+    "os_integration/shortcut_handling_sub_manager.h",
     "os_integration/url_handler_manager.cc",
     "os_integration/url_handler_manager.h",
     "os_integration/web_app_file_handler_manager.cc",
@@ -211,7 +215,6 @@ source_set("web_applications") {
     "web_app_sources.h",
     "web_app_sync_bridge.cc",
     "web_app_sync_bridge.h",
-    "web_app_sync_install_delegate.h",
     "web_app_system_web_app_delegate_map_utils.cc",
     "web_app_system_web_app_delegate_map_utils.h",
     "web_app_tab_helper.cc",
@@ -589,7 +592,6 @@ source_set("web_applications_unit_tests") {
     "web_app_icon_generator_unittest.cc",
     "web_app_icon_manager_unittest.cc",
     "web_app_install_finalizer_unittest.cc",
-    "web_app_install_manager_unittest.cc",
     "web_app_install_task_unittest.cc",
     "web_app_install_utils_unittest.cc",
     "web_app_prefs_utils_unittest.cc",
@@ -597,6 +599,7 @@ source_set("web_applications_unit_tests") {
     "web_app_registrar_unittest.cc",
     "web_app_sync_bridge_unittest.cc",
     "web_app_translation_manager_unittest.cc",
+    "web_app_ui_manager_unittest.cc",
     "web_app_unittest.cc",
     "web_app_url_loader_unittest.cc",
     "web_app_utils_unittest.cc",
@@ -729,12 +732,14 @@ source_set("web_applications_browser_tests") {
     "commands/install_from_info_command_browsertest.cc",
     "commands/install_from_sync_command_browsertest.cc",
     "commands/install_isolated_web_app_command_browsertest.cc",
+    "commands/update_protocol_handler_approval_command_browsertest.cc",
     "externally_installed_web_app_prefs_browsertest.cc",
     "externally_managed_app_manager_impl_browsertest.cc",
     "isolated_web_apps/install_isolated_web_app_from_command_line_browsertest.cc",
     "isolated_web_apps/isolated_web_app_browsertest.cc",
     "isolated_web_apps/isolated_web_app_url_loader_factory_browsertest.cc",
     "manifest_update_manager_browsertest.cc",
+    "os_integration/shortcut_handling_sub_manager_browsertest.cc",
     "preinstalled_web_app_manager_browsertest.cc",
     "preinstalled_web_apps_browsertest.cc",
     "user_uninstalled_preinstalled_web_app_prefs_browsertest.cc",
@@ -754,6 +759,10 @@ source_set("web_applications_browser_tests") {
 
   if (is_chromeos) {
     sources += [ "policy/web_app_policy_manager_browsertest.cc" ]
+  }
+
+  if (is_chromeos_ash) {
+    sources += [ "isolated_web_apps/policy/isolated_web_app_policy_manager_ash_browsertest.cc" ]
   }
 
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
@@ -779,6 +788,7 @@ source_set("web_applications_browser_tests") {
 
   if (is_chromeos_ash) {
     deps += [
+      "//chrome/browser/ash:test_support",
       "//chrome/browser/ash/system_web_apps/test_support",
       "//chrome/browser/ash/system_web_apps/test_support:test_support_ui",
     ]

@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/strings/stringprintf.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "components/history/core/browser/sync/history_sync_metadata_database.h"
@@ -36,6 +37,10 @@ namespace {
 using testing::_;
 using testing::Return;
 
+GURL GetURL(int i) {
+  return GURL(base::StringPrintf("https://url%i.com/", i));
+}
+
 sync_pb::HistorySpecifics CreateSpecifics(
     base::Time visit_time,
     const std::string& originator_cache_guid,
@@ -52,8 +57,10 @@ sync_pb::HistorySpecifics CreateSpecifics(
     auto* redirect_entry = specifics.add_redirect_entries();
     redirect_entry->set_originator_visit_id(originator_visit_ids[i]);
     redirect_entry->set_url(urls[i].spec());
-    redirect_entry->set_redirect_type(
-        sync_pb::SyncEnums_PageTransitionRedirectType_SERVER_REDIRECT);
+    if (i > 0) {
+      redirect_entry->set_redirect_type(
+          sync_pb::SyncEnums_PageTransitionRedirectType_SERVER_REDIRECT);
+    }
   }
   return specifics;
 }
@@ -669,8 +676,10 @@ TEST_F(HistorySyncBridgeTest, UploadsNewLocalVisit) {
 }
 
 TEST_F(HistorySyncBridgeTest, DoesNotUploadPreexistingData) {
-  AddVisitToBackendAndAdvanceClock(GURL("https://www.url.com"),
-                                   ui::PAGE_TRANSITION_LINK);
+  auto [url_row, visit_row] = AddVisitToBackendAndAdvanceClock(
+      GURL("https://www.url.com"), ui::PAGE_TRANSITION_LINK);
+  bridge()->OnURLVisited(
+      /*history_backend=*/nullptr, url_row, visit_row);
 
   ApplyInitialSyncChanges({});
 
@@ -680,6 +689,31 @@ TEST_F(HistorySyncBridgeTest, DoesNotUploadPreexistingData) {
   // The local data should still exist though.
   EXPECT_EQ(backend()->GetURLs().size(), 1u);
   EXPECT_EQ(backend()->GetVisits().size(), 1u);
+}
+
+TEST_F(HistorySyncBridgeTest, DoesNotUploadUnsyncableURLs) {
+  ApplyInitialSyncChanges({});
+
+  // file:// URLs don't make sense to sync.
+  auto [url_row1, visit_row1] = AddVisitToBackendAndAdvanceClock(
+      GURL("file:///path/to/file"), ui::PAGE_TRANSITION_TYPED);
+  bridge()->OnURLVisited(
+      /*history_backend=*/nullptr, url_row1, visit_row1);
+
+  // "data://" URLs can be arbitrarily large, and thus shouldn't be synced.
+  auto [url_row2, visit_row2] = AddVisitToBackendAndAdvanceClock(
+      GURL("data:text/plain;base64,SGVsbG8sIFdvcmxkIQ=="),
+      ui::PAGE_TRANSITION_TYPED);
+  bridge()->OnURLVisited(
+      /*history_backend=*/nullptr, url_row2, visit_row2);
+
+  // Note: There are several other types of URLs that shouldn't be synced, but
+  // which are already filtered out by the history system before ever reaching
+  // the bridge, such as javascript://, about://, chrome:// etc - see
+  // CanAddURLToHistory().
+
+  // The data should *not* have been uploaded to Sync.
+  EXPECT_TRUE(processor()->GetEntities().empty());
 }
 
 TEST_F(HistorySyncBridgeTest, DoesNotUploadWhileSyncIsPaused) {
@@ -853,6 +887,52 @@ TEST_F(HistorySyncBridgeTest, UploadsUpdatedLocalVisit) {
       visit_duration);
 }
 
+TEST_F(HistorySyncBridgeTest, DoesNotUploadUpdatedForeignVisit) {
+  sync_pb::HistorySpecifics remote_entity =
+      CreateSpecifics(base::Time::Now() - base::Minutes(1), "remote_cache_guid",
+                      GURL("https://remote.com"));
+
+  // Start Sync, so the remote data gets written to the local DB.
+  ApplyInitialSyncChanges({remote_entity});
+  ASSERT_EQ(backend()->GetVisits().size(), 1u);
+
+  VisitRow visit_row = backend()->GetVisits()[0];
+  const std::string storage_key =
+      HistorySyncMetadataDatabase::StorageKeyFromVisitTime(
+          visit_row.visit_time);
+
+  // The visit is known in the processor (representing the server state).
+  ASSERT_EQ(processor()->GetEntities().size(), 1u);
+  ASSERT_EQ(processor()->GetEntities().count(storage_key), 1u);
+  ASSERT_FALSE(processor()->IsEntityUnsynced(storage_key));
+  ASSERT_EQ(processor()
+                ->GetEntities()
+                .at(storage_key)
+                .specifics.history()
+                .visit_duration_micros(),
+            0);
+
+  // Update the foreign visit locally. Generally, foreign visits shouldn't get
+  // updated on this device, but some other code interacting with the history DB
+  // might do it (probably mistakenly).
+  visit_row.visit_duration = base::Seconds(10);
+  ASSERT_TRUE(backend()->UpdateVisit(visit_row));
+  bridge()->OnVisitUpdated(visit_row);
+
+  // The updated visit should *not* have been sent to the processor - the entity
+  // in the processor should *not* be unsynced, and its visit duration should
+  // still be 0.
+  ASSERT_EQ(processor()->GetEntities().size(), 1u);
+  ASSERT_EQ(processor()->GetEntities().count(storage_key), 1u);
+  EXPECT_FALSE(processor()->IsEntityUnsynced(storage_key));
+  EXPECT_EQ(processor()
+                ->GetEntities()
+                .at(storage_key)
+                .specifics.history()
+                .visit_duration_micros(),
+            0);
+}
+
 TEST_F(HistorySyncBridgeTest, UploadsUpdatedUrlTitle) {
   // Start syncing (with no data yet).
   ApplyInitialSyncChanges({});
@@ -901,14 +981,15 @@ TEST_F(HistorySyncBridgeTest, UploadsLocalVisitWithRedirects) {
   URLID url_id3 = backend()->AddURL(url_row3);
   url_row3.set_id(url_id3);
 
+  // Simulate server-side redirects, which cause all visits in the chain to have
+  // the same timestamp.
   const base::Time visit_time = base::Time::Now();
 
   VisitRow visit_row1;
   visit_row1.url_id = url_id1;
   visit_row1.visit_time = visit_time;
   visit_row1.transition = ui::PageTransitionFromInt(
-      ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_CHAIN_START |
-      ui::PAGE_TRANSITION_CLIENT_REDIRECT);
+      ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_CHAIN_START);
   visit_row1.visit_id = backend()->AddVisit(visit_row1);
 
   VisitRow visit_row2;
@@ -924,7 +1005,8 @@ TEST_F(HistorySyncBridgeTest, UploadsLocalVisitWithRedirects) {
   visit_row3.url_id = url_id3;
   visit_row3.visit_time = visit_time;
   visit_row3.transition = ui::PageTransitionFromInt(
-      ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_CHAIN_END);
+      ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_SERVER_REDIRECT |
+      ui::PAGE_TRANSITION_CHAIN_END);
   visit_row3.visit_id = backend()->AddVisit(visit_row3);
 
   // Notify the bridge about all of the visits.
@@ -977,8 +1059,7 @@ TEST_F(HistorySyncBridgeTest, SplitsRedirectChainWithDifferentTimestamps) {
   visit_row1.url_id = url_id1;
   visit_row1.visit_time = visit_time_chain1;
   visit_row1.transition = ui::PageTransitionFromInt(
-      ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_CHAIN_START |
-      ui::PAGE_TRANSITION_SERVER_REDIRECT);
+      ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_CHAIN_START);
   visit_row1.visit_id = backend()->AddVisit(visit_row1);
 
   VisitRow visit_row2;
@@ -986,7 +1067,8 @@ TEST_F(HistorySyncBridgeTest, SplitsRedirectChainWithDifferentTimestamps) {
   visit_row2.url_id = url_id2;
   visit_row2.visit_time = visit_time_chain1;
   visit_row2.transition = ui::PageTransitionFromInt(
-      ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_CHAIN_END);
+      ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_SERVER_REDIRECT |
+      ui::PAGE_TRANSITION_CHAIN_END);
   visit_row2.visit_id = backend()->AddVisit(visit_row2);
 
   // Notify the bridge about the visits.
@@ -1006,10 +1088,12 @@ TEST_F(HistorySyncBridgeTest, SplitsRedirectChainWithDifferentTimestamps) {
   ASSERT_FALSE(history1.redirect_chain_start_incomplete());
   ASSERT_FALSE(history1.redirect_chain_end_incomplete());
 
-  // Now, the existing chain gets extended.
-  // First, the PAGE_TRANSITION_CHAIN_END bit gets removed from the existing
-  // visit.
-  visit_row2.transition = ui::PAGE_TRANSITION_LINK;
+  // Now, the chain gets extended: The last page (corresponding tovisit 2)
+  // issues a client redirect (e.g. <meta http-equiv="Refresh" ...> tag).
+  // First, the PAGE_TRANSITION_CHAIN_END bit gets removed from the
+  // existing visit.
+  visit_row2.transition = ui::PageTransitionFromInt(
+      visit_row2.transition & ~ui::PAGE_TRANSITION_CHAIN_END);
   ASSERT_TRUE(backend()->UpdateVisit(visit_row2));
   // The bridge gets notified about the updated visit, but this should have no
   // effect since it's not a chain end anymore.
@@ -1041,7 +1125,8 @@ TEST_F(HistorySyncBridgeTest, SplitsRedirectChainWithDifferentTimestamps) {
   visit_row4.url_id = url_id4;
   visit_row4.visit_time = visit_time_chain2;
   visit_row4.transition = ui::PageTransitionFromInt(
-      ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_CHAIN_END);
+      ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_SERVER_REDIRECT |
+      ui::PAGE_TRANSITION_CHAIN_END);
   visit_row4.visit_id = backend()->AddVisit(visit_row4);
 
   // Notify the bridge about the new visits.
@@ -1074,6 +1159,60 @@ TEST_F(HistorySyncBridgeTest, SplitsRedirectChainWithDifferentTimestamps) {
   EXPECT_EQ(history2.originator_referring_visit_id(), visit_row2.visit_id);
   EXPECT_TRUE(history2.redirect_chain_start_incomplete());
   EXPECT_FALSE(history2.redirect_chain_end_incomplete());
+}
+
+TEST_F(HistorySyncBridgeTest, TrimsExcessivelyLongRedirectChain) {
+  // Start syncing (with no data yet).
+  ApplyInitialSyncChanges({});
+
+  // Create a redirect chain with many entries.
+  constexpr int kNumRedirects = 100;
+  const base::Time visit_time = base::Time::Now();
+  VisitID previous_visit = kInvalidVisitID;
+  for (int i = 1; i <= kNumRedirects; i++) {
+    URLRow url_row(GetURL(i));
+    url_row.set_id(backend()->AddURL(url_row));
+
+    VisitRow visit_row;
+    visit_row.url_id = url_row.id();
+    visit_row.visit_time = visit_time;
+    visit_row.referring_visit = previous_visit;
+    int transition = ui::PAGE_TRANSITION_LINK;
+    if (i > 0) {
+      transition |= ui::PAGE_TRANSITION_SERVER_REDIRECT;
+    }
+    if (i == 1) {
+      transition |= ui::PAGE_TRANSITION_CHAIN_START;
+    }
+    if (i == kNumRedirects) {
+      transition |= ui::PAGE_TRANSITION_CHAIN_END;
+    }
+    visit_row.transition = ui::PageTransitionFromInt(transition);
+    previous_visit = visit_row.visit_id = backend()->AddVisit(visit_row);
+
+    bridge()->OnURLVisited(
+        /*history_backend=*/nullptr, url_row, visit_row);
+  }
+
+  // The chain should have been Put() to the processor.
+  ASSERT_EQ(processor()->GetEntities().size(), 1u);
+  const std::string storage_key =
+      HistorySyncMetadataDatabase::StorageKeyFromVisitTime(visit_time);
+  ASSERT_EQ(processor()->GetEntities().count(storage_key), 1u);
+  // ...but since it is excessively long, it should have been trimmed.
+  sync_pb::HistorySpecifics history =
+      processor()->GetEntities().at(storage_key).specifics.history();
+  EXPECT_LT(history.redirect_entries_size(), kNumRedirects);
+  // The entity should also be flagged as "trimmed".
+  EXPECT_TRUE(history.redirect_chain_middle_trimmed());
+  EXPECT_FALSE(history.redirect_chain_start_incomplete());
+  EXPECT_FALSE(history.redirect_chain_end_incomplete());
+  // At least the first and the last entry should have survived.
+  ASSERT_GE(history.redirect_entries_size(), 2);
+  EXPECT_EQ(GURL(history.redirect_entries(0).url()), GetURL(1));
+  EXPECT_EQ(
+      GURL(history.redirect_entries(history.redirect_entries_size() - 1).url()),
+      GetURL(kNumRedirects));
 }
 
 TEST_F(HistorySyncBridgeTest, DownloadsUpdatedEntity) {

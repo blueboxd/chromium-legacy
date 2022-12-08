@@ -30,6 +30,11 @@ class MockOsIntegrationManager : public OsIntegrationManager {
 
   // Installation:
   MOCK_METHOD(void,
+              Synchronize,
+              (const AppId& app_id, base::OnceClosure callback),
+              (override));
+
+  MOCK_METHOD(void,
               CreateShortcuts,
               (const AppId& app_id,
                bool add_to_desktop,
@@ -120,7 +125,7 @@ class MockOsIntegrationManager : public OsIntegrationManager {
               UpdateShortcuts,
               (const AppId& app_id,
                base::StringPiece old_name,
-               base::OnceClosure callback),
+               ResultCallback callback),
               (override));
 
   // Utility methods:

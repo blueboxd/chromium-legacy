@@ -31,7 +31,6 @@
 <translation id="1148499908455722006"><ph name="USER_NAME" /> аккаунты туралы ақпарат диалогтік терезесін ашу</translation>
 <translation id="1150989369772528668">Күнтізбе</translation>
 <translation id="1153356358378277386">Жұпталған құрылғылар</translation>
-<translation id="1165712434476988950">Жаңарту күшіне енуі үшін, құрылғыны қайта іске қосу қажет.</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">USB-C кабелі дисплейлерге дұрыс жалғанбауы мүмкін.</translation>
 <translation id="1175572348579024023">Айналдыру</translation>
@@ -358,7 +357,6 @@
 <translation id="296762781903199866">Тіл файлдары (<ph name="LANGUAGE" />) жүктеп алынбады</translation>
 <translation id="2970920913501714344">Қолданбаларды, кеңейтімдерді және тақырыптарды орнатыңыз</translation>
 <translation id="2977598380246111477">Келесі сан</translation>
-<translation id="2981684127883932071">Ұсыныстарды көрсету</translation>
 <translation id="2985148236010982088">Барлық қолданбаны қарау</translation>
 <translation id="2992327365391326550">Құрылғы микрофоны өшірулі.</translation>
 <translation id="2996462380875591307">Бекітілген ұлғайтқыш қосылды. Оны өшіру үшін Ctrl+Search+D пернелер тіркесімін қайта басыңыз.</translation>
@@ -669,6 +667,7 @@
 <translation id="4666082839192943839">Барлық камера үнемі өшіп тұруы үшін, құрылғыдағы камераны пайдалану рұқсатын өшіріңіз.</translation>
 <translation id="4666911709726371538">Басқа қолданбалар</translation>
 <translation id="4667099493359681081"><ph name="FILENAME" /> жүктеп алынуда</translation>
+<translation id="468293128311738995">Телефондағы қолданбалар</translation>
 <translation id="4690510401873698237">Төмен жақтағы сөре</translation>
 <translation id="4696813013609194136">Құрылғының құлпын ата-ана кодымен ашыңыз</translation>
 <translation id="4702647871202761252">Құпиялылық экраны өшірулі.</translation>
@@ -925,12 +924,10 @@
 <translation id="6103838137565245112">жүйе</translation>
 <translation id="6107292179555508368">Бұл құрылғыда микрофон мен камераны пайдалану рұқсаттары өшірулі</translation>
 <translation id="6114505516289286752">Тіл файлдары (<ph name="LANGUAGE" />) жүктеп алынды</translation>
-<translation id="6116825164611323644">Бұл құрылғыда камера рұқсаты өшірулі</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042"><ph name="FILENAME" /> жүктеп алуды растау</translation>
 <translation id="612734058257491180">Google Assistant қонақ сеансында жұмыс істемейді.</translation>
 <translation id="6129953537138746214">Бос орын</translation>
-<translation id="6134259848159370930">Құрылғыдан, қолданбалардан, параметрлерден және интернеттен іздеңіз.</translation>
 <translation id="6137566720514957455"><ph name="USER_EMAIL_ADDRESS" /> аккаунтын өшіру диалогтік терезесін ашу</translation>
 <translation id="6141988275892716286">Жүктеп алуды растау</translation>
 <translation id="6154006699632741460">Перифериялық құрылғыға қолдау жоқ</translation>
@@ -1291,6 +1288,7 @@
 <translation id="8142441511840089262">Екі рет басу</translation>
 <translation id="8142699993796781067">Жеке желі</translation>
 <translation id="8144760705599030999">Басқа құрылғыларыңызбен жылдамырақ жұптау үшін <ph name="NAME" /> құрылғысын <ph name="EMAIL" /> аккаунтына сақтаңыз.</translation>
+<translation id="8144914663975476336">Жазба форматын таңдау</translation>
 <translation id="8149413265954228307">Bluetooth параметрлерін көрсету. <ph name="STATE_TEXT" />.</translation>
 <translation id="8152092012181020186">Жабу үшін Ctrl + W пернелер тіркесімін басыңыз.</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, Автоматты толтыру</translation>
@@ -1388,7 +1386,6 @@
 <translation id="8666856788528804727">Құрылғыны орнату үшін <ph name="NAME" /> қолданбасын ашыңыз</translation>
 <translation id="8676770494376880701">Төмен қуат зарядтағышы қосылды</translation>
 <translation id="8683506306463609433">Жұмыс өнімділігін қадағалау функциясы іске қосылды</translation>
-<translation id="8685326675965865247">Құрылғыдан, қолданбалардан, параметрлерден және интернеттен іздеңіз. Қолданбадан қолданбаға өту үшін көрсеткі пернелерін пайдаланыңыз.</translation>
 <translation id="8703634754197148428">Жазуды бастаңыз. Бейне жазу басталған кезде, Alt + Shift + L пернелер тіркесімін басып, сөреге өтіңіз, онда жазуды тоқтатуға арналған түймені таба аласыз</translation>
 <translation id="8721053961083920564">Дыбыс деңгейін ауыстыру. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">Толық экранды түсіру</translation>
@@ -1397,7 +1394,6 @@
 <translation id="8735678380411481005">Пернетақта жарығының түсі</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />,
         <ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8752416742247198423">Қолданбалар мен веб-беттердің осы құрылғыға қосылған камераларды пайдалануына мүмкіндік беру үшін камера рұқсатын қосыңыз.</translation>
 <translation id="8755498163081687682">Жеке басыңызды растаңыз: <ph name="ORIGIN_NAME" /> жеке басыңызды растағысы келеді.</translation>
 <translation id="875593634123171288">VPN параметрлерін көрсету</translation>
 <translation id="8759408218731716181">Бірнеше аккаунттың кіру мүмкіндігін орнату мүмкін емес</translation>
@@ -1464,7 +1460,6 @@
 <translation id="9089416786594320554">Енгізу әдістері</translation>
 <translation id="9091626656156419976"><ph name="DISPLAY_NAME" /> экраны өшірілді</translation>
 <translation id="9098969848082897657">Телефон дыбысын өшіру</translation>
-<translation id="9099154003160514616">Lacros-тың жаңа нұсқасы қолжетімді</translation>
 <translation id="9100887602489003640">Профиль қосылуда. Бірнеше минут күтіңіз.</translation>
 <translation id="9105450214093926548">Lacros браузері жұмыс істеп тұрғанда, екінші пайдаланушы аккаунтқа кіре алмайды. Lacros-та екінші браузер профилін пайдаланыңыз немесе Lacros браузерін жауып, әрекетті қайталап көріңіз.</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> немесе <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>

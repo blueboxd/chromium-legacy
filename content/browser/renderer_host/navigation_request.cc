@@ -87,6 +87,7 @@
 #include "content/browser/web_package/web_bundle_source.h"
 #include "content/browser/web_package/web_bundle_utils.h"
 #include "content/common/content_constants_internal.h"
+#include "content/common/content_navigation_policy.h"
 #include "content/common/debug_utils.h"
 #include "content/common/features.h"
 #include "content/common/navigation_params_utils.h"
@@ -148,6 +149,7 @@
 #include "third_party/blink/public/common/client_hints/client_hints.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/fenced_frame/fenced_frame_utils.h"
+#include "third_party/blink/public/common/fenced_frame/redacted_fenced_frame_config.h"
 #include "third_party/blink/public/common/frame/fenced_frame_permissions_policies.h"
 #include "third_party/blink/public/common/frame/fenced_frame_sandbox_flags.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
@@ -465,7 +467,7 @@ void AddAdditionalRequestHeaders(
   // including subframe navigations. Add "Purpose: prefetch" as well for
   // compatibility concerns (See
   // https://github.com/WICG/nav-speculation/issues/133).
-  if (frame_tree_node->frame_tree()->is_prerendering()) {
+  if (frame_tree_node->frame_tree().is_prerendering()) {
     headers->SetHeader("Sec-Purpose", "prefetch;prerender");
     headers->SetHeader("Purpose", "prefetch");
   }
@@ -791,7 +793,7 @@ network::mojom::RequestDestination GetDestinationFromFrameTreeNode(
     return network::mojom::RequestDestination::kFencedframe;
 
   if (frame_tree_node->IsMainFrame()) {
-    if (frame_tree_node->frame_tree()->IsPortal()) {
+    if (frame_tree_node->frame_tree().IsPortal()) {
       return network::mojom::RequestDestination::kIframe;
     }
     return network::mojom::RequestDestination::kDocument;
@@ -1075,6 +1077,30 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
     FrameTreeNode* frame_tree_node,
     blink::mojom::CommonNavigationParamsPtr common_params,
     blink::mojom::CommitNavigationParamsPtr commit_params,
+    bool was_opener_suppressed,
+    const blink::LocalFrameToken* initiator_frame_token,
+    int initiator_process_id,
+    const std::string& extra_headers,
+    FrameNavigationEntry* frame_entry,
+    NavigationEntryImpl* entry,
+    bool is_form_submission,
+    std::unique_ptr<NavigationUIData> navigation_ui_data,
+    const absl::optional<blink::Impression>& impression,
+    bool is_pdf,
+    bool is_embedder_initiated_fenced_frame_navigation) {
+  return Create(
+      frame_tree_node, std::move(common_params), std::move(commit_params),
+      /*browser_initiated=*/true, was_opener_suppressed, initiator_frame_token,
+      initiator_process_id, extra_headers, frame_entry, entry,
+      is_form_submission, std::move(navigation_ui_data), impression, is_pdf,
+      is_embedder_initiated_fenced_frame_navigation);
+}
+
+// static
+std::unique_ptr<NavigationRequest> NavigationRequest::Create(
+    FrameTreeNode* frame_tree_node,
+    blink::mojom::CommonNavigationParamsPtr common_params,
+    blink::mojom::CommitNavigationParamsPtr commit_params,
     bool browser_initiated,
     bool was_opener_suppressed,
     const blink::LocalFrameToken* initiator_frame_token,
@@ -1087,7 +1113,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
     const absl::optional<blink::Impression>& impression,
     bool is_pdf,
     bool is_embedder_initiated_fenced_frame_navigation) {
-  TRACE_EVENT0("navigation", "NavigationRequest::CreateBrowserInitiated");
+  TRACE_EVENT1("navigation", "NavigationRequest::Create", "browser_initiated",
+               browser_initiated);
 
   common_params->request_destination =
       GetDestinationFromFrameTreeNode(frame_tree_node);
@@ -1260,10 +1287,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
           /*is_cross_browsing_instance=*/false,
           /*old_page_info=*/nullptr, /*http_response_code=*/-1,
           blink::mojom::NavigationApiHistoryEntryArrays::New(),
-          /*early_hints_preloaded_resources=*/
-          std::vector<GURL>(),
-          /*ad_auction_components=*/absl::nullopt,
-          /*fenced_frame_reporting_metadata=*/nullptr,
+          /*early_hints_preloaded_resources=*/std::vector<GURL>(),
           // This timestamp will be populated when the commit IPC is sent.
           /*commit_sent=*/base::TimeTicks(), /*srcdoc_value=*/std::string(),
           /*fallback_srcdoc_baseurl=*/GURL(),
@@ -1276,7 +1300,9 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
           /*view_transition_state=*/absl::nullopt,
           /*soft_navigation_heuristic_task_id=*/absl::nullopt,
           /*modified_runtime_features=*/
-          base::flat_map<::blink::mojom::RuntimeFeatureState, bool>());
+          base::flat_map<::blink::mojom::RuntimeFeatureState, bool>(),
+          /*fenced_frame_properties=*/absl::nullopt,
+          /*not_restored_reasons=*/nullptr);
 
   // CreateRendererInitiated() should only be triggered when the navigation is
   // initiated by a frame in the same process.
@@ -1403,10 +1429,7 @@ NavigationRequest::CreateForSynchronousRendererCommit(
           /*is_cross_browsing_instance=*/false,
           /*old_page_info=*/nullptr, http_response_code,
           blink::mojom::NavigationApiHistoryEntryArrays::New(),
-          /*early_hints_preloaded_resources=*/
-          std::vector<GURL>(),
-          /*ad_auction_components=*/absl::nullopt,
-          /*fenced_frame_reporting_metadata=*/nullptr,
+          /*early_hints_preloaded_resources=*/std::vector<GURL>(),
           // This timestamp will be populated when the commit IPC is sent.
           /*commit_sent=*/base::TimeTicks(), /*srcdoc_value=*/std::string(),
           /*fallback_srcdoc_baseurl=*/GURL(),
@@ -1419,7 +1442,9 @@ NavigationRequest::CreateForSynchronousRendererCommit(
           /*view_transition_state=*/absl::nullopt,
           /*soft_navigation_heuristic_task_id=*/absl::nullopt,
           /*modified_runtime_features=*/
-          base::flat_map<::blink::mojom::RuntimeFeatureState, bool>());
+          base::flat_map<::blink::mojom::RuntimeFeatureState, bool>(),
+          /*fenced_frame_properties=*/absl::nullopt,
+          /*not_restored_reasons=*/nullptr);
   blink::mojom::BeginNavigationParamsPtr begin_params =
       blink::mojom::BeginNavigationParams::New();
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
@@ -1549,8 +1574,7 @@ NavigationRequest::NavigationRequest(
                     ->is_fenced_frame_root_originating_from_opaque_url()),
       fenced_frame_properties_(
           is_embedder_initiated_fenced_frame_navigation
-              ? absl::make_optional(
-                    FencedFrameURLMapping::FencedFrameProperties())
+              ? absl::make_optional(FencedFrameProperties())
               : absl::nullopt) {
   DCHECK(!blink::IsRendererDebugURL(common_params_->url));
   DCHECK(common_params_->method == "POST" || !common_params_->post_data);
@@ -1568,6 +1592,8 @@ NavigationRequest::NavigationRequest(
   // invalidated yet at this point.
   CHECK(!rfh_restored_from_back_forward_cache.WasInvalidated());
   ScopedCrashKeys crash_keys(*this);
+
+  ComputeDownloadPolicy();
 
   // Ensure the blink::RuntimeFeatureStateContext is initialized.
   runtime_feature_state_context_ = blink::RuntimeFeatureStateContext();
@@ -1891,6 +1917,24 @@ NavigationRequest::NavigationRequest(
       }
     }
   }
+
+  // Only update the BackForwardCacheMetrics if this is for a navigation that
+  // could've been served from the bfcache.
+  if (IsBackForwardCacheEnabled() && !IsServedFromBackForwardCache() && entry &&
+      BackForwardCacheMetrics::IsCrossDocumentMainFrameHistoryNavigation(
+          this)) {
+    // Update NotRestoredReasons and create a metrics object if there's none.
+    entry->UpdateBackForwardCacheNotRestoredReasons(this);
+    auto* metrics = entry->back_forward_cache_metrics();
+    DCHECK(metrics);
+    if (base::FeatureList::IsEnabled(
+            blink::features::kBackForwardCacheSendNotRestoredReasons)) {
+      // Only populate the web-exposed NotRestoredReasons when needed by
+      // the NotRestoredReasons API.
+      commit_params_->not_restored_reasons =
+          metrics->GetWebExposedNotRestoredReasons();
+    }
+  }
 }
 
 NavigationRequest::~NavigationRequest() {
@@ -2157,7 +2201,7 @@ FencedFrameURLMapping& NavigationRequest::GetFencedFrameURLMap() {
   // nested fenced frame's `FrameTree`, and false otherwise. This is only the
   // case for the MPArch implementation of fenced frames.
   bool is_inner_frame_tree =
-      frame_tree_node_->frame_tree()->type() == FrameTree::Type::kFencedFrame;
+      frame_tree_node_->frame_tree().type() == FrameTree::Type::kFencedFrame;
   FrameTreeNode* node_to_use =
       is_inner_frame_tree
           ? frame_tree_node_->render_manager()->GetOuterDelegateNode()
@@ -2184,45 +2228,59 @@ bool NavigationRequest::NeedFencedFrameURLMapping() {
 }
 
 void NavigationRequest::OnFencedFrameURLMappingComplete(
-    const absl::optional<FencedFrameURLMapping::FencedFrameProperties>&
-        properties) {
+    const absl::optional<FencedFrameProperties>& properties) {
   is_deferred_on_fenced_frame_url_mapping_ = false;
 
-  if (properties) {
-    if (properties->on_navigate_callback)
-      properties->on_navigate_callback.Run();
-    common_params_->url = properties->mapped_url;
-    commit_params_->original_url = properties->mapped_url;
-    // TODO(crbug/1281643): move into commit_params_->ad_auction_components
-    // directly.
-    if (!properties->reporting_metadata.metadata.empty()) {
-      commit_params_->fenced_frame_reporting_metadata =
-          properties->reporting_metadata.Clone();
-    }
-    fenced_frame_properties_ = properties;
-    // For urns loaded into iframes for FLEDGE OT, we don't want to use a
-    // fenced frame nonce for compatibility.
+  // The URL mapping might have failed (e.g. because the urn is invalid):
+  if (!properties.has_value()) {
+    // For iframes, try the urn as-is to maintain existing behavior which will
+    // abort the navigation as the url is unresolvable.
     if (!frame_tree_node_->IsFencedFrameRoot()) {
-      CHECK(blink::features::IsAllowURNsInIframeEnabled());
-      fenced_frame_properties_->partition_nonce = absl::nullopt;
-    }
-  } else {
-    if (frame_tree_node_->IsFencedFrameRoot()) {
-      StartNavigation();
-      OnRequestFailedInternal(
-          network::URLLoaderCompletionStatus(net::ERR_INVALID_URL),
-          false /* skip_throttles */, absl::nullopt /* error_page_content*/,
-          false /* collapse_frame */);
+      BeginNavigationImpl();  // DO NOT ADD CODE after this, because it might
+                              // have destroyed `this`.
       return;
     }
-    // else (for iframes and shadow-dom fenced frames) try the urn as-is to
-    // maintain existing behavior which will abort the navigation as the url is
-    // unresolvable.
+
+    StartNavigation();
+    OnRequestFailedInternal(
+        network::URLLoaderCompletionStatus(net::ERR_INVALID_URL),
+        false /* skip_throttles */, absl::nullopt /* error_page_content*/,
+        false /* collapse_frame */);
+    return;
   }
 
-  BeginNavigationImpl();
-  // DO NOT ADD CODE after this. The previous call to BeginNavigationImpl may
-  // cause the destruction of the NavigationRequest.
+  if (properties->on_navigate_callback_) {
+    properties->on_navigate_callback_.Run();
+  }
+
+  // Currently, all fenced frame use cases include mapped urls. Patch up
+  // url-related fields to use the underlying mapped url, rather than the
+  // original urn.
+  CHECK(properties->mapped_url_.has_value());
+  const GURL& mapped_url_value =
+      properties->mapped_url_->GetValueIgnoringVisibility();
+  common_params_->url = mapped_url_value;
+  commit_params_->original_url = mapped_url_value;
+
+  // Create a view of the fenced frame properties from the perspective of the
+  // fenced frame content, which will be sent to its renderer.
+  commit_params_->fenced_frame_properties =
+      properties->RedactFor(content::FencedFrameEntity::kContent);
+
+  // Store the browser's view of the fenced frame properties in the
+  // `NavigationRequest`. Upon commit, it will be stored in the fenced frame
+  // root `FrameTreeNode`.
+  fenced_frame_properties_ = properties;
+
+  // For urns loaded into iframes for FLEDGE OT, for compatibility we don't
+  // want to use a fenced frame nonce.
+  if (!frame_tree_node_->IsFencedFrameRoot()) {
+    CHECK(blink::features::IsAllowURNsInIframeEnabled());
+    fenced_frame_properties_->partition_nonce_ = absl::nullopt;
+  }
+
+  BeginNavigationImpl();  // DO NOT ADD CODE after this, because it might have
+                          // destroyed `this`.
 }
 
 void NavigationRequest::BeginNavigationImpl() {
@@ -2494,13 +2552,23 @@ void NavigationRequest::StartNavigation() {
     common_params_->should_replace_current_entry = true;
   }
 
-  DCHECK_NE(AssociatedRenderFrameHostType::NONE, associated_rfh_type_);
-  RenderFrameHostImpl* navigating_frame_host =
-      associated_rfh_type_ == AssociatedRenderFrameHostType::SPECULATIVE
-          ? frame_tree_node_->render_manager()->speculative_frame_host()
-          : frame_tree_node_->current_frame_host();
-  DCHECK(navigating_frame_host);
-  SetExpectedProcess(navigating_frame_host->GetProcess());
+  // Set the expected process for this navigation, if we can. The navigation
+  // might not have an associated RenderFrameHost yet, which is possible if it
+  // can't create a speculative RenderFrameHost when there's a pending commit
+  // navigation (when navigation queueing is enabled), or it had an associated
+  // RenderFrameHost when the NavigationRequest was created but another
+  // navigation had committed in between that time and StartNavigation, which
+  // invalidates the `associated_rfh_type_`. It's fine to skip setting the
+  // expected process in this case, as we'll set the expected process again from
+  // ReadyToCommitNavigation(), when we know the final RenderFrameHost for the
+  // navigation.
+  if (associated_rfh_type_ != AssociatedRenderFrameHostType::NONE) {
+    RenderFrameHostImpl* navigating_frame_host =
+        associated_rfh_type_ == AssociatedRenderFrameHostType::SPECULATIVE
+            ? frame_tree_node_->render_manager()->speculative_frame_host()
+            : frame_tree_node_->current_frame_host();
+    SetExpectedProcess(navigating_frame_host->GetProcess());
+  }
 
   DCHECK(!IsNavigationStarted());
   SetState(WILL_START_REQUEST);
@@ -2772,6 +2840,10 @@ void NavigationRequest::OnRequestRedirected(
   // Reset the page state as it can no longer be used at commit time since the
   // navigation was redirected.
   commit_params_->page_state = std::string();
+
+  // Reset NotRestoredReasons as the reasons are for the original page and not
+  // for the redirected one.
+  commit_params_->not_restored_reasons = nullptr;
 
   // A request was made. Record it before we decide to block this response for
   // a reason or another.
@@ -3827,7 +3899,7 @@ void NavigationRequest::OnResponseStarted(
 
     // Update the associated RenderFrameHost type, which could have changed
     // due to redirects during navigation.
-    set_associated_rfh_type(
+    SetAssociatedRFHType(
         render_frame_host_ ==
                 frame_tree_node_->render_manager()->current_frame_host()
             ? AssociatedRenderFrameHostType::CURRENT
@@ -4187,7 +4259,7 @@ void NavigationRequest::OnRequestFailedInternal(
   render_frame_host_ = render_frame_host;
 
   // Update the associated RenderFrameHost type.
-  set_associated_rfh_type(
+  SetAssociatedRFHType(
       render_frame_host_ ==
               frame_tree_node_->render_manager()->current_frame_host()
           ? AssociatedRenderFrameHostType::CURRENT
@@ -4464,7 +4536,7 @@ void NavigationRequest::OnStartChecksComplete(
       SCOPED_CRASH_KEY_BOOL("NoRestoredRFH", "is_ftn_nav_req",
                             (frame_tree_node_->navigation_request() == this));
       BackForwardCacheImpl& back_forward_cache =
-          frame_tree_node_->frame_tree()->controller().GetBackForwardCache();
+          frame_tree_node_->frame_tree().controller().GetBackForwardCache();
       SCOPED_CRASH_KEY_NUMBER("NoRestoredRFH", "bfcache_entries_size",
                               back_forward_cache.GetEntries().size());
       CaptureTraceForNavigationDebugScenario(
@@ -4966,7 +5038,7 @@ void NavigationRequest::AddOldPageInfoToCommitParamsIfNeeded() {
   // point.
   bool can_store_old_page_in_bfcache =
       frame_tree_node_->frame_tree()
-          ->controller()
+          .controller()
           .GetBackForwardCache()
           .GetFutureBackForwardCacheEligibilityPotential(old_frame_host)
           .CanStore();
@@ -5165,14 +5237,6 @@ void NavigationRequest::CommitNavigation() {
     policy_container_builder_->SetAllowTopNavigationWithoutUserGesture(true);
   } else if (!IsInMainFrame() && !embedder_allows_top_navigation_explicitly) {
     policy_container_builder_->SetAllowTopNavigationWithoutUserGesture(false);
-  }
-
-  // If this is a result of an ad auction, need to pass its ad component URLs to
-  // the renderer.
-  if (fenced_frame_properties_ &&
-      fenced_frame_properties_->pending_ad_components_map) {
-    commit_params_->ad_auction_components =
-        fenced_frame_properties_->pending_ad_components_map->GetURNs();
   }
 
   if (!IsSameDocument()) {
@@ -5558,7 +5622,7 @@ net::Error NavigationRequest::CheckCSPDirectives(
       }
 
       // [prefetch-src]
-      if (frame_tree_node_->frame_tree()->is_prerendering()) {
+      if (frame_tree_node_->frame_tree().is_prerendering()) {
         if (!IsAllowedByCSPDirective(
                 initiator_policies->content_security_policies,
                 &initiator_context,
@@ -5612,7 +5676,7 @@ net::Error NavigationRequest::CheckContentSecurityPolicy(
   DCHECK(!parent == !parent_policies);
   bool set_parent_for_nested_frame_tree =
       !parent &&
-      (frame_tree_node()->frame_tree()->IsPortal() ||
+      (frame_tree_node()->frame_tree().IsPortal() ||
        frame_tree_node()->IsFencedFrameRoot()) &&
       frame_tree_node()->render_manager()->GetOuterDelegateNode();
   if (set_parent_for_nested_frame_tree) {
@@ -6136,7 +6200,7 @@ bool NavigationRequest::IsMhtmlOrSubframe() {
 
 bool NavigationRequest::IsForMhtmlSubframe() const {
   return frame_tree_node_->parent() && frame_tree_node_->frame_tree()
-                                           ->root()
+                                           .root()
                                            ->current_frame_host()
                                            ->is_mhtml_document();
 }
@@ -6323,7 +6387,7 @@ void NavigationRequest::DidCommitNavigation(
   if ((should_update_history_ && IsSameDocument() && !HasUserGesture() &&
        params.url == previous_main_frame_url) ||
       !render_frame_host_->GetPage().IsPrimary() ||
-      frame_tree_node()->frame_tree()->IsPortal()) {
+      frame_tree_node()->frame_tree().IsPortal()) {
     should_update_history_ = false;
   }
   previous_main_frame_url_ = previous_main_frame_url;
@@ -7196,6 +7260,25 @@ RenderFrameHostImpl* NavigationRequest::GetRenderFrameHost() const {
   static_assert(WILL_FAIL_REQUEST > WILL_PROCESS_RESPONSE,
                 "WillFailRequest state should come after WillProcessResponse");
   return render_frame_host_;
+}
+
+NavigationRequest::AssociatedRenderFrameHostType
+NavigationRequest::GetAssociatedRFHType() const {
+  CHECK_LT(state_, READY_TO_COMMIT)
+      << "Use GetRenderFrameHost() instead when the final RenderFrameHost for "
+         "the navigation had been picked";
+  return associated_rfh_type_;
+}
+
+void NavigationRequest::SetAssociatedRFHType(
+    AssociatedRenderFrameHostType type) {
+  if (associated_rfh_type_ != AssociatedRenderFrameHostType::NONE &&
+      type == AssociatedRenderFrameHostType::NONE) {
+    // If we're transitioning to "NONE" when the previous state was not "NONE",
+    // we might have called SetExpectedProcess() before, so reset it now.
+    ResetExpectedProcess();
+  }
+  associated_rfh_type_ = type;
 }
 
 const net::HttpRequestHeaders& NavigationRequest::GetRequestHeaders() {
@@ -8158,15 +8241,30 @@ bool NavigationRequest::ShouldReplaceCurrentEntryForFailedNavigation() const {
               frame_tree_node_->current_frame_host()));
 }
 
+const absl::optional<FencedFrameProperties>&
+NavigationRequest::ComputeFencedFrameProperties() const {
+  if (fenced_frame_properties_) {
+    return fenced_frame_properties_;
+  }
+  return frame_tree_node_->GetFencedFrameProperties();
+}
+
 const absl::optional<base::UnguessableToken>
 NavigationRequest::ComputeFencedFrameNonce() const {
-  // TODO(crbug.com/1347953): Once
-  // NavigationRequest::ComputeFencedFrameProperties() is added, use that rather
-  // than branch here.
-  if (fenced_frame_properties_) {
-    return fenced_frame_properties_->partition_nonce;
+  const absl::optional<FencedFrameProperties>&
+      computed_fenced_frame_properties = ComputeFencedFrameProperties();
+  if (!computed_fenced_frame_properties.has_value()) {
+    return absl::nullopt;
   }
-  return frame_tree_node_->GetFencedFrameNonce();
+  if (!computed_fenced_frame_properties->partition_nonce_.has_value()) {
+    // It is only possible for there to be `FencedFrameProperties` but no
+    // partition nonce in urn iframes (when not nested inside a fenced frame).
+    CHECK(blink::features::IsAllowURNsInIframeEnabled() &&
+          !frame_tree_node_->IsInFencedFrameTree());
+    return absl::nullopt;
+  }
+  return computed_fenced_frame_properties->partition_nonce_
+      ->GetValueIgnoringVisibility();
 }
 
 void NavigationRequest::RenderFallbackContentForObjectTag() {
@@ -8366,6 +8464,39 @@ NavigationRequest::GetMutableRuntimeFeatureStateContext() {
 const blink::RuntimeFeatureStateContext&
 NavigationRequest::GetRuntimeFeatureStateContext() {
   return runtime_feature_state_context_;
+}
+
+// The NavigationDownloadPolicy is currently computed by the renderer process.
+// The problem: not every navigation are initiated from the renderer. Most
+// fields from the bitfield can be computed from the browser process. This
+// function is a partial attempt at doing it.
+void NavigationRequest::ComputeDownloadPolicy() {
+  blink::NavigationDownloadPolicy& download_policy =
+      common_params_->download_policy;
+
+  // [ViewSource]
+  if (GetNavigationEntry() && GetNavigationEntry()->IsViewSourceMode()) {
+    download_policy.SetDisallowed(blink::NavigationDownloadType::kViewSource);
+  }
+
+  // [Sandbox]
+  if (base::FeatureList::IsEnabled(
+          features::kBrowserSideDownloadPolicySandbox) &&
+      (commit_params_->frame_policy.sandbox_flags &
+       network::mojom::WebSandboxFlags::kDownloads) ==
+          network::mojom::WebSandboxFlags::kDownloads) {
+    download_policy.SetDisallowed(blink::NavigationDownloadType::kSandbox);
+  }
+
+  // TODO(arthursonzogni): Check if the following fields from the
+  // NavigationDownloadPolicy could be computed here from the browser process
+  // instead:
+  //
+  // [NoGesture]
+  // [OpenerCrossOrigin]
+  // [AdFrameNoGesture]
+  // [AdFrame]
+  // [Interstitial]
 }
 
 }  // namespace content

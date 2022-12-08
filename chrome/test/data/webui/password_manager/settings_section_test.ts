@@ -5,7 +5,7 @@
 import 'chrome://password-manager/password_manager.js';
 
 import {PasswordManagerImpl, PrefsBrowserProxyImpl} from 'chrome://password-manager/password_manager.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 import {isVisible} from 'chrome://webui-test/test_util.js';
@@ -160,5 +160,17 @@ suite('SettingsSectionTest', function() {
     await flushTasks();
 
     assertFalse(!!settings!.shadowRoot!.querySelector('#addShortcutBanner'));
+  });
+
+  test('Export dialog appears after clicking on banner', async function() {
+    const settings = document.createElement('settings-section');
+    document.body.appendChild(settings);
+    await flushTasks();
+
+    settings.$.exportPasswordsBanner.click();
+    await flushTasks();
+    const exportPasswordsDialog =
+        settings!.shadowRoot!.querySelector('passwords-export-dialog');
+    assertTrue(!!exportPasswordsDialog);
   });
 });

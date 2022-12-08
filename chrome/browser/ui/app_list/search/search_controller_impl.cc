@@ -16,18 +16,18 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
+#include "chrome/browser/ash/app_list/search/common/string_util.h"
+#include "chrome/browser/ash/app_list/search/cros_action_history/cros_action_recorder.h"
+#include "chrome/browser/ash/app_list/search/ranking/ranker_manager.h"
+#include "chrome/browser/ash/app_list/search/ranking/scoring.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
-#include "chrome/browser/ui/app_list/app_list_util.h"
 #include "chrome/browser/ui/app_list/search/app_search_data_source.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
-#include "chrome/browser/ui/app_list/search/common/string_util.h"
-#include "chrome/browser/ui/app_list/search/cros_action_history/cros_action_recorder.h"
-#include "chrome/browser/ui/app_list/search/ranking/ranker_manager.h"
-#include "chrome/browser/ui/app_list/search/ranking/scoring.h"
 #include "chrome/browser/ui/app_list/search/search_metrics_manager.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
+#include "chrome/browser/ui/app_list/search/search_session_metrics_manager.h"
 #include "components/metrics/structured/structured_events.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -60,6 +60,8 @@ SearchControllerImpl::SearchControllerImpl(
       ranker_manager_(std::make_unique<RankerManager>(profile, this)),
       metrics_manager_(
           std::make_unique<SearchMetricsManager>(profile, notifier)),
+      session_metrics_manager_(
+          std::make_unique<SearchSessionMetricsManager>(profile, notifier)),
       app_search_data_source_(std::make_unique<AppSearchDataSource>(
           profile,
           list_controller,
@@ -402,7 +404,7 @@ void SearchControllerImpl::Train(LaunchData&& launch_data) {
 
     // Only record the last launched app if the hashed logging feature flag is
     // enabled, because it is only used by hashed logging.
-    if (IsResultTypeApp(launch_data.result_type)) {
+    if (IsAppListSearchResultAnApp(launch_data.result_type)) {
       last_launched_app_id_ = NormalizeId(launch_data.id);
     } else if (launch_data.result_type ==
                ash::AppListSearchResultType::kArcAppShortcut) {

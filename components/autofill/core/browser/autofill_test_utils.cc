@@ -230,7 +230,6 @@ void CreateTestSelectField(const char* label,
                            const char* value,
                            const std::vector<const char*>& values,
                            const std::vector<const char*>& contents,
-                           size_t select_size,
                            FormFieldData* field) {
   // Fill the base attributes.
   CreateTestFormField(label, name, value, "select-one", field);
@@ -251,10 +250,8 @@ void CreateTestSelectField(const char* label,
                            const char* autocomplete,
                            const std::vector<const char*>& values,
                            const std::vector<const char*>& contents,
-                           size_t select_size,
                            FormFieldData* field) {
-  CreateTestSelectField(label, name, value, values, contents, select_size,
-                        field);
+  CreateTestSelectField(label, name, value, values, contents, field);
   field->autocomplete_attribute = autocomplete;
   field->parsed_autocomplete =
       ParseAutocompleteAttribute(autocomplete, field->max_length);
@@ -262,7 +259,7 @@ void CreateTestSelectField(const char* label,
 
 void CreateTestSelectField(const std::vector<const char*>& values,
                            FormFieldData* field) {
-  CreateTestSelectField("", "", "", values, values, values.size(), field);
+  CreateTestSelectField("", "", "", values, values, field);
 }
 
 void CreateTestDatalistField(const char* label,
@@ -1037,18 +1034,21 @@ void FillUploadField(AutofillUploadContents::Field* field,
 
 void GenerateTestAutofillPopup(
     AutofillExternalDelegate* autofill_external_delegate) {
-  int query_id = 1;
   FormData form;
   FormFieldData field;
+  form.host_frame = MakeLocalFrameToken();
+  form.unique_renderer_id = MakeFormRendererId();
+  field.host_frame = MakeLocalFrameToken();
+  field.unique_renderer_id = MakeFieldRendererId();
   field.is_focusable = true;
   field.should_autocomplete = true;
   gfx::RectF bounds(100.f, 100.f);
-  autofill_external_delegate->OnQuery(query_id, form, field, bounds);
+  autofill_external_delegate->OnQuery(form, field, bounds);
 
   std::vector<Suggestion> suggestions;
   suggestions.push_back(Suggestion(u"Test suggestion"));
   autofill_external_delegate->OnSuggestionsReturned(
-      query_id, suggestions, AutoselectFirstSuggestion(false));
+      field.global_id(), suggestions, AutoselectFirstSuggestion(false));
 }
 
 std::string ObfuscatedCardDigitsAsUTF8(const std::string& str,

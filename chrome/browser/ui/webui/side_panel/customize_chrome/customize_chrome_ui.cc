@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/background/ntp_custom_background_service_factory.h"
 #include "chrome/browser/ui/webui/side_panel/customize_chrome/customize_chrome_page_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
@@ -29,13 +30,14 @@ CustomizeChromeUI::CustomizeChromeUI(content::WebUI* web_ui)
 
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"customizeThisPage", IDS_NTP_CUSTOM_BG_CUSTOMIZE_NTP_LABEL},
+      {"appearanceHeader", IDS_NTP_CUSTOMIZE_APPEARANCE_LABEL},
+      {"defaultColorName", IDS_NTP_CUSTOMIZE_DEFAULT_LABEL},
       {"mostVisited", IDS_NTP_CUSTOMIZE_MOST_VISITED_LABEL},
       {"myShortcuts", IDS_NTP_CUSTOMIZE_MY_SHORTCUTS_LABEL},
       {"shortcutsCurated", IDS_NTP_CUSTOMIZE_MY_SHORTCUTS_DESC},
-      {"shortcutsMenuItem", IDS_NTP_CUSTOMIZE_MENU_SHORTCUTS_LABEL},
-      {"shortcutsOption", IDS_NTP_CUSTOMIZE_MENU_SHORTCUTS_LABEL},
+      {"shortcutsHeader", IDS_NTP_CUSTOMIZE_MENU_SHORTCUTS_LABEL},
       {"shortcutsSuggested", IDS_NTP_CUSTOMIZE_MOST_VISITED_DESC},
-      {"showToggleTitle", IDS_NTP_CUSTOMIZE_SHOW_SHORTCUTS_LABEL},
+      {"showShortcutsToggle", IDS_NTP_CUSTOMIZE_SHOW_SHORTCUTS_LABEL},
       {"title", IDS_SIDE_PANEL_CUSTOMIZE_CHROME_TITLE},
   };
   source->AddLocalizedStrings(kLocalizedStrings);
@@ -45,7 +47,6 @@ CustomizeChromeUI::CustomizeChromeUI(content::WebUI* web_ui)
       base::make_span(kSidePanelCustomizeChromeResources,
                       kSidePanelCustomizeChromeResourcesSize),
       IDR_SIDE_PANEL_CUSTOMIZE_CHROME_CUSTOMIZE_CHROME_HTML);
-  webui::EnableTrustedTypesCSP(source);
 
   content::WebUIDataSource::Add(profile_, source);
 }
@@ -69,5 +70,7 @@ void CustomizeChromeUI::CreatePageHandler(
         pending_page_handler) {
   DCHECK(pending_page.is_valid());
   customize_chrome_page_handler_ = std::make_unique<CustomizeChromePageHandler>(
-      std::move(pending_page_handler), std::move(pending_page), web_contents_);
+      std::move(pending_page_handler), std::move(pending_page),
+      NtpCustomBackgroundServiceFactory::GetForProfile(profile_),
+      web_contents_);
 }

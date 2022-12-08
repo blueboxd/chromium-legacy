@@ -8,10 +8,12 @@
 #include <map>
 #include <tuple>
 
+#include "base/command_line.h"
 #include "base/cxx17_backports.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "chromeos/strings/grit/chromeos_strings.h"
 #include "chromeos/ui/base/display_util.h"
 #include "chromeos/ui/base/tablet_state.h"
 #include "chromeos/ui/base/window_properties.h"
@@ -137,10 +139,27 @@ class DefaultCaptionButtonModel : public CaptionButtonModel {
         return frame_->widget_delegate()->ShouldShowCloseButton();
       case views::CAPTION_BUTTON_ICON_CUSTOM:
         return true;
-      case views::CAPTION_BUTTON_ICON_FLOAT:
-        return chromeos::wm::features::IsFloatWindowEnabled() &&
-               frame_->IsNativeWidgetInitialized() &&
+      case views::CAPTION_BUTTON_ICON_FLOAT: {
+        if (!chromeos::wm::features::IsFloatWindowEnabled() ||
+            !frame_->IsNativeWidgetInitialized()) {
+          return false;
+        }
+        // In tablet mode, only show the float/unfloat button if the window is
+        // floated.
+        if (chromeos::TabletState::Get()->InTabletMode()) {
+          return frame_->GetNativeWindow()->GetProperty(kWindowStateTypeKey) ==
+                 WindowStateType::kFloated;
+        }
+        // In clamshell mode, its harder to differentiate a non floated window
+        // with a floated window sometimes. Keep the pin button around for
+        // floatable windows if the developer flag is present. This is temporary
+        // until the float feature is launched, so instead of modifying build
+        // dependencies so lacros will depend on ash/constants, we use the
+        // string directly.
+        return base::CommandLine::ForCurrentProcess()->HasSwitch(
+                   "ash-dev-shortcuts") &&
                chromeos::wm::CanFloatWindow(frame_->GetNativeWindow());
+      }
       // No back or menu button by default.
       case views::CAPTION_BUTTON_ICON_BACK:
       case views::CAPTION_BUTTON_ICON_MENU:
@@ -210,7 +229,7 @@ FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
             base::Unretained(this)),
         views::CAPTION_BUTTON_ICON_FLOAT, HTMENU));
     float_button_->SetTooltipText(
-        l10n_util::GetStringUTF16(IDS_APP_ACCNAME_FLOAT));
+        l10n_util::GetStringUTF16(IDS_MULTITASK_MENU_FLOAT_BUTTON_NAME));
   }
 
   size_button_ = new FrameSizeButton(
@@ -544,12 +563,15 @@ void FrameCaptionButtonContainerView::UpdateFloatButton() {
   SetButtonImage(
       views::CAPTION_BUTTON_ICON_FLOAT,
       floated ? chromeos::kUnfloatButtonIcon : chromeos::kFloatButtonIcon);
-  float_button_->SetTooltipText(
-      floated
-          // TODO(sammiequon|shidi): Update this to the correct string once UX
-          // writing has a decision.
-          ? l10n_util::GetStringUTF16(IDS_APP_ACCNAME_RESTORE)
-          : l10n_util::GetStringUTF16(IDS_APP_ACCNAME_FLOAT));
+  float_button_->SetTooltipText(l10n_util::GetStringUTF16(
+      floated ? IDS_MULTITASK_MENU_EXIT_FLOAT_BUTTON_NAME
+              : IDS_MULTITASK_MENU_FLOAT_BUTTON_NAME));
+
+  // Float button also needs to update its visibility when float state changes.
+  float_button_->SetEnabled(
+      model_->IsEnabled(views::CAPTION_BUTTON_ICON_FLOAT));
+  float_button_->SetVisible(
+      model_->IsVisible(views::CAPTION_BUTTON_ICON_FLOAT));
 }
 
 void FrameCaptionButtonContainerView::MinimizeButtonPressed() {
@@ -706,7 +728,8 @@ void FrameCaptionButtonContainerView::ShowSnapPreview(
 }
 
 void FrameCaptionButtonContainerView::CommitSnap(SnapDirection snap) {
-  SnapController::Get()->CommitSnap(frame_->GetNativeWindow(), snap);
+  SnapController::Get()->CommitSnap(frame_->GetNativeWindow(), snap,
+                                    kDefaultSnapRatio);
 }
 
 BEGIN_METADATA(FrameCaptionButtonContainerView, views::View)

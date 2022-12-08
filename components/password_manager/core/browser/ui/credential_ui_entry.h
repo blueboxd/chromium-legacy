@@ -101,10 +101,10 @@ struct CredentialUIEntry {
   // currently supports manipulation of one note only with an empty
   // `unique_display_name`. The storage layer however supports multiple-notes
   // for forward compatibility.
-  PasswordNote note;
+  std::u16string note;
 
   // Tracks if the user opted to never remember passwords for this website.
-  bool blocked_by_user;
+  bool blocked_by_user = false;
 
   // Indicates when the credential was last used by the user to login to the
   // site. Defaults to |date_created|.

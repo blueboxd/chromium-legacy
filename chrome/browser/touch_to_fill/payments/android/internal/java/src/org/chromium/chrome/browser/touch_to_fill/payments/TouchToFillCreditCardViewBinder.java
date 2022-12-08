@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.touch_to_fill.payments;
 
 import static org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillCreditCardProperties.CreditCardProperties.CARD_EXPIRATION;
+import static org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillCreditCardProperties.CreditCardProperties.CARD_ICON_ID;
 import static org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillCreditCardProperties.CreditCardProperties.CARD_NAME;
 import static org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillCreditCardProperties.CreditCardProperties.CARD_NUMBER;
 import static org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillCreditCardProperties.CreditCardProperties.ON_CLICK_ACTION;
@@ -12,12 +13,16 @@ import static org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillCred
 import static org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillCreditCardProperties.SCAN_CREDIT_CARD_CALLBACK;
 import static org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillCreditCardProperties.SHEET_ITEMS;
 import static org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillCreditCardProperties.SHOULD_SHOW_SCAN_CREDIT_CARD;
+import static org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillCreditCardProperties.SHOW_CREDIT_CARD_SETTINGS_CALLBACK;
 import static org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillCreditCardProperties.VISIBLE;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
+
+import androidx.appcompat.content.res.AppCompatResources;
 
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -42,6 +47,8 @@ class TouchToFillCreditCardViewBinder {
             view.setScanCreditCardButton(model.get(SHOULD_SHOW_SCAN_CREDIT_CARD));
         } else if (propertyKey == SCAN_CREDIT_CARD_CALLBACK) {
             view.setScanCreditCardCallback(model.get(SCAN_CREDIT_CARD_CALLBACK));
+        } else if (propertyKey == SHOW_CREDIT_CARD_SETTINGS_CALLBACK) {
+            view.setShowCreditCardSettingsCallback(model.get(SHOW_CREDIT_CARD_SETTINGS_CALLBACK));
         } else if (propertyKey == VISIBLE) {
             boolean visibilityChangeSuccessful = view.setVisible(model.get(VISIBLE));
             if (!visibilityChangeSuccessful && model.get(VISIBLE)) {
@@ -68,6 +75,13 @@ class TouchToFillCreditCardViewBinder {
 
     /** Binds the item view to the model properties. */
     static void bindCardItemView(PropertyModel model, View view, PropertyKey propertyKey) {
+        ImageView icon = view.findViewById(R.id.favicon);
+        int iconId = model.get(CARD_ICON_ID);
+        // Generally the resource id for the icon can only be zero in the tests.
+        // For production code a general card icon id is set by default in the CreditCard
+        // constructor if the card issuer is unknown.
+        icon.setImageDrawable(
+                iconId != 0 ? AppCompatResources.getDrawable(view.getContext(), iconId) : null);
         TextView cardName = view.findViewById(R.id.card_name);
         cardName.setText(model.get(CARD_NAME));
         TextView cardNumber = view.findViewById(R.id.card_number);

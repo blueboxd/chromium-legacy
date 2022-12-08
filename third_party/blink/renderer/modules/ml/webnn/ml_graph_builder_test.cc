@@ -1914,6 +1914,215 @@ TEST_F(MLGraphBuilderTest, ReshapeTest) {
   }
 }
 
+MLOperand* BuildResample2d(V8TestingScope& scope,
+                           MLGraphBuilder* builder,
+                           const MLOperand* input,
+                           const MLResample2dOptions* options) {
+  auto* output = builder->resample2d(input, options, scope.GetExceptionState());
+  EXPECT_NE(output, nullptr);
+  EXPECT_EQ(output->Kind(), MLOperand::OperandKind::kOutput);
+  EXPECT_EQ(output->Type(), input->Type());
+  auto* resample = output->Operator();
+  EXPECT_NE(resample, nullptr);
+  EXPECT_EQ(resample->Kind(), MLOperator::OperatorKind::kResample);
+  EXPECT_EQ(resample->IsConnected(), true);
+  EXPECT_NE(resample->Options(), nullptr);
+  return output;
+}
+
+TEST_F(MLGraphBuilderTest, Resample2dTest) {
+  V8TestingScope scope;
+  MLGraphBuilder* builder = CreateMLGraphBuilder(scope);
+  {
+    // Test building resample2d with default options.
+    auto* input = BuildInput(scope, builder, "input", {1, 1, 2, 4},
+                             V8MLOperandType::Enum::kFloat32);
+    auto* options = MLResample2dOptions::Create();
+    EXPECT_TRUE(options->hasMode());
+    EXPECT_EQ(options->mode(), V8MLInterpolationMode::Enum::kNearestNeighbor);
+    EXPECT_FALSE(options->hasScales());
+    EXPECT_FALSE(options->hasSizes());
+    EXPECT_FALSE(options->hasAxes());
+    auto* output = BuildResample2d(scope, builder, input, options);
+    EXPECT_EQ(output->Dimensions(), Vector<uint32_t>({1, 1, 2, 4}));
+  }
+  {
+    // Test building resample2d with scales = {2.0, 2.0}.
+    auto* input = BuildInput(scope, builder, "input", {1, 1, 2, 4},
+                             V8MLOperandType::Enum::kFloat32);
+    auto* options = MLResample2dOptions::Create();
+    options->setScales({2.0, 2.0});
+    auto* output = BuildResample2d(scope, builder, input, options);
+    EXPECT_EQ(output->Dimensions(), Vector<uint32_t>({1, 1, 4, 8}));
+  }
+  {
+    // Test building resample2d with scales = {0.5, 0.5}.
+    auto* input = BuildInput(scope, builder, "input", {1, 1, 5, 5},
+                             V8MLOperandType::Enum::kFloat32);
+    auto* options = MLResample2dOptions::Create();
+    options->setScales({0.5, 0.5});
+    auto* output = BuildResample2d(scope, builder, input, options);
+    EXPECT_EQ(output->Dimensions(), Vector<uint32_t>({1, 1, 2, 2}));
+  }
+  {
+    // Test building resample2d with sizes = {3, 6}.
+    // When the target sizes are specified, scales argument is
+    // ignored.
+    auto* input = BuildInput(scope, builder, "input", {1, 1, 2, 4},
+                             V8MLOperandType::Enum::kFloat32);
+    auto* options = MLResample2dOptions::Create();
+    options->setScales({2.0, 2.0});
+    options->setSizes({3, 6});
+    auto* output = BuildResample2d(scope, builder, input, options);
+    EXPECT_EQ(output->Dimensions(), Vector<uint32_t>({1, 1, 3, 6}));
+  }
+  {
+    // Test building resample2d with scales = {1.0, 2.0} and axes = {0, 1}.
+    auto* input = BuildInput(scope, builder, "input", {1, 1, 2, 4},
+                             V8MLOperandType::Enum::kFloat32);
+    auto* options = MLResample2dOptions::Create();
+    options->setScales({1.0, 2.0});
+    options->setAxes({0, 1});
+    auto* output = BuildResample2d(scope, builder, input, options);
+    EXPECT_EQ(output->Dimensions(), Vector<uint32_t>({1, 2, 2, 4}));
+  }
+  {
+    // Test building resample2d with scales = {2.0, 2.0} and axes = {1, 2}.
+    auto* input = BuildInput(scope, builder, "input", {1, 1, 2, 4},
+                             V8MLOperandType::Enum::kFloat32);
+    auto* options = MLResample2dOptions::Create();
+    options->setScales({2.0, 2.0});
+    options->setAxes({1, 2});
+    auto* output = BuildResample2d(scope, builder, input, options);
+    EXPECT_EQ(output->Dimensions(), Vector<uint32_t>({1, 2, 4, 4}));
+  }
+  {
+    // Test throwing error when the input is not a 4-D tensor.
+    auto* input = BuildInput(scope, builder, "input", {2, 4},
+                             V8MLOperandType::Enum::kFloat32);
+    auto* options = MLResample2dOptions::Create();
+    auto* output =
+        builder->resample2d(input, options, scope.GetExceptionState());
+    EXPECT_EQ(output, nullptr);
+    EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
+              DOMExceptionCode::kDataError);
+    EXPECT_EQ(scope.GetExceptionState().Message(),
+              "The input must be a 4-D tensor.");
+  }
+  {
+    // Test throwing error when the length of scales is not 2.
+    auto* input = BuildInput(scope, builder, "input", {1, 1, 2, 4},
+                             V8MLOperandType::Enum::kFloat32);
+    auto* options = MLResample2dOptions::Create();
+    options->setScales({1.0, 1.0, 2.0, 2.0});
+    auto* output =
+        builder->resample2d(input, options, scope.GetExceptionState());
+    EXPECT_EQ(output, nullptr);
+    EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
+              DOMExceptionCode::kDataError);
+    EXPECT_EQ(scope.GetExceptionState().Message(),
+              "The length of scales should be 2.");
+  }
+  {
+    // Test throwing error when the scale is negative.
+    auto* input = BuildInput(scope, builder, "input", {1, 1, 2, 4},
+                             V8MLOperandType::Enum::kFloat32);
+    auto* options = MLResample2dOptions::Create();
+    options->setScales({1.0, -2.0});
+    auto* output =
+        builder->resample2d(input, options, scope.GetExceptionState());
+    EXPECT_EQ(output, nullptr);
+    EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
+              DOMExceptionCode::kDataError);
+    EXPECT_EQ(scope.GetExceptionState().Message(),
+              "All scales should be greater than 0.");
+  }
+  {
+    // Test throwing error when the length of sizes is not 2.
+    auto* input = BuildInput(scope, builder, "input", {1, 1, 2, 4},
+                             V8MLOperandType::Enum::kFloat32);
+    auto* options = MLResample2dOptions::Create();
+    options->setSizes({1, 1, 4, 6});
+    auto* output =
+        builder->resample2d(input, options, scope.GetExceptionState());
+    EXPECT_EQ(output, nullptr);
+    EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
+              DOMExceptionCode::kDataError);
+    EXPECT_EQ(scope.GetExceptionState().Message(),
+              "The length of sizes should be 2.");
+  }
+  {
+    // Test throwing error when the scale height is too large.
+    auto* input = BuildInput(scope, builder, "input", {1, 1, 34902, 23243},
+                             V8MLOperandType::Enum::kFloat32);
+    auto* options = MLResample2dOptions::Create();
+    options->setScales({232433, 4});
+    auto* output =
+        builder->resample2d(input, options, scope.GetExceptionState());
+    EXPECT_EQ(output, nullptr);
+    EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
+              DOMExceptionCode::kDataError);
+    EXPECT_EQ(scope.GetExceptionState().Message(),
+              "The scale height is too large.");
+  }
+  {
+    // Test throwing error when the scale width is too large.
+    auto* input = BuildInput(scope, builder, "input", {1, 1, 34902, 23243},
+                             V8MLOperandType::Enum::kFloat32);
+    auto* options = MLResample2dOptions::Create();
+    options->setScales({20, 434324});
+    auto* output =
+        builder->resample2d(input, options, scope.GetExceptionState());
+    EXPECT_EQ(output, nullptr);
+    EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
+              DOMExceptionCode::kDataError);
+    EXPECT_EQ(scope.GetExceptionState().Message(),
+              "The scale width is too large.");
+  }
+  {
+    // Test throwing error when the length of axes is not 2.
+    auto* input = BuildInput(scope, builder, "input", {1, 1, 2, 4},
+                             V8MLOperandType::Enum::kFloat32);
+    auto* options = MLResample2dOptions::Create();
+    options->setAxes({0, 1, 2});
+    auto* output =
+        builder->resample2d(input, options, scope.GetExceptionState());
+    EXPECT_EQ(output, nullptr);
+    EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
+              DOMExceptionCode::kDataError);
+    EXPECT_EQ(scope.GetExceptionState().Message(),
+              "The length of axes should be 2.");
+  }
+  {
+    // Test throwing error when the values of axes are inconsecutive.
+    auto* input = BuildInput(scope, builder, "input", {1, 1, 2, 4},
+                             V8MLOperandType::Enum::kFloat32);
+    auto* options = MLResample2dOptions::Create();
+    options->setAxes({0, 2});
+    auto* output =
+        builder->resample2d(input, options, scope.GetExceptionState());
+    EXPECT_EQ(output, nullptr);
+    EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
+              DOMExceptionCode::kDataError);
+    EXPECT_EQ(scope.GetExceptionState().Message(),
+              "The values of axes are invalid.");
+  }
+  {
+    // Test throwing error when one value of axes is negative.
+    auto* input = BuildInput(scope, builder, "input", {1, 1, 2, 4},
+                             V8MLOperandType::Enum::kFloat32);
+    auto* options = MLResample2dOptions::Create();
+    options->setAxes({-1, 2});
+    auto* output =
+        builder->resample2d(input, options, scope.GetExceptionState());
+    EXPECT_EQ(output, nullptr);
+    EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
+              DOMExceptionCode::kDataError);
+    EXPECT_EQ(scope.GetExceptionState().Message(),
+              "The values of axes are invalid.");
+  }
+}
+
 MLOperand* BuildClamp(V8TestingScope& scope,
                       MLGraphBuilder* builder,
                       const MLOperand* input,
@@ -2328,18 +2537,15 @@ struct ArrayBufferViewInfo {
   size_t number_of_elements;
   V8MLOperandType::Enum type;
 
-  // TODO(crbug.com/1382288): Return a DOMArrayBufferView.
-  V8UnionArrayBufferOrArrayBufferView* ToArrayBufferView() {
-    return MakeGarbageCollected<V8UnionArrayBufferOrArrayBufferView>(
-        CreateDOMArrayBufferView(number_of_elements, type));
+  NotShared<DOMArrayBufferView> ToArrayBufferView() {
+    return CreateDOMArrayBufferView(number_of_elements, type);
   }
 };
 
 // Helper function to create an ArrayBufferView given an operand.
-V8UnionArrayBufferOrArrayBufferView* CreateArrayBufferViewForOperand(
+NotShared<DOMArrayBufferView> CreateArrayBufferViewForOperand(
     const MLOperand* operand) {
-  return MakeGarbageCollected<V8UnionArrayBufferOrArrayBufferView>(
-      CreateDOMArrayBufferView(operand->NumberOfElements(), operand->Type()));
+  return CreateDOMArrayBufferView(operand->NumberOfElements(), operand->Type());
 }
 
 TEST_P(FakeMLGraphTest, ComputeTest) {
@@ -2514,42 +2720,6 @@ TEST_P(FakeMLGraphTest, ComputeTest) {
     EXPECT_EQ(exception->message(),
               "Invalid outputs: The byte length (32) of the array buffer view "
               "with name \"c\" doesn't match the expected byte length (36).");
-  }
-  {
-    // Test throwing exception if the input is not an array buffer view object.
-    MLNamedArrayBufferViews inputs;
-    inputs.emplace_back("a", CreateArrayBufferViewForOperand(a));
-    inputs.emplace_back(
-        "b", MakeGarbageCollected<V8UnionArrayBufferOrArrayBufferView>(
-                 CreateDOMArrayBufferView(12, V8MLOperandType::Enum::kFloat32)
-                     ->buffer()));
-    MLNamedArrayBufferViews outputs;
-    outputs.emplace_back("c", CreateArrayBufferViewForOperand(c));
-    auto* exception = ComputeGraph(scope, graph, inputs, outputs);
-    EXPECT_NE(exception, nullptr);
-    EXPECT_EQ(exception->name(),
-              DOMException::GetErrorName(DOMExceptionCode::kDataError));
-    EXPECT_EQ(exception->message(),
-              "Invalid inputs: The object with name \"b\" is not an "
-              "ArrayBufferView.");
-  }
-  {
-    // Test throwing exception if the output is not an array buffer view object.
-    MLNamedArrayBufferViews inputs;
-    inputs.emplace_back("a", CreateArrayBufferViewForOperand(a));
-    inputs.emplace_back("b", CreateArrayBufferViewForOperand(b));
-    MLNamedArrayBufferViews outputs;
-    outputs.emplace_back(
-        "c", MakeGarbageCollected<V8UnionArrayBufferOrArrayBufferView>(
-                 CreateDOMArrayBufferView(9, V8MLOperandType::Enum::kFloat32)
-                     ->buffer()));
-    auto* exception = ComputeGraph(scope, graph, inputs, outputs);
-    EXPECT_NE(exception, nullptr);
-    EXPECT_EQ(exception->name(),
-              DOMException::GetErrorName(DOMExceptionCode::kDataError));
-    EXPECT_EQ(exception->message(),
-              "Invalid outputs: The object with name \"c\" is not an "
-              "ArrayBufferView.");
   }
 }
 

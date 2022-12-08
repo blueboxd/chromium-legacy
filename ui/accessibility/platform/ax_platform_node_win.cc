@@ -501,7 +501,7 @@ SAFEARRAY* AXPlatformNodeWin::CreateUIAElementsArrayForRelation(
 SAFEARRAY* AXPlatformNodeWin::CreateUIAElementsArrayForReverseRelation(
     const ax::mojom::IntListAttribute& attribute) {
   std::set<AXPlatformNode*> reverse_relations =
-      GetDelegate()->GetReverseRelations(attribute);
+      GetDelegate()->GetSourceNodesForReverseRelations(attribute);
 
   std::vector<int32_t> id_list;
   std::transform(
@@ -2485,7 +2485,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_Target(
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_ANNOTATION_GET_TARGET);
   UIA_VALIDATE_CALL_1_ARG(target);
   std::set<AXPlatformNode*> reverse_relations =
-      GetDelegate()->GetReverseRelations(
+      GetDelegate()->GetSourceNodesForReverseRelations(
           ax::mojom::IntListAttribute::kDetailsIds);
 
   // If there is no reverse relation target, IAnnotationProvider
@@ -4547,8 +4547,10 @@ IFACEMETHODIMP AXPlatformNodeWin::setSelections(LONG nSelections,
                                                 IA2TextSelection* selections) {
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
 
-  COM_OBJECT_VALIDATE_1_ARG(selections);
-  if (nSelections != 1)
+  COM_OBJECT_VALIDATE();
+
+  // Chromium does not currently support more than one selection.
+  if (nSelections != 1 || !selections)
     return E_INVALIDARG;
 
   if (!selections->startObj || !selections->endObj)
@@ -4575,7 +4577,7 @@ IFACEMETHODIMP AXPlatformNodeWin::setSelections(LONG nSelections,
   AXPosition end_position =
       end_node->HypertextOffsetToEndpoint(selections->endOffset)
           ->AsDomSelectionPosition();
-  if (!start_position->IsNullPosition() || end_position->IsNullPosition())
+  if (start_position->IsNullPosition() || end_position->IsNullPosition())
     return E_INVALIDARG;
 
   AXActionData action_data;

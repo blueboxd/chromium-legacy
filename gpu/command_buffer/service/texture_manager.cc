@@ -19,6 +19,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/memory_dump_manager.h"
+#include "build/build_config.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/context_state.h"
 #include "gpu/command_buffer/service/decoder_context.h"
@@ -73,7 +74,6 @@ struct TextureSignature {
   bool can_render_;
   bool can_render_to_;
   bool npot_;
-  bool emulating_rgb_;
 
   // Since we will be hashing this signature structure, the padding must be
   // zero initialized. Although the C++11 specifications specify that this is
@@ -95,8 +95,7 @@ struct TextureSignature {
                    bool has_image,
                    bool can_render,
                    bool can_render_to,
-                   bool npot,
-                   bool emulating_rgb) {
+                   bool npot) {
     memset(this, 0, sizeof(TextureSignature));
     target_ = target;
     level_ = level;
@@ -123,7 +122,6 @@ struct TextureSignature {
     can_render_ = can_render;
     can_render_to_ = can_render_to;
     npot_ = npot;
-    emulating_rgb_ = emulating_rgb;
   }
 };
 
@@ -894,8 +892,7 @@ void Texture::AddToSignature(
       target, level, sampler_state_, usage_, info.internal_format, info.width,
       info.height, info.depth, base_level_, info.border, max_level_,
       info.format, info.type, info.image.get() != nullptr,
-      CanRender(feature_info), CanRenderTo(feature_info, level), npot_,
-      emulating_rgb_);
+      CanRender(feature_info), CanRenderTo(feature_info, level), npot_);
 
   signature->append(TextureTag, sizeof(TextureTag));
   signature->append(reinterpret_cast<const char*>(&signature_data),
@@ -1194,19 +1191,6 @@ void Texture::UpdateHasImages() {
   for (RefSet::iterator it = refs_.begin(); it != refs_.end(); ++it)
     (*it)->manager()->UpdateNumImages(delta);
 }
-
-void Texture::UpdateEmulatingRGB() {
-  for (const FaceInfo& face_info : face_infos_) {
-    for (const LevelInfo& level_info : face_info.level_infos) {
-      if (level_info.image && level_info.image->EmulatingRGB()) {
-        emulating_rgb_ = true;
-        return;
-      }
-    }
-  }
-  emulating_rgb_ = false;
-}
-
 
 void Texture::IncAllFramebufferStateChangeCount() {
   for (RefSet::iterator it = refs_.begin(); it != refs_.end(); ++it)
@@ -1909,7 +1893,6 @@ void Texture::SetLevelImageInternal(GLenum target,
 
   UpdateCanRenderCondition();
   UpdateHasImages();
-  UpdateEmulatingRGB();
 }
 
 void Texture::SetLevelImage(GLenum target,
@@ -1920,6 +1903,7 @@ void Texture::SetLevelImage(GLenum target,
   SetLevelImageInternal(target, level, image, state);
 }
 
+#if BUILDFLAG(IS_ANDROID)
 void Texture::SetLevelStreamTextureImage(GLenum target,
                                          GLint level,
                                          gl::GLImage* image,
@@ -1928,6 +1912,7 @@ void Texture::SetLevelStreamTextureImage(GLenum target,
   SetStreamTextureServiceId(service_id);
   SetLevelImageInternal(target, level, image, state);
 }
+#endif
 
 void Texture::SetLevelImageState(GLenum target, GLint level, ImageState state) {
   DCHECK_GE(level, 0);
@@ -2065,10 +2050,6 @@ void Texture::ApplyFormatWorkarounds(const FeatureInfo* feature_info) {
     const Texture::LevelInfo& info = face_infos_[0].level_infos[base_level_];
     SetCompatibilitySwizzle(GetCompatibilitySwizzleInternal(info.format));
   }
-}
-
-bool Texture::EmulatingRGB() {
-  return emulating_rgb_;
 }
 
 TextureRef::TextureRef(TextureManager* manager,
@@ -2625,6 +2606,7 @@ void TextureManager::SetLevelImage(TextureRef* ref,
   ref->texture()->SetLevelImage(target, level, image, state);
 }
 
+#if BUILDFLAG(IS_ANDROID)
 void TextureManager::SetLevelStreamTextureImage(TextureRef* ref,
                                                 GLenum target,
                                                 GLint level,
@@ -2635,6 +2617,7 @@ void TextureManager::SetLevelStreamTextureImage(TextureRef* ref,
   ref->texture()->SetLevelStreamTextureImage(target, level, image, state,
                                              service_id);
 }
+#endif
 
 void TextureManager::SetLevelImageState(TextureRef* ref,
                                         GLenum target,

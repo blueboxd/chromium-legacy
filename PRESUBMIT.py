@@ -754,6 +754,13 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
        '^chrome/services/sharing/nearby/',
        # Needed for interop with third-party library libunwindstack.
        '^base/profiler/libunwindstack_unwinder_android\.(cc|h)',
+       # Needed for interop with third-party boringssl cert verifier
+       '^third_party/boringssl/',
+       '^net/cert/',
+       '^net/tools/cert_verify_tool/',
+       '^services/cert_verifier/',
+       '^components/certificate_transparency/',
+       '^components/media_router/common/providers/cast/certificate/',
        # gRPC provides some C++ libraries that use std::shared_ptr<>.
        '^chromeos/ash/services/libassistant/grpc/',
        '^chromecast/cast_core/grpc',
@@ -1522,7 +1529,6 @@ _GENERIC_PYDEPS_FILES = [
     'build/android/gyp/create_test_apk_wrapper_script.pydeps',
     'build/android/gyp/create_ui_locale_resources.pydeps',
     'build/android/gyp/dex.pydeps',
-    'build/android/gyp/dex_jdk_libs.pydeps',
     'build/android/gyp/dist_aar.pydeps',
     'build/android/gyp/filter_zip.pydeps',
     'build/android/gyp/flatc_java.pydeps',
@@ -2830,6 +2836,7 @@ def CheckSpamLogging(input_api, output_api):
     files_to_skip = (
         _EXCLUDED_PATHS + _TEST_CODE_EXCLUDED_PATHS +
         input_api.DEFAULT_FILES_TO_SKIP + (
+            r"^base/fuchsia/scoped_fx_logger\.cc$",
             r"^base/logging\.h$",
             r"^base/logging\.cc$",
             r"^base/task/thread_pool/task_tracker\.cc$",

@@ -46,12 +46,12 @@
 #include "chrome/browser/apps/app_service/publishers/standalone_browser_extension_apps_factory.h"
 #include "chrome/browser/apps/app_service/publishers/web_apps_crosapi.h"
 #include "chrome/browser/apps/app_service/publishers/web_apps_crosapi_factory.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_test.h"
+#include "chrome/browser/ash/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ash/borealis/borealis_util.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/crosapi/fake_browser_manager.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_test.h"
-#include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/common/chrome_features.h"
 #include "chromeos/ash/components/login/login_state/login_state.h"
 #include "components/services/app_service/public/cpp/app_capability_access_cache.h"
@@ -72,12 +72,12 @@ scoped_refptr<extensions::Extension> MakeExtensionApp(
     const std::string& url,
     const std::string& id) {
   std::string err;
-  base::DictionaryValue value;
-  value.SetStringKey("name", name);
-  value.SetStringKey("version", version);
+  base::Value::Dict value;
+  value.Set("name", name);
+  value.Set("version", version);
   base::ListValue scripts;
   scripts.Append("script.js");
-  value.SetPath("app.background.scripts", std::move(scripts));
+  value.SetByDottedPath("app.background.scripts", std::move(scripts));
   scoped_refptr<extensions::Extension> app = extensions::Extension::Create(
       base::FilePath(), extensions::mojom::ManifestLocation::kInternal, value,
       extensions::Extension::WAS_INSTALLED_BY_DEFAULT, id, &err);
@@ -95,10 +95,10 @@ scoped_refptr<extensions::Extension> MakeLegacyPackagedApp(
     const std::string& url,
     const std::string& id) {
   std::string err;
-  base::DictionaryValue value;
-  value.SetStringKey("name", name);
-  value.SetStringKey("version", version);
-  value.SetStringPath("app.launch.local_path", "index.html");
+  base::Value::Dict value;
+  value.Set("name", name);
+  value.Set("version", version);
+  value.SetByDottedPath("app.launch.local_path", "index.html");
   scoped_refptr<extensions::Extension> app = extensions::Extension::Create(
       base::FilePath(), extensions::mojom::ManifestLocation::kInternal, value,
       extensions::Extension::WAS_INSTALLED_BY_DEFAULT, id, &err);

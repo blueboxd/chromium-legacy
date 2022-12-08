@@ -45,12 +45,12 @@
   // was added implicitly by adding flavors to the owned pasteboard of
   // OwningProvider, so call -types to actually get data.
   //
-  // Merge in the ui::kChromeDragDummyPboardType type, so that all of Chromium
+  // Merge in the ui::kUTTypeChromiumInitiatedDrag type, so that all of Chromium
   // is marked to receive the drags. TODO(avi): Wire up MacViews so that
   // BridgedContentView properly registers the result of View::GetDropFormats()
   // rather than OSExchangeDataProviderMac::SupportedPasteboardTypes().
   return [[_pasteboardItem types]
-      arrayByAddingObject:ui::kChromeDragDummyPboardType];
+      arrayByAddingObject:ui::kUTTypeChromiumInitiatedDrag];
 }
 
 - (NSPasteboardWritingOptions)writingOptionsForType:(NSString*)type
@@ -64,7 +64,7 @@
 }
 
 - (id)pasteboardPropertyListForType:(NSString*)type {
-  if ([type isEqual:ui::kChromeDragDummyPboardType])
+  if ([type isEqual:ui::kUTTypeChromiumInitiatedDrag])
     return [NSData data];
 
   // Like above, an NSPasteboardItem added to a pasteboard will return nil from
@@ -80,8 +80,7 @@ namespace {
 
 class OwningProvider : public OSExchangeDataProviderMac {
  public:
-  OwningProvider()
-      : OSExchangeDataProviderMac(), owned_pasteboard_(new UniquePasteboard) {}
+  OwningProvider() : owned_pasteboard_(new UniquePasteboard) {}
   OwningProvider(const OwningProvider& provider) = default;
 
   std::unique_ptr<OSExchangeDataProvider> Clone() const override {
@@ -98,8 +97,8 @@ class OwningProvider : public OSExchangeDataProviderMac {
 
 class WrappingProvider : public OSExchangeDataProviderMac {
  public:
-  WrappingProvider(NSPasteboard* pasteboard)
-      : OSExchangeDataProviderMac(), wrapped_pasteboard_([pasteboard retain]) {}
+  explicit WrappingProvider(NSPasteboard* pasteboard)
+      : wrapped_pasteboard_([pasteboard retain]) {}
   WrappingProvider(const WrappingProvider& provider) = default;
 
   std::unique_ptr<OSExchangeDataProvider> Clone() const override {
@@ -162,10 +161,10 @@ void OSExchangeDataProviderMac::SetString(const std::u16string& string) {
 
 void OSExchangeDataProviderMac::SetURL(const GURL& url,
                                        const std::u16string& title) {
-  base::scoped_nsobject<NSPasteboardItem> item =
-      ClipboardUtil::PasteboardItemFromUrl(base::SysUTF8ToNSString(url.spec()),
-                                           base::SysUTF16ToNSString(title));
-  ClipboardUtil::AddDataToPasteboard(GetPasteboard(), item);
+  NSArray<NSPasteboardItem*>* items = ClipboardUtil::PasteboardItemsFromUrls(
+      @[ base::SysUTF8ToNSString(url.spec()) ],
+      @[ base::SysUTF16ToNSString(title) ]);
+  ClipboardUtil::AddDataToPasteboard(GetPasteboard(), items.firstObject);
 }
 
 void OSExchangeDataProviderMac::SetFilename(const base::FilePath& path) {
@@ -331,39 +330,39 @@ gfx::Vector2d OSExchangeDataProviderMac::GetDragImageOffset() const {
   return cursor_offset_;
 }
 
-NSDraggingItem* OSExchangeDataProviderMac::GetDraggingItem() const {
+NSArray<NSDraggingItem*>* OSExchangeDataProviderMac::GetDraggingItems() const {
   // What's going on here is that initiating a drag (-[NSView
   // beginDraggingSessionWithItems...]) requires a dragging item. Even though
   // pasteboard items are NSPasteboardWriters, they are locked to their
   // pasteboard and cannot be used to initiate a drag with another pasteboard
   // (hello https://crbug.com/928684). Therefore, wrap them.
-  //
-  // OSExchangeDataProviderMac was written to the old NSPasteboard APIs that
-  // didn't account for more than one item. This kinda matches Views which also
-  // assumes that only one drag item can exist at a time. TODO(avi): Fix all of
-  // Views to be able to handle drags of more than one item. Then rewrite
-  // OSExchangeDataProviderMac to the new NSPasteboard item API.
 
-  NSArray* pasteboardItems = [GetPasteboard() pasteboardItems];
-  DCHECK(pasteboardItems);
-  DCHECK_EQ(1u, [pasteboardItems count]);
+  NSArray<NSPasteboardItem*>* pasteboard_items =
+      GetPasteboard().pasteboardItems;
+  if (!pasteboard_items) {
+    return nil;
+  }
 
-  CrPasteboardItemWrapper* wrapper = [[[CrPasteboardItemWrapper alloc]
-      initWithPasteboardItem:[pasteboardItems firstObject]] autorelease];
+  NSMutableArray<NSDraggingItem*>* drag_items = [NSMutableArray array];
+  for (NSPasteboardItem* item in pasteboard_items) {
+    CrPasteboardItemWrapper* wrapper = [[[CrPasteboardItemWrapper alloc]
+        initWithPasteboardItem:item] autorelease];
+    NSDraggingItem* drag_item =
+        [[[NSDraggingItem alloc] initWithPasteboardWriter:wrapper] autorelease];
 
-  NSDraggingItem* drag_item =
-      [[[NSDraggingItem alloc] initWithPasteboardWriter:wrapper] autorelease];
+    [drag_items addObject:drag_item];
+  }
 
-  return drag_item;
+  return drag_items;
 }
 
 // static
 NSArray* OSExchangeDataProviderMac::SupportedPasteboardTypes() {
   return @[
-    kWebCustomDataPboardType, ClipboardUtil::UTIForWebURLsAndTitles(),
-    NSURLPboardType, NSFilenamesPboardType, kChromeDragDummyPboardType,
+    kUTTypeChromiumWebCustomData, kUTTypeWebKitWebURLsWithTitles,
+    NSURLPboardType, NSFilenamesPboardType, kUTTypeChromiumInitiatedDrag,
     NSStringPboardType, NSHTMLPboardType, NSRTFPboardType,
-    NSFilenamesPboardType, kWebCustomDataPboardType, NSPasteboardTypeString
+    NSFilenamesPboardType, kUTTypeChromiumWebCustomData, NSPasteboardTypeString
   ];
 }
 

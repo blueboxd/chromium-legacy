@@ -217,17 +217,17 @@ class AppSessionTest
         profile(), /*is_main_browser=*/true);
 
     app_session_ = AppSession::CreateForTesting(
-        base::DoNothing(), local_state(), {crash_path().value()});
-    app_session_->InitForWebKiosk(web_kiosk_main_browser_.get());
+        profile(), base::DoNothing(), local_state(), {crash_path().value()});
+    app_session_->InitForWebKiosk(web_app_name);
 
     task_environment_.RunUntilIdle();
   }
 
   // Simulate starting a chrome app kiosk session.
   void StartChromeAppKioskSession() {
-    app_session_ =
-        std::make_unique<AppSession>(base::DoNothing(), local_state());
-    app_session_->Init(profile(), kTestAppId);
+    app_session_ = std::make_unique<AppSession>(profile(), base::DoNothing(),
+                                                local_state());
+    app_session_->Init(kTestAppId);
   }
 
   // Waits until |app_session_| handles creation of |new_browser_window| and
@@ -295,12 +295,6 @@ class AppSessionTest
 };
 
 using AppSessionRestartReasonTest = AppSessionTest;
-
-class AppSessionTestMockTime : public AppSessionTest {
- public:
-  AppSessionTestMockTime()
-      : AppSessionTest(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
-};
 
 TEST_F(AppSessionTest, WebKioskTracksBrowserCreation) {
   {
@@ -438,23 +432,6 @@ TEST_F(AppSessionTest, WebKioskLastDaySessions) {
   EXPECT_EQ(3u, histogram()->GetAllSamples(kKioskSessionStateHistogram).size());
   histogram()->ExpectTotalCount(kKioskSessionDurationNormalHistogram, 1);
   histogram()->ExpectTotalCount(kKioskSessionDurationInDaysNormalHistogram, 0);
-}
-
-TEST_F(AppSessionTestMockTime, PeriodicMetrics) {
-  const char* const kPeriodicMetrics[] = {
-      kKioskRamUsagePercentageHistogram, kKioskSwapUsagePercentageHistogram,
-      kKioskDiskUsagePercentageHistogram, kKioskChromeProcessCountHistogram};
-  StartWebKioskSession();
-
-  task_environment()->FastForwardBy(kPeriodicMetricsInterval / 2);
-  for (const char* metric : kPeriodicMetrics) {
-    histogram()->ExpectTotalCount(metric, 0);
-  }
-
-  task_environment()->FastForwardBy(kPeriodicMetricsInterval / 2);
-  for (const char* metric : kPeriodicMetrics) {
-    histogram()->ExpectTotalCount(metric, 1);
-  }
 }
 
 TEST_F(AppSessionTest, DoNotOpenSecondBrowserInWebKiosk) {
@@ -773,7 +750,7 @@ TEST_F(AppSessionTest, ShouldHandlePlugin) {
       run_loop.QuitClosure()));
   run_loop.Run();
 
-  AppSession app_session;
+  AppSession app_session(profile());
   KioskSessionPluginHandlerDelegate* delegate =
       app_session.GetPluginHandlerDelegateForTesting();
 

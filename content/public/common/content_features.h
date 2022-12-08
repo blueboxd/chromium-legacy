@@ -43,10 +43,12 @@ CONTENT_EXPORT BASE_DECLARE_FEATURE(
     kBrokerFileOperationsOnDiskCacheInNetworkService);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kBrowserVerifiedUserActivationKeyboard);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kBrowserVerifiedUserActivationMouse);
+CONTENT_EXPORT BASE_DECLARE_FEATURE(kBrowserSideDownloadPolicySandbox);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kCanvas2DImageChromium);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(
     kClearCrossSiteCrossBrowsingContextGroupWindowName);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kCompositeBGColorAnimation);
+CONTENT_EXPORT BASE_DECLARE_FEATURE(kCompositeClipPathAnimation);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kCodeCacheDeletionWithoutFilter);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kConsolidatedMovementXY);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kCooperativeScheduling);

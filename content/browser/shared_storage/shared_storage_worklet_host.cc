@@ -39,9 +39,6 @@ constexpr base::TimeDelta kKeepAliveTimeout = base::Seconds(2);
 using SharedStorageURNMappingResult =
     FencedFrameURLMapping::SharedStorageURNMappingResult;
 
-using SharedStorageBudgetMetadata =
-    FencedFrameURLMapping::SharedStorageBudgetMetadata;
-
 using OperationResult = storage::SharedStorageManager::OperationResult;
 using GetResult = storage::SharedStorageManager::GetResult;
 
@@ -477,7 +474,8 @@ void SharedStorageWorkletHost::SharedStorageGet(
       [](SharedStorageGetCallback callback, GetResult result) {
         // If the key is not found but there is no other error, the worklet will
         // resolve the promise to undefined.
-        if (result.result == OperationResult::kNotFound) {
+        if (result.result == OperationResult::kNotFound ||
+            result.result == OperationResult::kExpired) {
           std::move(callback).Run(
               shared_storage_worklet::mojom::SharedStorageGetStatus::kNotFound,
               /*error_message=*/"sharedStorage.get() could not find key",
@@ -867,7 +865,8 @@ SharedStorageWorkletHost::MaybeBindPrivateAggregationHost() {
 
 bool SharedStorageWorkletHost::IsSharedStorageAllowed() {
   return GetContentClient()->browser()->IsSharedStorageAllowed(
-      browser_context_, main_frame_origin_, shared_storage_origin_);
+      &(document_service_->render_frame_host()), main_frame_origin_,
+      shared_storage_origin_);
 }
 
 }  // namespace content

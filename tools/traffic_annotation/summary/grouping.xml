@@ -20,7 +20,6 @@ after discussions on the right group.
       <annotation id="android_web_socket"/>
       <annotation id="query_tiles_fetcher"/>
       <annotation id="query_tiles_image_loader"/>
-      <annotation id="autofill_service"/>
       <annotation id="cached_image_fetcher"/>
       <annotation id="chime_sdk"/>
       <annotation id="chrome_android_hats"/>
@@ -30,7 +29,6 @@ after discussions on the right group.
       <annotation id="download_manager_service_retry"/>
       <annotation id="explore_sites"/>
       <annotation id="family_info"/>
-      <annotation id="gstatic_onboarding_definition"/>
       <annotation id="kids_chrome_management_client_classify_url"/>
       <annotation id="minidump_uploader_android"/>
       <annotation id="oma_download_handler_android"/>
@@ -96,6 +94,7 @@ after discussions on the right group.
       <annotation id="wallpaper_google_photos_enabled"/>
       <annotation id="wallpaper_google_photos_photos"/>
       <annotation id="search_and_assistant_enabled_checker"/>
+      <annotation id="wallpaper_online_downloader"/>
     </sender>
     <sender name="ChromeOS Recovery">
       <annotation id="cros_recovery_image_download"/>
@@ -226,7 +225,6 @@ after discussions on the right group.
       <annotation id="stream_message_pipe_adapter"/>
       <annotation id="stream_packet_socket"/>
       <annotation id="certificate_verifier_url_loader"/>
-      <annotation id="expect_ct_reporter"/>
       <annotation id="domain_security_policy"/>
       <annotation id="services_http_server_error_response"/>
       <annotation id="webrtc_peer_connection"/>
@@ -269,6 +267,7 @@ after discussions on the right group.
       <annotation id="iwa_policy_signed_web_bundle"/>
       <annotation id="quick_start_challenge_bytes_fetcher"/>
       <annotation id="customization_document"/>
+      <annotation id="password_sync_token_fetcher"/>
       <annotation id="nearby_webrtc_connection"/>
     </sender>
   </group>

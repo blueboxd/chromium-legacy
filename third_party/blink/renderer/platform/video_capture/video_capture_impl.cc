@@ -512,8 +512,11 @@ bool VideoCaptureImpl::VideoFrameBufferPreparer::BindVideoFrameOnMediaThread(
   const auto output_format =
       buffer_context_->gpu_factories()->VideoFrameOutputFormat(
           frame_info_->pixel_format);
-  DCHECK_EQ(output_format,
-            media::GpuVideoAcceleratorFactories::OutputFormat::NV12);
+  DCHECK(
+      output_format ==
+          media::GpuVideoAcceleratorFactories::OutputFormat::NV12_SINGLE_GMB ||
+      output_format ==
+          media::GpuVideoAcceleratorFactories::OutputFormat::NV12_DUAL_GMB);
 
   std::vector<gfx::BufferPlane> planes;
 
@@ -523,10 +526,6 @@ bool VideoCaptureImpl::VideoFrameBufferPreparer::BindVideoFrameOnMediaThread(
 #if BUILDFLAG(IS_MAC)
   usage |= gpu::SHARED_IMAGE_USAGE_MACOS_VIDEO_TOOLBOX;
 #endif
-
-  unsigned texture_target =
-      buffer_context_->gpu_factories()->ImageTextureTarget(
-          gpu_memory_buffer_->GetFormat());
 
   if (base::FeatureList::IsEnabled(
           media::kMultiPlaneVideoCaptureSharedImages)) {
@@ -550,6 +549,10 @@ bool VideoCaptureImpl::VideoFrameBufferPreparer::BindVideoFrameOnMediaThread(
           buffer_context_->gmb_resources()->mailboxes[plane]);
     }
   }
+
+  const unsigned texture_target =
+      buffer_context_->gpu_factories()->ImageTextureTarget(
+          gpu_memory_buffer_->GetFormat());
 
   const gpu::SyncToken sync_token = sii->GenVerifiedSyncToken();
 

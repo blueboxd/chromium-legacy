@@ -22,6 +22,8 @@
 <translation id="1111673857033749125">Beste gailuetan gordeta dituzun laster-markak hemen agertuko dira.</translation>
 <translation id="1113597929977215864">Erakutsi ikuspegi sinplifikatua</translation>
 <translation id="1123070903960493543">Chrome-rekin dituzun interakzioak, hautatu dituzun ezarpenak, Chrome-ren hutsegiteen xehetasunak</translation>
+<translation id="1126013303640354461">Google Pay-ko ordainketa-metodoak eta helbideak ez dira enkriptatuko. Chrome-ko arakatze-historia ez da sinkronizatuko.
+Zure pasaesaldia dakitenek soilik irakur ditzakete zure datu enkriptatuak. Google-k ez du jasoko pasaesaldia, ezta gordeko ere. Pasaesaldia ahazten bazaizu edo ezarpena aldatu nahi baduzu, sinkronizazioa berrezarri beharko duzu. <ph name="BEGIN_LINK" />Lortu informazio gehiago<ph name="END_LINK" /></translation>
 <translation id="1126809382673880764">Ez zaitu babesten webgune, deskarga eta luzapen kaltegarrien aurka. Erabilgarri dagoenean, arakatze seguruaren babesa jasotzen jarraituko duzu Google-ren beste zerbitzu batzuetan (Gmail-en eta Bilaketa zerbitzuan, esaterako).</translation>
 <translation id="1129510026454351943">Xehetasunak: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1142732900304639782">Ez eskaini webgune hauek itzultzea</translation>
@@ -330,7 +332,6 @@ Egoeraren token pribatuek sareko pribatutasuna hobetzen dute eta ezin dira erabi
 <translation id="2840810876587895427">{TAB_COUNT,plural, =1{Ezkutuko moduko <ph name="TAB_COUNT_ONE" /> fitxa itxiko da}other{Ezkutuko moduko <ph name="TAB_COUNT_MANY" /> fitxa itxiko dira}}</translation>
 <translation id="2841216154655874070">{NUM_DAYS,plural, =1{Duela 1 egun egiaztatu zuen}other{Duela # egun egiaztatu zuen}}</translation>
 <translation id="2842985007712546952">Karpeta nagusia</translation>
-<translation id="2851291081585704741">Ez zaude konektatuta Internetera</translation>
 <translation id="2856503607207334158">Ezin izan da hasi saioa</translation>
 <translation id="2860954141821109167">Ziurtatu telefonoetarako aplikazio bat gaituta dagoela gailu honetan</translation>
 <translation id="2861923151411510142">Chrome-ren eginbide batzuk eskaintzeari utziko diogu</translation>
@@ -1105,6 +1106,7 @@ Esaterako, bisitatu dituzun webguneetan oinarritzen ez diren iragarkiak bidalita
 <translation id="6903907808598579934">Aktibatu sinkronizazioa</translation>
 <translation id="6908998565271542516">Webgune bat onartzeko edo ez onartzeko aukera altuera osoan irekita dago</translation>
 <translation id="6909589135458168665">Kargatu orriak aurrez</translation>
+<translation id="692924882724759447">Ikusi jarraitzen diezun webguneak hemen</translation>
 <translation id="6942665639005891494">Deskargen kokapen lehenetsia aldatzeko, erabili Ezarpenak menuko aukera</translation>
 <translation id="694267552845942083">Sinkronizazio-ezarpenak pertsonalizatzen ari zara. Sinkronizazioa aktibatzen amaitzeko, sakatu pantailaren behealdean dagoen "Berretsi" botoia. Joan gora</translation>
 <translation id="6945221475159498467">Hautatu</translation>
@@ -1506,7 +1508,6 @@ Esaterako, bisitatu dituzun webguneetan oinarritzen ez diren iragarkiak bidalita
 <translation id="8998729206196772491"><ph name="MANAGED_DOMAIN" /> domeinuak kudeatutako kontu batekin hastera zoaz saioa, eta, ondorioz, domeinu horretako administratzaileari emango diozu Chrome datuen kontrola. Datuak betiko lotuko zaizkio kontu honi. Chrome-ko saioa amaitzen baduzu, gailuko datuak ezabatu egingo dira, baina Google-ko kontuan izango dituzu gordeta.</translation>
 <translation id="9022774213089566801">Gehien bisitatutakoak</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# bideo}other{# bideo}}</translation>
-<translation id="9042827002460091668">Egiaztatu Internetera konektatuta zaudela eta saiatu berriro</translation>
 <translation id="9042893549633094279">Pribatutasuna eta segurtasuna</translation>
 <translation id="9050666287014529139">Pasaesaldia</translation>
 <translation id="9063523880881406963">Desaktibatu ordenagailuetarako webgunea eskatzeko aukera</translation>

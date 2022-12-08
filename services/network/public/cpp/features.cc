@@ -14,12 +14,6 @@
 
 namespace network::features {
 
-// Enables Expect CT reporting, which sends reports for opted-in sites
-// that don't serve sufficient Certificate Transparency information.
-BASE_FEATURE(kExpectCTReporting,
-             "ExpectCTReporting",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kNetworkErrorLogging,
              "NetworkErrorLogging",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -178,15 +172,6 @@ const base::FeatureParam<TrustTokenOriginTrialSpec>
         &kPrivateStateTokens, "TrustTokenOperationsRequiringOriginTrial",
         TrustTokenOriginTrialSpec::kOriginTrialNotRequired,
         &kTrustTokenOriginTrialParamOptions};
-
-// Determines whether Trust Tokens issuance requests should be diverted, at the
-// corresponding issuers' request, to the operating system instead of sent
-// to the issuers' servers.
-//
-// WARNING: If you rename this param, you must update the corresponding flag
-// entry in about_flags.cc.
-const base::FeatureParam<bool> kPlatformProvidedTrustTokenIssuance{
-    &kPrivateStateTokens, "PlatformProvidedTrustTokenIssuance", false};
 
 BASE_FEATURE(kWebSocketReassembleShortMessages,
              "WebSocketReassembleShortMessages",

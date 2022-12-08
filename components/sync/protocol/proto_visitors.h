@@ -539,7 +539,7 @@ VISIT_PROTO_FIELDS(const sync_pb::EntityMetadata& proto) {
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
-  static_assert(44 == GetNumModelTypes(),
+  static_assert(45 == GetNumModelTypes(),
                 "When adding a new protocol type, you will likely need to add "
                 "it here as well.");
   VISIT(encrypted);
@@ -799,6 +799,7 @@ VISIT_PROTO_FIELDS(const sync_pb::HistorySpecifics& proto) {
   VISIT_REP(redirect_entries);
   VISIT(redirect_chain_start_incomplete);
   VISIT(redirect_chain_end_incomplete);
+  VISIT(redirect_chain_middle_trimmed);
   VISIT(page_transition);
   VISIT(originator_referring_visit_id);
   VISIT(originator_opener_visit_id);

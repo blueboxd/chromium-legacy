@@ -38,7 +38,6 @@ import org.chromium.chrome.browser.app.bluetooth.BluetoothNotificationService;
 import org.chromium.chrome.browser.app.feature_guide.notifications.FeatureNotificationGuideDelegate;
 import org.chromium.chrome.browser.app.usb.UsbNotificationService;
 import org.chromium.chrome.browser.app.video_tutorials.VideoTutorialShareHelper;
-import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantHistoryDeletionObserver;
 import org.chromium.chrome.browser.bluetooth.BluetoothNotificationManager;
 import org.chromium.chrome.browser.bookmarkswidget.BookmarkWidgetProvider;
 import org.chromium.chrome.browser.contacts_picker.ChromePickerAdapter;
@@ -104,8 +103,6 @@ import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.version_info.Channel;
 import org.chromium.components.version_info.VersionConstants;
 import org.chromium.components.version_info.VersionInfo;
-import org.chromium.components.viz.common.VizSwitches;
-import org.chromium.components.viz.common.display.DeJellyUtils;
 import org.chromium.components.webapps.AppBannerManager;
 import org.chromium.content_public.browser.BrowserTaskExecutor;
 import org.chromium.content_public.browser.ChildProcessLauncherHelper;
@@ -188,12 +185,6 @@ public class ProcessInitializationHandler {
                 new AccountManagerFacadeImpl(AppHooks.get().createAccountManagerDelegate()));
 
         setProcessStateSummaryForAnrs(false);
-
-        // De-jelly can also be controlled by a system property. As sandboxed processes can't
-        // read this property directly, convert it to the equivalent command line flag.
-        if (DeJellyUtils.externallyEnableDeJelly()) {
-            CommandLine.getInstance().appendSwitch(VizSwitches.ENABLE_DE_JELLY);
-        }
     }
 
     /**
@@ -262,8 +253,6 @@ public class ProcessInitializationHandler {
 
         HistoryDeletionBridge.getInstance().addObserver(new ContentCaptureHistoryDeletionObserver(
                 () -> PlatformContentCaptureController.getInstance()));
-        HistoryDeletionBridge.getInstance().addObserver(
-                new AutofillAssistantHistoryDeletionObserver());
         FeatureNotificationGuideService.setDelegate(new FeatureNotificationGuideDelegate());
 
         PrivacyPreferencesManagerImpl.getInstance().onNativeInitialized();
@@ -577,11 +566,7 @@ public class ProcessInitializationHandler {
                 if (minidumps.length > 0) {
                     Log.i(TAG, "Attempting to upload %d accumulated crash dumps.",
                             minidumps.length);
-                    if (MinidumpUploadServiceImpl.shouldUseJobSchedulerForUploads()) {
-                        MinidumpUploadServiceImpl.scheduleUploadJob();
-                    } else {
-                        MinidumpUploadServiceImpl.tryUploadAllCrashDumps();
-                    }
+                    MinidumpUploadServiceImpl.scheduleUploadJob();
                 }
 
                 // Finally, if there is a minidump that still needs logcat output to be attached, do

@@ -504,12 +504,11 @@ class CONTENT_EXPORT RenderFrameHostManager {
     return render_frame_host_->browsing_context_state()->proxy_hosts();
   }
 
-  // Called when the render process is gone for `render_frame_host`. If
-  // `render_frame_host` is the speculative frame host, cancels the navigation
-  // and cleans up the RenderFrameHost because there is no longer a render
-  // process for the navigation to commit into.
-  void CleanupIfSpeculativeForRenderProcessGone(
-      RenderFrameHostImpl* render_frame_host);
+  // Called when the render process is gone for
+  // `speculative_render_frame_host_`. Cancels the navigation and cleans up the
+  // speculative RenderFrameHost because there is no longer a render process for
+  // the navigation to commit into.
+  void CleanupSpeculativeRfhForRenderProcessGone();
 
   // Updates the user activation state in all proxies of this frame.  For
   // more details, see the comment on FrameTreeNode::user_activation_state_.
@@ -727,9 +726,9 @@ class CONTENT_EXPORT RenderFrameHostManager {
   // This is a helper function for GetSiteInstanceForNavigation.
   SiteInstanceDescriptor DetermineSiteInstanceForURL(
       const UrlInfo& dest_url_info,
-      SiteInstance* source_instance,
-      SiteInstance* current_instance,
-      SiteInstance* dest_instance,
+      SiteInstanceImpl* source_instance,
+      SiteInstanceImpl* current_instance,
+      SiteInstanceImpl* dest_instance,
       ui::PageTransition transition,
       bool is_failure,
       IsSameSiteGetter& is_same_site,
@@ -744,8 +743,8 @@ class CONTENT_EXPORT RenderFrameHostManager {
   //
   // This is a helper function for GetSiteInstanceForNavigation.
   bool CanUseDestinationInstance(const UrlInfo& dest_url_info,
-                                 SiteInstance* current_instance,
-                                 SiteInstance* dest_instance,
+                                 SiteInstanceImpl* current_instance,
+                                 SiteInstanceImpl* dest_instance,
                                  bool is_failure,
                                  bool force_browsing_instance_swap);
 
@@ -772,7 +771,7 @@ class CONTENT_EXPORT RenderFrameHostManager {
 
   // Returns true if we can use `source_instance` for `dest_url_info`.
   bool CanUseSourceSiteInstance(const UrlInfo& dest_url_info,
-                                SiteInstance* source_instance,
+                                SiteInstanceImpl* source_instance,
                                 bool was_server_redirect,
                                 bool is_failure);
 

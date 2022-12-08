@@ -680,7 +680,7 @@ void NavigationControllerImpl::RemovedEntriesTracker::PopulateKeySet(
       // discarded API keys.
       if (frame_entry->document_sequence_number() !=
           frame_tree_node_id_to_doc_seq_nos_[node->frame_tree_node_id()]) {
-        for (auto* descendant : node->frame_tree()->SubtreeNodes(node))
+        for (auto* descendant : node->frame_tree().SubtreeNodes(node))
           nodes_to_process.erase(descendant);
       }
     });
@@ -1364,13 +1364,14 @@ bool NavigationControllerImpl::RendererDidNavigate(
   // NavigationEntry, by either creating a new object or reusing the previous
   // entry's one.
   scoped_refptr<BackForwardCacheMetrics> back_forward_cache_metrics;
-  if (navigation_request->frame_tree_node()->frame_tree()->type() ==
+  if (navigation_request->frame_tree_node()->frame_tree().type() ==
       FrameTree::Type::kPrimary) {
     back_forward_cache_metrics = BackForwardCacheMetrics::
         CreateOrReuseBackForwardCacheMetricsForNavigation(
             GetLastCommittedEntry(), is_main_frame_navigation,
             params.document_sequence_number);
   }
+
   // Notify the last active entry that we have navigated away.
   if (is_main_frame_navigation && !is_same_document_navigation) {
     if (auto* metrics = GetLastCommittedEntry()->back_forward_cache_metrics()) {
@@ -3398,7 +3399,7 @@ base::WeakPtr<NavigationHandle> NavigationControllerImpl::NavigateWithoutEntry(
     node = params.frame_tree_node_id != RenderFrameHost::kNoFrameTreeNodeId
                ? frame_tree_->FindByID(params.frame_tree_node_id)
                : frame_tree_->FindByName(params.frame_name);
-    DCHECK(!node || node->frame_tree() == &*frame_tree_);
+    DCHECK(!node || &node->frame_tree() == &frame_tree());
   }
 
   // If no FrameTreeNode was specified, navigate the main frame.
@@ -3574,7 +3575,7 @@ void NavigationControllerImpl::HandleRendererDebugURL(
   // TODO(crbug.com/1254130): Remove the test dependency on this behavior.
   if (!url.SchemeIs(url::kJavaScriptScheme)) {
     bool was_loading = frame_tree_node->frame_tree()
-                           ->LoadingTree()
+                           .LoadingTree()
                            ->IsLoadingIncludingInnerFrameTrees();
     frame_tree_node->current_frame_host()->SetIsLoadingForRendererDebugURL();
     frame_tree_node->DidStartLoading(true /* should_show_loading_ui */,
@@ -3819,8 +3820,6 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
           /*http_response_code=*/-1,
           blink::mojom::NavigationApiHistoryEntryArrays::New(),
           /*early_hints_preloaded_resources=*/std::vector<GURL>(),
-          /*ad_auction_components=*/absl::nullopt,
-          /*fenced_frame_reporting_metadata=*/nullptr,
           // This timestamp will be populated when the commit IPC is sent.
           /*commit_sent=*/base::TimeTicks(), /*srcdoc_value=*/std::string(),
           /*fallback_srcdoc_baseurl_value=*/GURL(),
@@ -3832,7 +3831,9 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
           /*view_transition_state=*/absl::nullopt,
           /*soft_navigation_heuristics_task_id=*/absl::nullopt,
           /*modified_runtime_features=*/
-          base::flat_map<::blink::mojom::RuntimeFeatureState, bool>());
+          base::flat_map<::blink::mojom::RuntimeFeatureState, bool>(),
+          /*fenced_frame_properties=*/absl::nullopt,
+          /*not_restored_reasons=*/nullptr);
 #if BUILDFLAG(IS_ANDROID)
   if (ValidateDataURLAsString(params.data_url_as_string)) {
     commit_params->data_url_as_string = params.data_url_as_string->data();
@@ -3845,7 +3846,7 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
   std::string extra_headers_crlf;
   base::ReplaceChars(params.extra_headers, "\n", "\r\n", &extra_headers_crlf);
 
-  auto navigation_request = NavigationRequest::CreateBrowserInitiated(
+  auto navigation_request = NavigationRequest::Create(
       node, std::move(common_params), std::move(commit_params),
       !params.is_renderer_initiated, params.was_opener_suppressed,
       params.initiator_frame_token.has_value()
@@ -3975,7 +3976,7 @@ NavigationControllerImpl::CreateNavigationRequestFromEntry(
     // instead.
     commit_params->srcdoc_value = frame_tree_node->srcdoc_value();
   }
-  return NavigationRequest::CreateBrowserInitiated(
+  return NavigationRequest::Create(
       frame_tree_node, std::move(common_params), std::move(commit_params),
       is_browser_initiated, false /* was_opener_suppressed */,
       nullptr /* initiator_frame_token */,
@@ -4101,7 +4102,7 @@ NavigationControllerImpl::LoadPostCommitErrorPage(
   std::unique_ptr<NavigationRequest> navigation_request =
       NavigationRequest::CreateBrowserInitiated(
           node, std::move(common_params), std::move(commit_params),
-          true /* browser_initiated */, false /* was_opener_suppressed */,
+          false /* was_opener_suppressed */,
           nullptr /* initiator_frame_token */,
           ChildProcessHost::kInvalidUniqueID /* initiator_process_id */,
           "" /* extra_headers */, nullptr /* frame_entry */,
@@ -4110,7 +4111,7 @@ NavigationControllerImpl::LoadPostCommitErrorPage(
           false /* is_pdf */);
   navigation_request->set_post_commit_error_page_html(error_page_html);
   navigation_request->set_net_error(error);
-  node->CreatedNavigationRequest(std::move(navigation_request));
+  node->TakeNavigationRequest(std::move(navigation_request));
   DCHECK(node->navigation_request());
 
   // Calling BeginNavigation may destroy the NavigationRequest.

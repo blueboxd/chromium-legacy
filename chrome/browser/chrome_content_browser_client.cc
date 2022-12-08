@@ -357,7 +357,7 @@
 #include "chrome/browser/mac/auth_session_request.h"
 #include "chrome/browser/mac/chrome_browser_main_extra_parts_mac.h"
 #include "components/soda/constants.h"
-#include "sandbox/mac/seatbelt_exec.h"
+#include "sandbox/mac/sandbox_compiler.h"
 #include "sandbox/policy/mac/params.h"
 #include "sandbox/policy/mac/sandbox_mac.h"
 #elif BUILDFLAG(IS_CHROMEOS_ASH)
@@ -1433,15 +1433,18 @@ bool DoesGaiaOriginRequireDedicatedProcess() {
 
 void HandleExpandedPaths(
     std::unique_ptr<enterprise_connectors::FilesScanData> fsd,
-    content::WebContents* web_contents,
+    base::WeakPtr<content::WebContents> web_contents,
     enterprise_connectors::ContentAnalysisDelegate::Data dialog_data,
     enterprise_connectors::AnalysisConnector connector,
     std::vector<base::FilePath> paths,
     ChromeContentBrowserClient::IsClipboardPasteContentAllowedCallback
         callback) {
+  if (!web_contents)
+    return;
+
   dialog_data.paths = fsd->expanded_paths();
   enterprise_connectors::ContentAnalysisDelegate::CreateForWebContents(
-      web_contents, std::move(dialog_data),
+      web_contents.get(), std::move(dialog_data),
       base::BindOnce(
           [](std::unique_ptr<enterprise_connectors::FilesScanData> fsd,
              std::vector<base::FilePath> paths,
@@ -1533,6 +1536,8 @@ void ChromeContentBrowserClient::RegisterLocalStatePrefs(
   registry->RegisterIntegerPref(prefs::kSCTAuditingHashdanceReportCount, 0);
   registry->RegisterBooleanPref(
       prefs::kThrottleNonVisibleCrossOriginIframesAllowed, true);
+  registry->RegisterBooleanPref(prefs::kNewBaseUrlInheritanceBehaviorAllowed,
+                                true);
 }
 
 // static
@@ -3281,16 +3286,19 @@ bool ChromeContentBrowserClient::IsAttributionReportingOperationAllowed(
 }
 
 bool ChromeContentBrowserClient::IsSharedStorageAllowed(
-    content::BrowserContext* browser_context,
+    content::RenderFrameHost* rfh,
     const url::Origin& top_frame_origin,
     const url::Origin& accessing_origin) {
-  Profile* profile = Profile::FromBrowserContext(browser_context);
+  Profile* profile = Profile::FromBrowserContext(rfh->GetBrowserContext());
   auto* privacy_sandbox_settings =
       PrivacySandboxSettingsFactory::GetForProfile(profile);
   DCHECK(privacy_sandbox_settings);
-
-  return privacy_sandbox_settings->IsSharedStorageAllowed(top_frame_origin,
-                                                          accessing_origin);
+  bool allowed = privacy_sandbox_settings->IsSharedStorageAllowed(
+      top_frame_origin, accessing_origin);
+  content_settings::PageSpecificContentSettings::BrowsingDataAccessed(
+      rfh, blink::StorageKey(accessing_origin),
+      BrowsingDataModel::StorageType::kSharedStorage, !allowed);
+  return allowed;
 }
 
 bool ChromeContentBrowserClient::IsPrivateAggregationAllowed(
@@ -6824,9 +6832,9 @@ void ChromeContentBrowserClient::IsClipboardPasteContentAllowed(
     auto fsd = std::make_unique<enterprise_connectors::FilesScanData>(paths);
     auto* fsd_ptr = fsd.get();
     fsd_ptr->ExpandPaths(base::BindOnce(&HandleExpandedPaths, std::move(fsd),
-                                        web_contents, std::move(dialog_data),
-                                        connector, std::move(paths),
-                                        std::move(callback)));
+                                        web_contents->GetWeakPtr(),
+                                        std::move(dialog_data), connector,
+                                        std::move(paths), std::move(callback)));
   } else {
     dialog_data.text.push_back(data);
     HandleStringData(web_contents, std::move(dialog_data), connector,
@@ -6975,18 +6983,18 @@ void ChromeContentBrowserClient::OnKeepaliveRequestFinished() {
 #if BUILDFLAG(IS_MAC)
 bool ChromeContentBrowserClient::SetupEmbedderSandboxParameters(
     sandbox::mojom::Sandbox sandbox_type,
-    sandbox::SeatbeltExecClient* client) {
+    sandbox::SandboxCompiler* compiler) {
   if (sandbox_type == sandbox::mojom::Sandbox::kSpeechRecognition) {
     base::FilePath soda_component_path = speech::GetSodaDirectory();
     CHECK(!soda_component_path.empty());
-    CHECK(client->SetParameter(sandbox::policy::kParamSodaComponentPath,
-                               soda_component_path.value()));
+    CHECK(compiler->SetParameter(sandbox::policy::kParamSodaComponentPath,
+                                 soda_component_path.value()));
 
     base::FilePath soda_language_pack_path =
         speech::GetSodaLanguagePacksDirectory();
     CHECK(!soda_language_pack_path.empty());
-    CHECK(client->SetParameter(sandbox::policy::kParamSodaLanguagePackPath,
-                               soda_language_pack_path.value()));
+    CHECK(compiler->SetParameter(sandbox::policy::kParamSodaLanguagePackPath,
+                                 soda_language_pack_path.value()));
     return true;
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
   } else if (sandbox_type == sandbox::mojom::Sandbox::kScreenAI) {
@@ -6999,8 +7007,8 @@ bool ChromeContentBrowserClient::SetupEmbedderSandboxParameters(
       return false;
     }
 
-    CHECK(client->SetParameter(sandbox::policy::kParamScreenAiComponentPath,
-                               screen_ai_component_dir.value()));
+    CHECK(compiler->SetParameter(sandbox::policy::kParamScreenAiComponentPath,
+                                 screen_ai_component_dir.value()));
 
     return true;
 #endif

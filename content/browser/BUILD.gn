@@ -147,7 +147,6 @@ source_set("browser") {
     "//content/public/browser:proto",
     "//content/public/common:common_sources",
     "//content/public/common:content_descriptor_keys",
-    "//content/public/common:trust_tokens_mojo_bindings",
     "//content/public/common/zygote:buildflags",
     "//content/services/auction_worklet/public/mojom",
     "//crypto",
@@ -896,6 +895,8 @@ source_set("browser") {
     "feature_observer.h",
     "fenced_frame/fenced_frame.cc",
     "fenced_frame/fenced_frame.h",
+    "fenced_frame/fenced_frame_config.cc",
+    "fenced_frame/fenced_frame_config.h",
     "fenced_frame/fenced_frame_url_mapping.cc",
     "fenced_frame/fenced_frame_url_mapping.h",
     "field_trial_recorder.cc",
@@ -908,6 +909,8 @@ source_set("browser") {
     "file_system/file_system_manager_impl.h",
     "file_system/file_system_url_loader_factory.cc",
     "file_system/file_system_url_loader_factory.h",
+    "file_system_access/features.cc",
+    "file_system_access/features.h",
     "file_system_access/file_system_access_access_handle_host_impl.cc",
     "file_system_access/file_system_access_access_handle_host_impl.h",
     "file_system_access/file_system_access_capacity_allocation_host_impl.cc",
@@ -2557,6 +2560,9 @@ source_set("browser") {
       "QuartzCore.framework",
       "IOSurface.framework",
     ]
+    weak_frameworks = [
+      "UniformTypeIdentifiers.framework",  # macOS 11
+    ]
   } else {
     # Not Mac.
     deps += [ "//sandbox" ]
@@ -2610,7 +2616,7 @@ source_set("browser") {
         "//sandbox/mac:seatbelt_extension",
       ]
       frameworks += [ "CoreMedia.framework" ]
-      weak_frameworks = [ "ScreenCaptureKit.framework" ]
+      weak_frameworks += [ "ScreenCaptureKit.framework" ]  # macOS 12.3
     }
     if (is_chromeos_lacros) {
       sources += [
@@ -3017,8 +3023,6 @@ source_set("browser") {
       "speech/tts_android.h",
       "speech/tts_environment_android_impl.cc",
       "speech/tts_environment_android_impl.h",
-      "tracing/background_reached_code_tracing_observer_android.cc",
-      "tracing/background_reached_code_tracing_observer_android.h",
       "web_contents/view_structure_builder_android.cc",
       "web_contents/view_structure_builder_android.h",
       "web_contents/web_contents_android.cc",
@@ -3303,4 +3307,10 @@ fuzzer_test("content_sms_parser_fuzzer") {
     "//base",
     "//content/public/browser:browser_sources",
   ]
+}
+
+fuzzer_test("clear_site_data_handler_fuzzer") {
+  sources = [ "browsing_data/clear_site_data_handler_fuzzer.cc" ]
+  deps = [ "//content/test:test_support" ]
+  seed_corpus = "//content/test/data/fuzzer_corpus/clear_site_data/"
 }

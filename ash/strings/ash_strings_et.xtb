@@ -31,7 +31,6 @@ Alustamiseks võite proovida neid toiminguid.</translation>
 <translation id="1148499908455722006">Avage konto <ph name="USER_NAME" /> teabedialoog</translation>
 <translation id="1150989369772528668">Kalender</translation>
 <translation id="1153356358378277386">Seotud seadmed</translation>
-<translation id="1165712434476988950">Värskenduse rakendamiseks tuleb seade taaskäivitada.</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Teie USB-C-kaabel ei pruugi ekraanidega õigesti ühendust luua</translation>
 <translation id="1175572348579024023">Keri</translation>
@@ -358,7 +357,6 @@ Alustamiseks võite proovida neid toiminguid.</translation>
 <translation id="296762781903199866">Kõnefaile <ph name="LANGUAGE" /> keeles ei õnnestunud alla laadida</translation>
 <translation id="2970920913501714344">Installige rakendusi, laiendusi ja teemasid</translation>
 <translation id="2977598380246111477">Järgmine number</translation>
-<translation id="2981684127883932071">Soovitused on kuvatud</translation>
 <translation id="2985148236010982088">Vaadake kõiki rakendusi</translation>
 <translation id="2992327365391326550">Seadme mikrofoninupp on välja lülitatud.</translation>
 <translation id="2996462380875591307">Dokitud luup on lubatud. Vajutage selle väljalülitamiseks klahvikombinatsiooni Ctrl + otsinguklahv + D.</translation>
@@ -670,6 +668,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="4666082839192943839">Lülitage selles seadmes kaamerale juurdepääs välja, et kõiki kaameraid kogu aeg blokeerida.</translation>
 <translation id="4666911709726371538">Rohkem rakendusi</translation>
 <translation id="4667099493359681081">Faili <ph name="FILENAME" /> allalaadimine</translation>
+<translation id="468293128311738995">Rakendused teie telefonist</translation>
 <translation id="4690510401873698237">Riiul asub allpool</translation>
 <translation id="4696813013609194136">Avage seade lapsevanema koodiga</translation>
 <translation id="4702647871202761252">Privaatsuskuva on väljas</translation>
@@ -926,12 +925,10 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="6103838137565245112">süsteem</translation>
 <translation id="6107292179555508368">Juurdepääs mikrofonile ja kaamerale on selles seadmes välja lülitatud</translation>
 <translation id="6114505516289286752">Kõnefailid <ph name="LANGUAGE" /> keeles laaditi alla</translation>
-<translation id="6116825164611323644">Juurdepääs kaamerale on selles seadmes välja lülitatud</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042">Allalaadimise kinnitamine (<ph name="FILENAME" />)</translation>
 <translation id="612734058257491180">Google'i assistent ei ole külastajaseansis saadaval.</translation>
 <translation id="6129953537138746214">Tühik</translation>
-<translation id="6134259848159370930">Otsige oma seadmest, rakendustest, seadetest ja veebist.</translation>
 <translation id="6137566720514957455">Kasutaja <ph name="USER_EMAIL_ADDRESS" /> eemaldamise dialoogi avamine</translation>
 <translation id="6141988275892716286">Allalaadimise kinnitamine</translation>
 <translation id="6154006699632741460">Välisseadet ei toetata</translation>
@@ -1292,6 +1289,7 @@ Uus installimine</translation>
 <translation id="8142441511840089262">Topeltklikk</translation>
 <translation id="8142699993796781067">Privaatvõrk</translation>
 <translation id="8144760705599030999">Salvestage seade <ph name="NAME" /> kontole <ph name="EMAIL" />, et saaksite selle oma teiste seadmetega kiiremini siduda</translation>
+<translation id="8144914663975476336">Salvestamisvormingu valimine</translation>
 <translation id="8149413265954228307">Bluetoothi seadete kuvamine. <ph name="STATE_TEXT" />.</translation>
 <translation id="8152092012181020186">Sulgemiseks vajutage klahvikombinatsiooni Ctrl + W.</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, automaatne täitmine</translation>
@@ -1389,7 +1387,6 @@ Uus installimine</translation>
 <translation id="8666856788528804727">Avage <ph name="NAME" />, et oma seade seadistada</translation>
 <translation id="8676770494376880701">Väikese energiakuluga laadija on ühendatud</translation>
 <translation id="8683506306463609433">Toimivuse jälgimine on aktiivne</translation>
-<translation id="8685326675965865247">Otsige oma seadmest, rakendustest, seadetest ja veebist. Rakendustes navigeerimiseks kasutage nooleklahve.</translation>
 <translation id="8703634754197148428">Alusta salvestust. Kui salvestamine on alanud, vajutage klahvikombinatsiooni Alt + tõstuklahv + L, et liikuda riiulile ja leida salvestamise peatamise nupp.</translation>
 <translation id="8721053961083920564">Lülitage helitugevus sisse. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">Täisekraani jäädvustamine</translation>
@@ -1398,7 +1395,6 @@ Uus installimine</translation>
 <translation id="8735678380411481005">Klaviatuuri taustavalguse värv</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />,
         <ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8752416742247198423">Lülitage sisse juurdepääs kaamerale, et kaameraloaga rakendused ja veebilehed saaksid selle seadmega ühendatud kaameraid kasutada.</translation>
 <translation id="8755498163081687682">Kinnitage oma isik: <ph name="ORIGIN_NAME" /> soovib teie isiku kinnitada</translation>
 <translation id="875593634123171288">Kuvab VPN-i seaded</translation>
 <translation id="8759408218731716181">Mitmesse kontosse sisselogimist ei saa häälestada</translation>
@@ -1465,7 +1461,6 @@ Uus installimine</translation>
 <translation id="9089416786594320554">Sisestusviisid</translation>
 <translation id="9091626656156419976">Ekraan <ph name="DISPLAY_NAME" /> eemaldati</translation>
 <translation id="9098969848082897657">Telefoni vaigistamine</translation>
-<translation id="9099154003160514616">Lacrosi värskendus on saadaval</translation>
 <translation id="9100887602489003640">Profiili lisamine. Oodake mõni minut.</translation>
 <translation id="9105450214093926548">Teise kasutaja sisselogimist ei toetata, kui brauser Lacros töötab. Kasutage selle asemel brauseris Lacros teist brauseriprofiili või sulgege Lacros ja proovige uuesti.</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> või <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>

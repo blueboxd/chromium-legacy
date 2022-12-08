@@ -31,7 +31,6 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="1148499908455722006">Otwórz okno informacyjne dla konta <ph name="USER_NAME" /></translation>
 <translation id="1150989369772528668">Kalendarz</translation>
 <translation id="1153356358378277386">Sparowane urządzenia</translation>
-<translation id="1165712434476988950">Aby zastosować aktualizację, musisz ponownie uruchomić urządzenie.</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Kabel USB-C może nie łączyć się prawidłowo z wyświetlaczami</translation>
 <translation id="1175572348579024023">Przewijanie</translation>
@@ -358,7 +357,6 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="296762781903199866">Nie udało się pobrać plików z mową w języku: <ph name="LANGUAGE" /></translation>
 <translation id="2970920913501714344">instalować aplikacje, rozszerzenia i motywy;</translation>
 <translation id="2977598380246111477">Następny numer</translation>
-<translation id="2981684127883932071">Wyświetlam sugestie</translation>
 <translation id="2985148236010982088">Zobacz wszystkie aplikacje</translation>
 <translation id="2992327365391326550">Przycisk mikrofonu urządzenia jest wyłączony.</translation>
 <translation id="2996462380875591307">Lupa zadokowana została włączona. Aby ją wyłączyć, naciśnij ponownie Ctrl+Search+D.</translation>
@@ -669,6 +667,7 @@ Podłącz urządzenie do zasilania.</translation>
 <translation id="4666082839192943839">Wyłącz dostęp do kamery na tym urządzeniu, aby na stałe zablokować wszystkie kamery.</translation>
 <translation id="4666911709726371538">Więcej aplikacji</translation>
 <translation id="4667099493359681081">Pobieram <ph name="FILENAME" /></translation>
+<translation id="468293128311738995">Aplikacje z telefonu</translation>
 <translation id="4690510401873698237">Półka na dole</translation>
 <translation id="4696813013609194136">Odblokuj urządzenie kodem rodzica</translation>
 <translation id="4702647871202761252">Ekran chroniący prywatność jest wyłączony</translation>
@@ -925,12 +924,10 @@ Podłącz urządzenie do zasilania.</translation>
 <translation id="6103838137565245112">system</translation>
 <translation id="6107292179555508368">Dostęp do mikrofonu i aparatu na tym urządzeniu jest wyłączony</translation>
 <translation id="6114505516289286752">Pliki z mową w języku: <ph name="LANGUAGE" /> zostały pobrane</translation>
-<translation id="6116825164611323644">Dostęp do aparatu jest wyłączony na tym urządzeniu</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042">Potwierdź pobieranie pliku <ph name="FILENAME" /></translation>
 <translation id="612734058257491180">Asystent Google jest niedostępny w sesji gościa.</translation>
 <translation id="6129953537138746214">Spacja</translation>
-<translation id="6134259848159370930">Przeszukaj urządzenie, aplikacje, ustawienia i internet.</translation>
 <translation id="6137566720514957455">Otwórz okno usuwania konta <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6141988275892716286">Potwierdź pobranie</translation>
 <translation id="6154006699632741460">Nieobsługiwane urządzenie peryferyjne</translation>
@@ -1290,6 +1287,7 @@ Podłącz urządzenie do zasilania.</translation>
 <translation id="8142441511840089262">Dwukrotne kliknięcie</translation>
 <translation id="8142699993796781067">Sieć prywatna</translation>
 <translation id="8144760705599030999">Aby szybciej parować urządzenie <ph name="NAME" /> z innymi urządzeniami, zapisz je na koncie <ph name="EMAIL" /></translation>
+<translation id="8144914663975476336">Wybierz format nagrywania</translation>
 <translation id="8149413265954228307">Pokaż ustawienia Bluetooth. <ph name="STATE_TEXT" />.</translation>
 <translation id="8152092012181020186">Aby zamknąć, naciśnij CTRL + W.</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, autouzupełnianie</translation>
@@ -1387,7 +1385,6 @@ Podłącz urządzenie do zasilania.</translation>
 <translation id="8666856788528804727">Otwórz aplikację <ph name="NAME" />, aby skonfigurować urządzenie</translation>
 <translation id="8676770494376880701">Podłączono ładowarkę o małej mocy</translation>
 <translation id="8683506306463609433">Śledzenie wydajności jest aktywne</translation>
-<translation id="8685326675965865247">Przeszukaj urządzenie, aplikacje, ustawienia i internet. Aby poruszać się po aplikacjach, użyj klawiszy strzałek.</translation>
 <translation id="8703634754197148428">Rozpocznij nagrywanie. Po rozpoczęciu nagrywania możesz za pomocą Alt + Shift + L przejść na półkę, na której znajdziesz przycisk zatrzymujący nagrywanie.</translation>
 <translation id="8721053961083920564">Przełącz głośność. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">Zrzut całego ekranu</translation>
@@ -1396,7 +1393,6 @@ Podłącz urządzenie do zasilania.</translation>
 <translation id="8735678380411481005">Kolor podświetlenia klawiatury</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />,
         <ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8752416742247198423">Włącz dostęp do aparatu, aby zezwolić aplikacjom i stronom z uprawnieniami na korzystanie z aparatów podłączonych do tego urządzenia.</translation>
 <translation id="8755498163081687682">Weryfikacja tożsamości: strona <ph name="ORIGIN_NAME" /> wymaga potwierdzenia, że to Ty</translation>
 <translation id="875593634123171288">Pokaż ustawienia VPN</translation>
 <translation id="8759408218731716181">Nie można skonfigurować wielokrotnego logowania</translation>
@@ -1463,7 +1459,6 @@ Podłącz urządzenie do zasilania.</translation>
 <translation id="9089416786594320554">Wprowadzanie tekstu</translation>
 <translation id="9091626656156419976">Wyświetlacz <ph name="DISPLAY_NAME" /> został usunięty</translation>
 <translation id="9098969848082897657">Wycisz telefon</translation>
-<translation id="9099154003160514616">Dostępna jest aktualizacja Lacros</translation>
 <translation id="9100887602489003640">Dodaję profil. Odczekaj kilka minut.</translation>
 <translation id="9105450214093926548">Gdy uruchomiona jest przeglądarka Lacros, logowanie 2 użytkownika nie jest obsługiwane. Użyj 2 profilu przeglądarki w Lacros lub zamknij Lacros i spróbuj ponownie.</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> lub <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>

@@ -34,6 +34,7 @@ export const EntryType = {
  * The data for each individual file/entry.
  * @typedef {{
  *   entry: (Entry|FilesAppEntry),
+ *   iconName: (string|undefined),
  *   label: string,
  *   volumeType: (VolumeManagerCommon.VolumeType|null),
  *   metadata: !MetadataItem,
@@ -131,14 +132,16 @@ export let FileTaskDescriptor;
  * NOTE: This is slightly different from the FileTask from the
  * FileManagerPrivate API. Here the task is enhanced to deal with different
  * displaying icons and labels.
+ * TODO(lucmult): Change isDefault and isGenericFileHandler to boolean when
+ * non-Store version doesn't have to be supported anymore.
  *
  * @typedef {{
  *   descriptor: !FileTaskDescriptor,
  *   title: string,
  *   iconUrl: (string|undefined),
  *   iconType: string,
- *   isDefault: boolean,
- *   isGeneric: boolean,
+ *   isDefault: (boolean|undefined),
+ *   isGenericFileHandler: (boolean|undefined),
  * }}
  */
 export let FileTask;
@@ -153,9 +156,10 @@ export let FileTask;
  *
  * @typedef {{
  *   tasks: !Array<!FileTask>,
- *   defaultHandlerPolicy:
+ *   policyDefaultHandlerStatus:
  *      (chrome.fileManagerPrivate.PolicyDefaultHandlerStatus|undefined),
- *   status: !PropStatus, keys: !Array<!FileKey>,
+ *   defaultTask: (FileTask|undefined),
+ *   status: !PropStatus,
  * }}
  */
 export let FileTasks;

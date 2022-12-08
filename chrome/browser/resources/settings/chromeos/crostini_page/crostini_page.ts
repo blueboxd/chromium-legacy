@@ -12,8 +12,8 @@
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/policy/cr_policy_indicator.js';
-import '../../settings_page/settings_animated_pages.js';
-import '../../settings_page/settings_subpage.js';
+import '../os_settings_page/os_settings_animated_pages.js';
+import '../os_settings_page/os_settings_subpage.js';
 import '../../settings_shared.css.js';
 import '../guest_os/guest_os_shared_paths.js';
 import '../guest_os/guest_os_shared_usb_devices.js';
@@ -28,7 +28,7 @@ import './bruschetta_subpage.js';
 
 import {I18nMixin, I18nMixinInterface} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {WebUiListenerMixin, WebUiListenerMixinInterface} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Setting} from '../../mojom-webui/setting.mojom-webui.js';

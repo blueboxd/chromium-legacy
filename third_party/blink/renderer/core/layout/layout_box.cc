@@ -122,6 +122,7 @@
 #include "third_party/blink/renderer/platform/theme/web_theme_engine_helper.h"
 #include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 #include "ui/gfx/geometry/quad_f.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 
 namespace blink {
 
@@ -1005,7 +1006,7 @@ void LayoutBox::UpdateFromStyle() {
 
   const ComputedStyle& style_to_use = StyleRef();
   SetFloating(style_to_use.IsFloating() && !IsOutOfFlowPositioned() &&
-              !style_to_use.IsFlexOrGridItem());
+              !style_to_use.IsInsideDisplayIgnoringFloatingChildren());
   SetHasTransformRelatedProperty(
       IsSVGChild() ? style_to_use.HasTransformRelatedPropertyForSVG()
                    : style_to_use.HasTransformRelatedProperty());
@@ -3481,6 +3482,16 @@ void LayoutBox::RebuildFragmentTreeSpine() {
     for (auto& result : container->layout_results_)
       result = NGLayoutResult::CloneWithPostLayoutFragments(*result);
     container = container->ContainingNGBox();
+  }
+
+  if (container && container->NeedsLayout()) {
+    // We stopped walking upwards because this container needs layout. This
+    // typically means that updating the associated layout results is waste of
+    // time, since we're probably going to lay it out anyway. However, in some
+    // cases the container is going to hit the cache and therefore not perform
+    // actual layout. If this happens, we need to update the layout results at
+    // that point.
+    container->SetHasBrokenSpine();
   }
 }
 
@@ -6926,19 +6937,6 @@ LayoutUnit LayoutBox::LayoutClientAfterEdge() const {
   return LayoutOverflowIsSet()
              ? overflow_->layout_overflow->LayoutClientAfterEdge()
              : ClientLogicalBottom();
-}
-
-PhysicalRect LayoutBox::PhysicalVisualOverflowRectIncludingFilters() const {
-  NOT_DESTROYED();
-  PhysicalRect bounds_rect = PhysicalVisualOverflowRect();
-  if (!StyleRef().HasFilter())
-    return bounds_rect;
-  gfx::RectF float_rect(bounds_rect);
-  gfx::RectF filter_reference_box = Layer()->FilterReferenceBox();
-  if (!filter_reference_box.size().IsZero())
-    float_rect.UnionEvenIfEmpty(filter_reference_box);
-  float_rect = Layer()->MapRectForFilter(float_rect);
-  return PhysicalRect::EnclosingRect(float_rect);
 }
 
 bool LayoutBox::HasTopOverflow() const {

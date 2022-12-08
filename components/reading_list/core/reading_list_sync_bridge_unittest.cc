@@ -8,12 +8,10 @@
 #include <set>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/run_loop.h"
-#include "base/test/bind.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
 #include "components/reading_list/core/reading_list_model_impl.h"
+#include "components/reading_list/core/reading_list_model_storage_impl.h"
 #include "components/sync/test/mock_model_type_change_processor.h"
 #include "components/sync/test/model_type_store_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -90,64 +88,36 @@ base::Time AdvanceAndGetTime(base::SimpleTestClock* clock) {
   return clock->Now();
 }
 
-class MockReadingListSyncBridgeDelegate : public ReadingListSyncBridgeDelegate {
- public:
-  MockReadingListSyncBridgeDelegate() = default;
-  ~MockReadingListSyncBridgeDelegate() override = default;
-
-  MOCK_METHOD(void,
-              SyncAddEntry,
-              (std::unique_ptr<ReadingListEntry>),
-              (override));
-  MOCK_METHOD(ReadingListEntry*,
-              SyncMergeEntry,
-              (std::unique_ptr<ReadingListEntry>),
-              (override));
-  MOCK_METHOD(void, SyncRemoveEntry, (const GURL& url), (override));
-};
-
 }  // namespace
 
 class ReadingListSyncBridgeTest : public testing::Test {
  protected:
   ReadingListSyncBridgeTest() {
+    model_ = ReadingListModelImpl::BuildNewForTest(
+        std::make_unique<ReadingListModelStorageImpl>(
+            syncer::ModelTypeStoreTestUtil::MoveStoreToFactory(
+                syncer::ModelTypeStoreTestUtil::CreateInMemoryStoreForTest())),
+        /*pref_service=*/nullptr, &clock_,
+        processor_.CreateForwardingProcessor());
+
+    // Wait until the model loads.
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(model_->loaded());
+
     ON_CALL(processor_, IsTrackingMetadata())
         .WillByDefault(testing::Return(true));
-    reading_list_sync_bridge_ = std::make_unique<ReadingListSyncBridge>(
-        syncer::ModelTypeStoreTestUtil::MoveStoreToFactory(
-            syncer::ModelTypeStoreTestUtil::CreateInMemoryStoreForTest()),
-        processor_.CreateForwardingProcessor());
-    model_ = std::make_unique<ReadingListModelImpl>(nullptr, nullptr, &clock_);
-    reading_list_sync_bridge_->SetReadingListModel(model_.get(), &delegate_,
-                                                   &clock_);
-    base::RunLoop loop;
-    reading_list_sync_bridge_->Load(
-        &clock_, base::BindLambdaForTesting(
-                     [&loop](ReadingListModelStorage::LoadResultOrError) {
-                       loop.Quit();
-                     }));
-    loop.Run();
   }
+
+  ReadingListSyncBridge* bridge() { return model_->GetModelTypeSyncBridge(); }
 
   // In memory model type store needs to be able to post tasks.
   base::test::SingleThreadTaskEnvironment task_environment_;
-
-  testing::NiceMock<syncer::MockModelTypeChangeProcessor> processor_;
-  testing::NiceMock<MockReadingListSyncBridgeDelegate> delegate_;
-  std::unique_ptr<ReadingListModelImpl> model_;
   base::SimpleTestClock clock_;
-  std::unique_ptr<ReadingListSyncBridge> reading_list_sync_bridge_;
+  testing::NiceMock<syncer::MockModelTypeChangeProcessor> processor_;
+  std::unique_ptr<ReadingListModelImpl> model_;
 };
 
-TEST_F(ReadingListSyncBridgeTest, CheckEmpties) {
-  EXPECT_EQ(0ul, model_->size());
-}
-
 TEST_F(ReadingListSyncBridgeTest, SaveOneRead) {
-  EXPECT_CALL(delegate_, SyncAddEntry).Times(0);
-  EXPECT_CALL(delegate_, SyncMergeEntry).Times(0);
-  EXPECT_CALL(delegate_, SyncRemoveEntry).Times(0);
-
   ReadingListEntry entry(GURL("http://read.example.com/"), "read title",
                          AdvanceAndGetTime(&clock_));
   entry.SetRead(true, AdvanceAndGetTime(&clock_));
@@ -157,17 +127,11 @@ TEST_F(ReadingListSyncBridgeTest, SaveOneRead) {
                   MatchesSpecifics("read title", "http://read.example.com/",
                                    sync_pb::ReadingListSpecifics::READ),
                   _));
-  // TODO(crbug.com/1386158): Currently the bridge assumes the caller starts
-  // a transaction.
-  auto token = reading_list_sync_bridge_->EnsureBatchCreated();
-  reading_list_sync_bridge_->DidAddOrUpdateEntry(entry);
+  auto batch = model_->BeginBatchUpdatesWithSyncMetadata();
+  bridge()->DidAddOrUpdateEntry(entry, batch->GetSyncMetadataChangeList());
 }
 
 TEST_F(ReadingListSyncBridgeTest, SaveOneUnread) {
-  EXPECT_CALL(delegate_, SyncAddEntry).Times(0);
-  EXPECT_CALL(delegate_, SyncMergeEntry).Times(0);
-  EXPECT_CALL(delegate_, SyncRemoveEntry).Times(0);
-
   ReadingListEntry entry(GURL("http://unread.example.com/"), "unread title",
                          AdvanceAndGetTime(&clock_));
   EXPECT_CALL(processor_,
@@ -175,33 +139,20 @@ TEST_F(ReadingListSyncBridgeTest, SaveOneUnread) {
                   MatchesSpecifics("unread title", "http://unread.example.com/",
                                    sync_pb::ReadingListSpecifics::UNSEEN),
                   _));
-  // TODO(crbug.com/1386158): Currently the bridge assumes the caller starts
-  // a transaction.
-  auto token = reading_list_sync_bridge_->EnsureBatchCreated();
-  reading_list_sync_bridge_->DidAddOrUpdateEntry(entry);
+  auto batch = model_->BeginBatchUpdatesWithSyncMetadata();
+  bridge()->DidAddOrUpdateEntry(entry, batch->GetSyncMetadataChangeList());
 }
 
 TEST_F(ReadingListSyncBridgeTest, DeleteOneEntry) {
-  EXPECT_CALL(delegate_, SyncAddEntry).Times(0);
-  EXPECT_CALL(delegate_, SyncMergeEntry).Times(0);
-  EXPECT_CALL(delegate_, SyncRemoveEntry).Times(0);
-
   ReadingListEntry entry(GURL("http://unread.example.com/"), "unread title",
                          AdvanceAndGetTime(&clock_));
   EXPECT_CALL(processor_, Delete("http://unread.example.com/", _));
-  // TODO(crbug.com/1386158): Currently the bridge assumes the caller starts
-  // a transaction.
-  auto token = reading_list_sync_bridge_->EnsureBatchCreated();
-  reading_list_sync_bridge_->DidRemoveEntry(entry);
+  auto batch = model_->BeginBatchUpdatesWithSyncMetadata();
+  bridge()->DidRemoveEntry(entry, batch->GetSyncMetadataChangeList());
 }
 
 TEST_F(ReadingListSyncBridgeTest, SyncMergeOneEntry) {
   EXPECT_CALL(processor_, Put(_, _, _)).Times(0);
-  EXPECT_CALL(delegate_, SyncMergeEntry).Times(0);
-  EXPECT_CALL(delegate_, SyncRemoveEntry).Times(0);
-
-  EXPECT_CALL(delegate_, SyncAddEntry(MatchesEntry("http://read.example.com/",
-                                                   /*is_read=*/true)));
 
   syncer::EntityChangeList remote_input;
   ReadingListEntry entry(GURL("http://read.example.com/"), "read title",
@@ -217,19 +168,20 @@ TEST_F(ReadingListSyncBridgeTest, SyncMergeOneEntry) {
       "http://read.example.com/", std::move(data)));
 
   std::unique_ptr<syncer::MetadataChangeList> metadata_changes(
-      reading_list_sync_bridge_->CreateMetadataChangeList());
-  auto error = reading_list_sync_bridge_->MergeSyncData(
-      std::move(metadata_changes), std::move(remote_input));
+      bridge()->CreateMetadataChangeList());
+
+  ASSERT_EQ(0ul, model_->size());
+  auto error = bridge()->MergeSyncData(std::move(metadata_changes),
+                                       std::move(remote_input));
   EXPECT_FALSE(error.has_value());
+  EXPECT_EQ(1ul, model_->size());
+  EXPECT_THAT(model_->GetEntryByURL(GURL("http://read.example.com/")),
+              MatchesEntry("http://read.example.com/",
+                           /*is_read=*/true));
 }
 
 TEST_F(ReadingListSyncBridgeTest, ApplySyncChangesOneAdd) {
   EXPECT_CALL(processor_, Put(_, _, _)).Times(0);
-  EXPECT_CALL(delegate_, SyncMergeEntry).Times(0);
-  EXPECT_CALL(delegate_, SyncRemoveEntry).Times(0);
-
-  EXPECT_CALL(delegate_, SyncAddEntry(MatchesEntry("http://read.example.com/",
-                                                   /*is_read=*/true)));
 
   ReadingListEntry entry(GURL("http://read.example.com/"), "read title",
                          AdvanceAndGetTime(&clock_));
@@ -243,24 +195,18 @@ TEST_F(ReadingListSyncBridgeTest, ApplySyncChangesOneAdd) {
 
   add_changes.push_back(syncer::EntityChange::CreateAdd(
       "http://read.example.com/", std::move(data)));
-  auto error = reading_list_sync_bridge_->ApplySyncChanges(
-      reading_list_sync_bridge_->CreateMetadataChangeList(),
-      std::move(add_changes));
+
+  ASSERT_EQ(0ul, model_->size());
+  auto error = bridge()->ApplySyncChanges(bridge()->CreateMetadataChangeList(),
+                                          std::move(add_changes));
   EXPECT_FALSE(error.has_value());
+  EXPECT_EQ(1ul, model_->size());
+  EXPECT_THAT(model_->GetEntryByURL(GURL("http://read.example.com/")),
+              MatchesEntry("http://read.example.com/",
+                           /*is_read=*/true));
 }
 
 TEST_F(ReadingListSyncBridgeTest, ApplySyncChangesOneMerge) {
-  EXPECT_CALL(delegate_, SyncAddEntry).Times(0);
-  EXPECT_CALL(delegate_, SyncRemoveEntry).Times(0);
-
-  EXPECT_CALL(delegate_, SyncMergeEntry(MatchesEntry(
-                             "http://unread.example.com/", /*is_read=*/true)))
-      .WillOnce([this](std::unique_ptr<ReadingListEntry> entry) {
-        // SyncMergeEntry() must return non-null so forward the call to the
-        // model.
-        return model_->SyncMergeEntry(std::move(entry));
-      });
-
   AdvanceAndGetTime(&clock_);
   model_->AddEntry(GURL("http://unread.example.com/"), "unread title",
                    reading_list::ADDED_VIA_CURRENT_APP);
@@ -280,10 +226,14 @@ TEST_F(ReadingListSyncBridgeTest, ApplySyncChangesOneMerge) {
   syncer::EntityChangeList add_changes;
   add_changes.push_back(syncer::EntityChange::CreateAdd(
       "http://unread.example.com/", std::move(data)));
-  auto error = reading_list_sync_bridge_->ApplySyncChanges(
-      reading_list_sync_bridge_->CreateMetadataChangeList(),
-      std::move(add_changes));
+
+  ASSERT_EQ(1ul, model_->size());
+  auto error = bridge()->ApplySyncChanges(bridge()->CreateMetadataChangeList(),
+                                          std::move(add_changes));
   EXPECT_FALSE(error.has_value());
+  EXPECT_EQ(1ul, model_->size());
+  EXPECT_THAT(model_->GetEntryByURL(GURL("http://unread.example.com/")),
+              MatchesEntry("http://unread.example.com/", /*is_read=*/true));
 }
 
 TEST_F(ReadingListSyncBridgeTest, ApplySyncChangesOneIgnored) {
@@ -305,39 +255,32 @@ TEST_F(ReadingListSyncBridgeTest, ApplySyncChangesOneIgnored) {
   // triggering ping-pong between two syncing devices.
   EXPECT_CALL(processor_, Put(_, _, _)).Times(0);
 
-  EXPECT_CALL(delegate_, SyncAddEntry).Times(0);
-  EXPECT_CALL(delegate_, SyncRemoveEntry).Times(0);
-
-  EXPECT_CALL(delegate_,
-              SyncMergeEntry(MatchesEntry("http://unread.example.com/",
-                                          /*is_read=*/_)))
-      .WillOnce([this](std::unique_ptr<ReadingListEntry> entry) {
-        // SyncMergeEntry() must return non-null so forward the call to the
-        // model.
-        return model_->SyncMergeEntry(std::move(entry));
-      });
-
   syncer::EntityChangeList add_changes;
   add_changes.push_back(syncer::EntityChange::CreateAdd(
       "http://unread.example.com/", std::move(data)));
-  auto error = reading_list_sync_bridge_->ApplySyncChanges(
-      reading_list_sync_bridge_->CreateMetadataChangeList(),
-      std::move(add_changes));
+
+  ASSERT_EQ(1ul, model_->size());
+  auto error = bridge()->ApplySyncChanges(bridge()->CreateMetadataChangeList(),
+                                          std::move(add_changes));
+  EXPECT_FALSE(error.has_value());
+  EXPECT_EQ(1ul, model_->size());
+  EXPECT_THAT(model_->GetEntryByURL(GURL("http://unread.example.com/")),
+              MatchesEntry("http://unread.example.com/", /*is_read=*/false));
 }
 
 TEST_F(ReadingListSyncBridgeTest, ApplySyncChangesOneRemove) {
-  EXPECT_CALL(delegate_, SyncAddEntry).Times(0);
-  EXPECT_CALL(delegate_, SyncMergeEntry).Times(0);
-
-  EXPECT_CALL(delegate_, SyncRemoveEntry(GURL("http://read.example.com/")));
+  model_->AddEntry(GURL("http://read.example.com/"), "read title",
+                   reading_list::ADDED_VIA_CURRENT_APP);
 
   syncer::EntityChangeList delete_changes;
   delete_changes.push_back(
       syncer::EntityChange::CreateDelete("http://read.example.com/"));
-  auto error = reading_list_sync_bridge_->ApplySyncChanges(
-      reading_list_sync_bridge_->CreateMetadataChangeList(),
-      std::move(delete_changes));
+
+  ASSERT_EQ(1ul, model_->size());
+  auto error = bridge()->ApplySyncChanges(bridge()->CreateMetadataChangeList(),
+                                          std::move(delete_changes));
   EXPECT_FALSE(error.has_value());
+  EXPECT_EQ(0ul, model_->size());
 }
 
 TEST_F(ReadingListSyncBridgeTest, CompareEntriesForSync) {

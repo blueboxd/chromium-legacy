@@ -250,7 +250,8 @@ enum EntryPropertyName {
   isMachineRoot,
   isExternalMedia,
   isArbitrarySyncFolder,
-  syncStatus
+  syncStatus,
+  progress
 };
 
 // Source of the volume data.
@@ -353,6 +354,8 @@ enum DlpLevel {
 enum SyncStatus {
   // No sync status available for file.
   not_found,
+  // File is queued up for syncing.
+  queued,
   // File is currently being synced.
   in_progress,
   // There was an error syncing the file.
@@ -509,6 +512,11 @@ dictionary EntryProperties {
 
   // Sync status for files tracked by different cloud filesystem providers.
   SyncStatus? syncStatus;
+
+  // Progress representing some ongoing operation with the file.
+  // E.g., pasting, syncing. Note: currently, this is exclusively being used
+  // for Drive syncing.
+  double? progress;
 };
 
 // Information about total and remaining size on the mount point.

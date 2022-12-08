@@ -32,7 +32,6 @@ PrivacySandboxDialogUI::PrivacySandboxDialogUI(content::WebUI* web_ui)
       source,
       base::make_span(kPrivacySandboxResources, kPrivacySandboxResourcesSize),
       IDR_PRIVACY_SANDBOX_PRIVACY_SANDBOX_DIALOG_HTML);
-  webui::EnableTrustedTypesCSP(source);
 
   source->AddResourcePath(
       chrome::kChromeUIPrivacySandboxDialogCombinedPath,
@@ -192,7 +191,7 @@ PrivacySandboxDialogUI::PrivacySandboxDialogUI(content::WebUI* web_ui)
   if (url.query().find("debug") != std::string::npos) {
     // Not intended to be hooked to anything. The dialog will not initialize it
     // so we force it here.
-    InitializeForDebug();
+    InitializeForDebug(source);
   }
 
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
@@ -220,10 +219,12 @@ void PrivacySandboxDialogUI::Initialize(
   web_ui()->AddMessageHandler(std::move(handler));
 }
 
-void PrivacySandboxDialogUI::InitializeForDebug() {
+void PrivacySandboxDialogUI::InitializeForDebug(
+    content::WebUIDataSource* source) {
   auto handler = std::make_unique<PrivacySandboxDialogHandler>(
       base::DoNothing(), base::DoNothing(), base::DoNothing(),
       base::DoNothing(), PrivacySandboxService::PromptType::kNone);
+  source->AddBoolean("isConsent", false);
   web_ui()->AddMessageHandler(std::move(handler));
 }
 

@@ -31,7 +31,6 @@
 <translation id="1148499908455722006">Адкрыць дыялогавае акно інфармацыі аб уліковым запісе "<ph name="USER_NAME" />"</translation>
 <translation id="1150989369772528668">Каляндар</translation>
 <translation id="1153356358378277386">Спалучаныя прылады</translation>
-<translation id="1165712434476988950">Каб прымяніць абнаўленне, трэба перазапусціць прыладу.</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Кабель USB-C можа не падключацца да дысплэяў належным чынам</translation>
 <translation id="1175572348579024023">Прагартаць</translation>
@@ -358,7 +357,6 @@
 <translation id="296762781903199866">Не ўдалося спампаваць файлы для распазнавання маўлення на наступнай мове: <ph name="LANGUAGE" /></translation>
 <translation id="2970920913501714344">Усталёўваць праграмы, пашырэнні, тэмы.</translation>
 <translation id="2977598380246111477">Наступная лічба</translation>
-<translation id="2981684127883932071">Паказваюцца прапановы</translation>
 <translation id="2985148236010982088">Паказаць усе праграмы</translation>
 <translation id="2992327365391326550">Стан кнопкі мікрафона прылады – "выключана".</translation>
 <translation id="2996462380875591307">Прыстыкаваная лупа ўключана. Каб выключыць яе, зноў націсніце Ctrl + Пошук + D.</translation>
@@ -669,6 +667,7 @@
 <translation id="4666082839192943839">Калі вы адключыце доступ на гэтай прыладзе, усе камеры будуць цалкам заблакіраваны.</translation>
 <translation id="4666911709726371538">Іншыя праграмы</translation>
 <translation id="4667099493359681081">Ідзе спампоўванне файла "<ph name="FILENAME" />"</translation>
+<translation id="468293128311738995">Праграмы з вашага тэлефона</translation>
 <translation id="4690510401873698237">Паліца ўнізе</translation>
 <translation id="4696813013609194136">Разблакіруйце прыладу бацькоўскім кодам</translation>
 <translation id="4702647871202761252">Экран прыватнасці выключаны</translation>
@@ -925,12 +924,10 @@
 <translation id="6103838137565245112">сістэма</translation>
 <translation id="6107292179555508368">На гэтай прыладзе забаронены доступ да мікрафона і камеры</translation>
 <translation id="6114505516289286752">Спампаваны файлы для распазнавання маўлення на наступнай мове: <ph name="LANGUAGE" /></translation>
-<translation id="6116825164611323644">На гэтай прыладзе няма доступу да камеры</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042">Пацвердзіце спампоўванне файла <ph name="FILENAME" /></translation>
 <translation id="612734058257491180">Памочнік Google недаступны ў гасцявым сеансе.</translation>
 <translation id="6129953537138746214">Прабел</translation>
-<translation id="6134259848159370930">Пошук на прыладзе, у праграмах, наладах і інтэрнэце.</translation>
 <translation id="6137566720514957455">Адкрыць дыялогавае акно выдалення ўліковага запісу <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6141988275892716286">Пацвярджэнне спампоўвання</translation>
 <translation id="6154006699632741460">Перыферыйная прылада не падтрымліваецца</translation>
@@ -1291,6 +1288,7 @@
 <translation id="8142441511840089262">Падвойнае націсканне</translation>
 <translation id="8142699993796781067">Прыватная сетка</translation>
 <translation id="8144760705599030999">Захавайце прыладу "<ph name="NAME" />" ва ўліковым запісе <ph name="EMAIL" /> для хутчэйшага спалучэння з іншымі прыладамі</translation>
+<translation id="8144914663975476336">Выбраць фармат запісу</translation>
 <translation id="8149413265954228307">Паказаць налады Bluetooth. <ph name="STATE_TEXT" />.</translation>
 <translation id="8152092012181020186">Каб закрыць, націсніце Ctrl + W.</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, аўтазапаўненне</translation>
@@ -1388,7 +1386,6 @@
 <translation id="8666856788528804727">Каб наладзіць прыладу, адкрыйце <ph name="NAME" /></translation>
 <translation id="8676770494376880701">Падключана зарадная прылада малой магутнасці</translation>
 <translation id="8683506306463609433">Ажыццяўляецца трасіроўка прадукцыйнасці</translation>
-<translation id="8685326675965865247">Пошук на прыладзе, у праграмах, наладах і інтэрнэце. Для пераходу паміж праграмамі выкарыстоўвайце клавішы са стрэлкамі.</translation>
 <translation id="8703634754197148428">Пачаць запіс. Каб пасля пачатку запісу перайсці на паліцу, дзе знаходзіцца кнопка спынення запісу, націсніце Alt + Shift + L</translation>
 <translation id="8721053961083920564">Уключыць або выключыць гук. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">Здыманне ўсяго экрана</translation>
@@ -1397,7 +1394,6 @@
 <translation id="8735678380411481005">Колер падсветкі клавіятуры</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />,
         <ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8752416742247198423">Дайце доступ да камеры, каб праграмы і вэб-старонкі з адпаведным дазволам маглі выкарыстоўваць камеру ці камеры, падключаныя да гэтай прылады.</translation>
 <translation id="8755498163081687682">Спраўдзіце сваю асобу: <ph name="ORIGIN_NAME" /> хоча ўпэўніцца, што гэта вы</translation>
 <translation id="875593634123171288">Паказаць налады VPN</translation>
 <translation id="8759408218731716181">Не ўдалося наладзіць уваход у некалькі ўліковых запісаў</translation>
@@ -1464,7 +1460,6 @@
 <translation id="9089416786594320554">Метады ўводу</translation>
 <translation id="9091626656156419976">Дысплэй "<ph name="DISPLAY_NAME" />" выдалены</translation>
 <translation id="9098969848082897657">Тэлефон без гуку</translation>
-<translation id="9099154003160514616">Ёсць абнаўленне Lacros</translation>
 <translation id="9100887602489003640">Ідзе дадаванне профілю. Пачакайце некалькі хвілін.</translation>
 <translation id="9105450214093926548">Падчас работы браўзера Lacros уваход у некалькі ўліковых запісаў не падтрымліваецца. Выкарыстайце другі профіль браўзера або закрыйце Lacros і паўтарыце спробу.</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> або <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>

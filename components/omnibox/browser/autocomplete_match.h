@@ -191,9 +191,6 @@ struct AutocompleteMatch {
     kMaxValue = kShortcutTextPrefix,
   };
 
-  // Signals for ML scoring.
-  metrics::OmniboxEventProto::Suggestion::ScoringSignals scoring_signals;
-
   static const char* const kDocumentTypeStrings[];
 
   // Return a string version of the core type values. Only used for
@@ -564,6 +561,10 @@ struct AutocompleteMatch {
   // relevance score, this match's own relevance score will be upgraded.
   void UpgradeMatchWithPropertiesFrom(AutocompleteMatch& duplicate_match);
 
+  // Merges scoring signals from the other match for ML model scoring and
+  // training .
+  void MergeScoringSignals(const AutocompleteMatch& other);
+
   // Tries, in order, to:
   // - Prefix autocomplete |primary_text|
   // - Prefix autocomplete |secondary_text|
@@ -796,6 +797,9 @@ struct AutocompleteMatch {
   // A list of navsuggest tiles to be shown as part of this match.
   // This object is only populated for TILE_NAVSUGGEST AutocompleteMatches.
   std::vector<SuggestTile> suggest_tiles;
+
+  // Signals for ML scoring.
+  metrics::OmniboxEventProto::Suggestion::ScoringSignals scoring_signals;
 
   // So users of AutocompleteMatch can use the same ellipsis that it uses.
   static const char16_t kEllipsis[];

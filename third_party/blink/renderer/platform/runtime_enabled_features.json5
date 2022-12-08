@@ -336,11 +336,6 @@
       settable_from_internals: true,
     },
     {
-      name: "AutoPictureInPicture",
-      depends_on: ["PictureInPictureAPI"],
-      status: "experimental",
-    },
-    {
       // Flag set by the media::kAutoplayIgnoreWebAudio feature flag.
       name: "AutoplayIgnoresWebAudio",
       public: true,
@@ -541,6 +536,7 @@
     },
     {
       name: "CompositeClipPathAnimation",
+      public: true,
     },
     {
       name: "CompositedSelectionUpdate",
@@ -769,13 +765,6 @@
       implied_by: ["MathMLCore"],
     },
     {
-      // Support for Media Queries Level 4 syntax.
-      //
-      // https://drafts.csswg.org/mediaqueries-4/#mq-syntax
-      name: "CSSMediaQueries4",
-      status: "stable",
-    },
-    {
       name: "CSSMixBlendModePlusLighter",
       status: "stable"
     },
@@ -866,10 +855,6 @@
       name: "CSSSelectorFragmentAnchor",
       status: "experimental",
       base_feature: "CssSelectorFragmentAnchor",
-    },
-    {
-      name: "CSSSnapSize",
-      status: "experimental",
     },
     {
       // Support for CSS ::spelling-error, ::grammar-error, and the
@@ -1231,8 +1216,8 @@
     },
     {
       name: "FencedFramesAPIChanges",
-      // Various new IDL attributes on the <fencedframe> element (such as `innerConfig`, `sandbox`,
-      // and `allow`).
+      // Various new IDL attributes on the <fencedframe> element (such as
+      // `config`, `sandbox`, and `allow`).
       origin_trial_feature_name: "PrivacySandboxAdsAPIs",
       origin_trial_allows_third_party: true,
       base_feature: "FencedFramesAPIChanges",
@@ -1337,7 +1322,7 @@
     },
     {
       name: "FontVariantAlternates",
-      status: "test",
+      status: "experimental",
     },
     {
       name: "FontVariantPosition",
@@ -1592,12 +1577,6 @@
       status: "stable",
     },
     {
-      // crbug.com/989916
-      name: "LayoutNGForeignObject",
-      depends_on: ["LayoutNG"],
-      status: "stable",
-    },
-    {
       // crbug.com/1346221
       name: "LayoutNGFrameSet",
       depends_on: ["LayoutNG"],
@@ -1769,6 +1748,10 @@
       status: "stable",
     },
     {
+      name: "MediaSessionSlides",
+      status: "experimental",
+    },
+    {
       name: "MediaSourceExperimental",
       status: "experimental",
     },
@@ -1802,16 +1785,6 @@
       // contexts can vary in stable vs experimental.
       name: "MediaSourceStable",
       status: "stable",
-    },
-    {
-      // Feature added "guarding" the already launched exposure of
-      // MediaStreamTracks in the Window contexts, to allow exposure in other
-      // contexts to be feature controlled, crbug.com/c/1290274.
-      name: "MediaStreamTrackInWindow",
-      status: "stable",
-    },
-    {
-      name: "MediaStreamTrackInWorker",
     },
     {
       name: "MediaStreamTrackTransfer",
@@ -2117,11 +2090,6 @@
     {
       name: "PermissionsRequestRevoke",
       status: "experimental",
-    },
-    {
-      name: "PictureInPicture",
-      public: true,
-      settable_from_internals: true,
     },
     {
       name: "PictureInPictureAPI",
@@ -2576,6 +2544,11 @@
       settable_from_internals: true,
       base_feature: "SkipTouchEventFilter",
       status: "stable",
+    },
+    {
+      name: "SmartCard",
+      status: {"Android": "", "default": "test"},
+      base_feature: "SmartCard",
     },
     {
       // If enabled Border, Outline and Column-Rule Widths
@@ -3315,12 +3288,6 @@
     {
       name: "WindowDefaultStatus",
       base_feature: "WindowDefaultStatus",
-    },
-    // New behavior for window.open's interpretation of the windowFeatures parameter.
-    {
-      name: "WindowOpenNewPopupBehavior",
-      status: "stable",
-      base_feature: "WindowOpenNewPopupBehavior",
     },
     // Allows sites to request fullscreen when the set of screens change.
     {

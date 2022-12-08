@@ -28,7 +28,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="Notifications.Actions" enum="NotificationActionType"
-    expires_after="2023-03-26">
+    expires_after="2023-06-04">
   <owner>dewittj@chromium.org</owner>
   <owner>leandre@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
@@ -523,6 +523,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Notifications.NonPersistentNotificationThirdPartyCount"
+    enum="Boolean" expires_after="2023-03-01">
+  <owner>awillia@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
+  <summary>
+    Records the number of non-persistent notifications that are displayed from a
+    third-party context. Logged from
+    BlinkNotificationServiceImpl::DisplayNonPersistentNotification after the
+    notification passes the permissions check.
+  </summary>
+</histogram>
+
 <histogram name="Notifications.NotificationHelper.ComServerModuleStatus"
     enum="NotificationHelperComServerModuleStatus" expires_after="2023-09-01">
   <owner>finnur@chromium.org</owner>
@@ -636,7 +648,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Notifications.PerNotificationActions"
-    enum="NotificationActionType" expires_after="2023-03-26">
+    enum="NotificationActionType" expires_after="2023-06-04">
   <owner>dewittj@chromium.org</owner>
   <owner>leandre@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
@@ -664,6 +676,18 @@ chromium-metrics-reviews@google.com.
   <summary>
     The result of the promise returned by showNotification. Logged whenever
     showNotification is called.
+  </summary>
+</histogram>
+
+<histogram name="Notifications.PersistentNotificationThirdPartyCount"
+    enum="Boolean" expires_after="2023-03-01">
+  <owner>awillia@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
+  <summary>
+    Records the number of persistent notifications that are displayed from a
+    third-party context. Logged from
+    BlinkNotificationServiceImpl::DisplayPersistentNotification after the
+    notification passes the permissions check.
   </summary>
 </histogram>
 
@@ -718,7 +742,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Notifications.Scheduler.BackgroundTask.NotificationShown"
-    units="notifications" expires_after="2023-03-12">
+    units="notifications" expires_after="2023-06-04">
   <owner>shaktisahu@chromium.org</owner>
   <owner>nyquist@chromium.org</owner>
   <summary>

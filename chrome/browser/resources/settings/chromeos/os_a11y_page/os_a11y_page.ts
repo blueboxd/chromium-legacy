@@ -9,8 +9,8 @@
  */
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 import '../../controls/settings_toggle_button.js';
-import '../../settings_page/settings_animated_pages.js';
-import '../../settings_page/settings_subpage.js';
+import '../os_settings_page/os_settings_animated_pages.js';
+import '../os_settings_page/os_settings_subpage.js';
 import '../../settings_shared.css.js';
 import './manage_a11y_page.js';
 import './text_to_speech_page.js';
@@ -23,7 +23,7 @@ import './switch_access_subpage.js';
 import './tts_subpage.js';
 
 import {WebUiListenerMixin, WebUiListenerMixinInterface} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {SettingsToggleButtonElement} from '../../controls/settings_toggle_button.js';

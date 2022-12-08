@@ -14,8 +14,6 @@
 #include "components/policy/core/common/remote_commands/remote_command_job.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-class DeviceOAuth2TokenService;
-
 namespace policy {
 
 // Remote command that would start Chrome Remote Desktop host and return auth
@@ -26,12 +24,12 @@ class DeviceCommandStartCrdSessionJob : public RemoteCommandJob {
   // This enum can't be renumbered because it's logged to UMA and because its
   // values must match the values in the server side
   // `DeviceCommandUtil::ClientResultCode` enum.
-  enum ResultCode {
+  enum class ResultCode {
     // Successfully obtained access code.
     SUCCESS = 0,
 
     // Failed as required services are not launched on the device.
-    FAILURE_SERVICES_NOT_READY = 1,
+    // deprecated FAILURE_SERVICES_NOT_READY = 1,
 
     // Failure as the current user type does not support remotely starting CRD.
     FAILURE_UNSUPPORTED_USER_TYPE = 2,
@@ -120,9 +118,8 @@ class DeviceCommandStartCrdSessionJob : public RemoteCommandJob {
  private:
   class ManagedNetworkChecker;
   class OAuthTokenFetcher;
-  class ResultPayload;
 
-  enum class UserType {
+  enum class UserSessionType {
     kAutoLaunchedKiosk,
     kManuallyLaunchedKiosk,
     kNoUser,
@@ -131,7 +128,7 @@ class DeviceCommandStartCrdSessionJob : public RemoteCommandJob {
     kOther,
   };
 
-  const char* UserTypeToString(UserType value) const;
+  const char* UserTypeToString(UserSessionType value) const;
 
   void CheckManagedNetworkASync(base::OnceClosure on_success);
   void FetchOAuthTokenASync(OAuthTokenCallback on_success);
@@ -141,10 +138,8 @@ class DeviceCommandStartCrdSessionJob : public RemoteCommandJob {
   void FinishWithError(ResultCode result_code, const std::string& message);
   void FinishWithNotIdleError();
 
-  // Check if all required system services (singletons) are ready.
-  bool AreServicesReady() const;
   bool UserTypeSupportsCrd() const;
-  UserType GetUserType() const;
+  UserSessionType GetUserSessionType() const;
   UmaSessionType GetUmaSessionType() const;
   bool IsRunningAutoLaunchedKiosk() const;
   bool IsDeviceIdle() const;
@@ -155,8 +150,6 @@ class DeviceCommandStartCrdSessionJob : public RemoteCommandJob {
   bool ShouldTerminateUponInput() const;
 
   ErrorCallback GetErrorCallback();
-
-  DeviceOAuth2TokenService* oauth_service() const;
 
   std::unique_ptr<OAuthTokenFetcher> oauth_token_fetcher_;
   std::unique_ptr<ManagedNetworkChecker> managed_network_checker_;

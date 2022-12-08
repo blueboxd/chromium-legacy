@@ -31,7 +31,6 @@
 <translation id="1148499908455722006"><ph name="USER_NAME" /> အတွက် အချက်အလက်ဒိုင်ယာလော့ ဖွင့်ပါ</translation>
 <translation id="1150989369772528668">ပြက္ခဒိန်</translation>
 <translation id="1153356358378277386">တွဲချိတ်ထားသည့် စက်ပစ္စည်းများ</translation>
-<translation id="1165712434476988950">အပ်ဒိတ်ထည့်သွင်းရန် ကိရိယာကို ပြန်စရပါမည်။</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />၊ <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">သင့် USB-C ကေဘယ်သည် ဖန်သားပြင်များသို့ မှန်ကန်စွာ ချိတ်ဆက်ထားခြင်း မရှိနိုင်ပါ</translation>
 <translation id="1175572348579024023">လှိမ့်ရန်</translation>
@@ -358,7 +357,6 @@
 <translation id="296762781903199866"><ph name="LANGUAGE" /> တိုက်ရိုက်စာတန်းဖိုင်များကို ဒေါင်းလုဒ်လုပ်၍ မရပါ</translation>
 <translation id="2970920913501714344">အက်ပ်၊ နောက်ဆက်တွဲနှင့် အပြင်အဆင်များ ထည့်သွင်းနိုင်သည်</translation>
 <translation id="2977598380246111477">နောက်ထပ် ဂဏန်း</translation>
-<translation id="2981684127883932071">အကြံပြုချက်များကို ဖော်ပြနေသည်</translation>
 <translation id="2985148236010982088">အက်ပ်အားလုံး ကြည့်ရန်</translation>
 <translation id="2992327365391326550">စက်၏မိုက်ခရိုဖုန်းခလုတ် ပိတ်ထားသည်။</translation>
 <translation id="2996462380875591307">နေရာချထားသည့် မှန်ဘီလူးကို ဖွင့်ထားပါသည်။ ၎င်းကို ပိတ်ရန် Ctrl+Search+D ကို ထပ်မံနှိပ်ပါ။</translation>
@@ -669,6 +667,7 @@
 <translation id="4666082839192943839">ကင်မရာအားလုံးကို အချိန်ပြည့်ပိတ်ထားရန် ဤစက်တွင် ကင်မရာသုံးခွင့်ကို ပိတ်နိုင်သည်။</translation>
 <translation id="4666911709726371538">အက်ပ်များ ပိုပြပါ</translation>
 <translation id="4667099493359681081"><ph name="FILENAME" /> ကို ဒေါင်းလုဒ်လုပ်နေသည်</translation>
+<translation id="468293128311738995">သင့်ဖုန်းမှအက်ပ်များ</translation>
 <translation id="4690510401873698237">စင်ကို အောက်ခြေသို့ ရွှေ့လိုက်ပါပြီ</translation>
 <translation id="4696813013609194136">စက်ပစ္စည်းကို မိဘသုံးကုဒ်ဖြင့် ဖွင့်ပါ</translation>
 <translation id="4702647871202761252">ပုဂ္ဂိုလ်ရေးလုံခြုံမှု ဖန်သားပြင်ကို ပိတ်ထားသည်</translation>
@@ -925,12 +924,10 @@
 <translation id="6103838137565245112">စနစ်</translation>
 <translation id="6107292179555508368">ဤစက်ရှိ မိုက်ခရိုဖုန်းနှင့် ကင်မရာသုံးခွင့်များ ပိတ်ထားသည်</translation>
 <translation id="6114505516289286752"><ph name="LANGUAGE" /> တိုက်ရိုက်စာတန်းဖိုင်များ ဒေါင်းလုဒ်လုပ်ပြီးပြီ</translation>
-<translation id="6116825164611323644">ဤစက်တွင် ကင်မရာသုံးခွင့် ပိတ်ထားသည်</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />။ <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042"><ph name="FILENAME" /> ဒေါင်းလုဒ်လုပ်ရန် အတည်ပြုခြင်း</translation>
 <translation id="612734058257491180">ဧည့်သည်စက်ရှင်တွင် Google Assistant ကို အသုံးပြု၍ မရပါ။</translation>
 <translation id="6129953537138746214">နေရာခြား</translation>
-<translation id="6134259848159370930">သင့်စက်ပစ္စည်း၊ အက်ပ်၊ ဆက်တင်နှင့် ဝဘ်တွင် ရှာပါ။</translation>
 <translation id="6137566720514957455"><ph name="USER_EMAIL_ADDRESS" /> အတွက် ဖယ်ရှားမှုဒိုင်ယာလော့ခ် ဖွင့်မည်</translation>
 <translation id="6141988275892716286">ဒေါင်းလုဒ်လုပ်ရန် အတည်ပြုခြင်း</translation>
 <translation id="6154006699632741460">ချိတ်ဆက်ပစ္စည်းကို မပံ့ပိုးပါ</translation>
@@ -1291,6 +1288,7 @@
 <translation id="8142441511840089262">နှစ်ချက်နှိပ်ရန်</translation>
 <translation id="8142699993796781067">ကိုယ်ပိုင်ကွန်ရက်</translation>
 <translation id="8144760705599030999">အခြားစက်များနှင့် အမြန်တွဲချိတ်ရန် သင်၏ <ph name="NAME" /> ကို <ph name="EMAIL" /> တွင် သိမ်းနိုင်သည်</translation>
+<translation id="8144914663975476336">မှတ်တမ်းတင်သည့် ဖော်မက်ရွေးရန်</translation>
 <translation id="8149413265954228307">ဘလူးတုဆက်တင်များ ပြပါ။ <ph name="STATE_TEXT" />။</translation>
 <translation id="8152092012181020186">ပိတ်ရန် Ctrl + W နှိပ်ပါ။</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />၊ အလိုအလျောက်ဖြည့်သည်</translation>
@@ -1388,7 +1386,6 @@
 <translation id="8666856788528804727">သင့်စက်ကို စနစ်ထည့်သွင်းရန် <ph name="NAME" /> ဖွင့်ပါ</translation>
 <translation id="8676770494376880701">ပါဝါနှိမ့် အားသွင်းကိရိယာ ချိတ်ဆက်ထားသည်</translation>
 <translation id="8683506306463609433">စွမ်းဆောင်ရည် မှတ်တမ်းတင်ခြင်းကို လက်ရှိဖွင့်ထားသည်</translation>
-<translation id="8685326675965865247">သင်၏ စက်ပစ္စည်း၊ အက်ပ်၊ ဆက်တင်နှင့် ဝဘ်တို့ကို ရှာပါ။ အက်ပ်များတွင် မြားခလုတ်များကို သုံးပြီး ရွှေ့ပါ။</translation>
 <translation id="8703634754197148428">စတင် ရိုက်ကူးပါ။ ရိုက်ကူးမှုစတင်သောအခါ Alt + Shift + L သုံး၍ စင်သို့သွားပြီး ရိုက်ကူးမှုရပ်ရန်ခလုတ်ကို ရှာပါ</translation>
 <translation id="8721053961083920564">အသံခလုတ်ကို နှိပ်ပါ။ <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">ဖန်သားပြင်အပြည့် ပုံဖမ်းခြင်း</translation>
@@ -1397,7 +1394,6 @@
 <translation id="8735678380411481005">ကီးဘုတ်နောက်ခံမီးရောင်</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />၊
         <ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8752416742247198423">ဤစက်သို့ ချိတ်ဆက်ထားသည့် ကင်မရာ(များ) အသုံးပြုရန်အတွက် ကင်မရာခွင့်ပြုချက်နှင့်အတူ အက်ပ်နှင့် ဝဘ်စာမျက်နှာများအား ခွင့်ပြုရန် ကင်မရာသုံးခွင့်ကို ဖွင့်ပါ။</translation>
 <translation id="8755498163081687682">သင်၏အထောက်အထားကို အတည်ပြုပါ- သင်ဖြစ်ကြောင်း <ph name="ORIGIN_NAME" /> က အတည်ပြုလိုသည်</translation>
 <translation id="875593634123171288">VPN ဆက်တင်များကို ပြရန်</translation>
 <translation id="8759408218731716181">အများအပြား လက်မှတ်ထိုး ဝင်မှုကို သတ်မှတ် မပေးနိုင်</translation>
@@ -1464,7 +1460,6 @@
 <translation id="9089416786594320554">ထည့်သွင်းနည်းများ</translation>
 <translation id="9091626656156419976"><ph name="DISPLAY_NAME" /> မျက်နှာပြင်ပြသမှုကို ဖယ်ရှားလိုက်ပါပြီ</translation>
 <translation id="9098969848082897657">ဖုန်းအသံတိတ်ခြင်း</translation>
-<translation id="9099154003160514616">Lacros အပ်ဒိတ် ရနိုင်သည်</translation>
 <translation id="9100887602489003640">ပရိုဖိုင် ထည့်နေသည်။ မိနစ်အနည်းငယ် စောင့်ပါ။</translation>
 <translation id="9105450214093926548">Lacros ဘရောင်ဇာ လုပ်ဆောင်နေစဉ် ဒုတိယအသုံးပြုသူ လက်မှတ်ထိုးဝင်ခြင်းကို ခွင့်မပြုပါ။ ထိုအစား Lacros တွင် ဒုတိယဘရောင်ဇာ ပရိုဖိုင်ကို သုံးပါ (သို့) Lacros ကို ပိတ်ပြီး ထပ်စမ်းကြည့်ပါ။</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> သို့မဟုတ် <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>

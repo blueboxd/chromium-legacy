@@ -308,7 +308,6 @@ De lo contrario, lo impedirá tu configuración de privacidad. Permitirá que el
 <translation id="168693727862418163">No se ha podido validar el valor de esta política con su esquema y se ignorará.</translation>
 <translation id="168841957122794586">El certificado del servidor contiene una clave criptográfica no segura.</translation>
 <translation id="1697532407822776718">¡Listo!</translation>
-<translation id="1699570257714336246">Falta información</translation>
 <translation id="1702815194757674443">ROC 16K</translation>
 <translation id="1703835215927279855">Letter</translation>
 <translation id="1706625117072057435">Niveles de zoom</translation>
@@ -1024,7 +1023,6 @@ De lo contrario, lo impedirá tu configuración de privacidad. Permitirá que el
 <translation id="3584299510153766161">Perforado doble en la parte inferior</translation>
 <translation id="3586931643579894722">Ocultar detalles</translation>
 <translation id="3587738293690942763">Medio</translation>
-<translation id="3595645257662173296">¿Qué pruebas la respaldan?</translation>
 <translation id="3595699422137460894">{NUM_DAYS,plural, =0{Puedes restablecer tu grupo en cualquier momento. Se tarda alrededor de un día en unirse a un nuevo grupo.}=1{Puedes restablecer tu grupo en cualquier momento. Se tarda alrededor de un día en unirse a un nuevo grupo.}other{Puedes restablecer tu grupo en cualquier momento. Se tardan {NUM_DAYS} días en unirse a un nuevo grupo.}}</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3603507503523709">Tu administrador ha bloqueado esta aplicación</translation>
@@ -1164,7 +1162,6 @@ De lo contrario, lo impedirá tu configuración de privacidad. Permitirá que el
 <translation id="3961148744525529027">La hoja del controlador de pagos está abierta en media pantalla</translation>
 <translation id="3962859241508114581">Canción anterior</translation>
 <translation id="3963721102035795474">Modo de lectura</translation>
-<translation id="3963837677003247395">¿Quieres continuar de forma manual?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{Ninguno}=1{De 1 sitio web }other{De # sitios }}</translation>
 <translation id="3969052498612555048">¿No encuentras el código? <ph name="BEGIN_LINK" />Obtener nuevo código<ph name="END_LINK" /></translation>
 <translation id="397105322502079400">Calculando...</translation>
@@ -1366,7 +1363,6 @@ De lo contrario, lo impedirá tu configuración de privacidad. Permitirá que el
 <translation id="4434045419905280838">Ventanas emergentes y redirecciones</translation>
 <translation id="443673843213245140">Se ha inhabilitado el uso de un servidor proxy, pero se han especificado ajustes de proxy explícitos.</translation>
 <translation id="4441832193888514600">Se ignora porque la política solo se puede establecer como una política de usuarios basada en la nube.</translation>
-<translation id="4450893287417543264">No volver a mostrar</translation>
 <translation id="4451135742916150903">Puede solicitar permiso para conectarse a dispositivos HID</translation>
 <translation id="4452328064229197696">La contraseña que acabas de usar se ha visto expuesta en una quiebra de seguridad de datos. Para proteger tus cuentas, el gestor de contraseñas de Google te recomienda que compruebes las contraseñas que tengas guardadas.</translation>
 <translation id="4460315069258617173">Permitido hasta que cierres las pestañas de este sitio</translation>
@@ -1509,7 +1505,6 @@ De lo contrario, lo impedirá tu configuración de privacidad. Permitirá que el
 <translation id="4813512666221746211">Error de red</translation>
 <translation id="4816492930507672669">Ajustar a página</translation>
 <translation id="4819347708020428563">¿Editar anotaciones en la vista predeterminada?</translation>
-<translation id="4823325221257637040">Iniciando</translation>
 <translation id="4825496307559726072"><ph name="CREATE_GOOGLE_SHEET_FOCUSED_FRIENDLY_MATCH_TEXT" />, pulsa Tabulador y luego Intro para crear una nueva Hoja de cálculo de Google rápidamente</translation>
 <translation id="4825507807291741242">Potente</translation>
 <translation id="483241715238664915">Activar advertencias</translation>
@@ -1943,7 +1938,6 @@ De lo contrario, lo impedirá tu configuración de privacidad. Permitirá que el
 <translation id="5937560539988385583">Página traducida</translation>
 <translation id="5938153366081463283">Añadir tarjeta virtual</translation>
 <translation id="5938793338444039872">Troy</translation>
-<translation id="5946937721014915347">Abriendo <ph name="SITE_NAME" />…</translation>
 <translation id="5947508410139465809">Los archivos que subas o adjuntes se enviarán a Google Cloud o a terceros para que se analicen. Por ejemplo, puede que se analicen para buscar datos sensibles o malware y que se almacenen de acuerdo con las políticas de la empresa.</translation>
 <translation id="5951495562196540101">No te puedes registrar con una cuenta de consumidor (hay una licencia asociada disponible).</translation>
 <translation id="5953516610448771166">Subtítulos automáticos no está disponible en este contenido multimedia. Para ver subtítulos, bloquea <ph name="CONTENT_SETTINGS" /> en este sitio.</translation>
@@ -1965,6 +1959,7 @@ De lo contrario, lo impedirá tu configuración de privacidad. Permitirá que el
 <translation id="5995727681868049093">Gestiona tu información, privacidad y seguridad en tu cuenta de Google</translation>
 <translation id="5997247540087773573">La contraseña que acabas de usar se ha encontrado en una quiebra de seguridad de datos. Para proteger tus cuentas, el gestor de contraseñas de Google te recomienda que cambies esa contraseña ahora y que compruebes las contraseñas que tengas guardadas.</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> resultados para "<ph name="SEARCH_TEXT" />"</translation>
+<translation id="6005765687956866568">La información autocompletada se ha borrado del formulario</translation>
 <translation id="6006365096047131769">3x5 pulgadas</translation>
 <translation id="6006484371116297560">Clásico</translation>
 <translation id="6008122969617370890">Orden de N a 1</translation>
@@ -2034,7 +2029,6 @@ De lo contrario, lo impedirá tu configuración de privacidad. Permitirá que el
 <translation id="6165508094623778733">Más información</translation>
 <translation id="6167577165590485365">Último intento de obtención:</translation>
 <translation id="6169916984152623906">Ahora puedes navegar de forma privada; las otras personas que usen este dispositivo no verán tu actividad. No obstante, se guardarán las descargas y los marcadores.</translation>
-<translation id="6176716740821145453">Piensa un momento en la fiabilidad</translation>
 <translation id="6177128806592000436">La conexión con este sitio web no es segura</translation>
 <translation id="6177531123306197852">Sobre C2</translation>
 <translation id="6180316780098470077">Intervalo de reintentos</translation>
@@ -2080,7 +2074,6 @@ De lo contrario, lo impedirá tu configuración de privacidad. Permitirá que el
 <translation id="6295618774959045776">CVC:</translation>
 <translation id="6300452962057769623">{0,plural, =0{Tu dispositivo se reiniciará ahora}=1{Tu dispositivo se reiniciará dentro de 1 segundo}other{Tu dispositivo se reiniciará dentro de # segundos}}</translation>
 <translation id="6301104306974789820">Recibe notificaciones de seguimiento de precios</translation>
-<translation id="6302269476990306341">Se está parando el Asistente de Google en Chrome</translation>
 <translation id="6305205051461490394">No se puede acceder a <ph name="URL" />.</translation>
 <translation id="6311165245110979290">Tarjeta virtual disponible</translation>
 <translation id="6312113039770857350">Página web no disponible</translation>
@@ -2275,6 +2268,7 @@ De lo contrario, lo impedirá tu configuración de privacidad. Permitirá que el
 <translation id="6826993739343257035">¿Permitir realidad aumentada?</translation>
 <translation id="6828866289116430505">Genética</translation>
 <translation id="6831043979455480757">Traducir</translation>
+<translation id="6832753933931306326">El formulario se ha rellenado</translation>
 <translation id="6842196666980060516">184x260 mm</translation>
 <translation id="6846340164947227603">Usar un número de tarjeta virtual...</translation>
 <translation id="6852204201400771460">¿Quieres volver a cargar la aplicación?</translation>
@@ -2335,7 +2329,6 @@ De lo contrario, lo impedirá tu configuración de privacidad. Permitirá que el
 <translation id="6971439137020188025">Crea una nueva Presentación de Google rápidamente</translation>
 <translation id="6972629891077993081">Dispositivos HID</translation>
 <translation id="6973656660372572881">Se especifican tanto servidores proxy fijos como una URL de secuencia de comandos .pac.</translation>
-<translation id="6973932557599545801">Lo siento, no puedo ayudarte. Puedes continuar por tu cuenta.</translation>
 <translation id="6973988895180423160">3,5 x 5 pulgadas</translation>
 <translation id="6978236010531171013">Compartir igualmente</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -2531,7 +2524,6 @@ Más información:
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Consultar más información<ph name="END_LINK" /> sobre este problema</translation>
 <translation id="7455133967321480974">Utilizar valor predeterminado global (Bloquear)</translation>
 <translation id="745640750744109667">A0x3</translation>
-<translation id="7460618730930299168">El filtro es distinto al que has seleccionado. ¿Quieres continuar?</translation>
 <translation id="7461924472993315131">Fijar</translation>
 <translation id="7463075493919226237">Fútbol australiano</translation>
 <translation id="7465963048299965912">10x13 pulgadas</translation>
@@ -2540,7 +2532,6 @@ Más información:
 <translation id="7481312909269577407">Adelante</translation>
 <translation id="7481603210197454575">Sobre italiano</translation>
 <translation id="7485870689360869515">No se han encontrado datos.</translation>
-<translation id="7485948220959728508">¿Quién está detrás de esta información?</translation>
 <translation id="748745328507845862">Conciertos y festivales de música</translation>
 <translation id="7489473601138133813">Recursos y planificación profesionales</translation>
 <translation id="7495528107193238112">Este contenido está bloqueado. Para solucionar el problema, ponte en contacto con el propietario del sitio web.</translation>
@@ -2646,7 +2637,6 @@ Más información:
 <translation id="7682451652090915298">Rugby</translation>
 <translation id="7687186412095877299">Rellena formularios de pago con tus métodos de pago guardados</translation>
 <translation id="7687305263118037187">Tiempo de espera de reintento agotado</translation>
-<translation id="7687451951329798396">¿Qué dicen otras fuentes?</translation>
 <translation id="7690647519407127574">Oufuku Hagaki Postcard</translation>
 <translation id="7693583928066320343">Orden de páginas recibido</translation>
 <translation id="7696089921647603491">Clásicos del rock</translation>
@@ -2731,6 +2721,7 @@ Más información:
 <translation id="7950027195171824198">Gestiona tus preferencias de cookies en la configuración de Chrome</translation>
 <translation id="7951415247503192394">(32 bits)</translation>
 <translation id="7952192831285741665">EDP europeo</translation>
+<translation id="7952804540472583406"><ph name="BEGIN_LINK" />Iniciando sesión<ph name="END_LINK" /> en la red.</translation>
 <translation id="7953569069500808819">Grapado en el borde superior</translation>
 <translation id="7956713633345437162">Marcadores del móvil</translation>
 <translation id="7961015016161918242">Nunca</translation>
@@ -2848,6 +2839,7 @@ Más información:
 <translation id="8241707690549784388">La página que buscas ha utilizado la información que has especificado. Volver a la página podría provocar la repetición de alguna acción. ¿Quieres continuar?</translation>
 <translation id="8241712895048303527">Bloquear en este sitio web</translation>
 <translation id="8242426110754782860">Continuar</translation>
+<translation id="8245703462678310750">Mantén pulsado |<ph name="ACCELERATOR" />| para salir de pantalla completa y ver la descarga.</translation>
 <translation id="8249296373107784235">Anular</translation>
 <translation id="8249463483885748674">Pruebas estandarizadas y de admisión</translation>
 <translation id="8252991034201168845">Botón Gestionar la configuración de accesibilidad: pulsa Intro para personalizar tus herramientas de accesibilidad en la configuración de ChromeOS</translation>
@@ -3220,7 +3212,6 @@ Más información:
 <translation id="937457230470581909">Zoológicos, acuarios y reservas naturales</translation>
 <translation id="939736085109172342">Nueva carpeta</translation>
 <translation id="940053046584497293">Viajes y transporte</translation>
-<translation id="945522503751344254">Enviar comentarios</translation>
 <translation id="945855313015696284">Comprueba la información que aparece a continuación y elimina las tarjetas no válidas</translation>
 <translation id="947370374845726940"><ph name="CREATE_GOOGLE_SITE_FOCUSED_FRIENDLY_MATCH_TEXT" />, pulsa Tabulador y luego Intro para crear un nuevo sitio con Google Sites rápidamente</translation>
 <translation id="950736567201356821">Perforado triple en la parte superior</translation>

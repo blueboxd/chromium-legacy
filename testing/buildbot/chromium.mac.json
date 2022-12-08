@@ -30463,7 +30463,6 @@
   "mac11-arm64-rel-tests": {
     "gtest_tests": [
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -30482,7 +30481,6 @@
         "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -30501,7 +30499,6 @@
         "test_id_prefix": "ninja://ui/accessibility:accessibility_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -30521,7 +30518,6 @@
         "use_isolated_scripts_api": true
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -30540,7 +30536,6 @@
         "test_id_prefix": "ninja://extensions/shell:app_shell_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -30559,7 +30554,6 @@
         "test_id_prefix": "ninja://base:base_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -30578,7 +30572,6 @@
         "test_id_prefix": "ninja://third_party/blink/common:blink_common_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -30597,7 +30590,6 @@
         "test_id_prefix": "ninja://third_party/blink/renderer/platform:blink_fuzzer_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -30616,7 +30608,6 @@
         "test_id_prefix": "ninja://third_party/blink/renderer/platform/heap:blink_heap_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -30635,7 +30626,6 @@
         "test_id_prefix": "ninja://third_party/blink/renderer/platform:blink_platform_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -30655,7 +30645,6 @@
         "test_id_prefix": "ninja://third_party/blink/renderer/controller:blink_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -30674,7 +30663,6 @@
         "test_id_prefix": "ninja://third_party/boringssl:boringssl_crypto_tests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -30696,7 +30684,6 @@
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/mac.mac11-arm64-rel.browser_tests.filter"
         ],
-        "ci_only": false,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -30719,7 +30706,6 @@
         "args": [
           "--gtest_filter=-*UsingRealWebcam*"
         ],
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -30738,7 +30724,6 @@
         "test_id_prefix": "ninja://media/capture:capture_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -30757,7 +30742,6 @@
         "test_id_prefix": "ninja://media/cast:cast_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -30776,7 +30760,6 @@
         "test_id_prefix": "ninja://cc:cc_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -30795,7 +30778,6 @@
         "test_id_prefix": "ninja://chrome/test:chrome_app_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -30814,7 +30796,6 @@
         "test_id_prefix": "ninja://chrome/test/chromedriver:chromedriver_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -30833,7 +30814,6 @@
         "test_id_prefix": "ninja://ui/color:color_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -30852,7 +30832,6 @@
         "test_id_prefix": "ninja://components:components_browsertests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -30871,7 +30850,6 @@
         "test_id_prefix": "ninja://components:components_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -30891,7 +30869,6 @@
         "test_id_prefix": "ninja://content/test:content_browsertests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -30910,7 +30887,6 @@
         "test_id_prefix": "ninja://content/test:content_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -30929,7 +30905,6 @@
         "test_id_prefix": "ninja://third_party/crashpad/crashpad:crashpad_tests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -30948,7 +30923,6 @@
         "test_id_prefix": "ninja://components/cronet:cronet_tests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -30967,7 +30941,6 @@
         "test_id_prefix": "ninja://components/cronet:cronet_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -30986,7 +30959,6 @@
         "test_id_prefix": "ninja://crypto:crypto_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31005,7 +30977,6 @@
         "test_id_prefix": "ninja://device:device_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31024,7 +30995,6 @@
         "test_id_prefix": "ninja://ui/display:display_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31043,7 +31013,6 @@
         "test_id_prefix": "ninja://ui/events:events_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31062,7 +31031,6 @@
         "test_id_prefix": "ninja://extensions:extensions_browsertests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31081,7 +31049,6 @@
         "test_id_prefix": "ninja://extensions:extensions_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31100,7 +31067,6 @@
         "test_id_prefix": "ninja://components/services/filesystem:filesystem_service_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31119,7 +31085,6 @@
         "test_id_prefix": "ninja://google_apis/gcm:gcm_unit_tests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31138,7 +31103,6 @@
         "test_id_prefix": "ninja://ui/gfx:gfx_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31157,7 +31121,6 @@
         "test_id_prefix": "ninja://gin:gin_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31176,7 +31139,6 @@
         "test_id_prefix": "ninja://google_apis:google_apis_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31195,7 +31157,6 @@
         "test_id_prefix": "ninja://gpu:gpu_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31214,7 +31175,6 @@
         "test_id_prefix": "ninja://components/gwp_asan:gwp_asan_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31233,7 +31193,6 @@
         "test_id_prefix": "ninja://headless:headless_browsertests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31252,7 +31211,6 @@
         "test_id_prefix": "ninja://headless:headless_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31272,7 +31230,6 @@
         "test_id_prefix": "ninja://chrome/test:interactive_ui_tests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31291,7 +31248,6 @@
         "test_id_prefix": "ninja://ipc:ipc_tests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31310,7 +31266,6 @@
         "test_id_prefix": "ninja://ui/latency:latency_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31329,7 +31284,6 @@
         "test_id_prefix": "ninja://third_party/libjingle_xmpp:libjingle_xmpp_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31348,7 +31302,6 @@
         "test_id_prefix": "ninja://third_party/liburlpattern:liburlpattern_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31367,7 +31320,6 @@
         "test_id_prefix": "ninja://media:media_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31386,7 +31338,6 @@
         "test_id_prefix": "ninja://ui/message_center:message_center_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31405,7 +31356,6 @@
         "test_id_prefix": "ninja://media/midi:midi_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31424,7 +31374,6 @@
         "test_id_prefix": "ninja://mojo:mojo_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31443,7 +31392,6 @@
         "test_id_prefix": "ninja://ui/native_theme:native_theme_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31462,7 +31410,6 @@
         "test_id_prefix": "ninja://net:net_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31481,7 +31428,6 @@
         "test_id_prefix": "ninja://pdf:pdf_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31500,7 +31446,6 @@
         "test_id_prefix": "ninja://third_party/perfetto:perfetto_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31519,7 +31464,6 @@
         "test_id_prefix": "ninja://tools/mac/power:power_sampler_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31538,7 +31482,6 @@
         "test_id_prefix": "ninja://ppapi:ppapi_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31557,7 +31500,6 @@
         "test_id_prefix": "ninja://printing:printing_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31576,7 +31518,6 @@
         "test_id_prefix": "ninja://remoting:remoting_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31595,7 +31536,6 @@
         "test_id_prefix": "ninja://sandbox:sandbox_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31614,7 +31554,6 @@
         "test_id_prefix": "ninja://services/service_manager/tests:service_manager_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31633,7 +31572,6 @@
         "test_id_prefix": "ninja://services:services_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31652,7 +31590,6 @@
         "test_id_prefix": "ninja://ui/shell_dialogs:shell_dialogs_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31671,7 +31608,6 @@
         "test_id_prefix": "ninja://skia:skia_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31690,7 +31626,6 @@
         "test_id_prefix": "ninja://ui/snapshot:snapshot_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31709,7 +31644,6 @@
         "test_id_prefix": "ninja://sql:sql_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31728,7 +31662,6 @@
         "test_id_prefix": "ninja://storage:storage_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31747,7 +31680,6 @@
         "test_id_prefix": "ninja://chrome/test:sync_integration_tests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31766,7 +31698,6 @@
         "test_id_prefix": "ninja://ui/base:ui_base_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31785,7 +31716,6 @@
         "test_id_prefix": "ninja://ui/touch_selection:ui_touch_selection_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31809,7 +31739,6 @@
           "--ui-test-action-max-timeout=45000",
           "--ui-test-action-timeout=40000"
         ],
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31828,7 +31757,6 @@
         "test_id_prefix": "ninja://chrome/updater:updater_tests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31847,7 +31775,6 @@
         "test_id_prefix": "ninja://url:url_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31866,7 +31793,6 @@
         "test_id_prefix": "ninja://ui/views:views_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31885,7 +31811,6 @@
         "test_id_prefix": "ninja://components/viz:viz_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31904,7 +31829,6 @@
         "test_id_prefix": "ninja://third_party/blink/renderer/platform/wtf:wtf_unittests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31924,7 +31848,6 @@
         "test_id_prefix": "ninja://chrome/test:xr_browser_tests/"
       },
       {
-        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -31945,7 +31868,6 @@
     ],
     "isolated_scripts": [
       {
-        "ci_only": true,
         "isolate_name": "blink_python_tests",
         "merge": {
           "args": [],
@@ -31974,7 +31896,6 @@
           "--git-revision=${got_revision}"
         ],
         "check_flakiness_for_new_tests": false,
-        "ci_only": true,
         "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
@@ -32012,7 +31933,6 @@
           "--git-revision=${got_revision}"
         ],
         "check_flakiness_for_new_tests": false,
-        "ci_only": true,
         "isolate_name": "blink_wpt_tests",
         "merge": {
           "args": [
@@ -32048,7 +31968,6 @@
           "--test-type=integration"
         ],
         "check_flakiness_for_new_tests": false,
-        "ci_only": true,
         "isolate_name": "chromedriver_py_tests",
         "merge": {
           "args": [],
@@ -32071,7 +31990,6 @@
         "test_id_prefix": "ninja://chrome/test/chromedriver:chromedriver_py_tests/"
       },
       {
-        "ci_only": true,
         "isolate_name": "chromedriver_replay_unittests",
         "merge": {
           "args": [],
@@ -32094,7 +32012,6 @@
         "args": [
           "--gtest-benchmark-name=components_perftests"
         ],
-        "ci_only": true,
         "isolate_name": "components_perftests",
         "merge": {
           "args": [
@@ -32116,7 +32033,6 @@
         "test_id_prefix": "ninja://components:components_perftests/"
       },
       {
-        "ci_only": true,
         "isolate_name": "content_shell_crash_test",
         "merge": {
           "args": [],
@@ -32140,7 +32056,6 @@
         "test_id_prefix": "ninja://content/shell:content_shell_crash_test/"
       },
       {
-        "ci_only": true,
         "isolate_name": "flatbuffers_unittests",
         "merge": {
           "args": [],
@@ -32164,7 +32079,6 @@
         "test_id_prefix": "ninja://third_party/flatbuffers:flatbuffers_unittests/"
       },
       {
-        "ci_only": true,
         "isolate_name": "mac_signing_tests",
         "merge": {
           "args": [],
@@ -32184,7 +32098,6 @@
         "test_id_prefix": "ninja://chrome/installer/mac:mac_signing_tests/"
       },
       {
-        "ci_only": true,
         "isolate_name": "mojo_python_unittests",
         "merge": {
           "args": [],
@@ -32207,7 +32120,6 @@
         "test_id_prefix": "ninja://mojo/public/tools:mojo_python_unittests/"
       },
       {
-        "ci_only": true,
         "isolate_name": "telemetry_gpu_unittests",
         "merge": {
           "args": [],
@@ -32234,7 +32146,6 @@
         "args": [
           "--extra-browser-args=--enable-crashpad"
         ],
-        "ci_only": true,
         "isolate_name": "telemetry_perf_unittests",
         "merge": {
           "args": [],
@@ -32262,7 +32173,6 @@
         "args": [
           "--gtest-benchmark-name=views_perftests"
         ],
-        "ci_only": true,
         "isolate_name": "views_perftests",
         "merge": {
           "args": [

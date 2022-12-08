@@ -61,6 +61,7 @@
   </settings-toggle-button>
 </div>
 <settings-toggle-button
+    id="largeCursorEnabledControl"
     class="hr"
     pref="{{prefs.settings.a11y.large_cursor_enabled}}"
     label="$i18n{largeMouseCursorLabel}"
@@ -73,6 +74,7 @@
       $i18n{largeMouseCursorSizeLabel}
     </div>
     <settings-slider
+        id="largeCursorSizeSlider"
         pref="{{prefs.settings.a11y.large_cursor_dip_size}}"
         min="25" max="64"
         label-aria="$i18n{largeMouseCursorSizeLabel}"
@@ -85,7 +87,8 @@
   <div class="start settings-box-text" id="cursorColorOptionsLabel">
     $i18n{cursorColorOptionsLabel}
   </div>
-  <settings-dropdown-menu aria-labeledby="cursorColorOptionsLabel"
+  <settings-dropdown-menu id="cursorColorDropdown"
+      aria-labeledby="cursorColorOptionsLabel"
       pref="{{prefs.settings.a11y.cursor_color}}"
       menu-options="[[cursorColorOptions_]]"
       on-settings-control-change="onA11yCursorColorChange_"

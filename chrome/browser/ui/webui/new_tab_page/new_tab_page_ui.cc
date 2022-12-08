@@ -519,7 +519,6 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
   webui::SetupWebUIDataSource(
       source, base::make_span(kNewTabPageResources, kNewTabPageResourcesSize),
       IDR_NEW_TAB_PAGE_NEW_TAB_PAGE_HTML);
-  webui::EnableTrustedTypesCSP(source);
 
   // Allow embedding of iframes for the doodle and
   // chrome-untrusted://new-tab-page for other external content and resources.
@@ -686,7 +685,7 @@ void NewTabPageUI::BindInterface(
 }
 
 void NewTabPageUI::BindInterface(
-    mojo::PendingReceiver<realbox::mojom::PageHandler> pending_page_handler) {
+    mojo::PendingReceiver<omnibox::mojom::PageHandler> pending_page_handler) {
   realbox_handler_ = std::make_unique<RealboxHandler>(
       std::move(pending_page_handler), profile_, web_contents());
 }

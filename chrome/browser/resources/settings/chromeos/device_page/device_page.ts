@@ -16,14 +16,14 @@ import './storage.js';
 import './storage_external.js';
 import './stylus.js';
 import '../../prefs/prefs.js';
-import '../../settings_page/settings_animated_pages.js';
-import '../../settings_page/settings_subpage.js';
+import '../os_settings_page/os_settings_animated_pages.js';
+import '../os_settings_page/os_settings_subpage.js';
 import '../../settings_shared.css.js';
 
 import {CrLinkRowElement} from 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 import {I18nMixin, I18nMixinInterface} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {WebUiListenerMixin, WebUiListenerMixinInterface} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {RouteObserverMixin, RouteObserverMixinInterface, Router} from '../../router.js';

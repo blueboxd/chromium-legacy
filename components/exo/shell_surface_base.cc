@@ -284,7 +284,8 @@ void ShowSnapPreview(aura::Window* window,
 }
 
 void CommitSnap(aura::Window* window, chromeos::SnapDirection snap_direction) {
-  chromeos::SnapController::Get()->CommitSnap(window, snap_direction);
+  chromeos::SnapController::Get()->CommitSnap(window, snap_direction,
+                                              chromeos::kDefaultSnapRatio);
 }
 
 }  // namespace
@@ -1464,6 +1465,7 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   aura::Window* window = widget_->GetNativeWindow();
   window->SetName(base::StringPrintf("ExoShellSurface-%d", shell_id++));
   window->AddChild(host_window());
+  // Works for both mash and non-mash. https://crbug.com/839521
   window->SetEventTargetingPolicy(
       aura::EventTargetingPolicy::kTargetAndDescendants);
   InstallCustomWindowTargeter();
@@ -1615,10 +1617,11 @@ void ShellSurfaceBase::UpdateShadow() {
       if (origin.x() != 0 || origin.y() != 0) {
         shadow_bounds.set_origin(origin);
         if (widget_) {
-          gfx::Point widget_origin =
-              widget_->GetWindowBoundsInScreen().origin();
+          gfx::Point widget_origin_in_root =
+              widget_->GetNativeWindow()->bounds().origin();
           origin += ToFlooredVector2d(
-              ScaleVector2d(gfx::Vector2d(widget_origin.x(), widget_origin.y()),
+              ScaleVector2d(gfx::Vector2d(widget_origin_in_root.x(),
+                                          widget_origin_in_root.y()),
                             1.f / GetScale()));
           gfx::Rect bounds = geometry_;
           bounds.set_origin(origin);

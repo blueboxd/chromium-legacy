@@ -162,7 +162,6 @@ public abstract class ChromeFeatureList {
     }
 
     /* Alphabetical: */
-    public static final String ABOUT_THIS_SITE_BANNER = "AboutThisSiteBanner";
     public static final String ADAPTIVE_BUTTON_IN_TOP_TOOLBAR = "AdaptiveButtonInTopToolbar";
     public static final String ADAPTIVE_BUTTON_IN_TOP_TOOLBAR_CUSTOMIZATION_V2 =
             "AdaptiveButtonInTopToolbarCustomizationV2";
@@ -218,6 +217,7 @@ public abstract class ChromeFeatureList {
     public static final String CCT_BACKGROUND_TAB = "CCTBackgroundTab";
     public static final String CCT_BRAND_TRANSPARENCY = "CCTBrandTransparency";
     public static final String CCT_CLIENT_DATA_HEADER = "CCTClientDataHeader";
+    public static final String CCT_FEATURE_USAGE = "CCTFeatureUsage";
     public static final String CCT_INCOGNITO = "CCTIncognito";
     public static final String CCT_INCOGNITO_AVAILABLE_TO_THIRD_PARTY =
             "CCTIncognitoAvailableToThirdParty";
@@ -296,7 +296,6 @@ public abstract class ChromeFeatureList {
     public static final String SYNC_ANDROID_PROMOS_WITH_SINGLE_BUTTON =
             "SyncAndroidPromosWithSingleButton";
     public static final String SYNC_ANDROID_PROMOS_WITH_TITLE = "SyncAndroidPromosWithTitle";
-    public static final String CREATE_SAFEBROWSING_ON_STARTUP = "CreateSafebrowsingOnStartup";
     public static final String CRITICAL_PERSISTED_TAB_DATA = "CriticalPersistedTabData";
     public static final String DARKEN_WEBSITES_CHECKBOX_IN_THEMES_SETTING =
             "DarkenWebsitesCheckboxInThemesSetting";
@@ -617,6 +616,7 @@ public abstract class ChromeFeatureList {
             new CachedFlag(BACK_GESTURE_REFACTOR, false);
     public static final CachedFlag sCctBrandTransparency =
             new CachedFlag(CCT_BRAND_TRANSPARENCY, false);
+    public static final CachedFlag sCctFeatureUsage = new CachedFlag(CCT_FEATURE_USAGE, false);
     public static final CachedFlag sCctIncognito = new CachedFlag(CCT_INCOGNITO, true);
     public static final CachedFlag sCctIncognitoAvailableToThirdParty =
             new CachedFlag(CCT_INCOGNITO_AVAILABLE_TO_THIRD_PARTY, false);
@@ -645,8 +645,6 @@ public abstract class ChromeFeatureList {
     public static final CachedFlag sCommerceCoupons = new CachedFlag(COMMERCE_COUPONS, false);
     public static final CachedFlag sConditionalTabStripAndroid =
             new CachedFlag(CONDITIONAL_TAB_STRIP_ANDROID, false);
-    public static final CachedFlag sCreateSafebrowsingOnStartup =
-            new CachedFlag(CREATE_SAFEBROWSING_ON_STARTUP, true);
     public static final CachedFlag sCriticalPersistedTabData =
             new CachedFlag(CRITICAL_PERSISTED_TAB_DATA, false);
     public static final CachedFlag sDiscardOccludedBitmaps =

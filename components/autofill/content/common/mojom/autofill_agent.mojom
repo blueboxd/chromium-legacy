@@ -15,10 +15,8 @@ interface AutofillAgent {
   TriggerReparse();
 
   // Instructs the renderer to fill or preview the active form with the given
-  // form data. Refer to AutofillDriver.AskForValuesToFill for comments
-  // about the |query_id|.
-  FillOrPreviewForm(int32 query_id,
-                    FormData form,
+  // form data.
+  FillOrPreviewForm(FormData form,
                     RendererFormDataAction action);
 
   // Sends the heuristic and server field type predictions to the renderer.
@@ -57,6 +55,9 @@ interface AutofillAgent {
   // values.
   PreviewPasswordSuggestion(mojo_base.mojom.String16 username,
                             mojo_base.mojom.String16 password);
+
+  // Tells the renderer to preview the generated password.
+  PreviewPasswordGenerationSuggestion(mojo_base.mojom.String16 password);
 
   // Configures the render to require, or not, a user gesture before notifying
   // the autofill agent of a field change. The default is true. Bypassing the

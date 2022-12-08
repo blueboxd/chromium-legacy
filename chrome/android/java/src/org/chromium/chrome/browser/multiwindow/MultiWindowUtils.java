@@ -344,10 +344,7 @@ public class MultiWindowUtils implements ActivityStateListener {
      * Determines the name of an activity from its {@link AppTask}.
      * @param task The AppTask to get the name of.
      */
-    @RequiresApi(Build.VERSION_CODES.M)
     public static String getActivityNameFromTask(AppTask task) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return "";
-
         ActivityManager.RecentTaskInfo taskInfo = AndroidTaskUtils.getTaskInfoFromTask(task);
         if (taskInfo == null || taskInfo.baseActivity == null) return "";
 
@@ -389,9 +386,6 @@ public class MultiWindowUtils implements ActivityStateListener {
      * @return True if multiple instances of Chrome are running.
      */
     public boolean areMultipleChromeInstancesRunning(Context context) {
-        // Exit early if multi-window isn't supported.
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) return false;
-
         // Check if both tasks are running.
         boolean tabbedTaskRunning = false;
         boolean tabbed2TaskRunning = false;
@@ -432,10 +426,8 @@ public class MultiWindowUtils implements ActivityStateListener {
         // 0. Use always ChromeTabbedActivity when multi-instance support in S+ is enabled.
         if (mMultiInstanceApi31Enabled) return ChromeTabbedActivity.class;
 
-        // 1. Exit early if the build version doesn't support Android N+ multi-window mode or
-        // ChromeTabbedActivity2 isn't running.
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M
-                || (mTabbedActivity2TaskRunning != null && !mTabbedActivity2TaskRunning)) {
+        // 1. Exit early if ChromeTabbedActivity2 isn't running.
+        if (mTabbedActivity2TaskRunning != null && !mTabbedActivity2TaskRunning) {
             return ChromeTabbedActivity.class;
         }
 
@@ -511,7 +503,6 @@ public class MultiWindowUtils implements ActivityStateListener {
      * @return True if the Activity still has a task in Android recents, regardless of whether
      *         the Activity has been destroyed.
      */
-    @RequiresApi(Build.VERSION_CODES.M)
     private boolean isActivityTaskInRecents(String className, Context context) {
         ActivityManager activityManager = (ActivityManager)
                 context.getSystemService(Context.ACTIVITY_SERVICE);

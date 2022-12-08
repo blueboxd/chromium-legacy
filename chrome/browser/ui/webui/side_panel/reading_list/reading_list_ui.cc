@@ -88,10 +88,12 @@ ReadingListUI::ReadingListUI(content::WebUI* web_ui)
       {"createNewFolderA11yLabel", IDS_BOOKMARKS_CREATE_NEW_FOLDER_A11Y_LABEL},
       {"editBookmarkListA11yLabel",
        IDS_BOOKMARKS_EDIT_BOOKMARK_LIST_A11Y_LABEL},
+      {"cancelA11yLabel", IDS_CANCEL},
       {"emptyTitle", IDS_BOOKMARKS_EMPTY_STATE_TITLE},
       {"emptyBody", IDS_BOOKMARKS_EMPTY_STATE_BODY},
       {"searchBookmarks", IDS_BOOKMARK_MANAGER_SEARCH_BUTTON},
       {"clearSearch", IDS_BOOKMARK_MANAGER_CLEAR_SEARCH},
+      {"selectedBookmarkCount", IDS_BOOKMARK_MANAGER_ITEMS_SELECTED},
   };
   for (const auto& str : kLocalizedStrings)
     webui::AddLocalizedString(source, str.name, str.id);
@@ -114,6 +116,9 @@ ReadingListUI::ReadingListUI(content::WebUI* web_ui)
   source->AddBoolean("unifiedSidePanel",
                      base::FeatureList::IsEnabled(features::kUnifiedSidePanel));
 
+  source->AddBoolean("canModifyBookmarks", !profile->IsGuestSession() &&
+                                               !profile->IsIncognitoProfile());
+
   source->AddBoolean(
       "showPowerBookmarks",
       base::FeatureList::IsEnabled(features::kPowerBookmarksSidePanel));
@@ -135,7 +140,6 @@ ReadingListUI::ReadingListUI(content::WebUI* web_ui)
   webui::SetupWebUIDataSource(
       source, base::make_span(kSidePanelResources, kSidePanelResourcesSize),
       resource);
-  webui::EnableTrustedTypesCSP(source);
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
                                 source);
   content::URLDataSource::Add(profile,

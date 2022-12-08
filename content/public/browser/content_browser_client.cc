@@ -507,7 +507,7 @@ bool ContentBrowserClient::IsAttributionReportingOperationAllowed(
 }
 
 bool ContentBrowserClient::IsSharedStorageAllowed(
-    content::BrowserContext* browser_context,
+    content::RenderFrameHost* rfh,
     const url::Origin& top_frame_origin,
     const url::Origin& accessing_origin) {
   // TODO(crbug.com/1325103): Change this to false and override in
@@ -1310,7 +1310,7 @@ void ContentBrowserClient::OnKeepaliveRequestFinished() {}
 #if BUILDFLAG(IS_MAC)
 bool ContentBrowserClient::SetupEmbedderSandboxParameters(
     sandbox::mojom::Sandbox sandbox_type,
-    sandbox::SeatbeltExecClient* client) {
+    sandbox::SandboxCompiler* compiler) {
   return false;
 }
 #endif  // BUILDFLAG(IS_MAC)

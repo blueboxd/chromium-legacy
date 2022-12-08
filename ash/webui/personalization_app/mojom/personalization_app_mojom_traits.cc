@@ -33,6 +33,9 @@ using MojomOnlineImageType = ash::personalization_app::mojom::OnlineImageType;
 using MojomAnimationTheme = ash::personalization_app::mojom::AnimationTheme;
 using MojomTopicSource = ash::personalization_app::mojom::TopicSource;
 using MojomTemperatureUnit = ash::personalization_app::mojom::TemperatureUnit;
+using MojomAmbientUiVisibility =
+    ash::personalization_app::mojom::AmbientUiVisibility;
+using MojomColorScheme = ash::personalization_app::mojom::ColorScheme;
 
 MojomWallpaperLayout
 EnumTraits<MojomWallpaperLayout, ash::WallpaperLayout>::ToMojom(
@@ -420,6 +423,82 @@ bool EnumTraits<MojomTemperatureUnit, ash::AmbientModeTemperatureUnit>::
       return true;
     case MojomTemperatureUnit::kCelsius:
       *output = ash::AmbientModeTemperatureUnit::kCelsius;
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
+MojomAmbientUiVisibility
+EnumTraits<MojomAmbientUiVisibility, ash::AmbientUiVisibility>::ToMojom(
+    ash::AmbientUiVisibility input) {
+  switch (input) {
+    case ash::AmbientUiVisibility::kShown:
+      return MojomAmbientUiVisibility::kShown;
+    case ash::AmbientUiVisibility::kPreview:
+      return MojomAmbientUiVisibility::kPreview;
+    case ash::AmbientUiVisibility::kHidden:
+      return MojomAmbientUiVisibility::kHidden;
+    case ash::AmbientUiVisibility::kClosed:
+      return MojomAmbientUiVisibility::kClosed;
+  }
+}
+
+bool EnumTraits<MojomAmbientUiVisibility, ash::AmbientUiVisibility>::FromMojom(
+    MojomAmbientUiVisibility input,
+    ash::AmbientUiVisibility* output) {
+  switch (input) {
+    case MojomAmbientUiVisibility::kShown:
+      *output = ash::AmbientUiVisibility::kShown;
+      return true;
+    case MojomAmbientUiVisibility::kPreview:
+      *output = ash::AmbientUiVisibility::kPreview;
+      return true;
+    case MojomAmbientUiVisibility::kHidden:
+      *output = ash::AmbientUiVisibility::kHidden;
+      return true;
+    case MojomAmbientUiVisibility::kClosed:
+      *output = ash::AmbientUiVisibility::kClosed;
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
+MojomColorScheme EnumTraits<MojomColorScheme, ash::ColorScheme>::ToMojom(
+    ash::ColorScheme input) {
+  switch (input) {
+    case ash::ColorScheme::kTonalSpot:
+      return MojomColorScheme::kTonalSpot;
+    case ash::ColorScheme::kNeutral:
+      return MojomColorScheme::kNeutral;
+    case ash::ColorScheme::kExpressive:
+      return MojomColorScheme::kExpressive;
+    case ash::ColorScheme::kVibrant:
+      return MojomColorScheme::kVibrant;
+    case ash::ColorScheme::kStatic:
+      return MojomColorScheme::kStatic;
+  }
+}
+
+bool EnumTraits<MojomColorScheme, ash::ColorScheme>::FromMojom(
+    MojomColorScheme input,
+    ash::ColorScheme* output) {
+  switch (input) {
+    case MojomColorScheme::kTonalSpot:
+      *output = ash::ColorScheme::kTonalSpot;
+      return true;
+    case MojomColorScheme::kNeutral:
+      *output = ash::ColorScheme::kNeutral;
+      return true;
+    case MojomColorScheme::kExpressive:
+      *output = ash::ColorScheme::kExpressive;
+      return true;
+    case MojomColorScheme::kVibrant:
+      *output = ash::ColorScheme::kVibrant;
+      return true;
+    case MojomColorScheme::kStatic:
+      *output = ash::ColorScheme::kStatic;
       return true;
   }
   NOTREACHED();

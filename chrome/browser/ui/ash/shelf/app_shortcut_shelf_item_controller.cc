@@ -13,9 +13,9 @@
 #include "base/containers/contains.h"
 #include "base/memory/ptr_util.h"
 #include "base/ranges/algorithm.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
@@ -124,8 +124,8 @@ class AppMatcher {
     DCHECK(profile);
     if (web_app::WebAppProvider* provider =
             web_app::WebAppProvider::GetForLocalAppsUnchecked(profile)) {
-      if (provider->registrar().IsLocallyInstalled(app_id)) {
-        registrar_ = &provider->registrar();
+      if (provider->registrar_unsafe().IsLocallyInstalled(app_id)) {
+        registrar_ = &provider->registrar_unsafe();
       }
     }
     if (!registrar_)
@@ -560,7 +560,7 @@ bool AppShortcutShelfItemController::IsWindowedWebApp() {
   if (web_app::WebAppProvider* provider =
           web_app::WebAppProvider::GetForLocalAppsUnchecked(
               ChromeShelfController::instance()->profile())) {
-    web_app::WebAppRegistrar& registrar = provider->registrar();
+    web_app::WebAppRegistrar& registrar = provider->registrar_unsafe();
     if (registrar.IsLocallyInstalled(app_id())) {
       return registrar.GetAppUserDisplayMode(app_id()) !=
              web_app::UserDisplayMode::kBrowser;

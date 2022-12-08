@@ -12,6 +12,7 @@ import org.chromium.cc.base.CcFeatures;
 import org.chromium.cc.base.CcSwitches;
 import org.chromium.components.autofill.AutofillFeatures;
 import org.chromium.components.feature_engagement.FeatureConstants;
+import org.chromium.components.metrics.MetricsFeatures;
 import org.chromium.components.metrics.MetricsSwitches;
 import org.chromium.components.network_session_configurator.NetworkSessionSwitches;
 import org.chromium.components.variations.VariationsSwitches;
@@ -241,6 +242,8 @@ public final class ProductionSupportedFlagList {
                     "Collects metrics on when the User-Agent string is overridden and how"),
             Flag.baseFeature(GpuFeatures.CANVAS_CONTEXT_LOST_IN_BACKGROUND,
                     "Free Canvas2D resources when the webview is in the background."),
+            Flag.baseFeature(GpuFeatures.USE_GPU_SCHEDULER_DFS,
+                    "Uses the new SchedulerDFS GPU job scheduler."),
             Flag.baseFeature(VizFeatures.SURFACE_SYNC_THROTTLING,
                     "Enables throttling of Surface Sync to improve rotations"),
             Flag.baseFeature(BlinkFeatures.AUTOFILL_SHADOW_DOM,
@@ -345,9 +348,13 @@ public final class ProductionSupportedFlagList {
                     "This changes event propagation for disabled form controls."),
             Flag.baseFeature(ContentFeatures.SURFACE_SYNC_FULLSCREEN_KILLSWITCH,
                     "Disable to turn off the new SurfaceSync Fullscreen path."),
+            Flag.baseFeature(MetricsFeatures.EMIT_HISTOGRAMS_EARLIER,
+                    "Controls whether histograms are emitted earlier."),
             Flag.baseFeature(ContentFeatures.PERSISTENT_ORIGIN_TRIALS,
                     "If enabled, servers will be able to use persistent origin trials "
                             + "on this device."),
+            Flag.baseFeature(AwFeatures.WEBVIEW_IMAGE_DRAG,
+                    "If enabled, images can be dragged out from Webview"),
             // Add new commandline switches and features above. The final entry should have a
             // trailing comma for cleaner diffs.
     };

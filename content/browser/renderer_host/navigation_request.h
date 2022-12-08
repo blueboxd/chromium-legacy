@@ -208,11 +208,36 @@ class CONTENT_EXPORT NavigationRequest
   };
 
   // Creates a request for a browser-initiated navigation.
-  // Note: this is sometimes called for renderer-initiated navigations going
-  // through the OpenURL path. |browser_initiated| should be false in that case.
-  // TODO(clamy): Rename this function and consider merging it with
-  // CreateRendererInitiated.
   static std::unique_ptr<NavigationRequest> CreateBrowserInitiated(
+      FrameTreeNode* frame_tree_node,
+      blink::mojom::CommonNavigationParamsPtr common_params,
+      blink::mojom::CommitNavigationParamsPtr commit_params,
+      bool was_opener_suppressed,
+      const blink::LocalFrameToken* initiator_frame_token,
+      int initiator_process_id,
+      const std::string& extra_headers,
+      FrameNavigationEntry* frame_entry,
+      NavigationEntryImpl* entry,
+      bool is_form_submission,
+      std::unique_ptr<NavigationUIData> navigation_ui_data,
+      const absl::optional<blink::Impression>& impression,
+      bool is_pdf,
+      bool is_embedder_initiated_fenced_frame_navigation = false);
+
+  // Creates a request for either a browser-initiated navigation or a
+  // renderer-initiated navigation.  Normally, renderer-initiated navigations
+  // use CreateRendererInitiated(), but some legacy renderer-initiated
+  // navigation paths, such as OpenURL, are stuck using this path instead;
+  // these cases specify `browser_initiated` as false.
+  //
+  // Do NOT add more uses of this function.  Browser-initiated navigations
+  // should use CreateBrowserInitiated() and renderer-initiated navigations
+  // should use CreateRendererInitiated().
+  //
+  // TODO(crbug.com/1399292): Refactor the remaining uses of this function to
+  // use either CreateBrowserInitiated() or CreateRendererInitiated() and then
+  // remove this helper.
+  static std::unique_ptr<NavigationRequest> Create(
       FrameTreeNode* frame_tree_node,
       blink::mojom::CommonNavigationParamsPtr common_params,
       blink::mojom::CommitNavigationParamsPtr commit_params,
@@ -455,12 +480,9 @@ class CONTENT_EXPORT NavigationRequest
 
   bool from_begin_navigation() const { return from_begin_navigation_; }
 
-  AssociatedRenderFrameHostType associated_rfh_type() const {
-    return associated_rfh_type_;
-  }
-  void set_associated_rfh_type(AssociatedRenderFrameHostType type) {
-    associated_rfh_type_ = type;
-  }
+  AssociatedRenderFrameHostType GetAssociatedRFHType() const;
+
+  void SetAssociatedRFHType(AssociatedRenderFrameHostType type);
 
   void set_was_discarded() { commit_params_->was_discarded = true; }
 
@@ -967,14 +989,21 @@ class CONTENT_EXPORT NavigationRequest
     return prerender_frame_tree_node_id_.value();
   }
 
-  // TODO(crbug.com/1347953): Replace this function with
-  // NavigationRequest::ComputeFencedFrameProperties(), which falls back to
-  // frame_tree_node_->GetFencedFrameProperties() when the NavigationRequest
-  // itself doesn't have any properties.
-  const absl::optional<FencedFrameURLMapping::FencedFrameProperties>&
-  fenced_frame_properties() const {
+  // Return the `FencedFrameProperties` attached to this `NavigationRequest`,
+  // if present. This will only return a non-null value during
+  // embedder-initiated fenced frame navigations of a fenced frame root (or
+  // urn iframe).
+  const absl::optional<FencedFrameProperties>& GetFencedFrameProperties()
+      const {
     return fenced_frame_properties_;
   }
+
+  // Compute and return the `FencedFrameProperties` that this
+  // `NavigationRequest` acts under, i.e. the properties attached to this
+  // `NavigationRequest` if present, or the properties attached to the fenced
+  // frame root (if present) otherwise.
+  const absl::optional<FencedFrameProperties>& ComputeFencedFrameProperties()
+      const;
 
   const absl::optional<base::UnguessableToken> ComputeFencedFrameNonce() const;
 
@@ -1106,8 +1135,7 @@ class CONTENT_EXPORT NavigationRequest
   // Called from `FencedFrameURLMapping` when the mapping decision is made, and
   // resume the deferred navigation.
   void OnFencedFrameURLMappingComplete(
-      const absl::optional<FencedFrameURLMapping::FencedFrameProperties>&
-          properties) override;
+      const absl::optional<FencedFrameProperties>& properties) override;
 
   // Called from BeginNavigation(), OnPrerenderingActivationChecksComplete(),
   // or OnFencedFrameURLMappingComplete().
@@ -1656,6 +1684,14 @@ class CONTENT_EXPORT NavigationRequest
   // TODO(https://crbug.com/1311061): Remove or replace this method with the
   // header validation logic for isolated apps.
   void MaybeInjectIsolatedAppHeaders();
+
+  // The NavigationDownloadPolicy is currently fully computed by the renderer
+  // process. It is left empty for browser side initiated navigation. This is a
+  // problem. This function is an incomplete attempt to start computing it from
+  // the browser process instead.
+  // TODO(https://crbug.com/1395742): Complete the implementation the browser
+  // side implementation.
+  void ComputeDownloadPolicy();
 
   // Never null. The pointee node owns this navigation request instance.
   FrameTreeNode* const frame_tree_node_;
@@ -2207,8 +2243,7 @@ class CONTENT_EXPORT NavigationRequest
   //
   // If the navigation doesn't commit (e.g. an HTTP 204 response), the fenced
   // frame properties will not be stored in the fenced frame root.
-  absl::optional<FencedFrameURLMapping::FencedFrameProperties>
-      fenced_frame_properties_;
+  absl::optional<FencedFrameProperties> fenced_frame_properties_;
 
   // Prerender2:
   // The type to trigger prerendering. The value is valid only when Prerender2

@@ -7,9 +7,11 @@
 #include <stdint.h>
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
@@ -19,6 +21,7 @@
 #include "base/threading/sequence_bound.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/named_mojo_ipc_server/connection_info.h"
 #include "components/named_mojo_ipc_server/named_mojo_server_endpoint_connector.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
@@ -36,63 +39,34 @@
 
 namespace named_mojo_ipc_server {
 
-namespace {
-
-// Delay to throttle resending invitations when there is a recurring error.
-// TODO(yuweih): Implement backoff.
-base::TimeDelta kResentInvitationOnErrorDelay = base::Seconds(5);
-
-mojo::PlatformChannelServerEndpoint CreateServerEndpointOnIoSequence(
-    const mojo::NamedPlatformChannel::ServerName& server_name) {
-  mojo::NamedPlatformChannel::Options options;
-  options.server_name = server_name;
-
-#if BUILDFLAG(IS_WIN)
-  options.enforce_uniqueness = false;
-  // Create a named pipe owned by the current user (the LocalService account
-  // (SID: S-1-5-19) when running in the network process) which is available to
-  // all authenticated users.
-  // presubmit: allow wstring
-  std::wstring user_sid;
-  if (!base::win::GetUserSidString(&user_sid)) {
-    LOG(ERROR) << "Failed to get user SID string.";
-    return mojo::PlatformChannelServerEndpoint();
-  }
-  options.security_descriptor = base::StringPrintf(
-      L"O:%lsG:%lsD:(A;;GA;;;AU)", user_sid.c_str(), user_sid.c_str());
-#endif  // BUILDFLAG(IS_WIN)
-
-  mojo::NamedPlatformChannel channel(options);
-  return channel.TakeServerEndpoint();
-}
-
-}  // namespace
-
 NamedMojoIpcServerBase::DelegateProxy::DelegateProxy(
     base::WeakPtr<NamedMojoIpcServerBase> server)
     : server_(server) {}
 
 NamedMojoIpcServerBase::DelegateProxy::~DelegateProxy() = default;
 
-void NamedMojoIpcServerBase::DelegateProxy::OnServerEndpointConnected(
+void NamedMojoIpcServerBase::DelegateProxy::OnClientConnected(
     mojo::PlatformChannelEndpoint endpoint,
-    base::ProcessId peer_pid) {
-  if (server_)
-    server_->OnServerEndpointConnected(std::move(endpoint), peer_pid);
+    std::unique_ptr<ConnectionInfo> info) {
+  if (server_) {
+    server_->OnClientConnected(std::move(endpoint), std::move(info));
+  }
 }
 
-void NamedMojoIpcServerBase::DelegateProxy::OnServerEndpointConnectionFailed() {
-  if (server_)
-    server_->OnServerEndpointConnectionFailed();
+void NamedMojoIpcServerBase::DelegateProxy::OnServerEndpointCreated() {
+  if (server_) {
+    server_->OnServerEndpointCreated();
+  }
 }
 
 NamedMojoIpcServerBase::NamedMojoIpcServerBase(
     const mojo::NamedPlatformChannel::ServerName& server_name,
     absl::optional<uint64_t> message_pipe_id,
-    IsTrustedMojoEndpointCallback is_trusted_endpoint_callback)
+    base::RepeatingCallback<void*(std::unique_ptr<ConnectionInfo>)>
+        impl_provider)
     : server_name_(server_name),
       message_pipe_id_(message_pipe_id),
-      is_trusted_endpoint_callback_(std::move(is_trusted_endpoint_callback)) {
+      impl_provider_(impl_provider) {
   io_sequence_ =
       base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()});
 }
@@ -109,12 +83,12 @@ void NamedMojoIpcServerBase::StartServer() {
   }
 
   endpoint_connector_ = NamedMojoServerEndpointConnector::Create(
+      io_sequence_, server_name_,
       base::SequenceBound<DelegateProxy>(
           base::SequencedTaskRunner::GetCurrentDefault(),
-          weak_factory_.GetWeakPtr()),
-      io_sequence_, server_name_);
+          weak_factory_.GetWeakPtr()));
+  endpoint_connector_.AsyncCall(&NamedMojoServerEndpointConnector::Start);
   server_started_ = true;
-  CreateServerEndpoint();
 }
 
 void NamedMojoIpcServerBase::StopServer() {
@@ -137,16 +111,6 @@ void NamedMojoIpcServerBase::Close(mojo::ReceiverId id) {
   }
 }
 
-void NamedMojoIpcServerBase::CreateServerEndpoint() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  io_sequence_->PostTaskAndReplyWithResult(
-      FROM_HERE,
-      base::BindOnce(&CreateServerEndpointOnIoSequence, server_name_),
-      base::BindOnce(&NamedMojoIpcServerBase::OnServerEndpointCreated,
-                     weak_factory_.GetWeakPtr()));
-}
-
 void NamedMojoIpcServerBase::OnIpcDisconnected() {
   if (disconnect_handler_) {
     disconnect_handler_.Run();
@@ -154,42 +118,12 @@ void NamedMojoIpcServerBase::OnIpcDisconnected() {
   Close(current_receiver());
 }
 
-void NamedMojoIpcServerBase::OnServerEndpointCreated(
-    mojo::PlatformChannelServerEndpoint endpoint) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!server_started_) {
-    // A server endpoint might be created on |io_sequence_| after StopServer()
-    // is called, which should be ignored.
-    return;
-  }
-
-  if (!endpoint.is_valid()) {
-    OnServerEndpointConnectionFailed();
-    return;
-  }
-
-  endpoint_connector_.AsyncCall(&NamedMojoServerEndpointConnector::Connect)
-      .WithArgs(std::move(endpoint))
-      .Then(on_server_endpoint_created_callback_for_testing_);
-}
-
-void NamedMojoIpcServerBase::OnServerEndpointConnected(
+void NamedMojoIpcServerBase::OnClientConnected(
     mojo::PlatformChannelEndpoint endpoint,
-    base::ProcessId peer_pid) {
-  PassAndTrackMessagePipe(std::move(endpoint), peer_pid);
-  CreateServerEndpoint();
-}
-
-void NamedMojoIpcServerBase::OnServerEndpointConnectionFailed() {
-  resend_invitation_on_error_timer_.Start(
-      FROM_HERE, kResentInvitationOnErrorDelay, this,
-      &NamedMojoIpcServerBase::CreateServerEndpoint);
-}
-
-void NamedMojoIpcServerBase::PassAndTrackMessagePipe(
-    mojo::PlatformChannelEndpoint endpoint,
-    base::ProcessId peer_pid) {
-  if (!is_trusted_endpoint_callback_.Run(peer_pid)) {
+    std::unique_ptr<ConnectionInfo> info) {
+  base::ProcessId peer_pid = info->pid;
+  void* impl = impl_provider_.Run(std::move(info));
+  if (!impl) {
     LOG(ERROR) << "Process " << peer_pid
                << " is not a trusted mojo endpoint. Connection refused.";
     return;
@@ -201,7 +135,7 @@ void NamedMojoIpcServerBase::PassAndTrackMessagePipe(
     mojo::ScopedMessagePipeHandle message_pipe =
         connection->Connect(std::move(endpoint));
     mojo::ReceiverId receiver_id =
-        TrackMessagePipe(std::move(message_pipe), peer_pid);
+        TrackMessagePipe(std::move(message_pipe), impl, peer_pid);
     active_connections_[receiver_id] = std::move(connection);
     return;
   }
@@ -229,7 +163,13 @@ void NamedMojoIpcServerBase::PassAndTrackMessagePipe(
 #undef INVALID_PROCESS_LOG
   mojo::OutgoingInvitation::Send(std::move(invitation), peer_process.Handle(),
                                  std::move(endpoint));
-  TrackMessagePipe(std::move(message_pipe), peer_pid);
+  TrackMessagePipe(std::move(message_pipe), impl, peer_pid);
+}
+
+void NamedMojoIpcServerBase::OnServerEndpointCreated() {
+  if (on_server_endpoint_created_callback_for_testing_) {
+    on_server_endpoint_created_callback_for_testing_.Run();
+  }
 }
 
 }  // namespace named_mojo_ipc_server

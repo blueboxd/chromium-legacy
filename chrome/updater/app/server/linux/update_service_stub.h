@@ -5,8 +5,8 @@
 #ifndef CHROME_UPDATER_APP_SERVER_LINUX_UPDATE_SERVICE_STUB_H_
 #define CHROME_UPDATER_APP_SERVER_LINUX_UPDATE_SERVICE_STUB_H_
 
-#include "chrome/updater/app/server/linux/mojom/updater_service.mojom.h"
-#include "chrome/updater/app/server/linux/mojom/updater_service_internal.mojom.h"
+#include "base/functional/callback_forward.h"
+#include "chrome/updater/app/server/posix/mojom/updater_service.mojom.h"
 
 #include "base/memory/scoped_refptr.h"
 #include "chrome/updater/update_service.h"
@@ -26,7 +26,9 @@ class UpdateServiceStub : public mojom::UpdateService {
   // `NamedMojoIpcServer` which listens on a socket whose name is decided by
   // `scope`.
   UpdateServiceStub(scoped_refptr<updater::UpdateService> impl,
-                    UpdaterScope scope);
+                    UpdaterScope scope,
+                    base::RepeatingClosure task_start_listener,
+                    base::RepeatingClosure task_end_listener);
   UpdateServiceStub(const UpdateServiceStub&) = delete;
   UpdateServiceStub& operator=(const UpdateServiceStub&) = delete;
   ~UpdateServiceStub() override;
@@ -62,32 +64,8 @@ class UpdateServiceStub : public mojom::UpdateService {
 
   named_mojo_ipc_server::NamedMojoIpcServer<mojom::UpdateService> server_;
   scoped_refptr<updater::UpdateService> impl_;
-};
-
-// Same as `UpdateServiceStub` except for serving the UpdateServiceInternal
-// interface.
-class UpdateServiceInternalStub : public mojom::UpdateServiceInternal {
- public:
-  // Create an UpdateServiceStub which forwards calls to `impl`. Opens a
-  // NamedMojoIpcServer which listens on a socket whose name is decided by
-  // `scope`.
-  UpdateServiceInternalStub(scoped_refptr<updater::UpdateServiceInternal> impl,
-                            UpdaterScope scope);
-  UpdateServiceInternalStub(const UpdateServiceInternalStub&) = delete;
-  UpdateServiceInternalStub& operator=(const UpdateServiceInternalStub&) =
-      delete;
-  ~UpdateServiceInternalStub() override;
-
-  // updater::mojom::UpdateServiceInternal
-  void Run(RunCallback callback) override;
-  void Hello(HelloCallback callback) override;
-
- private:
-  void OnClientDisconnected();
-
-  named_mojo_ipc_server::NamedMojoIpcServer<mojom::UpdateServiceInternal>
-      server_;
-  scoped_refptr<updater::UpdateServiceInternal> impl_;
+  base::RepeatingClosure task_start_listener_;
+  base::RepeatingClosure task_end_listener_;
 };
 
 }  // namespace updater

@@ -546,6 +546,11 @@ interface BeforeInstallPromptEvent : Event
     getter userChoice
     method constructor
     method prompt
+interface BeforeToggleEvent : Event
+    attribute @@toStringTag
+    getter currentState
+    getter newState
+    method constructor
 interface BeforeUnloadEvent : Event
     attribute @@toStringTag
     getter returnValue
@@ -1855,6 +1860,7 @@ interface Document : Node
     getter onbeforeinput
     getter onbeforematch
     getter onbeforepaste
+    getter onbeforetoggle
     getter onbeforexrselect
     getter onblur
     getter oncancel
@@ -2070,6 +2076,7 @@ interface Document : Node
     setter onbeforeinput
     setter onbeforematch
     setter onbeforepaste
+    setter onbeforetoggle
     setter onbeforexrselect
     setter onblur
     setter oncancel
@@ -3300,6 +3307,7 @@ interface HTMLElement : Element
     getter onauxclick
     getter onbeforeinput
     getter onbeforematch
+    getter onbeforetoggle
     getter onbeforexrselect
     getter onblur
     getter oncancel
@@ -3435,6 +3443,7 @@ interface HTMLElement : Element
     setter onauxclick
     setter onbeforeinput
     setter onbeforematch
+    setter onbeforetoggle
     setter onbeforexrselect
     setter onblur
     setter oncancel
@@ -4545,7 +4554,9 @@ interface HTMLTemplateElement : HTMLElement
     attribute @@toStringTag
     getter content
     getter shadowRoot
+    getter shadowRootMode
     method constructor
+    setter shadowRootMode
 interface HTMLTextAreaElement : HTMLElement
     attribute @@toStringTag
     getter autocomplete
@@ -4637,7 +4648,6 @@ interface HTMLUnknownElement : HTMLElement
     method constructor
 interface HTMLVideoElement : HTMLMediaElement
     attribute @@toStringTag
-    getter autoPictureInPicture
     getter disablePictureInPicture
     getter height
     getter onenterpictureinpicture
@@ -4660,7 +4670,6 @@ interface HTMLVideoElement : HTMLMediaElement
     method webkitEnterFullscreen
     method webkitExitFullScreen
     method webkitExitFullscreen
-    setter autoPictureInPicture
     setter disablePictureInPicture
     setter height
     setter onenterpictureinpicture
@@ -5242,6 +5251,7 @@ interface MLGraphBuilder
     method min
     method mul
     method relu
+    method resample2d
     method reshape
     method softmax
     method sub
@@ -5275,6 +5285,7 @@ interface MathMLElement : Element
     getter onauxclick
     getter onbeforeinput
     getter onbeforematch
+    getter onbeforetoggle
     getter onbeforexrselect
     getter onblur
     getter oncancel
@@ -5387,6 +5398,7 @@ interface MathMLElement : Element
     setter onauxclick
     setter onbeforeinput
     setter onbeforematch
+    setter onbeforetoggle
     setter onbeforexrselect
     setter onblur
     setter oncancel
@@ -7558,6 +7570,7 @@ interface SVGElement : Element
     getter onauxclick
     getter onbeforeinput
     getter onbeforematch
+    getter onbeforetoggle
     getter onbeforexrselect
     getter onblur
     getter oncancel
@@ -7672,6 +7685,7 @@ interface SVGElement : Element
     setter onauxclick
     setter onbeforeinput
     setter onbeforematch
+    setter onbeforetoggle
     setter onbeforexrselect
     setter onblur
     setter oncancel
@@ -11901,6 +11915,7 @@ namespace CSS
     getter onbeforeinstallprompt
     getter onbeforematch
     getter onbeforeprint
+    getter onbeforetoggle
     getter onbeforeunload
     getter onbeforexrselect
     getter onblur
@@ -12124,6 +12139,7 @@ namespace CSS
     setter onbeforeinstallprompt
     setter onbeforematch
     setter onbeforeprint
+    setter onbeforetoggle
     setter onbeforeunload
     setter onbeforexrselect
     setter onblur

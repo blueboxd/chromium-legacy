@@ -212,8 +212,8 @@ void ClipboardMac::ReadAvailableTypes(
   types->clear();
   *types = GetStandardFormats(buffer, data_dst);
 
-  if ([[pb types] containsObject:kWebCustomDataPboardType]) {
-    NSData* data = [pb dataForType:kWebCustomDataPboardType];
+  if ([[pb types] containsObject:kUTTypeChromiumWebCustomData]) {
+    NSData* data = [pb dataForType:kUTTypeChromiumWebCustomData];
     if ([data length])
       ReadCustomDataTypes([data bytes], [data length], types);
   }
@@ -245,7 +245,7 @@ void ClipboardMac::ReadAsciiText(ClipboardBuffer buffer,
   if (!contents)
     result->clear();
   else
-    result->assign([contents UTF8String]);
+    result->assign(base::SysNSStringToUTF8(contents));
 }
 
 // |data_dst| is not used. It's only passed to be consistent with other
@@ -289,7 +289,8 @@ void ClipboardMac::ReadSvg(ClipboardBuffer buffer,
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
   RecordRead(ClipboardFormatMetric::kSvg);
-  NSString* contents = [GetPasteboard() stringForType:kImageSvg];
+  NSString* contents = [GetPasteboard()
+      stringForType:ClipboardFormatType::SvgType().ToNSString()];
 
   *result = base::SysNSStringToUTF16(contents);
 }
@@ -326,8 +327,8 @@ void ClipboardMac::ReadCustomData(ClipboardBuffer buffer,
   RecordRead(ClipboardFormatMetric::kCustomData);
 
   NSPasteboard* pb = GetPasteboard();
-  if ([[pb types] containsObject:kWebCustomDataPboardType]) {
-    NSData* data = [pb dataForType:kWebCustomDataPboardType];
+  if ([[pb types] containsObject:kUTTypeChromiumWebCustomData]) {
+    NSData* data = [pb dataForType:kUTTypeChromiumWebCustomData];
     if ([data length])
       ReadCustomDataForType([data bytes], [data length], type, result);
   }
@@ -359,16 +360,16 @@ void ClipboardMac::ReadBookmark(const DataTransferEndpoint* data_dst,
   NSPasteboard* pb = GetPasteboard();
 
   if (title) {
-    NSString* contents = ClipboardUtil::GetTitleFromPasteboardURL(pb);
+    NSString* contents = [pb stringForType:kUTTypeURLName];
     *title = base::SysNSStringToUTF16(contents);
   }
 
   if (url) {
-    NSString* url_string = ClipboardUtil::GetURLFromPasteboardURL(pb);
+    NSString* url_string = [pb stringForType:NSPasteboardTypeURL];
     if (!url_string)
       url->clear();
     else
-      url->assign([url_string UTF8String]);
+      url->assign(base::SysNSStringToUTF8(url_string));
   }
 }
 
@@ -423,7 +424,8 @@ void ClipboardMac::WriteHTML(const char* markup_data,
 void ClipboardMac::WriteSvg(const char* markup_data, size_t markup_len) {
   std::string svg_str(markup_data, markup_len);
   NSString* svg = base::SysUTF8ToNSString(svg_str);
-  [GetPasteboard() setString:svg forType:kImageSvg];
+  [GetPasteboard() setString:svg
+                     forType:ClipboardFormatType::SvgType().ToNSString()];
 }
 
 void ClipboardMac::WriteRTF(const char* rtf_data, size_t data_len) {
@@ -448,9 +450,9 @@ void ClipboardMac::WriteBookmark(const char* title_data,
   std::string url_str(url_data, url_len);
   NSString* url = base::SysUTF8ToNSString(url_str);
 
-  base::scoped_nsobject<NSPasteboardItem> item(
-      ClipboardUtil::PasteboardItemFromUrl(url, title));
-  ClipboardUtil::AddDataToPasteboard(GetPasteboard(), item);
+  NSArray<NSPasteboardItem*>* items =
+      ClipboardUtil::PasteboardItemsFromUrls(@[ url ], @[ title ]);
+  ClipboardUtil::AddDataToPasteboard(GetPasteboard(), items.firstObject);
 }
 
 void ClipboardMac::WriteBitmap(const SkBitmap& bitmap) {

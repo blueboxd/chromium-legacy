@@ -226,6 +226,7 @@ apps::mojom::InstallReason GetHighestPriorityInstallReason(
     case WebAppManagement::kSubApp:
       return apps::mojom::InstallReason::kSubApp;
     case WebAppManagement::kWebAppStore:
+    case WebAppManagement::kOneDriveIntegration:
       return apps::mojom::InstallReason::kUser;
     case WebAppManagement::kSync:
       return apps::mojom::InstallReason::kSync;
@@ -260,6 +261,7 @@ apps::mojom::InstallSource ConvertInstallSourceToMojom(
     case webapps::WebappInstallSource::SUB_APP:
     case webapps::WebappInstallSource::CHROME_SERVICE:
     case webapps::WebappInstallSource::KIOSK:
+    case webapps::WebappInstallSource::MICROSOFT_365_SETUP:
       return apps::mojom::InstallSource::kBrowser;
     case webapps::WebappInstallSource::ARC:
       return apps::mojom::InstallSource::kPlayStore;
@@ -725,16 +727,16 @@ apps::AppPtr WebAppPublisherHelper::CreateWebApp(const WebApp* web_app) {
 
   auto app = apps::AppPublisher::MakeApp(
       app_type(), web_app->app_id(), readiness,
-      provider_->registrar().GetAppShortName(web_app->app_id()),
+      provider_->registrar_unsafe().GetAppShortName(web_app->app_id()),
       apps::ConvertMojomInstallReasonToInstallReason(
           GetHighestPriorityInstallReason(web_app)),
       apps::ConvertMojomInstallSourceToInstallSource(
           ConvertInstallSourceToMojom(
-              provider_->registrar().GetAppInstallSourceForMetrics(
+              provider_->registrar_unsafe().GetAppInstallSourceForMetrics(
                   web_app->app_id()))));
 
   app->description =
-      provider_->registrar().GetAppDescription(web_app->app_id());
+      provider_->registrar_unsafe().GetAppDescription(web_app->app_id());
   app->additional_search_terms = web_app->additional_search_terms();
 
   // Web App's publisher_id the start url.
@@ -885,6 +887,7 @@ void WebAppPublisherHelper::UninstallWebApp(
                              },
                              base::Unretained(profile())),
                          origin, kClearCookies, kClearStorage, kClearCache,
+                         /*storage_buckets_to_remove=*/{},
                          kAvoidClosingConnections,
                          /*cookie_partition_key=*/absl::nullopt,
                          /*storage_key=*/absl::nullopt, base::DoNothing());
@@ -957,7 +960,6 @@ void WebAppPublisherHelper::LoadIcon(const std::string& app_id,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 void WebAppPublisherHelper::GetCompressedIconData(
     const std::string& app_id,
-    apps::IconEffects icon_effects,
     apps::IconType icon_type,
     int32_t size_in_dip,
     ui::ResourceScaleFactor scale_factor,
@@ -967,9 +969,8 @@ void WebAppPublisherHelper::GetCompressedIconData(
     return;
   }
 
-  apps::GetWebAppCompressedIconData(profile_, app_id, icon_effects, icon_type,
-                                    size_in_dip, scale_factor,
-                                    std::move(callback));
+  apps::GetWebAppCompressedIconData(profile_, app_id, icon_type, size_in_dip,
+                                    scale_factor, std::move(callback));
 }
 #endif
 
@@ -1301,6 +1302,7 @@ void WebAppPublisherHelper::SetWindowMode(const std::string& app_id,
       break;
   }
   provider_->scheduler().ScheduleCallbackWithLock(
+      "WebAppPublisherHelper::SetWindowMode",
       std::make_unique<AppLockDescription, base::flat_set<AppId>>({app_id}),
       base::BindOnce(
           [](AppId app_id, UserDisplayMode user_display_mode, AppLock& lock) {
@@ -1401,7 +1403,7 @@ void WebAppPublisherHelper::ExecuteContextMenuCommand(
 }
 
 WebAppRegistrar& WebAppPublisherHelper::registrar() const {
-  return provider_->registrar();
+  return provider_->registrar_unsafe();
 }
 
 WebAppInstallManager& WebAppPublisherHelper::install_manager() const {
@@ -1967,7 +1969,8 @@ void WebAppPublisherHelper::LaunchAppWithFilesCheckingUserPermission(
                      weak_ptr_factory_.GetWeakPtr(), app_id, std::move(params),
                      std::move(callback));
 
-  switch (provider_->registrar().GetAppFileHandlerApprovalState(app_id)) {
+  switch (
+      provider_->registrar_unsafe().GetAppFileHandlerApprovalState(app_id)) {
     case ApiApprovalState::kRequiresPrompt:
       chrome::ShowWebAppFileLaunchDialog(file_paths, profile(), app_id,
                                          std::move(launch_callback));

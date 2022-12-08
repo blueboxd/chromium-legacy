@@ -425,7 +425,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.AccountChooserDialogMultipleAccounts"
-    enum="AccountChooserDismissalReason" expires_after="2023-03-26">
+    enum="AccountChooserDismissalReason" expires_after="2023-06-04">
   <owner>vasilii@chromium.org</owner>
   <owner>kazinova@google.com</owner>
   <summary>
@@ -529,7 +529,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PasswordManager.AccountStorage.UnsyncedPasswordsFoundDuringSignOut"
-    units="passwords" expires_after="2023-03-19">
+    units="passwords" expires_after="2023-06-04">
   <owner>treib@chromium.org</owner>
   <owner>victorvianna@google.com</owner>
   <owner>mamir@chromium.org</owner>
@@ -667,7 +667,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.AddCredentialFromSettings.UserAction"
-    enum="AddCredentialFromSettingsUserInteractions" expires_after="2023-03-19">
+    enum="AddCredentialFromSettingsUserInteractions" expires_after="2023-06-04">
   <owner>vidhanj@google.com</owner>
   <owner>lizapopova@google.com</owner>
   <summary>
@@ -721,7 +721,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.AffiliationFetcher.FetchErrorCode"
-    enum="NetErrorCodes" expires_after="2023-03-19">
+    enum="NetErrorCodes" expires_after="2023-06-04">
   <owner>vsemeniuk@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -788,24 +788,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Usage and timing of the Affiliation Service GetChangePasswordUrl call.
   </summary>
-</histogram>
-
-<histogram name="PasswordManager.AliveAfter{ErrorCode}Error"
-    enum="AliveAfterErrorStatus" expires_after="2023-02-19">
-  <owner>vasilii@chromium.org</owner>
-  <owner>maxan@google.com</owner>
-  <summary>
-    Recorded after PasswordStore GMS Core backend returned with {ErrorCode}
-    error. The first status is reported right after receiving the error, the
-    second one is reported with a 10 seconds delay indicating if Chrome didn't
-    shutdown/restart soon after receiving this error. Note that the second
-    status could also be not reported if Chrome is sent to background.
-  </summary>
-  <token key="ErrorCode">
-    <variant name="ApiNotConnected" summary="API_NOT_CONNECTED"/>
-    <variant name="ConnectionSuspended"
-        summary="CONNECTION_SUSPENDED_DURING_CALL"/>
-  </token>
 </histogram>
 
 <histogram name="PasswordManager.ApplySyncChanges.AddLoginSyncError"
@@ -1364,7 +1346,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.DeleteUndecryptableLoginsReturnValue"
-    enum="DeleteCorruptedPasswordsResult" expires_after="2023-03-19">
+    enum="DeleteCorruptedPasswordsResult" expires_after="2023-06-04">
   <owner>vasilii@chromium.org</owner>
   <owner>kazinova@google.com</owner>
   <summary>
@@ -1375,7 +1357,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.DropdownShown.OffTheRecord" units="units"
-    expires_after="2023-03-19">
+    expires_after="2023-06-04">
   <owner>rhalavati@chromium.org</owner>
   <owner>chrome-privacy-core@google.com</owner>
   <summary>
@@ -1590,7 +1572,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.GeneratedFormHasNoFormManager"
-    enum="BooleanFormManager" expires_after="2023-03-19">
+    enum="BooleanFormManager" expires_after="2023-06-04">
   <owner>kazinova@google.com</owner>
   <owner>kolos@chromium.org</owner>
   <summary>
@@ -2127,7 +2109,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.PasswordCheckup.Launch.Success"
-    enum="BooleanSuccess" expires_after="2023-03-19">
+    enum="BooleanSuccess" expires_after="2023-06-04">
   <owner>ioanap@chromium.org</owner>
   <owner>vsemeniuk@google.com</owner>
   <summary>
@@ -2415,7 +2397,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.PasswordStore.OnLoginsChanged" enum="Boolean"
-    expires_after="2023-03-19">
+    expires_after="2023-06-04">
   <owner>vsemeniuk@google.com</owner>
   <owner>fhorschig@chromium.org</owner>
   <summary>
@@ -2426,7 +2408,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.PasswordStore.OnLoginsRetained"
-    enum="LoginsChangedTrigger" expires_after="2023-03-19">
+    enum="LoginsChangedTrigger" expires_after="2023-06-04">
   <owner>vsemeniuk@google.com</owner>
   <owner>fhorschig@chromium.org</owner>
   <summary>
@@ -2454,7 +2436,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.PasswordStore.TimesReenrolledInUPM"
-    units="Times" expires_after="2023-03-19">
+    units="Times" expires_after="2023-06-04">
   <owner>kazinova@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -2468,7 +2450,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PasswordManager.PasswordStore.WasEnrolledInUPMWhenBackendWasCreated"
-    enum="Boolean" expires_after="2023-03-19">
+    enum="Boolean" expires_after="2023-06-04">
   <owner>kazinova@google.com</owner>
   <owner>ioanap@chromium.org</owner>
   <owner>fhorschig@chromium.org</owner>
@@ -2585,23 +2567,6 @@ chromium-metrics-reviews@google.com.
     <variant name=".RemoveLoginsCreatedBetweenAsync"
         summary="RemoveLoginsCreatedBetweenAsync"/>
     <variant name=".UpdateLoginAsync" summary="UpdateLoginAsync"/>
-  </token>
-</histogram>
-
-<histogram
-    name="PasswordManager.PasswordStoreAndroidBackend.UptimeOnAPIError{ErrorCode}"
-    units="ms" expires_after="M114">
-  <owner>maxan@google.com</owner>
-  <owner>vasilii@chromium.org</owner>
-  <summary>
-    Chrome uptime on recieving {ErrorCode} error from the GMS 1P API. Recorded
-    when the asynchronous job has returned with error.
-  </summary>
-  <token key="ErrorCode">
-    <variant name=".ApiNotConnected" summary="API_NOT_CONNECTED"/>
-    <variant name=".ConnectionSuspendedDuringCall"
-        summary="CONNECTTION_SUSPENDED_DURING_CALL"/>
-    <variant name=".ReconnectionTimedOut" summary="RECONNECTION_TIMED_OUT"/>
   </token>
 </histogram>
 
@@ -3000,7 +2965,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.RequirementsSpecFetcher.HttpResponseCode"
-    enum="HttpResponseCode" expires_after="2023-03-26">
+    enum="HttpResponseCode" expires_after="2023-06-04">
   <owner>kazinova@google.com</owner>
   <owner>battre@chromium.org</owner>
   <summary>
@@ -3207,7 +3172,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.Settings.ToggleOfferToSavePasswords"
-    enum="BooleanEnabled" expires_after="2023-03-19">
+    enum="BooleanEnabled" expires_after="2023-06-04">
   <owner>ioanap@chromium.org</owner>
   <owner>kazinova@google.com</owner>
   <summary>
@@ -3284,7 +3249,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.SuccessfulSubmissionIndicatorEvent"
-    enum="SubmissionIndicatorEvent" expires_after="2023-03-19">
+    enum="SubmissionIndicatorEvent" expires_after="2023-06-04">
   <owner>kazinova@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>

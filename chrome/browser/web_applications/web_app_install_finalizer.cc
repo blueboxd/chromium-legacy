@@ -85,6 +85,7 @@ bool ShouldInstallOverwriteUserDisplayMode(
     case InstallSource::SUB_APP:
     case InstallSource::KIOSK:
     case InstallSource::PRELOADED_OEM:
+    case InstallSource::MICROSOFT_365_SETUP:
       return false;
     case InstallSource::COUNT:
       NOTREACHED();
@@ -282,15 +283,6 @@ void WebAppInstallFinalizer::UninstallWebApp(
   // for apps that have been externally installed.
   ScheduleUninstallCommand(app_id, /*external_install_source=*/absl::nullopt,
                            webapp_uninstall_source, std::move(callback));
-}
-
-void WebAppInstallFinalizer::RetryIncompleteUninstalls(
-    const base::flat_set<AppId>& apps_to_uninstall) {
-  for (const AppId& app_id : apps_to_uninstall) {
-    ScheduleUninstallCommand(app_id, /*external_install_source=*/absl::nullopt,
-                             webapps::WebappUninstallSource::kStartupCleanup,
-                             base::DoNothing());
-  }
 }
 
 bool WebAppInstallFinalizer::CanReparentTab(const AppId& app_id,
@@ -544,6 +536,7 @@ void WebAppInstallFinalizer::OnDatabaseCommitCompletedForInstall(
     case WebAppManagement::kKiosk:
     case WebAppManagement::kSubApp:
     case WebAppManagement::kWebAppStore:
+    case WebAppManagement::kOneDriveIntegration:
     case WebAppManagement::kSync:
     case WebAppManagement::kCommandLine:
       hooks_options.reason = SHORTCUT_CREATION_BY_USER;

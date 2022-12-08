@@ -196,6 +196,14 @@ BASE_FEATURE(kBrowserVerifiedUserActivationMouse,
              "BrowserVerifiedUserActivationMouse",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Compute the NavigationDownloadPolicy bit about sandbox flags from the browser
+// process side. This is a fix for https://crbug.com/1357366. The feature flag
+// is used as a temporary kill switch in case it breaks something important on
+// stable. To be removed by M111.
+BASE_FEATURE(kBrowserSideDownloadPolicySandbox,
+             "BrowserSideDownloadPolicySandbox",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // If Canvas2D Image Chromium is allowed, this feature controls whether it is
 // enabled.
 BASE_FEATURE(kCanvas2DImageChromium,
@@ -215,6 +223,10 @@ BASE_FEATURE(kClearCrossSiteCrossBrowsingContextGroupWindowName,
 
 BASE_FEATURE(kCompositeBGColorAnimation,
              "CompositeBGColorAnimation",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kCompositeClipPathAnimation,
+             "CompositeClipPathAnimation",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // When enabled, code cache does not use a browsing_data filter for deletions.
@@ -817,7 +829,7 @@ BASE_FEATURE(kPrivacySandboxAdsAPIsOverride,
 //
 BASE_FEATURE(kPrivateNetworkAccessForWorkers,
              "PrivateNetworkAccessForWorkers",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables Private Network Access checks in warning mode for all types of web
 // workers.
@@ -826,7 +838,7 @@ BASE_FEATURE(kPrivateNetworkAccessForWorkers,
 // CORS preflight requests to succeed, and shows a warning in devtools instead.
 BASE_FEATURE(kPrivateNetworkAccessForWorkersWarningOnly,
              "PrivateNetworkAccessForWorkersWarningOnly",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Requires that CORS preflight requests succeed before sending private network
 // requests. This flag implies `kPrivateNetworkAccessSendPreflights`.

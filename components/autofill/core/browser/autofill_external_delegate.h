@@ -71,20 +71,21 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
 
   void RegisterDeletionCallback(base::OnceClosure deletion_callback) override;
 
-  // Records and associates a query_id with web form data.  Called
-  // when the renderer posts an Autofill query to the browser. |bounds|
+  // Called when the renderer posts an Autofill query to the browser. |bounds|
   // is window relative. We might not want to display the warning if a website
   // has disabled Autocomplete because they have their own popup, and showing
   // our popup on to of theirs would be a poor user experience.
-  virtual void OnQuery(int query_id,
-                       const FormData& form,
+  //
+  // TODO(crbug.com/1117028): Storing `form` and `field` in member variables
+  // breaks the cache.
+  virtual void OnQuery(const FormData& form,
                        const FormFieldData& field,
                        const gfx::RectF& element_bounds);
 
   // Records query results and correctly formats them before sending them off
   // to be displayed.  Called when an Autofill query result is available.
   virtual void OnSuggestionsReturned(
-      int query_id,
+      FieldGlobalId field_id,
       const std::vector<Suggestion>& suggestions,
       AutoselectFirstSuggestion autoselect_first_suggestion,
       bool is_all_server_suggestions = false);
@@ -156,10 +157,6 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
   // Provides driver-level context to the shared code of the component. Must
   // outlive this object.
   const raw_ptr<AutofillDriver> driver_;  // weak
-
-  // The ID of the last request sent for form field Autofill.  Used to ignore
-  // out of date responses.
-  int query_id_ = 0;
 
   // The current form and field selected by Autofill.
   FormData query_form_;

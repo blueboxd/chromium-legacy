@@ -14,12 +14,10 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.service.notification.StatusBarNotification;
 import android.support.test.InstrumentationRegistry;
 import android.text.TextUtils;
 
-import androidx.annotation.RequiresApi;
 import androidx.annotation.StringRes;
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
@@ -87,7 +85,7 @@ public class ReengagementNotificationControllerIntegrationTest {
         FeatureList.setTestCanUseDefaultsForTesting();
         setReengagementNotificationEnabled(true);
         TrackerFactory.setTrackerForTests(mTracker);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) closeReengagementNotifications();
+        closeReengagementNotifications();
     }
 
     @After
@@ -96,7 +94,7 @@ public class ReengagementNotificationControllerIntegrationTest {
         DefaultBrowserInfo2.clearDefaultInfoForTests();
         FeatureList.resetTestCanUseDefaultsForTesting();
         FeatureList.setTestFeatures(null);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) closeReengagementNotifications();
+        closeReengagementNotifications();
     }
 
     @Test
@@ -304,18 +302,13 @@ public class ReengagementNotificationControllerIntegrationTest {
     }
 
     private void verifyNotification(@StringRes int title, @StringRes int description) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return;
-
         CriteriaHelper.pollUiThread(() -> { return findNotification(title, description); });
     }
 
     private void verifyHasNoNotifications() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return;
-
         Assert.assertFalse(hasNotifications());
     }
 
-    @RequiresApi(Build.VERSION_CODES.M)
     private static boolean findNotification(@StringRes int title, @StringRes int description) {
         Context context = InstrumentationRegistry.getTargetContext();
         StatusBarNotification[] notifications =
@@ -339,7 +332,6 @@ public class ReengagementNotificationControllerIntegrationTest {
         return false;
     }
 
-    @RequiresApi(Build.VERSION_CODES.M)
     private static boolean hasNotifications() {
         Context context = InstrumentationRegistry.getTargetContext();
         StatusBarNotification[] notifications =
@@ -356,7 +348,6 @@ public class ReengagementNotificationControllerIntegrationTest {
         return false;
     }
 
-    @RequiresApi(Build.VERSION_CODES.M)
     private static void closeReengagementNotifications() {
         if (!hasNotifications()) return;
 

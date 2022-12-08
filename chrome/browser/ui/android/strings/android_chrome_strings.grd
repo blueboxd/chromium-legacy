@@ -1309,6 +1309,18 @@ Private state tokens improve privacy on the web and can’t be used to find out 
       <message name="IDS_SETTINGS_TOPICS_PAGE_BLOCKED_TOPICS_HEADING" translateable="false" desc="Title for the blocked Topics preference.">
         Integer faucibus metus
       </message>
+      <message name="IDS_SETTINGS_TOPICS_PAGE_BLOCKED_TOPICS_DESCRIPTION" translateable="false" desc="">
+        Donec fringilla justo vel ligula finibus, ut rutrum lectus vestibulum. Suspendisse vestibulum lorem lacinia nulla consequat auctor.
+      </message>
+      <message name="IDS_SETTINGS_TOPICS_PAGE_BLOCKED_TOPICS_DESCRIPTION_DISABLED" translateable="false" desc="">
+        Donec commodo sem non augue blandit, ullamcorper aliquam enim fermentum
+      </message>
+      <message name="IDS_SETTINGS_TOPICS_PAGE_BLOCKED_TOPICS_DESCRIPTION_EMPTY" translateable="false" desc="">
+        Diam maecenas sed
+      </message>
+      <message name="IDS_SETTINGS_TOPICS_PAGE_BLOCKED_TOPICS_SUB_PAGE_TITLE" translateable="false" desc="">
+        Integer faucibus metus
+      </message>
       <!-- TODO(http://b/254412601): Format links.-->
       <message name="IDS_SETTINGS_TOPICS_PAGE_FOOTER" translateable="false" desc="Footer for the Topics preference page.">
         Quisque eu auctor purus, id tempus nulla. Pellentesque porta orci purus. Donec dictum, <ph name="BEGIN_LINK_1">&lt;link1&gt;</ph>justo nec ultricies semper<ph name="END_LINK_1">&lt;/link1&gt;</ph>, <ph name="BEGIN_LINK_2">&lt;link2&gt;</ph>eros mauris varius nibh<ph name="END_LINK_2">&lt;/link2&gt;</ph>, sit amet molestie quam arcu id urna. Donec vulputate dui ut lorem egestas, ac sollicitudin metus fermentum.
@@ -2095,6 +2107,7 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_ACCOUNT_MANAGEMENT_NO_PARENTAL_DATA" desc="String saying that we are waiting for family information.">
         Waiting for details of parents.
       </message>
+
       <message name="IDS_ACCOUNT_MANAGEMENT_ONE_PARENT_NAME" desc="String for name of single parent for child account.">
         This browser is managed by <ph name="PARENT_NAME">%1$s<ex>parent1@gmail.com</ex></ph>.
       </message>
@@ -2112,6 +2125,15 @@ Your Google account may have other forms of browsing history like searches and a
       </message>
       <message name="IDS_ACCOUNT_MANAGEMENT_CHILD_CONTENT_ALL" desc="Setting that permits child accounts to visit any websites.">
         Allow all sites
+      </message>
+      <message name="IDS_ACCOUNT_MANAGEMENT_HEADER_NO_PARENTAL_DATA" desc="String saying that child should go to parent for help for child account.">
+        If you need help, ask your parent
+        </message>
+      <message name="IDS_ACCOUNT_MANAGEMENT_HEADER_ONE_PARENT_NAME" desc="String saying that child should go to parent for help with email of single parent for child account.">
+        If you need help, ask your parent (<ph name="PARENT_NAME">%1$s<ex>parent1@gmail.com</ex></ph>)
+      </message>
+      <message name="IDS_ACCOUNT_MANAGEMENT_HEADER_TWO_PARENT_NAMES" desc="String saying that child should go to parent for help with email of two parents for child account.">
+        If you need help, ask your parent (<ph name="PARENT_NAME_1">%1$s<ex>parent1@gmail.com</ex></ph> or <ph name="PARENT_NAME_2">%2$s<ex>parent2@gmail.com</ex></ph>)
       </message>
 
       <!-- Parent approval widget. -->
@@ -3386,12 +3408,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_NTP_MANAGE_FEED" desc="Menu item to manage feed settings from the feed header overflow menu.">
         Manage
-      </message>
-      <message name="IDS_CORMORANT_CREATOR_OFFLINE_ERROR_TITLE" desc="Creator page error title when the user is offline.">
-        You're offline
-      </message>
-      <message name="IDS_CORMORANT_CREATOR_OFFLINE_ERROR_DESCRIPTION" desc="Creator page error description when the user is offline.">
-        Check your internet connection and try again
       </message>
       <message name="IDS_CORMORANT_CREATOR_CONTENT_UNAVAILABLE_ERROR_TITLE" desc="Creator page error title when the creator has no content available.">
         Nothing to show yet
@@ -5119,13 +5135,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <!-- Tab Group Tab Switcher strings -->
       <message name="IDS_TAB_MANAGEMENT_MODULE_TITLE" desc="Text shown when the Tab Management module is referenced in install start, success, failure UI (e.g. in IDS_MODULE_INSTALL_START_TEXT, which will expand to 'Installing Tab management for Chrome…').">
         Tab management
-      </message>
-
-      <message name="IDS_AUTOFILL_ASSISTANT_MODULE_TITLE"
-  desc="Text shown when the Foo module is referenced in install start, success,
-        failure UI (e.g. in IDS_MODULE_INSTALL_START_TEXT, which will expand to
-        'Installing Assistant for Chrome…').">
-  Google Assistant in Chrome
       </message>
 
       <message name="IDS_DEV_UI_MODULE_TITLE" desc="Text shown when the Developer UI module is referenced in install start, success, failure UI (e.g. in IDS_MODULE_INSTALL_START_TEXT, which will expand to 'Installing Developer UI for Chrome…').">

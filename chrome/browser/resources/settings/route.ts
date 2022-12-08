@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {assert} from 'chrome://resources/js/assert_ts.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 
 import {pageVisibility} from './page_visibility.js';
 import {Route, Router} from './router.js';
@@ -96,6 +96,9 @@ function addPrivacyChildRoutes(r: Partial<SettingsRoutes>) {
   if (loadTimeData.getBoolean('enableFederatedIdentityApiContentSetting')) {
     r.SITE_SETTINGS_FEDERATED_IDENTITY_API =
         r.SITE_SETTINGS.createChild('federatedIdentityApi');
+  }
+  if (loadTimeData.getBoolean('isPrivacySandboxSettings4')) {
+    r.SITE_SETTINGS_SITE_DATA = r.SITE_SETTINGS.createChild('siteData');
   }
   r.SITE_SETTINGS_VR = r.SITE_SETTINGS.createChild('vr');
   if (loadTimeData.getBoolean('enableExperimentalWebPlatformFeatures')) {

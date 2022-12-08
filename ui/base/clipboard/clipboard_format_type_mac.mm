@@ -18,33 +18,36 @@
 
 namespace ui {
 
-ClipboardFormatType::ClipboardFormatType() : uttype_(nil) {}
+// ClipboardFormatType implementation.
+// MacOS formats are implemented via Uniform Type Identifiers, documented here:
+// https://developer.apple.com/library/archive/documentation/General/Conceptual/DevPedia-CocoaCore/UniformTypeIdentifier.html#//apple_ref/doc/uid/TP40008195-CH60
+ClipboardFormatType::ClipboardFormatType() : data_(nil) {}
 
-ClipboardFormatType::ClipboardFormatType(NSString* uttype)
-    : uttype_([uttype copy]) {}
+ClipboardFormatType::ClipboardFormatType(NSString* native_format)
+    : data_([native_format retain]) {}
 
 ClipboardFormatType::ClipboardFormatType(const ClipboardFormatType& other)
-    : uttype_([other.uttype_ copy]) {}
+    : data_([other.data_ retain]) {}
 
 ClipboardFormatType& ClipboardFormatType::operator=(
     const ClipboardFormatType& other) {
   if (this != &other) {
-    [uttype_ release];
-    uttype_ = [other.uttype_ copy];
+    [data_ release];
+    data_ = [other.data_ retain];
   }
   return *this;
 }
 
 bool ClipboardFormatType::operator==(const ClipboardFormatType& other) const {
-  return [uttype_ isEqualToString:other.uttype_];
+  return [data_ isEqualToString:other.data_];
 }
 
 ClipboardFormatType::~ClipboardFormatType() {
-  [uttype_ release];
+  [data_ release];
 }
 
 std::string ClipboardFormatType::Serialize() const {
-  return base::SysNSStringToUTF8(uttype_);
+  return base::SysNSStringToUTF8(data_);
 }
 
 // static
@@ -58,7 +61,7 @@ std::string ClipboardFormatType::GetName() const {
 }
 
 bool ClipboardFormatType::operator<(const ClipboardFormatType& other) const {
-  return [uttype_ compare:other.uttype_] == NSOrderedAscending;
+  return [data_ compare:other.data_] == NSOrderedAscending;
 }
 
 // static
@@ -101,7 +104,7 @@ const ClipboardFormatType& ClipboardFormatType::FilenamesType() {
 
 // static
 const ClipboardFormatType& ClipboardFormatType::UrlType() {
-  static base::NoDestructor<ClipboardFormatType> type(NSPasteboardTypeURL);
+  static base::NoDestructor<ClipboardFormatType> type(NSURLPboardType);
   return *type;
 }
 
@@ -113,7 +116,7 @@ const ClipboardFormatType& ClipboardFormatType::PlainTextType() {
 
 // static
 const ClipboardFormatType& ClipboardFormatType::HtmlType() {
-  static base::NoDestructor<ClipboardFormatType> type(NSPasteboardTypeHTML);
+  static base::NoDestructor<ClipboardFormatType> type(NSHTMLPboardType);
   return *type;
 }
 
@@ -130,7 +133,7 @@ const ClipboardFormatType& ClipboardFormatType::SvgType() {
 
 // static
 const ClipboardFormatType& ClipboardFormatType::RtfType() {
-  static base::NoDestructor<ClipboardFormatType> type(NSPasteboardTypeRTF);
+  static base::NoDestructor<ClipboardFormatType> type(NSRTFPboardType);
   return *type;
 }
 

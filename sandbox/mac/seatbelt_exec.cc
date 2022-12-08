@@ -171,7 +171,20 @@ SeatbeltExecServer::CreateFromArguments(const char* executable_path,
     return result;
   }
 
-  result.server.reset(new SeatbeltExecServer(seatbelt_client_fd));
+  char full_exec_path[PATH_MAX];
+  if (realpath(executable_path, full_exec_path) == NULL) {
+    logging::PError("realpath");
+    return result;
+  }
+
+  auto server = std::make_unique<SeatbeltExecServer>(seatbelt_client_fd);
+  // These parameters are provided for every profile to use.
+  if (!server->SetParameter("EXECUTABLE_PATH", full_exec_path)) {
+    logging::Error("Failed to set up parameters for sandbox.");
+    return result;
+  }
+
+  result.server = std::move(server);
   return result;
 }
 

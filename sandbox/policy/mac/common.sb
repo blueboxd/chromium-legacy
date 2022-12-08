@@ -56,9 +56,6 @@
 ; Allow sending signals to self - https://crbug.com/20370
 (allow signal (target self))
 
-; TODO(rsesek): Lock down `(deny process-info*)`.
-(allow process-info-pidinfo (target self))
-
 ; Consumes a subpath and appends it to the user's homedir path.
 (define (user-homedir-path subpath)
   (string-append (param homedir-as-literal) subpath))

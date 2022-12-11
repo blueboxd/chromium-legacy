@@ -192,9 +192,9 @@ STATIC_ASSERT_ENUM(NSDragOperationMove, ui::DragDropTypes::DRAG_MOVE);
 // Registers for the view for the appropriate drag types.
 - (void)registerDragTypes {
   [self registerForDraggedTypes:@[
-    ui::kUTTypeChromiumInitiatedDrag, kWebURLsWithTitlesPboardType,
+    ui::kChromeDragDummyPboardType, kWebURLsWithTitlesPboardType,
     NSURLPboardType, NSStringPboardType, NSHTMLPboardType, NSRTFPboardType,
-    NSFilenamesPboardType, ui::kUTTypeChromiumWebCustomData
+    NSFilenamesPboardType, ui::kWebCustomDataPboardType
   ]];
 }
 

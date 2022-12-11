@@ -212,8 +212,8 @@ void ClipboardMac::ReadAvailableTypes(
   types->clear();
   *types = GetStandardFormats(buffer, data_dst);
 
-  if ([[pb types] containsObject:kUTTypeChromiumWebCustomData]) {
-    NSData* data = [pb dataForType:kUTTypeChromiumWebCustomData];
+  if ([[pb types] containsObject:kWebCustomDataPboardType]) {
+    NSData* data = [pb dataForType:kWebCustomDataPboardType];
     if ([data length])
       ReadCustomDataTypes([data bytes], [data length], types);
   }
@@ -289,8 +289,7 @@ void ClipboardMac::ReadSvg(ClipboardBuffer buffer,
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
   RecordRead(ClipboardFormatMetric::kSvg);
-  NSString* contents = [GetPasteboard()
-      stringForType:ClipboardFormatType::SvgType().ToNSString()];
+  NSString* contents = [GetPasteboard() stringForType:kImageSvg];
 
   *result = base::SysNSStringToUTF16(contents);
 }
@@ -327,8 +326,8 @@ void ClipboardMac::ReadCustomData(ClipboardBuffer buffer,
   RecordRead(ClipboardFormatMetric::kCustomData);
 
   NSPasteboard* pb = GetPasteboard();
-  if ([[pb types] containsObject:kUTTypeChromiumWebCustomData]) {
-    NSData* data = [pb dataForType:kUTTypeChromiumWebCustomData];
+  if ([[pb types] containsObject:kWebCustomDataPboardType]) {
+    NSData* data = [pb dataForType:kWebCustomDataPboardType];
     if ([data length])
       ReadCustomDataForType([data bytes], [data length], type, result);
   }
@@ -424,8 +423,7 @@ void ClipboardMac::WriteHTML(const char* markup_data,
 void ClipboardMac::WriteSvg(const char* markup_data, size_t markup_len) {
   std::string svg_str(markup_data, markup_len);
   NSString* svg = base::SysUTF8ToNSString(svg_str);
-  [GetPasteboard() setString:svg
-                     forType:ClipboardFormatType::SvgType().ToNSString()];
+  [GetPasteboard() setString:svg forType:kImageSvg];
 }
 
 void ClipboardMac::WriteRTF(const char* rtf_data, size_t data_len) {

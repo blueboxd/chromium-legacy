@@ -13,6 +13,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/thread_annotations.h"
 #include "base/threading/sequence_bound.h"
 #include "base/timer/elapsed_timer.h"
@@ -27,6 +28,10 @@ namespace drivefs::pinning {
 // Constant representing the GCache folder name.
 extern const char kGCacheFolderName[];
 
+// The periodic removal task is ran to ensure any leftover items in the syncing
+// map are identified as being `available_offline` or 0 byte files.
+extern const base::TimeDelta kPeriodicRemovalInterval;
+
 // Errors that are returned via the completion callback that indicate either
 // which stage the failure was at or whether the initial setup was a success.
 enum class PinError {
@@ -39,6 +44,8 @@ enum class PinError {
   kErrorRetrievingSearchResultsForPinning = 6,
   kErrorResultsReturnedInvalidForPinning = 7,
   kErrorFailedToPinItem = 8,
+  kErrorSearchQueryNotBound = 9,
+  kErrorManagerStopped = 10,
 };
 
 // A delegate to aid in mocking the free disk scenarios for testing, in non-test
@@ -91,6 +98,9 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) DriveFsPinManager
   // pinning has completed.
   void Start(base::OnceCallback<void(PinError)> complete_callback);
 
+  // Stop the syncing setup.
+  void Stop();
+
   // drivefs::DriveFsHostObserver
   void OnSyncingStatusUpdate(const mojom::SyncingStatus& status) override;
 
@@ -121,6 +131,10 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) DriveFsPinManager
 
     // Return the number of items currently being tracked as in progress.
     size_t GetItemCount();
+
+    // Returns any items that have 0 `bytes_to_transfer` which corresponds to
+    // items that haven't received a syncing status update.
+    std::vector<std::string> GetUnstartedItems();
 
    private:
     SEQUENCE_CHECKER(sequence_checker_);
@@ -160,10 +174,30 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) DriveFsPinManager
   // `OnSyncingStatusUpdate`.
   void OnFilePinned(const std::string& path, drive::FileError status);
 
+  // Invoked at a regular interval to look at the map of in progress items and
+  // ensure they are all still not available offline (i.e. still syncing). In
+  // certain cases (e.g. hosted docs like gdocs) they will not emit a syncing
+  // status update but will get pinned.
+  void PeriodicallyRemovePinnedItems();
+
+  // For any paths that are in the unstarted phase (i.e. no `bytes_to_transfer`
+  // registered), the metadata must be retrieved to verify their
+  // `available_offline` boolean is true OR the size is 0.
+  void GetMetadata(const std::vector<std::string> unstarted_paths);
+  void OnMetadataRetrieved(const std::string path,
+                           drive::FileError error,
+                           mojom::FileMetadataPtr metadata);
+
   // If there are no remaining items left, get the next search query page.
   void MaybeStartSearch(size_t remaining_items);
 
+  // Denotes whether the feature is enabled. If the feature is disabled no setup
+  // nor monitoring occurs.
   bool enabled_ = false;
+
+  // Denotes whether the initial setup has finished. The feature must be enabled
+  // for this to be used.
+  bool setup_complete_ = false;
   int64_t size_required_ = 0;
   int64_t free_space_ = 0;
   base::OnceCallback<void(PinError)> complete_callback_;

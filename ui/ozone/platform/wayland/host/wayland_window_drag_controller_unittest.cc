@@ -1100,6 +1100,8 @@ TEST_P(WaylandWindowDragControllerTest, CursorPositionIsUpdatedOnMotion) {
     output2->SetScale(2);
   });
 
+  WaitForAllDisplaysReady();
+
   const std::vector<display::Display>& displays = screen_->GetAllDisplays();
   EXPECT_EQ(displays.size(), 2u);
 
@@ -1386,7 +1388,7 @@ TEST_P(WaylandWindowDragControllerTest, ExtendedDragUnavailable) {
 
 TEST_P(WaylandWindowDragControllerTest, GetSerialAndOrigin) {
   auto& serial_tracker = connection_->serial_tracker();
-  auto& window_manager = *connection_->wayland_window_manager();
+  auto& window_manager = *connection_->window_manager();
 
   window_manager.SetPointerFocusedWindow(nullptr);
   window_manager.SetTouchFocusedWindow(nullptr);

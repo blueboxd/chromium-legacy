@@ -171,8 +171,7 @@ bool XDGPopupWrapperImpl::Initialize(const ShellPopupParams& params) {
                                          positioner.get()));
   if (!xdg_popup_)
     return false;
-  connection_->wayland_window_manager()->NotifyWindowRoleAssigned(
-      wayland_window_);
+  connection_->window_manager()->NotifyWindowRoleAssigned(wayland_window_);
 
   if (connection_->zaura_shell()) {
     uint32_t version =
@@ -253,6 +252,14 @@ bool XDGPopupWrapperImpl::SupportsDecoration() {
 void XDGPopupWrapperImpl::Decorate() {
   zaura_popup_set_decoration(aura_popup_.get(),
                              ZAURA_POPUP_DECORATION_TYPE_SHADOW);
+}
+
+void XDGPopupWrapperImpl::SetScaleFactor(float scale_factor) {
+  if (aura_popup_ && zaura_popup_get_version(aura_popup_.get()) >=
+                         ZAURA_POPUP_SET_SCALE_FACTOR_SINCE_VERSION) {
+    uint32_t value = *reinterpret_cast<uint32_t*>(&scale_factor);
+    zaura_popup_set_scale_factor(aura_popup_.get(), value);
+  }
 }
 
 wl::Object<xdg_positioner> XDGPopupWrapperImpl::CreatePositioner() {

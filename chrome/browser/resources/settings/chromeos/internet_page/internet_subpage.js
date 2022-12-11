@@ -35,7 +35,7 @@ import {ConnectionStateType, DeviceStateType, NetworkType} from 'chrome://resour
 import {afterNextRender, html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
-import {Route, Router} from '../../router.js';
+import {Route, Router} from '../router.js';
 import {DeepLinkingBehavior, DeepLinkingBehaviorInterface} from '../deep_linking_behavior.js';
 import {recordSettingChange} from '../metrics_recorder.js';
 import {routes} from '../os_route.js';
@@ -43,6 +43,18 @@ import {RouteObserverBehavior, RouteObserverBehaviorInterface} from '../route_ob
 import {RouteOriginBehavior, RouteOriginBehaviorImpl, RouteOriginBehaviorInterface} from '../route_origin_behavior.js';
 
 import {InternetPageBrowserProxy, InternetPageBrowserProxyImpl} from './internet_page_browser_proxy.js';
+
+/**
+ * TODO(crbug/1315757) The following type definitions are only needed for
+ * Closure compiler and can be removed when this file is converted to TS.
+ *
+ * @constructor
+ * @extends {HTMLElement}
+ */
+export function CellularNetworksListElement() {}
+
+/** @return {?HTMLElement} */
+CellularNetworksListElement.prototype.getAddEsimButton = function() {};
 
 /**
  * @constructor
@@ -298,7 +310,8 @@ class SettingsInternetSubpageElement extends
     if (settingId === Setting.kAddESimNetwork) {
       afterNextRender(this, () => {
         const deepLinkElement =
-            this.shadowRoot.querySelector('cellular-networks-list')
+            /** @type {CellularNetworksListElement} */ (
+                this.shadowRoot.querySelector('cellular-networks-list'))
                 .getAddEsimButton();
         if (!deepLinkElement || deepLinkElement.hidden) {
           console.warn(`Element with deep link id ${settingId} not focusable.`);

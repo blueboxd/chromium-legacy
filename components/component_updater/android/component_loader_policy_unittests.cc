@@ -10,7 +10,6 @@
 #include <stdint.h>
 
 #include <iterator>
-#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -65,7 +64,7 @@ std::vector<int> OpenFileFds(const base::FilePath& base,
 using OnLoadedTestCallBack =
     base::OnceCallback<void(const base::Version&,
                             base::flat_map<std::string, base::ScopedFD>&,
-                            std::unique_ptr<base::DictionaryValue>)>;
+                            base::Value::Dict)>;
 using OnFailedTestCallBack = base::OnceCallback<void(ComponentLoadResult)>;
 
 class MockLoaderPolicy : public ComponentLoaderPolicy {
@@ -82,10 +81,9 @@ class MockLoaderPolicy : public ComponentLoaderPolicy {
   MockLoaderPolicy(const MockLoaderPolicy&) = delete;
   MockLoaderPolicy& operator=(const MockLoaderPolicy&) = delete;
 
-  void ComponentLoaded(
-      const base::Version& version,
-      base::flat_map<std::string, base::ScopedFD>& fd_map,
-      std::unique_ptr<base::DictionaryValue> manifest) override {
+  void ComponentLoaded(const base::Version& version,
+                       base::flat_map<std::string, base::ScopedFD>& fd_map,
+                       base::Value::Dict manifest) override {
     std::move(on_loaded_).Run(version, fd_map, std::move(manifest));
   }
 
@@ -105,7 +103,7 @@ class MockLoaderPolicy : public ComponentLoaderPolicy {
 void VerifyComponentLoaded(base::OnceClosure on_done,
                            const base::Version& version,
                            base::flat_map<std::string, base::ScopedFD>& fd_map,
-                           std::unique_ptr<base::DictionaryValue> manifest) {
+                           base::Value::Dict manifest) {
   EXPECT_EQ(version.GetString(), "123.456.789");
   EXPECT_EQ(fd_map.size(), 2u);
   EXPECT_NE(fd_map.find("file1.txt"), fd_map.end());
@@ -185,7 +183,7 @@ TEST_F(AndroidComponentLoaderPolicyTest, TestMissingManifest) {
           base::BindOnce(
               [](const base::Version& version,
                  base::flat_map<std::string, base::ScopedFD>& fd_map,
-                 std::unique_ptr<base::DictionaryValue> manifest) { FAIL(); }),
+                 base::Value::Dict manifest) { FAIL(); }),
           base::BindLambdaForTesting([&](ComponentLoadResult error) {
             ASSERT_EQ(error, ComponentLoadResult::kMissingManifest);
             run_loop.Quit();
@@ -214,7 +212,7 @@ TEST_F(AndroidComponentLoaderPolicyTest, TestInvalidVersion) {
           base::BindOnce(
               [](const base::Version& version,
                  base::flat_map<std::string, base::ScopedFD>& fd_map,
-                 std::unique_ptr<base::DictionaryValue> manifest) { FAIL(); }),
+                 base::Value::Dict manifest) { FAIL(); }),
           base::BindLambdaForTesting([&](ComponentLoadResult error) {
             ASSERT_EQ(error, ComponentLoadResult::kInvalidVersion);
             run_loop.Quit();
@@ -242,7 +240,7 @@ TEST_F(AndroidComponentLoaderPolicyTest, TestInvalidManifest) {
           base::BindOnce(
               [](const base::Version& version,
                  base::flat_map<std::string, base::ScopedFD>& fd_map,
-                 std::unique_ptr<base::DictionaryValue> manifest) { FAIL(); }),
+                 base::Value::Dict manifest) { FAIL(); }),
           base::BindLambdaForTesting([&](ComponentLoadResult error) {
             ASSERT_EQ(error, ComponentLoadResult::kMalformedManifest);
             run_loop.Quit();

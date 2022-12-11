@@ -133,6 +133,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
    public:
     virtual ~Delegate() = default;
 
+    // Returns whether the given URL can/should be added to the history.
+    virtual bool CanAddURL(const GURL& url) const = 0;
+
     // Called when the database cannot be read correctly for some reason.
     // `diagnostics` contains information about the underlying database
     // which can help in identifying the cause of the profile error.
@@ -182,14 +185,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
     // The event will be forwarded to the HistoryServiceObservers in the correct
     // thread.
     virtual void NotifyKeywordSearchTermDeleted(URLID url_id) = 0;
-
-    // Notify HistoryService that content model annotation associated with
-    // the URL for `row` has been modified. Changes to the floc and related
-    // searches annotations will not trigger this. The event will be forwarded
-    // to the HistoryServiceObservers in the correct thread.
-    virtual void NotifyContentModelAnnotationModified(
-        const URLRow& row,
-        const VisitContentModelAnnotations& model_annotations) = 0;
 
     // Invoked when the backend has finished loading the db.
     virtual void DBLoaded() = 0;
@@ -521,6 +516,11 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void ReplaceClusters(const std::vector<int64_t>& ids_to_delete,
                        const std::vector<Cluster>& clusters_to_add);
 
+  int64_t ReserveNextClusterId();
+
+  void AddVisitsToCluster(int64_t cluster_id,
+                          const std::vector<VisitID>& visits);
+
   std::vector<Cluster> GetMostRecentClusters(
       base::Time inclusive_min_time,
       base::Time exclusive_max_time,
@@ -560,6 +560,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
       std::unique_ptr<HistoryDBTask> task,
       scoped_refptr<base::SequencedTaskRunner> origin_loop,
       const base::CancelableTaskTracker::IsCanceledCallback& is_canceled);
+
+  bool CanAddURL(const GURL& url) const override;
 
   bool GetAllTypedURLs(URLRows* urls);
 

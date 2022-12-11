@@ -39,6 +39,7 @@
 #include "mojo/public/cpp/bindings/shared_remote.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/fenced_frame/redacted_fenced_frame_config.h"
 #include "third_party/blink/public/common/frame/view_transition_state.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 #include "third_party/blink/public/common/permissions_policy/document_policy.h"
@@ -64,6 +65,7 @@
 #include "third_party/blink/renderer/core/frame/frame_types.h"
 #include "third_party/blink/renderer/core/frame/policy_container.h"
 #include "third_party/blink/renderer/core/frame/use_counter_impl.h"
+#include "third_party/blink/renderer/core/html/fenced_frame/fenced_frame_reporting.h"
 #include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
 #include "third_party/blink/renderer/core/loader/document_load_timing.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
@@ -398,8 +400,14 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
     return ad_auction_components_;
   }
 
-  const mojom::blink::FencedFrameReportingPtr& FencedFrameReporting() const {
+  const absl::optional<blink::FencedFrameReporting>& FencedFrameReporting()
+      const {
     return fenced_frame_reporting_;
+  }
+
+  const absl::optional<FencedFrame::RedactedFencedFrameProperties>&
+  FencedFrameProperties() const {
+    return fenced_frame_properties_;
   }
 
   // Detect if the page is reloaded or after form submitted. This method is
@@ -783,7 +791,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   // reporting metadata which in turn is a map from the event type to the
   // reporting url. `nullptr` otherwise.
   // https://github.com/WICG/turtledove/blob/main/Fenced_Frames_Ads_Reporting.md
-  mojom::blink::FencedFrameReportingPtr fenced_frame_reporting_;
+  absl::optional<blink::FencedFrameReporting> fenced_frame_reporting_;
 
   std::unique_ptr<ExtraData> extra_data_;
 
@@ -795,6 +803,9 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   // Provides state from the previous Document that will be replaced by this
   // navigation for a ViewTransition.
   absl::optional<ViewTransitionState> view_transition_state_;
+
+  absl::optional<FencedFrame::RedactedFencedFrameProperties>
+      fenced_frame_properties_;
 };
 
 DECLARE_WEAK_IDENTIFIER_MAP(DocumentLoader);

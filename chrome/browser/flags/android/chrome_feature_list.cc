@@ -24,6 +24,7 @@
 #include "chrome/browser/push_messaging/push_messaging_features.h"
 #include "chrome/browser/share/share_features.h"
 #include "chrome/browser/signin/signin_features.h"
+#include "chrome/browser/supervised_user/supervised_user_features/supervised_user_features.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/video_tutorials/switches.h"
 #include "chrome/common/chrome_features.h"
@@ -63,7 +64,6 @@
 #include "components/shared_highlighting/core/common/shared_highlighting_features.h"
 #include "components/signin/public/base/signin_switches.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
-#include "components/supervised_user/core/common/features.h"
 #include "components/sync/base/features.h"
 #include "components/webapps/browser/features.h"
 #include "content/public/common/content_features.h"
@@ -236,10 +236,8 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kContextualSearchForceCaption,
     &kContextualSearchSuppressShortView,
     &kContextualSearchThinWebViewImplementation,
+    &kDeferKeepScreenOnDuringGesture,
     &kDirectActions,
-    &kDownloadFileProvider,
-    &kDownloadNotificationBadge,
-    &kDownloadRename,
     &kDuetTabStripIntegrationAndroid,
     &kExperimentsForAgsa,
     &kExploreSites,
@@ -739,6 +737,10 @@ BASE_FEATURE(kContextualSearchThinWebViewImplementation,
              "ContextualSearchThinWebViewImplementation",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kDeferKeepScreenOnDuringGesture,
+             "DeferKeepScreenOnDuringGesture",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kDirectActions, "DirectActions", base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kDownloadAutoResumptionThrottling,
@@ -747,18 +749,6 @@ BASE_FEATURE(kDownloadAutoResumptionThrottling,
 
 BASE_FEATURE(kDownloadHomeForExternalApp,
              "DownloadHomeForExternalApp",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kDownloadFileProvider,
-             "DownloadFileProvider",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kDownloadNotificationBadge,
-             "DownloadNotificationBadge",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kDownloadRename,
-             "DownloadRename",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kDuetTabStripIntegrationAndroid,

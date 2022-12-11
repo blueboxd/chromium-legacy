@@ -333,15 +333,6 @@
     "expires": "Jul 1, 2023"
   },
   {
-    "prefix": "jxl-enabled",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["http/tests/inspector-protocol/emulation/emulation-set-disabled-image-types-jxl.js",
-              "images/jxl"],
-    "exclusive_tests": ["http/tests/inspector-protocol/emulation/emulation-set-disabled-image-types-jxl.js"],
-    "args": ["--enable-features=JXL"],
-    "expires": "Jul 1, 2023"
-  },
-  {
     "prefix": "scalefactor150",
     "platforms": ["Linux", "Win"],
     "bases": ["fast/events/synthetic-events",
@@ -1358,7 +1349,7 @@
       "wpt_internal/fenced_frame",
       "http/tests/inspector-protocol/fenced-frame"
     ],
-    "args": ["--enable-features=FencedFrames:implementation_type/mparch,PrivacySandboxAdsAPIsOverride,SharedStorageAPI,NoncedPartitionedCookies",
+    "args": ["--enable-features=FencedFrames:implementation_type/mparch,PrivacySandboxAdsAPIsOverride,SharedStorageAPI,NoncedPartitionedCookies,Fledge,InterestGroupStorage,AdInterestGroupAPI,AllowURNsInIframes,BiddingAndScoringDebugReportingAPI",
              "--enable-blink-features=FencedFramesAPIChanges"],
     "expires": "Jul 1, 2023"
   },
@@ -1432,11 +1423,13 @@
     "expires": "Jul 1, 2023"
   },
 
+  "Tests URL processing in IDNA 2008 Transitional Mode. Explicitly disables ",
+  "the Non-Transitional Mode feature flag to do so.",
   {
     "prefix": "idna-2008",
     "platforms": ["Linux"],
     "bases": [ "external/wpt/url", "fast/url"],
-    "args": ["--enable-features=UseIDNA2008NonTransitional"],
+    "args": ["--disable-features=UseIDNA2008NonTransitional"],
     "expires": "Jul 1, 2023"
   },
 
@@ -1544,7 +1537,7 @@
     "exclusive_tests": "ALL",
     "args": [
       "--enable-blink-features=SpeculationRulesPrefetchProxy,SpeculationRulesFetchFromHeader,SpeculationRulesReferrerPolicyKey,SpeculationRulesDocumentRules",
-      "--enable-features=SpeculationRulesPrefetchProxy,PrefetchUseContentRefactor",
+      "--enable-features=SpeculationRulesPrefetchProxy,PrefetchUseContentRefactor,PrefetchNoVarySearch",
       "--bypass-prefetch-proxy-for-host=not-web-platform.test"
     ],
     "expires": "Jul 1, 2023"

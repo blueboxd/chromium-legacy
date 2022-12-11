@@ -2384,7 +2384,6 @@ bool DeviceStatusCollector::GetNetworkStatus(
     em::NetworkState::ConnectionState state_constant;
   } kConnectionStateMap[] = {
       {shill::kStateIdle, em::NetworkState::IDLE},
-      {shill::kStateCarrier, em::NetworkState::CARRIER},
       {shill::kStateAssociation, em::NetworkState::ASSOCIATION},
       {shill::kStateConfiguration, em::NetworkState::CONFIGURATION},
       {shill::kStateReady, em::NetworkState::READY},
@@ -2395,7 +2394,6 @@ bool DeviceStatusCollector::GetNetworkStatus(
       {shill::kStateOnline, em::NetworkState::ONLINE},
       {shill::kStateDisconnect, em::NetworkState::DISCONNECT},
       {shill::kStateFailure, em::NetworkState::FAILURE},
-      {shill::kStateActivationFailure, em::NetworkState::ACTIVATION_FAILURE},
   };
 
   bool anything_reported = false;

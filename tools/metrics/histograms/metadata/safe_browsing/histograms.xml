@@ -110,30 +110,6 @@ chromium-metrics-reviews@google.com.
       summary="url allowlist on client side phishing detection"/>
 </variants>
 
-<histogram name="SafeBrowsing.AdvancedProtection.APTokenFetchStatus"
-    enum="GoogleServiceAuthError" expires_after="2022-12-18">
-  <owner>drubery@chromium.org</owner>
-  <owner>chrome-counter-abuse-alerts@google.com</owner>
-  <summary>
-    For users known to be already enrolled in Advanced Protection, records the
-    service error of refreshing OAuth2 access token during fetching the user's
-    advanced protection status. Logged once a day and will retry on transient
-    failures. This is a subset of
-    SafeBrowsing.AdvancedProtection.TokenFetchStatus.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.AdvancedProtection.TokenFetchStatus"
-    enum="GoogleServiceAuthError" expires_after="2023-03-05">
-  <owner>drubery@chromium.org</owner>
-  <owner>chrome-counter-abuse-alerts@google.com</owner>
-  <summary>
-    Records the service error of refreshing OAuth2 access token during fetching
-    the user's advanced protection status. Logged at startup for all users, once
-    a day for AP users, and will retry on transient failures.
-  </summary>
-</histogram>
-
 <histogram
     name="SafeBrowsing.Android.RealTimeAllowlist.InstallerLoadFromDiskPbFileEmpty"
     units="bool" expires_after="2023-10-26">
@@ -1680,8 +1656,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.TailoredSecurityService.OAuthTokenCompletion"
-    enum="BooleanSuccess" expires_after="2023-01-15">
-  <owner>drubery@chromium.org</owner>
+    enum="BooleanSuccess" expires_after="2023-07-15">
+  <owner>jacastro@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     Safe Browsing needs a token in order to make a request to get the tailored
@@ -1691,8 +1667,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.TailoredSecurityService.OAuthTokenErrorState"
-    enum="GoogleServiceAuthError" expires_after="2023-03-19">
-  <owner>drubery@chromium.org</owner>
+    enum="GoogleServiceAuthError" expires_after="2023-07-15">
+  <owner>jacastro@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     Safe Browsing needs a token in order to make a request to get the tailored
@@ -1702,8 +1678,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.TailoredSecurityService.OAuthTokenResponseCode"
-    units="code" expires_after="2023-06-04">
-  <owner>drubery@chromium.org</owner>
+    units="code" expires_after="2023-07-15">
+  <owner>jacastro@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     HTTP Response code returned by the server when trying to fetch the OAuth
@@ -1713,7 +1689,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="SafeBrowsing.TailoredSecurityUnconsentedMessageDismissReason"
     enum="MessageDismissReason" expires_after="2023-11-11">
-  <owner>drubery@chromium.org</owner>
+  <owner>jacastro@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     Logs the specific reason a message was dismissed when a signed-in,
@@ -1724,7 +1700,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="SafeBrowsing.TailoredSecurityUnconsentedModalOutcome"
     enum="SafeBrowsingTailoredSecurityOutcome" expires_after="2023-11-11">
-  <owner>drubery@chromium.org</owner>
+  <owner>jacastro@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     Logs the outcome of displaying a modal dialog on Desktop when a signed-in,
@@ -1747,7 +1723,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="SafeBrowsing.TailoredSecurityUnconsented{Flow}MessageOutcome"
     enum="SafeBrowsingTailoredSecurityOutcome" expires_after="2023-11-11">
-  <owner>drubery@chromium.org</owner>
+  <owner>jacastro@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     Logs the outcome of displaying the message on Android when a signed-in,

@@ -127,11 +127,11 @@ void WaylandTestBase::DisableSyncOnTearDown() {
 }
 
 void WaylandTestBase::SetPointerFocusedWindow(WaylandWindow* window) {
-  connection_->wayland_window_manager()->SetPointerFocusedWindow(window);
+  connection_->window_manager()->SetPointerFocusedWindow(window);
 }
 
 void WaylandTestBase::SetKeyboardFocusedWindow(WaylandWindow* window) {
-  connection_->wayland_window_manager()->SetKeyboardFocusedWindow(window);
+  connection_->window_manager()->SetKeyboardFocusedWindow(window);
 }
 
 void WaylandTestBase::SendConfigureEvent(uint32_t surface_id,
@@ -214,6 +214,26 @@ void WaylandTestBase::MaybeSetUpXkb() {
                             keymap_size);
   });
 #endif
+}
+
+void WaylandTestBase::WaitForAllDisplaysReady() {
+  // First, make sure all outputs are created and are ready.
+  base::RunLoop loop;
+  base::RepeatingTimer timer;
+  timer.Start(
+      FROM_HERE, base::Milliseconds(1), base::BindLambdaForTesting([&]() {
+        auto& outputs = connection_->wayland_output_manager()->GetAllOutputs();
+        for (auto& output : outputs) {
+          // Displays are updated when the output is ready.
+          if (!output.second->IsReady())
+            return;
+        }
+        return loop.Quit();
+      }));
+  loop.Run();
+
+  // Secondly, make sure all events after 'done' are processed.
+  wl::SyncDisplay(connection_->display_wrapper(), *connection_->display());
 }
 
 std::unique_ptr<WaylandWindow> WaylandTestBase::CreateWaylandWindowWithParams(

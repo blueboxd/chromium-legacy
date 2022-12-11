@@ -893,6 +893,22 @@ const AutocompleteResult& AutocompleteController::result() const {
   return DebouncingEnabled() ? published_result_ : result_;
 }
 
+void AutocompleteController::GroupSuggestionsBySearchVsURL(size_t begin,
+                                                           size_t end) {
+  if (begin == end)
+    return;
+  const size_t num_elements = result_.size();
+  if (begin < 0 || end <= begin || end > num_elements) {
+    DCHECK(false) << "Range [" << begin << "; " << end
+                  << ") is not valid for grouping; accepted range: [0; "
+                  << num_elements << ").";
+    return;
+  }
+
+  AutocompleteResult::GroupSuggestionsBySearchVsURL(
+      std::next(result_.begin(), begin), std::next(result_.begin(), end));
+}
+
 void AutocompleteController::UpdateResult(
     bool regenerate_result,
     bool force_notify_default_match_changed) {
@@ -924,6 +940,11 @@ void AutocompleteController::UpdateResult(
     result_.AppendMatches(provider->matches());
     result_.MergeSuggestionGroupsMap(provider->suggestion_groups_map());
   }
+
+  // Update scoring signals of suggestions in the result. The updated signals in
+  // `result_` will be lost when UpdateResult() is called again. Currently,
+  // `result_` is updated in each UpdateResult() call.
+  UpdateScoringSignals();
 
   // Sort the matches and trim to a small number of "best" matches.
   // Conditionally preserve the default match.
@@ -1024,6 +1045,15 @@ void AutocompleteController::UpdateResult(
 
   DelayedNotifyChanged(force_notify_default_match_changed ||
                        notify_default_match);
+}
+
+void AutocompleteController::UpdateScoringSignals() {
+  // If enabled, update scoring signals of URL suggestions.
+  if (OmniboxFieldTrial::IsLogUrlScoringSignalsEnabled()) {
+    for (const auto& annotator : url_scoring_signals_annotators_) {
+      annotator->AnnotateResult(&result_);
+    }
+  }
 }
 
 void AutocompleteController::UpdateAssociatedKeywords(

@@ -711,9 +711,6 @@ BASE_FEATURE(kCacheCodeOnIdle,
 const base::FeatureParam<int> kCacheCodeOnIdleDelayParam{&kCacheCodeOnIdle,
                                                          "delay-in-ms", 0};
 
-// Enables the JPEG XL Image File Format (JXL).
-BASE_FEATURE(kJXL, "JXL", base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Make all pending 'display: auto' web fonts enter the swap or failure period
 // immediately before reaching the LCP time limit (~2500ms), so that web fonts
 // do not become a source of bad LCP.
@@ -1665,6 +1662,14 @@ bool IsThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframesEnabled() {
              features::
                  kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes);
 }
+
+BASE_FEATURE(kSpeculationRulesHeaderEnableThirdPartyOriginTrial,
+             "SpeculationRulesHeaderEnableThirdPartyOriginTrial",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSpeculationRulesPrefetchFuture,
+             "SpeculationRulesPrefetchFuture",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace features
 }  // namespace blink

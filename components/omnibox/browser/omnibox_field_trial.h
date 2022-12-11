@@ -339,6 +339,15 @@ extern const base::FeatureParam<int> kFuzzyUrlSuggestionsPenaltyTaperLength;
 // Returns true if the default browser pedal feature is enabled.
 bool IsDefaultBrowserPedalEnabled();
 
+// Indicates whether the default browser pedal can be used when the
+// shell_integration API indicates the system sets default browser
+// interactively, e.g. by bringing up system settings.
+extern const base::FeatureParam<bool> kDefaultBrowserPedalInteractive;
+// Indicates whether the default browser pedal can be used when the
+// shell_integration API indicates the system sets default browser
+// without any further user interaction, i.e. "unattended".
+extern const base::FeatureParam<bool> kDefaultBrowserPedalUnattended;
+
 // Simply a convenient wrapper for testing a flag. Used downstream for an
 // assortment of keyword mode experiments.
 bool IsExperimentalKeywordModeEnabled();
@@ -365,7 +374,10 @@ bool IsSiteSearchStarterPackEnabled();
 // Returns true if the feature to enable uniform row height is enabled.
 bool IsUniformRowHeightEnabled();
 // Specifies the row height in pixels for omnibox suggestions.
-extern const base::FeatureParam<int> kSuggestionVerticalMargin;
+extern const base::FeatureParam<int> kSuggestionRowHeight;
+// Specifies the vertical margin to use in one-line rich entity and answer
+// suggestions.
+extern const base::FeatureParam<int> kRichSuggestionVerticalMargin;
 
 // ---------------------------------------------------------
 // Clipboard URL suggestions:

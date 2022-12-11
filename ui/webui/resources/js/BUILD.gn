@@ -82,13 +82,15 @@ preprocess_if_expr("preprocess_src") {
   out_manifest = "$target_gen_dir/$preprocess_src_manifest"
   in_files = [
     "assert.js",
-    "load_time_data.m.js",
     "load_time_data_deprecated.js",
   ]
 
-  if (is_chromeos_ash || is_android) {
-    # Used by ChromeOS and Android Closure UIs.
-    in_files += [ "cr.m.js" ]
+  if (is_chromeos_ash) {
+    # Used by ChromeOS UIs.
+    in_files += [
+      "cr.m.js",
+      "load_time_data.m.js",
+    ]
   }
 
   if (is_chromeos_ash || is_ios) {
@@ -132,23 +134,23 @@ if (is_chromeos_ash) {
 
 js_type_check("closure_compile_modules") {
   is_polymer3 = true
-  deps = [
-    ":assert",
-    ":load_time_data.m",
-  ]
+  deps = [ ":assert" ]
 
-  if (is_chromeos_ash || is_android) {
-    deps += [ ":cr.m" ]
+  if (is_chromeos_ash) {
+    deps += [
+      ":cr.m",
+      ":load_time_data.m",
+    ]
   }
 }
 
 js_library("assert") {
 }
 
-if (is_chromeos_ash || is_android) {
+if (is_chromeos_ash) {
   js_library("cr.m") {
   }
-}
 
-js_library("load_time_data.m") {
+  js_library("load_time_data.m") {
+  }
 }

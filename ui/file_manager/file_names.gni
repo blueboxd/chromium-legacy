@@ -59,7 +59,7 @@ static_js_files = [
   "file_manager/common/js/metrics_base.js",
   "file_manager/common/js/mock_chrome.js",
   "file_manager/common/js/mock_entry.js",
-  "file_manager/common/js/notifications_browser_proxy.js",
+  "file_manager/common/js/notifications.js",
   "file_manager/common/js/progress_center_common.js",
   "file_manager/common/js/recent_date_bucket.js",
   "file_manager/common/js/storage.js",
@@ -257,6 +257,9 @@ ts_files = [
   "file_manager/state/actions/all_entries.ts",
   "file_manager/state/actions/current_directory.ts",
 
+  # ActionsProducers.
+  "file_manager/state/actions_producers/current_directory.ts",
+
   # Reducers.
   "file_manager/state/reducers/root.ts",
   "file_manager/state/reducers/all_entries.ts",
@@ -273,6 +276,7 @@ ts_files = [
   "file_manager/widgets/xf_breadcrumb.ts",
   "file_manager/widgets/xf_conflict_dialog.ts",
   "file_manager/widgets/xf_dlp_restriction_details_dialog.ts",
+  "file_manager/widgets/xf_icon.ts",
   "file_manager/widgets/xf_nudge.ts",
   "file_manager/widgets/xf_search_options.ts",
   "file_manager/widgets/xf_select.ts",
@@ -299,7 +303,6 @@ ts_templates = [
   "file_manager/widgets/xf_dlp_restriction_details_dialog.html",
   "file_manager/widgets/xf_nudge.html",
   "file_manager/widgets/xf_search_options.html",
-  "file_manager/widgets/xf_select.html",
 ]
 
 ts_test_files = [
@@ -321,6 +324,7 @@ ts_test_files = [
   "file_manager/widgets/xf_breadcrumb_unittest.ts",
   "file_manager/widgets/xf_conflict_dialog_unittest.ts",
   "file_manager/widgets/xf_dlp_restriction_details_dialog_unittest.ts",
+  "file_manager/widgets/xf_icon_unittest.ts",
   "file_manager/widgets/xf_nudge_unittest.ts",
   "file_manager/widgets/xf_search_options_unittest.ts",
   "file_manager/widgets/xf_select_unittest.ts",

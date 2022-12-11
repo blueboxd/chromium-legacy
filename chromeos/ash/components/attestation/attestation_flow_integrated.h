@@ -95,6 +95,22 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_ATTESTATION)
       CertificateCallback callback) override;
 
  private:
+  // Asynchronously requests attestation features.
+  //
+  // Parameters
+  //   callback - Called with the success or failure of the enrollment.
+  void GetFeatures(EnrollCallback callback);
+
+  // Handles the result of a call to `GetFeatures`.
+  // If the features indicate attestation is supported, starts the
+  // enrollment process.
+  //
+  // Parameters
+  //   callback - Called with the success or failure of the enrollment.
+  //   result - Result of `GetStatus()`, which contains `enrolled` field.
+  void OnGetFeaturesComplete(EnrollCallback callback,
+                             const ::attestation::GetFeaturesReply& reply);
+
   // Asynchronously waits for attestation to be ready and start enrollment once
   // it is. If attestation is not ready by the time the flow's timeout is
   // reached, fail.
@@ -103,7 +119,7 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_ATTESTATION)
   //   end_time - Time after which preparation should time out.
   //   callback - Called with the success or failure of the enrollment.
   void WaitForAttestationPrepared(base::TimeTicks end_time,
-                                  base::OnceCallback<void(bool)> callback);
+                                  EnrollCallback callback);
 
   // Handles the result of a call to TpmAttestationIsPrepared. Starts enrollment
   // on success and retries after |retry_delay_| if not.
@@ -114,7 +130,7 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_ATTESTATION)
   //   reply - Reply from the attestation service.
   void OnPreparedCheckComplete(
       base::TimeTicks end_time,
-      base::OnceCallback<void(bool)> callback,
+      EnrollCallback callback,
       const ::attestation::GetEnrollmentPreparationsReply& reply);
 
   // Asynchronously initiates the certificate request flow.  Attestation
@@ -142,7 +158,7 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_ATTESTATION)
       const std::string& key_name,
       const absl::optional<CertProfileSpecificData>& profile_specific_data,
       CertificateCallback callback,
-      bool is_prepared);
+      EnrollState enroll_state);
 
   // Called after cryptohome finishes processing of a certificate request.
   //

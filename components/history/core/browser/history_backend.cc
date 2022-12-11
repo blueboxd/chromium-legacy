@@ -682,11 +682,6 @@ void HistoryBackend::AddContentModelAnnotationsForVisit(
       annotations.model_annotations = model_annotations;
       db_->AddContentAnnotationsForVisit(visit_id, annotations);
     }
-    URLRow url_row;
-    if (db_->GetURLRow(visit_row.url_id, &url_row)) {
-      delegate_->NotifyContentModelAnnotationModified(url_row,
-                                                      model_annotations);
-    }
     ScheduleCommit();
   }
 }
@@ -1428,6 +1423,10 @@ void HistoryBackend::AddPageNoVisitForBookmark(const GURL& url,
   db_->AddURL(url_info);
 }
 
+bool HistoryBackend::CanAddURL(const GURL& url) const {
+  return delegate_->CanAddURL(url);
+}
+
 bool HistoryBackend::GetAllTypedURLs(URLRows* urls) {
   DCHECK(urls);
   if (!db_)
@@ -1522,13 +1521,18 @@ VisitID HistoryBackend::AddSyncedVisit(
     const VisitRow& visit,
     const absl::optional<VisitContextAnnotations>& context_annotations,
     const absl::optional<VisitContentAnnotations>& content_annotations) {
-  DCHECK_EQ(visit.visit_id, 0);
+  DCHECK_EQ(visit.visit_id, kInvalidVisitID);
   DCHECK_EQ(visit.url_id, 0);
   DCHECK(!visit.visit_time.is_null());
   DCHECK(!visit.originator_cache_guid.empty());
 
-  if (!db_)
-    return 0;
+  if (!db_) {
+    return kInvalidVisitID;
+  }
+
+  if (!CanAddURL(url)) {
+    return kInvalidVisitID;
+  }
 
   auto [url_id, visit_id] = AddPageVisit(
       url, visit.visit_time, visit.referring_visit, visit.transition, hidden,
@@ -1539,7 +1543,7 @@ VisitID HistoryBackend::AddSyncedVisit(
 
   if (visit_id == kInvalidVisitID) {
     // Adding the page visit failed, do not continue.
-    return 0;
+    return kInvalidVisitID;
   }
 
   if (context_annotations) {
@@ -1565,22 +1569,23 @@ VisitID HistoryBackend::UpdateSyncedVisit(
     const VisitRow& visit,
     const absl::optional<VisitContextAnnotations>& context_annotations,
     const absl::optional<VisitContentAnnotations>& content_annotations) {
-  DCHECK_EQ(visit.visit_id, 0);
+  DCHECK_EQ(visit.visit_id, kInvalidVisitID);
   DCHECK_EQ(visit.url_id, 0);
   DCHECK(!visit.visit_time.is_null());
   DCHECK(!visit.originator_cache_guid.empty());
 
-  if (!db_)
-    return 0;
+  if (!db_) {
+    return kInvalidVisitID;
+  }
 
   VisitRow original_row;
   if (!db_->GetLastRowForVisitByVisitTime(visit.visit_time, &original_row)) {
-    return 0;
+    return kInvalidVisitID;
   }
 
   if (original_row.originator_cache_guid != visit.originator_cache_guid) {
     // The existing visit came from a different device; something is wrong.
-    return 0;
+    return kInvalidVisitID;
   }
 
   VisitID visit_id = original_row.visit_id;
@@ -1590,14 +1595,14 @@ VisitID HistoryBackend::UpdateSyncedVisit(
   // gets stopped, then started again before all the old foreign visits are
   // cleaned up.)
   if (visit_id <= db_->GetDeleteForeignVisitsUntilId()) {
-    return 0;
+    return kInvalidVisitID;
   }
 
   // If we can't find the corresponding URLRow, or its actual URL doesn't match,
   // something's wrong.
   URLRow url_row;
   if (!db_->GetURLRow(original_row.url_id, &url_row) || url_row.url() != url) {
-    return 0;
+    return kInvalidVisitID;
   }
 
   // Update the URLRow - its title may have changed.
@@ -1616,8 +1621,9 @@ VisitID HistoryBackend::UpdateSyncedVisit(
   updated_row.referring_visit = original_row.referring_visit;
   updated_row.opener_visit = original_row.opener_visit;
 
-  if (!db_->UpdateVisitRow(updated_row))
-    return 0;
+  if (!db_->UpdateVisitRow(updated_row)) {
+    return kInvalidVisitID;
+  }
 
   // If provided, add or update the ContextAnnotations.
   if (context_annotations) {
@@ -2133,6 +2139,20 @@ void HistoryBackend::ReplaceClusters(
   db_->DeleteClusters(ids_to_delete);
   db_->AddClusters(clusters_to_add);
   ScheduleCommit();
+}
+
+int64_t HistoryBackend::ReserveNextClusterId() {
+  TRACE_EVENT0("browser", "HistoryBackend::ReserveNextClusterId");
+  return db_ ? db_->ReserveNextClusterId() : 0;
+}
+
+void HistoryBackend::AddVisitsToCluster(int64_t cluster_id,
+                                        const std::vector<VisitID>& visits) {
+  TRACE_EVENT0("browser", "HistoryBackend::AddVisitsToCluster");
+  if (!db_)
+    return;
+
+  db_->AddVisitsToCluster(cluster_id, visits);
 }
 
 std::vector<Cluster> HistoryBackend::GetMostRecentClusters(

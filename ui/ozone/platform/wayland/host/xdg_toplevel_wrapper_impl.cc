@@ -115,8 +115,7 @@ bool XDGToplevelWrapperImpl::Initialize() {
     LOG(ERROR) << "Failed to create xdg_toplevel";
     return false;
   }
-  connection_->wayland_window_manager()->NotifyWindowRoleAssigned(
-      wayland_window_);
+  connection_->window_manager()->NotifyWindowRoleAssigned(wayland_window_);
 
   if (connection_->zaura_shell()) {
     uint32_t version =
@@ -520,6 +519,14 @@ void XDGToplevelWrapperImpl::Activate() {
 void XDGToplevelWrapperImpl::Deactivate() {
   if (aura_toplevel_ && SupportsActivation()) {
     zaura_toplevel_deactivate(aura_toplevel_.get());
+  }
+}
+
+void XDGToplevelWrapperImpl::SetScaleFactor(float scale_factor) {
+  if (aura_toplevel_ && zaura_toplevel_get_version(aura_toplevel_.get()) >=
+                            ZAURA_TOPLEVEL_SET_SCALE_FACTOR_SINCE_VERSION) {
+    uint32_t value = *reinterpret_cast<uint32_t*>(&scale_factor);
+    zaura_toplevel_set_scale_factor(aura_toplevel_.get(), value);
   }
 }
 

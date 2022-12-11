@@ -9,6 +9,145 @@
 
 namespace mojo {
 
+// static
+blink::mojom::Opaque
+EnumTraits<blink::mojom::Opaque, blink::FencedFrame::Opaque>::ToMojom(
+    blink::FencedFrame::Opaque input) {
+  switch (input) {
+    case blink::FencedFrame::Opaque::kOpaque:
+      return blink::mojom::Opaque::kOpaque;
+  }
+  NOTREACHED();
+  return blink::mojom::Opaque::kOpaque;
+}
+
+// static
+bool EnumTraits<blink::mojom::Opaque, blink::FencedFrame::Opaque>::FromMojom(
+    blink::mojom::Opaque input,
+    blink::FencedFrame::Opaque* out) {
+  switch (input) {
+    case blink::mojom::Opaque::kOpaque:
+      *out = blink::FencedFrame::Opaque::kOpaque;
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
+// static
+blink::mojom::ReportingDestination
+EnumTraits<blink::mojom::ReportingDestination,
+           blink::FencedFrame::ReportingDestination>::
+    ToMojom(blink::FencedFrame::ReportingDestination input) {
+  switch (input) {
+    case blink::FencedFrame::ReportingDestination::kBuyer:
+      return blink::mojom::ReportingDestination::kBuyer;
+    case blink::FencedFrame::ReportingDestination::kSeller:
+      return blink::mojom::ReportingDestination::kSeller;
+    case blink::FencedFrame::ReportingDestination::kComponentSeller:
+      return blink::mojom::ReportingDestination::kComponentSeller;
+    case blink::FencedFrame::ReportingDestination::kSharedStorageSelectUrl:
+      return blink::mojom::ReportingDestination::kSharedStorageSelectUrl;
+  }
+  NOTREACHED();
+  return blink::mojom::ReportingDestination::kBuyer;
+}
+
+// static
+const base::flat_map<blink::FencedFrame::ReportingDestination,
+                     base::flat_map<std::string, GURL>>&
+StructTraits<blink::mojom::FencedFrameReportingDataView,
+             blink::FencedFrame::FencedFrameReporting>::
+    metadata(const blink::FencedFrame::FencedFrameReporting& input) {
+  return input.metadata;
+}
+
+// static
+bool StructTraits<blink::mojom::FencedFrameReportingDataView,
+                  blink::FencedFrame::FencedFrameReporting>::
+    Read(blink::mojom::FencedFrameReportingDataView data,
+         blink::FencedFrame::FencedFrameReporting* out) {
+  if (!data.ReadMetadata(&out->metadata)) {
+    return false;
+  }
+  return true;
+}
+
+// static
+bool EnumTraits<blink::mojom::ReportingDestination,
+                blink::FencedFrame::ReportingDestination>::
+    FromMojom(blink::mojom::ReportingDestination input,
+              blink::FencedFrame::ReportingDestination* out) {
+  switch (input) {
+    case blink::mojom::ReportingDestination::kBuyer:
+      *out = blink::FencedFrame::ReportingDestination::kBuyer;
+      return true;
+    case blink::mojom::ReportingDestination::kSeller:
+      *out = blink::FencedFrame::ReportingDestination::kSeller;
+      return true;
+    case blink::mojom::ReportingDestination::kComponentSeller:
+      *out = blink::FencedFrame::ReportingDestination::kComponentSeller;
+      return true;
+    case blink::mojom::ReportingDestination::kSharedStorageSelectUrl:
+      *out = blink::FencedFrame::ReportingDestination::kSharedStorageSelectUrl;
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
+// static
+const url::Origin& StructTraits<blink::mojom::AdAuctionDataDataView,
+                                blink::FencedFrame::AdAuctionData>::
+    interest_group_owner(const blink::FencedFrame::AdAuctionData& input) {
+  return input.interest_group_owner;
+}
+// static
+const std::string& StructTraits<blink::mojom::AdAuctionDataDataView,
+                                blink::FencedFrame::AdAuctionData>::
+    interest_group_name(const blink::FencedFrame::AdAuctionData& input) {
+  return input.interest_group_name;
+}
+
+// static
+bool StructTraits<blink::mojom::AdAuctionDataDataView,
+                  blink::FencedFrame::AdAuctionData>::
+    Read(blink::mojom::AdAuctionDataDataView data,
+         blink::FencedFrame::AdAuctionData* out_data) {
+  if (!data.ReadInterestGroupOwner(&out_data->interest_group_owner) ||
+      !data.ReadInterestGroupName(&out_data->interest_group_name)) {
+    return false;
+  }
+  return true;
+}
+
+// static
+const url::Origin&
+StructTraits<blink::mojom::SharedStorageBudgetMetadataDataView,
+             blink::FencedFrame::SharedStorageBudgetMetadata>::
+    origin(const blink::FencedFrame::SharedStorageBudgetMetadata& input) {
+  return input.origin;
+}
+// static
+double StructTraits<blink::mojom::SharedStorageBudgetMetadataDataView,
+                    blink::FencedFrame::SharedStorageBudgetMetadata>::
+    budget_to_charge(
+        const blink::FencedFrame::SharedStorageBudgetMetadata& input) {
+  return input.budget_to_charge;
+}
+
+// static
+bool StructTraits<blink::mojom::SharedStorageBudgetMetadataDataView,
+                  blink::FencedFrame::SharedStorageBudgetMetadata>::
+    Read(blink::mojom::SharedStorageBudgetMetadataDataView data,
+         blink::FencedFrame::SharedStorageBudgetMetadata* out_data) {
+  if (!data.ReadOrigin(&out_data->origin)) {
+    return false;
+  }
+  out_data->budget_to_charge = data.budget_to_charge();
+  return true;
+}
+
 blink::mojom::PotentiallyOpaqueURLPtr
 StructTraits<blink::mojom::FencedFrameConfigDataView,
              blink::FencedFrame::RedactedFencedFrameConfig>::
@@ -18,7 +157,7 @@ StructTraits<blink::mojom::FencedFrameConfigDataView,
   }
   if (!config.mapped_url_->potentially_opaque_value.has_value()) {
     return blink::mojom::PotentiallyOpaqueURL::NewOpaque(
-        blink::mojom::Opaque::kOpaque);
+        blink::FencedFrame::Opaque::kOpaque);
   }
   return blink::mojom::PotentiallyOpaqueURL::NewTransparent(
       *config.mapped_url_->potentially_opaque_value);
@@ -34,14 +173,10 @@ StructTraits<blink::mojom::FencedFrameConfigDataView,
   }
   if (!config.ad_auction_data_->potentially_opaque_value.has_value()) {
     return blink::mojom::PotentiallyOpaqueAdAuctionData::NewOpaque(
-        blink::mojom::Opaque::kOpaque);
+        blink::FencedFrame::Opaque::kOpaque);
   }
   return blink::mojom::PotentiallyOpaqueAdAuctionData::NewTransparent(
-      blink::mojom::AdAuctionData::New(
-          config.ad_auction_data_->potentially_opaque_value
-              ->interest_group_owner,
-          config.ad_auction_data_->potentially_opaque_value
-              ->interest_group_name));
+      *config.ad_auction_data_->potentially_opaque_value);
 }
 
 blink::mojom::PotentiallyOpaqueConfigVectorPtr
@@ -54,7 +189,7 @@ StructTraits<blink::mojom::FencedFrameConfigDataView,
   }
   if (!config.nested_configs_->potentially_opaque_value.has_value()) {
     return blink::mojom::PotentiallyOpaqueConfigVector::NewOpaque(
-        blink::mojom::Opaque::kOpaque);
+        blink::FencedFrame::Opaque::kOpaque);
   }
   auto nested_config_vector =
       blink::mojom::PotentiallyOpaqueConfigVector::NewTransparent({});
@@ -76,14 +211,11 @@ StructTraits<blink::mojom::FencedFrameConfigDataView,
   if (!config.shared_storage_budget_metadata_->potentially_opaque_value
            .has_value()) {
     return blink::mojom::PotentiallyOpaqueSharedStorageBudgetMetadata::
-        NewOpaque(blink::mojom::Opaque::kOpaque);
+        NewOpaque(blink::FencedFrame::Opaque::kOpaque);
   }
   return blink::mojom::PotentiallyOpaqueSharedStorageBudgetMetadata::
-      NewTransparent(blink::mojom::SharedStorageBudgetMetadata::New(
-          config.shared_storage_budget_metadata_->potentially_opaque_value
-              ->origin,
-          config.shared_storage_budget_metadata_->potentially_opaque_value
-              ->budget_to_charge));
+      NewTransparent(
+          *config.shared_storage_budget_metadata_->potentially_opaque_value);
 }
 
 blink::mojom::PotentiallyOpaqueReportingMetadataPtr
@@ -96,10 +228,10 @@ StructTraits<blink::mojom::FencedFrameConfigDataView,
   }
   if (!config.reporting_metadata_->potentially_opaque_value.has_value()) {
     return blink::mojom::PotentiallyOpaqueReportingMetadata::NewOpaque(
-        blink::mojom::Opaque::kOpaque);
+        blink::FencedFrame::Opaque::kOpaque);
   }
   return blink::mojom::PotentiallyOpaqueReportingMetadata::NewTransparent(
-      config.reporting_metadata_->potentially_opaque_value->Clone());
+      *config.reporting_metadata_->potentially_opaque_value);
 }
 
 bool StructTraits<blink::mojom::FencedFrameConfigDataView,
@@ -131,9 +263,7 @@ bool StructTraits<blink::mojom::FencedFrameConfigDataView,
   if (ad_auction_data) {
     if (ad_auction_data->is_transparent()) {
       out_config->ad_auction_data_.emplace(
-          absl::make_optional(blink::FencedFrame::AdAuctionData{
-              ad_auction_data->get_transparent()->interest_group_owner,
-              ad_auction_data->get_transparent()->interest_group_name}));
+          absl::make_optional(ad_auction_data->get_transparent()));
     } else {
       out_config->ad_auction_data_.emplace(absl::nullopt);
     }
@@ -152,11 +282,8 @@ bool StructTraits<blink::mojom::FencedFrameConfigDataView,
   }
   if (shared_storage_budget_metadata) {
     if (shared_storage_budget_metadata->is_transparent()) {
-      out_config->shared_storage_budget_metadata_.emplace(
-          absl::make_optional(blink::FencedFrame::SharedStorageBudgetMetadata{
-              shared_storage_budget_metadata->get_transparent()->origin,
-              shared_storage_budget_metadata->get_transparent()
-                  ->budget_to_charge}));
+      out_config->shared_storage_budget_metadata_.emplace(absl::make_optional(
+          shared_storage_budget_metadata->get_transparent()));
     } else {
       out_config->shared_storage_budget_metadata_.emplace(absl::nullopt);
     }
@@ -164,7 +291,7 @@ bool StructTraits<blink::mojom::FencedFrameConfigDataView,
   if (reporting_metadata) {
     if (reporting_metadata->is_transparent()) {
       out_config->reporting_metadata_.emplace(
-          absl::make_optional(*reporting_metadata->get_transparent()));
+          absl::make_optional(reporting_metadata->get_transparent()));
     } else {
       out_config->reporting_metadata_.emplace(absl::nullopt);
     }
@@ -182,7 +309,7 @@ StructTraits<blink::mojom::FencedFramePropertiesDataView,
   }
   if (!properties.mapped_url_->potentially_opaque_value.has_value()) {
     return blink::mojom::PotentiallyOpaqueURL::NewOpaque(
-        blink::mojom::Opaque::kOpaque);
+        blink::FencedFrame::Opaque::kOpaque);
   }
   return blink::mojom::PotentiallyOpaqueURL::NewTransparent(
       *properties.mapped_url_->potentially_opaque_value);
@@ -198,14 +325,10 @@ StructTraits<blink::mojom::FencedFramePropertiesDataView,
   }
   if (!properties.ad_auction_data_->potentially_opaque_value.has_value()) {
     return blink::mojom::PotentiallyOpaqueAdAuctionData::NewOpaque(
-        blink::mojom::Opaque::kOpaque);
+        blink::FencedFrame::Opaque::kOpaque);
   }
   return blink::mojom::PotentiallyOpaqueAdAuctionData::NewTransparent(
-      blink::mojom::AdAuctionData::New(
-          properties.ad_auction_data_->potentially_opaque_value
-              ->interest_group_owner,
-          properties.ad_auction_data_->potentially_opaque_value
-              ->interest_group_name));
+      *properties.ad_auction_data_->potentially_opaque_value);
 }
 
 blink::mojom::PotentiallyOpaqueURNConfigVectorPtr
@@ -219,7 +342,7 @@ StructTraits<blink::mojom::FencedFramePropertiesDataView,
   if (!properties.nested_urn_config_pairs_->potentially_opaque_value
            .has_value()) {
     return blink::mojom::PotentiallyOpaqueURNConfigVector::NewOpaque(
-        blink::mojom::Opaque::kOpaque);
+        blink::FencedFrame::Opaque::kOpaque);
   }
   auto nested_urn_config_vector =
       blink::mojom::PotentiallyOpaqueURNConfigVector::NewTransparent({});
@@ -243,14 +366,11 @@ StructTraits<blink::mojom::FencedFramePropertiesDataView,
   if (!properties.shared_storage_budget_metadata_->potentially_opaque_value
            .has_value()) {
     return blink::mojom::PotentiallyOpaqueSharedStorageBudgetMetadata::
-        NewOpaque(blink::mojom::Opaque::kOpaque);
+        NewOpaque(blink::FencedFrame::Opaque::kOpaque);
   }
   return blink::mojom::PotentiallyOpaqueSharedStorageBudgetMetadata::
-      NewTransparent(blink::mojom::SharedStorageBudgetMetadata::New(
-          properties.shared_storage_budget_metadata_->potentially_opaque_value
-              ->origin,
-          properties.shared_storage_budget_metadata_->potentially_opaque_value
-              ->budget_to_charge));
+      NewTransparent(*properties.shared_storage_budget_metadata_
+                          ->potentially_opaque_value);
 }
 
 blink::mojom::PotentiallyOpaqueReportingMetadataPtr
@@ -263,10 +383,10 @@ StructTraits<blink::mojom::FencedFramePropertiesDataView,
   }
   if (!properties.reporting_metadata_->potentially_opaque_value.has_value()) {
     return blink::mojom::PotentiallyOpaqueReportingMetadata::NewOpaque(
-        blink::mojom::Opaque::kOpaque);
+        blink::FencedFrame::Opaque::kOpaque);
   }
   return blink::mojom::PotentiallyOpaqueReportingMetadata::NewTransparent(
-      properties.reporting_metadata_->potentially_opaque_value->Clone());
+      *properties.reporting_metadata_->potentially_opaque_value);
 }
 
 bool StructTraits<blink::mojom::FencedFramePropertiesDataView,
@@ -297,9 +417,7 @@ bool StructTraits<blink::mojom::FencedFramePropertiesDataView,
   if (ad_auction_data) {
     if (ad_auction_data->is_transparent()) {
       out_properties->ad_auction_data_.emplace(
-          absl::make_optional(blink::FencedFrame::AdAuctionData{
-              ad_auction_data->get_transparent()->interest_group_owner,
-              ad_auction_data->get_transparent()->interest_group_name}));
+          absl::make_optional(ad_auction_data->get_transparent()));
     } else {
       out_properties->ad_auction_data_.emplace(absl::nullopt);
     }
@@ -322,10 +440,8 @@ bool StructTraits<blink::mojom::FencedFramePropertiesDataView,
   if (shared_storage_budget_metadata) {
     if (shared_storage_budget_metadata->is_transparent()) {
       out_properties->shared_storage_budget_metadata_.emplace(
-          absl::make_optional(blink::FencedFrame::SharedStorageBudgetMetadata{
-              shared_storage_budget_metadata->get_transparent()->origin,
-              shared_storage_budget_metadata->get_transparent()
-                  ->budget_to_charge}));
+          absl::make_optional(
+              shared_storage_budget_metadata->get_transparent()));
     } else {
       out_properties->shared_storage_budget_metadata_.emplace(absl::nullopt);
     }
@@ -333,7 +449,7 @@ bool StructTraits<blink::mojom::FencedFramePropertiesDataView,
   if (reporting_metadata) {
     if (reporting_metadata->is_transparent()) {
       out_properties->reporting_metadata_.emplace(
-          absl::make_optional(*reporting_metadata->get_transparent()));
+          absl::make_optional(reporting_metadata->get_transparent()));
     } else {
       out_properties->reporting_metadata_.emplace(absl::nullopt);
     }

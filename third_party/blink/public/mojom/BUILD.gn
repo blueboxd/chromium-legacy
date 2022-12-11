@@ -72,6 +72,7 @@ mojom("mojom_platform") {
     "drag/drag.mojom",
     "favicon/favicon_url.mojom",
     "feature_observer/feature_observer.mojom",
+    "fenced_frame/fenced_frame_config.mojom",
     "fetch/fetch_api_request.mojom",
     "fetch/fetch_api_response.mojom",
     "file/file_utilities.mojom",
@@ -138,6 +139,7 @@ mojom("mojom_platform") {
     "mime/mime_registry.mojom",
     "native_io/native_io.mojom",
     "navigation/navigation_api_history_entry_arrays.mojom",
+    "navigation/navigation_initiator_activation_and_ad_status.mojom",
     "navigation/navigation_policy.mojom",
     "navigation/prefetched_signed_exchange_info.mojom",
     "navigation/renderer_eviction_reason.mojom",
@@ -549,6 +551,10 @@ mojom("mojom_platform") {
         {
           mojom = "blink.mojom.AttributionSuitableOrigin"
           cpp = "::attribution_reporting::SuitableOrigin"
+
+          # Avoid expensive copies by forcing Mojo methods to take the type by
+          # value, not const ref
+          move_only = true
         },
         {
           mojom = "blink.mojom.AttributionFilterData"
@@ -589,6 +595,40 @@ mojom("mojom_platform") {
       ]
       traits_headers = [ "//third_party/blink/public/common/attribution_reporting/mojom_traits.h" ]
       traits_public_deps = [ "//components/attribution_reporting" ]
+    },
+    {
+      types = [
+        {
+          mojom = "blink.mojom.Opaque"
+          cpp = "::blink::FencedFrame::Opaque"
+        },
+        {
+          mojom = "blink.mojom.AdAuctionData"
+          cpp = "::blink::FencedFrame::AdAuctionData"
+        },
+        {
+          mojom = "blink.mojom.SharedStorageBudgetMetadata"
+          cpp = "::blink::FencedFrame::SharedStorageBudgetMetadata"
+        },
+        {
+          mojom = "blink.mojom.ReportingDestination"
+          cpp = "::blink::FencedFrame::ReportingDestination"
+        },
+        {
+          mojom = "blink.mojom.FencedFrameReporting"
+          cpp = "::blink::FencedFrame::FencedFrameReporting"
+        },
+        {
+          mojom = "blink.mojom.FencedFrameConfig"
+          cpp = "::blink::FencedFrame::RedactedFencedFrameConfig"
+        },
+        {
+          mojom = "blink.mojom.FencedFrameProperties"
+          cpp = "::blink::FencedFrame::RedactedFencedFrameProperties"
+        },
+      ]
+      traits_headers = [ "//third_party/blink/public/common/fenced_frame/redacted_fenced_frame_config_mojom_traits.h" ]
+      traits_public_deps = [ "//third_party/blink/public/common:headers" ]
     },
   ]
   cpp_typemaps = [
@@ -1110,7 +1150,6 @@ mojom("mojom_core") {
 
     # Depends on frame_policy.mojom.
     "fenced_frame/fenced_frame.mojom",
-    "fenced_frame/fenced_frame_config.mojom",
     "navigation/navigation_params.mojom",
 
     # Depends on transferable_message.mojom.
@@ -1252,20 +1291,6 @@ mojom("mojom_core") {
         "//third_party/blink/public/common/messaging/transferable_message.h",
       ]
       traits_private_headers = [ "//third_party/blink/public/common/messaging/transferable_message_mojom_traits.h" ]
-    },
-    {
-      types = [
-        {
-          mojom = "blink.mojom.FencedFrameConfig"
-          cpp = "::blink::FencedFrame::RedactedFencedFrameConfig"
-        },
-        {
-          mojom = "blink.mojom.FencedFrameProperties"
-          cpp = "::blink::FencedFrame::RedactedFencedFrameProperties"
-        },
-      ]
-      traits_headers = [ "//third_party/blink/public/common/fenced_frame/redacted_fenced_frame_config_mojom_traits.h" ]
-      traits_public_deps = [ "//third_party/blink/public/common:headers" ]
     },
   ]
   cpp_typemaps += shared_cpp_typemaps

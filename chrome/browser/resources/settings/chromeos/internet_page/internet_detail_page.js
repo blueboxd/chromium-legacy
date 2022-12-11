@@ -50,7 +50,7 @@ import {afterNextRender, flush, html, mixinBehaviors, PolymerElement} from 'chro
 
 import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
 import {SyncBrowserProxyImpl} from '../../people_page/sync_browser_proxy.js';
-import {Route, Router} from '../../router.js';
+import {Route, Router} from '../router.js';
 import {DeepLinkingBehavior, DeepLinkingBehaviorInterface} from '../deep_linking_behavior.js';
 import {recordSettingChange} from '../metrics_recorder.js';
 import {OsSyncBrowserProxy, OsSyncBrowserProxyImpl, OsSyncPrefs} from '../os_people_page/os_sync_browser_proxy.js';
@@ -59,6 +59,19 @@ import {RouteObserverBehavior, RouteObserverBehaviorInterface} from '../route_ob
 
 import {InternetPageBrowserProxy, InternetPageBrowserProxyImpl} from './internet_page_browser_proxy.js';
 import {TetherConnectionDialogElement} from './tether_connection_dialog.js';
+
+/**
+ * TODO(crbug/1315757) The following type definitions are only needed for
+ * Closure compiler and can be removed when this file is converted to TS.
+ *
+ * @constructor
+ * @extends {HTMLElement}
+ */
+export function CellularRoamingToggleButtonElement() {}
+
+/** @return {?CrToggleElement} */
+CellularRoamingToggleButtonElement.prototype.getCellularRoamingToggle =
+    function() {};
 
 /**
  * @constructor
@@ -508,7 +521,9 @@ class SettingsInternetDetailPageElement extends
     if (settingId === Setting.kCellularRoaming) {
       this.afterRenderShowDeepLink(
           settingId,
-          () => this.shadowRoot.querySelector('cellular-roaming-toggle-button')
+          () => /** @type {CellularRoamingToggleButtonElement} */ (
+                    this.shadowRoot.querySelector(
+                        'cellular-roaming-toggle-button'))
                     .getCellularRoamingToggle());
       // Stop deep link attempt since we completed it manually.
       return false;

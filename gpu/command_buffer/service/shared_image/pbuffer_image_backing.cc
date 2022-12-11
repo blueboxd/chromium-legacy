@@ -4,12 +4,11 @@
 
 #include "gpu/command_buffer/service/shared_image/pbuffer_image_backing.h"
 
-#include "base/trace_event/memory_dump_manager.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/resource_sizes.h"
-#include "gpu/command_buffer/common/shared_image_trace_utils.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_format_utils.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
@@ -17,7 +16,6 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_implementation.h"
-#include "ui/gl/trace_util.h"
 
 namespace gpu {
 
@@ -63,24 +61,6 @@ PbufferImageBacking::~PbufferImageBacking() {
 
 scoped_refptr<gfx::NativePixmap> PbufferImageBacking::GetNativePixmap() {
   return nullptr;
-}
-
-void PbufferImageBacking::OnMemoryDump(
-    const std::string& dump_name,
-    base::trace_event::MemoryAllocatorDumpGuid client_guid,
-    base::trace_event::ProcessMemoryDump* pmd,
-    uint64_t client_tracing_id) {
-  SharedImageBacking::OnMemoryDump(dump_name, client_guid, pmd,
-                                   client_tracing_id);
-
-  // Add a |service_guid| which expresses shared ownership between the
-  // various GPU dumps.
-  auto service_id = passthrough_texture_->service_id();
-  if (service_id) {
-    auto service_guid = gl::GetGLTextureServiceGUIDForTracing(service_id);
-    pmd->CreateSharedGlobalAllocatorDump(service_guid);
-    pmd->AddOwnershipEdge(client_guid, service_guid, kOwningEdgeImportance);
-  }
 }
 
 SharedImageBackingType PbufferImageBacking::GetType() const {
@@ -137,10 +117,15 @@ std::unique_ptr<SkiaImageRepresentation> PbufferImageBacking::ProduceSkia(
   }
 
   if (!cached_promise_texture_) {
+    bool angle_rgbx_internal_format = context_state->feature_info()
+                                          ->feature_flags()
+                                          .angle_rgbx_internal_format;
+    GLenum gl_texture_storage_format = TextureStorageFormat(
+        format(), angle_rgbx_internal_format, /*plane_index=*/0);
     GrBackendTexture backend_texture;
     GetGrBackendTexture(
         context_state->feature_info(), GL_TEXTURE_2D, size(),
-        passthrough_texture_->service_id(), format().resource_format(),
+        passthrough_texture_->service_id(), gl_texture_storage_format,
         context_state->gr_context()->threadSafeProxy(), &backend_texture);
     cached_promise_texture_ = SkPromiseImageTexture::Make(backend_texture);
   }

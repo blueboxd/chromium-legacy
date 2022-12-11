@@ -99,6 +99,9 @@ void RgbKeyboardManager::SetZoneColor(int zone,
                                       uint8_t g,
                                       uint8_t b) {
   DCHECK(RgbkbdClient::Get());
+  background_type_ = BackgroundType::kStaticZones;
+  zone_colors_[zone] = SkColorSetRGB(r, g, b);
+
   if (zone < 0 || zone >= GetZoneCount()) {
     LOG(ERROR) << "Attempted to set an invalid zone: " << zone;
     return;
@@ -112,7 +115,10 @@ void RgbKeyboardManager::SetZoneColor(int zone,
   VLOG(1) << "Setting RGB keyboard zone " << zone
           << " color to R:" << static_cast<int>(r)
           << " G:" << static_cast<int>(g) << " B:" << static_cast<int>(b);
-  // TODO(swifton): Add metrics.
+  ash::rgb_keyboard::metrics::EmitRgbBacklightChangeType(
+      ash::rgb_keyboard::metrics::RgbKeyboardBacklightChangeType::
+          kStaticZoneColorChanged,
+      capabilities_);
   RgbkbdClient::Get()->SetZoneColor(zone, r, g, b);
 }
 
@@ -201,7 +207,12 @@ void RgbKeyboardManager::InitializeRgbKeyboard() {
                                SkColorGetG(background_color_),
                                SkColorGetB(background_color_));
       break;
-    // TODO(swifton): Add a case for zone colors.
+    case BackgroundType::kStaticZones:
+      for (auto const& [zone, color] : zone_colors_) {
+        SetZoneColor(zone, SkColorGetR(color), SkColorGetG(color),
+                     SkColorGetB(color));
+      }
+      break;
     case BackgroundType::kStaticRainbow:
       SetRainbowMode();
       break;

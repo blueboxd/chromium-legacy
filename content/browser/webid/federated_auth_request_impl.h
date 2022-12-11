@@ -74,24 +74,24 @@ class CONTENT_EXPORT FederatedAuthRequestImpl
   void OnRejectRequest();
 
   struct IdentityProviderGetInfo {
-    IdentityProviderGetInfo(blink::mojom::IdentityProvider,
+    IdentityProviderGetInfo(blink::mojom::IdentityProviderConfig,
                             bool prefer_auto_signin);
     ~IdentityProviderGetInfo();
     IdentityProviderGetInfo(const IdentityProviderGetInfo&);
 
-    blink::mojom::IdentityProvider provider;
+    blink::mojom::IdentityProviderConfig provider;
     bool prefer_auto_signin{false};
   };
 
   struct IdentityProviderInfo {
-    IdentityProviderInfo(blink::mojom::IdentityProvider,
+    IdentityProviderInfo(blink::mojom::IdentityProviderConfig,
                          IdpNetworkRequestManager::Endpoints,
                          IdentityProviderMetadata,
                          bool prefer_auto_signin);
     ~IdentityProviderInfo();
     IdentityProviderInfo(const IdentityProviderInfo&);
 
-    blink::mojom::IdentityProvider provider;
+    blink::mojom::IdentityProviderConfig provider;
     IdpNetworkRequestManager::Endpoints endpoints;
     IdentityProviderMetadata metadata;
     bool prefer_auto_signin{false};
@@ -119,15 +119,28 @@ class CONTENT_EXPORT FederatedAuthRequestImpl
       const IdpNetworkRequestManager::AccountList& accounts,
       IdpNetworkRequestManager::FetchStatus status,
       IdpNetworkRequestManager::ClientMetadata client_metadata);
-  void MaybeShowAccountsDialog(
+
+  // Called when all of the data needed to display the FedCM prompt has been
+  // fetched for `idp_info`.
+  void OnFetchDataForIdpSucceeded(
       std::unique_ptr<IdentityProviderInfo> idp_info,
       const IdpNetworkRequestManager::AccountList& accounts,
       const IdpNetworkRequestManager::ClientMetadata& client_metadata);
 
+  // Called when there is an error in fetching information to show the prompt
+  // for a given IDP - `idp_info`.
+  void OnFetchDataForIdpFailed(
+      std::unique_ptr<IdentityProviderInfo> idp_info,
+      blink::mojom::FederatedAuthRequestResult result,
+      absl::optional<content::FedCmRequestIdTokenStatus> token_status,
+      bool should_delay_callback);
+
+  void MaybeShowAccountsDialog();
+
   // Updates the IdpSigninStatus in case of accounts fetch failure and shows a
   // failure UI if applicable.
   void HandleAccountsFetchFailure(
-      const url::Origin& idp_origin,
+      std::unique_ptr<IdentityProviderInfo> idp_info,
       blink::mojom::FederatedAuthRequestResult result,
       absl::optional<content::FedCmRequestIdTokenStatus> token_status);
 
@@ -145,14 +158,15 @@ class CONTENT_EXPORT FederatedAuthRequestImpl
       IdentityRequestDialogController::DismissReason dismiss_reason);
   void OnDialogDismissed(
       IdentityRequestDialogController::DismissReason dismiss_reason);
-  void CompleteTokenRequest(const blink::mojom::IdentityProvider& idp,
+  void CompleteTokenRequest(const blink::mojom::IdentityProviderConfig& idp,
                             IdpNetworkRequestManager::FetchStatus status,
                             const std::string& token);
-  void OnTokenResponseReceived(const blink::mojom::IdentityProvider& idp,
+  void OnTokenResponseReceived(const blink::mojom::IdentityProviderConfig& idp,
                                IdpNetworkRequestManager::FetchStatus status,
                                const std::string& token);
   void DispatchOneLogout();
   void OnLogoutCompleted();
+
   void CompleteRequestWithError(
       blink::mojom::FederatedAuthRequestResult result,
       absl::optional<content::FedCmRequestIdTokenStatus> token_status,
@@ -164,6 +178,12 @@ class CONTENT_EXPORT FederatedAuthRequestImpl
       const std::string& token,
       bool should_delay_callback);
   void CompleteLogoutRequest(blink::mojom::LogoutRpsStatus);
+
+  // Notifies metrics endpoint that either the user did not select the IDP in
+  // the prompt or that there was an error in fetching data for the IDP.
+  void SendFailedTokenRequestMetrics(
+      const GURL& metrics_endpoint,
+      blink::mojom::FederatedAuthRequestResult result);
 
   void CleanUp();
 
@@ -193,7 +213,7 @@ class CONTENT_EXPORT FederatedAuthRequestImpl
   // reorders accounts so that those that are considered returning users are
   // before users that are not returning.
   void ComputeLoginStateAndReorderAccounts(
-      const blink::mojom::IdentityProvider& idp,
+      const blink::mojom::IdentityProviderConfig& idp,
       IdpNetworkRequestManager::AccountList& accounts);
 
   url::Origin GetEmbeddingOrigin() const;

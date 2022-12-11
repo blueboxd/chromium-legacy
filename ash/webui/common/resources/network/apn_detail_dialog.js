@@ -43,7 +43,7 @@ const IpTypes = [
 /** @enum {number} */
 const UiElement = {
   INPUT: 0,
-  ADD_BUTTON: 1,
+  ACTION_BUTTON: 1,
   DONE_BUTTON: 2,
 };
 
@@ -270,23 +270,46 @@ export class ApnDetailDialog extends ApnDetailDialogElementBase {
    * @param {!Event} event
    * @private
    */
-  onAddClicked_(event) {
+  onActionButtonClicked_(event) {
     assert(this.guid);
-
-    const apnProperties = /** @type {!ApnProperties} */ ({
-      accessPointName: this.apn_,
-      username: this.username_,
-      password: this.password_,
-      authenticationType: Number(this.selectedAuthType_),
-      ipType: Number(this.selectedIpType_),
-      // TODO(b/162365553): Check that ApnTypes is non-empty
-      apnTypes: this.getSelectedApnTypes_(),
-    });
-    this.networkConfig_.createCustomApn(this.guid, apnProperties);
-
+    assert(this.mode !== ApnDetailDialogMode.VIEW);
+    if (this.mode === ApnDetailDialogMode.CREATE) {
+      // Note: apnProperties is undefined when we are in the create mode.
+      assert(!this.apnProperties);
+      this.networkConfig_.createCustomApn(this.guid, this.getApnProperties_());
+    } else if (this.mode === ApnDetailDialogMode.EDIT) {
+      assert(!!this.apnProperties.id);
+      this.networkConfig_.modifyCustomApn(
+          this.guid, this.getApnProperties_(this.apnProperties));
+    }
     this.$.apnDetailDialog.close();
   }
 
+  /**
+   * @return {!ApnProperties}
+   * @private
+   */
+  getApnProperties_(apnProperties = {}) {
+    apnProperties.accessPointName = this.apn_;
+    apnProperties.username = this.username_;
+    apnProperties.password = this.password_;
+    apnProperties.authenticationType = Number(this.selectedAuthType_);
+    apnProperties.ipType = Number(this.selectedIpType_);
+    // TODO(b/162365553): Check that ApnTypes is non-empty
+    apnProperties.apnTypes = this.getSelectedApnTypes_();
+    return /** @type {!ApnProperties}*/ (apnProperties);
+  }
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getActionButtonTitle_() {
+    if (this.mode === ApnDetailDialogMode.EDIT) {
+      return this.i18n('save');
+    }
+    return this.i18n('add');
+  }
   /**
    * @private
    */
@@ -297,8 +320,7 @@ export class ApnDetailDialog extends ApnDetailDialogElementBase {
       case ApnDetailDialogMode.VIEW:
         return this.i18n('apnDetailViewApnDialogTitle');
       case ApnDetailDialogMode.EDIT:
-        // TODO(b/162365553): Add edit mode for the apn detail dialog.
-        return '';
+        return this.i18n('apnDetailEditApnDialogTitle');
     }
   }
   /**
@@ -375,7 +397,7 @@ export class ApnDetailDialog extends ApnDetailDialogElementBase {
     switch (uiElement) {
       case UiElement.INPUT:
         return this.mode === ApnDetailDialogMode.VIEW;
-      case UiElement.ADD_BUTTON:
+      case UiElement.ACTION_BUTTON:
         return this.apn_.length === 0 || this.isApnInputInvalid_;
     }
     return false;
@@ -390,8 +412,9 @@ export class ApnDetailDialog extends ApnDetailDialogElementBase {
     switch (uiElement) {
       case UiElement.DONE_BUTTON:
         return this.mode === ApnDetailDialogMode.VIEW;
-      case UiElement.ADD_BUTTON:
-        return this.mode === ApnDetailDialogMode.CREATE;
+      case UiElement.ACTION_BUTTON:
+        return this.mode === ApnDetailDialogMode.CREATE ||
+            this.mode === ApnDetailDialogMode.EDIT;
     }
     return true;
   }

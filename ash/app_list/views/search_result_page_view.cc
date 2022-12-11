@@ -10,8 +10,8 @@
 #include <utility>
 
 #include "ash/app_list/app_list_util.h"
+#include "ash/app_list/views/app_list_search_view.h"
 #include "ash/app_list/views/contents_view.h"
-#include "ash/app_list/views/productivity_launcher_search_view.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/search_result_page_anchored_dialog.h"
 #include "ash/public/cpp/app_list/app_list_color_provider.h"
@@ -54,9 +54,13 @@ constexpr SystemShadow::Type kSearchBoxSearchResultShadowType =
 constexpr base::TimeDelta kExpandingSearchResultDuration =
     base::Milliseconds(200);
 
-// The duration of the search result page view closing animation.
-constexpr base::TimeDelta kClosingSearchResultDuration =
+// The duration of the search result page view going from expanded to active.
+constexpr base::TimeDelta kExpandedToActiveSearchResultDuration =
     base::Milliseconds(100);
+
+// The duration of the search result page view going from expanded to closed.
+constexpr base::TimeDelta kExpandedToClosedSearchResultDuration =
+    base::Milliseconds(250);
 
 // The duration of the search result page view decreasing height animation
 // within the kExpanded state.
@@ -117,10 +121,10 @@ void SearchResultPageView::InitializeContainers(
   // to keep the position of dialogs consistent.
   dialog_controller_ =
       std::make_unique<SearchResultPageDialogController>(search_box_view);
-  std::unique_ptr<ProductivityLauncherSearchView> search_view_ptr =
-      std::make_unique<ProductivityLauncherSearchView>(
+  std::unique_ptr<AppListSearchView> search_view_ptr =
+      std::make_unique<AppListSearchView>(
           view_delegate, dialog_controller_.get(), search_box_view);
-  productivity_launcher_search_view_ = search_view_ptr.get();
+  search_view_ = search_view_ptr.get();
   root_view_->AddChildView(
       std::make_unique<SearchCardView>(std::move(search_view_ptr)));
 }
@@ -130,11 +134,11 @@ const char* SearchResultPageView::GetClassName() const {
 }
 
 gfx::Size SearchResultPageView::CalculatePreferredSize() const {
-  int adjusted_height = std::min(
-      std::max(kMinHeight,
-               productivity_launcher_search_view_->TabletModePreferredHeight() +
-                   kActiveSearchBoxHeight + kExpandedSearchBoxCornerRadius),
-      contents_view()->height());
+  int adjusted_height =
+      std::min(std::max(kMinHeight, search_view_->TabletModePreferredHeight() +
+                                        kActiveSearchBoxHeight +
+                                        kExpandedSearchBoxCornerRadius),
+               contents_view()->height());
   return gfx::Size(kWidth, adjusted_height);
 }
 
@@ -166,8 +170,7 @@ void SearchResultPageView::OnThemeChanged() {
 }
 
 void SearchResultPageView::UpdateForNewSearch() {
-  productivity_launcher_search_view_->UpdateForNewSearch(
-      ShouldShowSearchResultView());
+  search_view_->UpdateForNewSearch(ShouldShowSearchResultView());
 }
 
 void SearchResultPageView::UpdateResultContainersVisibility() {
@@ -256,18 +259,38 @@ void SearchResultPageView::AnimateBetweenBounds(const gfx::Rect& from_rect,
     return;
   }
 
-  gfx::Rect clip_rect = from_rect;
-  clip_rect -= to_rect.OffsetFromOrigin();
+  const bool is_expanding = from_rect.height() < to_rect.height();
+  gfx::Rect clip_rect;
+  gfx::Rect to_clip_rect;
+
+  // The clip rects will always be located relative to the view bounds current
+  // OffsetFromOrigin(). To ensure the animation is not cutoff by the view
+  // bounds, the view bounds will equal the larger of `from_rect` and
+  // `to_rect`. Because of this, calculate the clip rects so that their 0,0
+  // origin is located at the offset of the wider input bounds (widest between
+  // `from_rect` and `to_rect`).
+  if (is_expanding) {
+    clip_rect = from_rect - to_rect.OffsetFromOrigin();
+    to_clip_rect = gfx::Rect(to_rect.size());
+  } else {
+    clip_rect = gfx::Rect(from_rect.size());
+    to_clip_rect = to_rect - from_rect.OffsetFromOrigin();
+  }
   layer()->SetClipRect(clip_rect);
   shadow_.reset();
 
   base::TimeDelta duration;
-  if (from_rect.height() < to_rect.height()) {
-    duration = kExpandingSearchResultDuration;
-  } else {
-    duration = (current_search_results_state_ == SearchResultsState::kExpanded)
-                   ? kDecreasingHeightSearchResultsDuration
-                   : kClosingSearchResultDuration;
+  switch (current_search_results_state_) {
+    case SearchResultsState::kExpanded:
+      duration = is_expanding ? kExpandingSearchResultDuration
+                              : kDecreasingHeightSearchResultsDuration;
+      break;
+    case SearchResultsState::kActive:
+      duration = kExpandedToActiveSearchResultDuration;
+      break;
+    case SearchResultsState::kClosed:
+      duration = kExpandedToClosedSearchResultDuration;
+      break;
   }
 
   views::AnimationBuilder()
@@ -278,8 +301,7 @@ void SearchResultPageView::AnimateBetweenBounds(const gfx::Rect& from_rect,
                          base::Unretained(this)))
       .Once()
       .SetDuration(duration)
-      .SetClipRect(layer(), gfx::Rect(to_rect.size()),
-                   gfx::Tween::FAST_OUT_SLOW_IN)
+      .SetClipRect(layer(), to_clip_rect, gfx::Tween::FAST_OUT_SLOW_IN)
       .SetRoundedCorners(
           layer(),
           gfx::RoundedCornersF(GetCornerRadiusForSearchResultsState(
@@ -341,7 +363,7 @@ bool SearchResultPageView::CanSelectSearchResults() const {
   if (!GetVisible())
     return false;
 
-  return productivity_launcher_search_view_->CanSelectSearchResults();
+  return search_view_->CanSelectSearchResults();
 }
 
 SkColor SearchResultPageView::GetBackgroundColorForState(

@@ -25,6 +25,23 @@ class WaylandPopup : public WaylandWindow {
 
   ShellPopupWrapper* shell_popup() const { return shell_popup_.get(); }
 
+  // WaylandWindow overrides:
+
+  // Configure related:
+  void HandleSurfaceConfigure(uint32_t serial) override;
+  void HandlePopupConfigure(const gfx::Rect& bounds) override;
+  bool IsSurfaceConfigured() override;
+  void AckConfigure(uint32_t serial) override;
+  void UpdateVisualSize(const gfx::Size& size_px) override;
+  void ApplyPendingBounds() override;
+
+  void OnCloseRequest() override;
+  bool OnInitialize(PlatformWindowInitProperties properties) override;
+  WaylandPopup* AsWaylandPopup() override;
+  void SetWindowGeometry(gfx::Size size_dip) override;
+  void UpdateWindowMask() override;
+  void PropagateBufferScale(float new_scale) override;
+
   // PlatformWindow
   void Show(bool inactive) override;
   void Hide() override;
@@ -32,19 +49,6 @@ class WaylandPopup : public WaylandWindow {
   void SetBoundsInDIP(const gfx::Rect& bounds) override;
 
  private:
-  // WaylandWindow overrides:
-  void HandlePopupConfigure(const gfx::Rect& bounds) override;
-  void HandleSurfaceConfigure(uint32_t serial) override;
-  void OnCloseRequest() override;
-  bool OnInitialize(PlatformWindowInitProperties properties) override;
-  WaylandPopup* AsWaylandPopup() override;
-  bool IsSurfaceConfigured() override;
-  void SetWindowGeometry(gfx::Rect bounds) override;
-  void AckConfigure(uint32_t serial) override;
-  void UpdateVisualSize(const gfx::Size& size_px) override;
-  void ApplyPendingBounds() override;
-  void UpdateWindowMask() override;
-
   // Creates a popup window, which is visible as a menu window.
   bool CreateShellPopup();
 
@@ -72,6 +76,9 @@ class WaylandPopup : public WaylandWindow {
   // Ozone/Wayland may not do so. Otherwise, a new state (if bounds has been
   // changed) won't be applied.
   bool schedule_redraw_ = false;
+
+  // The last buffer scale sent to the wayland server.
+  absl::optional<float> last_sent_buffer_scale_;
 };
 
 }  // namespace ui

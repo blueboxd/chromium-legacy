@@ -9,8 +9,22 @@
 #include "components/password_manager/core/browser/import/csv_password.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_list_sorter.h"
+#include "components/password_manager/core/browser/password_ui_utils.h"
+#include "components/url_formatter/elide_url.h"
 
 namespace password_manager {
+
+namespace {
+
+constexpr char kPlayStoreAppPrefix[] =
+    "https://play.google.com/store/apps/details?id=";
+
+std::string GetOrigin(const url::Origin& origin) {
+  return base::UTF16ToUTF8(url_formatter::FormatOriginForSecurityDisplay(
+      origin, url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
+}
+
+}  // namespace
 
 // CredentialFacet
 
@@ -80,10 +94,23 @@ CredentialUIEntry::CredentialUIEntry(const std::vector<PasswordForm>& forms) {
   blocked_by_user = forms[0].blocked_by_user;
   last_used_time = forms[0].date_last_used;
 
-  // Only one-note with an empty `unique_display_name` is supported in the
-  // settings UI.
-  note =
-      forms[0].GetNoteWithEmptyUniqueDisplayName().value_or(std::u16string());
+  // For cases when the notes differ within grouped passwords (e.g: a
+  // credential exists in both account and profile stores), respective notes
+  // should be concatenated and linebreak used as a delimiter.
+  std::vector<const std::u16string> notes_with_duplicates;
+  for (const auto& form : forms) {
+    // Only notes with an empty `unique_display_name` are supported in the
+    // settings UI.
+    const std::u16string current_note =
+        form.GetNoteWithEmptyUniqueDisplayName().value_or(std::u16string());
+    if (current_note.empty())
+      continue;
+    notes_with_duplicates.push_back(current_note);
+  }
+  auto unique_notes = base::MakeFlatSet<std::u16string>(notes_with_duplicates);
+  note = base::JoinString(std::vector<const std::u16string>(
+                              unique_notes.begin(), unique_notes.end()),
+                          u"\n");
 
   // Add credential facets.
   for (const auto& form : forms) {
@@ -168,6 +195,32 @@ std::string CredentialUIEntry::GetAffiliatedWebRealm() const {
 GURL CredentialUIEntry::GetURL() const {
   DCHECK(!facets.empty());
   return facets[0].url;
+}
+
+std::vector<CredentialUIEntry::DomainInfo>
+CredentialUIEntry::GetAffiliatedDomains() const {
+  std::vector<CredentialUIEntry::DomainInfo> domains;
+  for (const auto& facet : facets) {
+    CredentialUIEntry::DomainInfo domain;
+    password_manager::FacetURI facet_uri =
+        password_manager::FacetURI::FromPotentiallyInvalidSpec(
+            facet.signon_realm);
+    if (facet_uri.IsValidAndroidFacetURI()) {
+      domain.name = facet.display_name.empty()
+                        ? password_manager::SplitByDotAndReverse(
+                              facet_uri.android_package_name())
+                        : facet.display_name;
+      domain.url =
+          facet.affiliated_web_realm.empty()
+              ? GURL(kPlayStoreAppPrefix + facet_uri.android_package_name())
+              : GURL(facet.affiliated_web_realm);
+    } else {
+      domain.name = GetOrigin(url::Origin::Create(facet.url));
+      domain.url = facet.url;
+    }
+    domains.push_back(std::move(domain));
+  }
+  return domains;
 }
 
 bool operator==(const CredentialUIEntry& lhs, const CredentialUIEntry& rhs) {

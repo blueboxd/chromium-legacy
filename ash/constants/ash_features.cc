@@ -361,11 +361,6 @@ BASE_FEATURE(kCalendarJelly,
              "CalendarJelly",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables to allow using document scanning feature via DLC in the camera app.
-BASE_FEATURE(kCameraAppDocScanDlc,
-             "CameraAppDocScanDlc",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables to allow low storage warning feature in the camera app.
 BASE_FEATURE(kCameraAppLowStorageWarning,
              "CameraAppLowStorageWarning",
@@ -1363,7 +1358,7 @@ BASE_FEATURE(kLockScreenInlineReply,
 // Enables new flow for Education license packaged devices.
 BASE_FEATURE(kEducationEnrollmentOobeFlow,
              "EducationEnrollmentOobeFlow",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables notifications on the lock screen.
 BASE_FEATURE(kLockScreenNotifications,
@@ -1551,6 +1546,12 @@ BASE_FEATURE(kOsSettingsSearchFeedback,
 
 BASE_FEATURE(kOverviewButton,
              "OverviewButton",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables staying in overview when navigating between desks using a swipe
+// gesture or keyboard shortcut.
+BASE_FEATURE(kOverviewDeskNavigation,
+             "OverviewDeskNavigation",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables a notification warning users that their Thunderbolt device is not
@@ -2880,6 +2881,10 @@ bool IsOsSettingsAppBadgingToggleEnabled() {
 
 bool IsOsSettingsSearchFeedbackEnabled() {
   return base::FeatureList::IsEnabled(kOsSettingsSearchFeedback);
+}
+
+bool IsOverviewDeskNavigationEnabled() {
+  return base::FeatureList::IsEnabled(kOverviewDeskNavigation);
 }
 
 bool IsPcieBillboardNotificationEnabled() {

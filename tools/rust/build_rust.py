@@ -4,7 +4,6 @@
 # found in the LICENSE file.
 '''Assembles a Rust toolchain in-tree linked against in-tree LLVM.
 
-!!! DO NOT USE IN PRODUCTION
 Builds a Rust toolchain bootstrapped from an untrusted rustc build.
 
 Rust has an official boostrapping build. At a high level:
@@ -50,6 +49,7 @@ sys.path.append(
     os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'clang',
                  'scripts'))
 
+from build import RunCommand
 from update import (CLANG_REVISION, CLANG_SUB_REVISION, LLVM_BUILD_DIR,
                     GetDefaultHostOs, RmTree, UpdatePackage)
 import build
@@ -99,17 +99,6 @@ EXCLUDED_TESTS = [
     'src/test/codegen/sanitizer-cfi-emit-type-checks.rs',
     'src/test/codegen/sanitizer-cfi-emit-type-metadata-itanium-cxx-abi.rs',
 ]
-
-
-def RunCommand(command, env=None, fail_hard=True):
-    print('Running', command)
-    if subprocess.run(command, env=env,
-                      shell=sys.platform == 'win32').returncode == 0:
-        return True
-    print('Failed.')
-    if fail_hard:
-        sys.exit(1)
-    return False
 
 
 def VerifyStage0JsonHash():
@@ -168,9 +157,9 @@ def RunXPy(sub, args, gcc_toolchain_path, verbose):
     # upstream in LLVM but hasn't rolled into Chromium. Also see:
     # * https://github.com/rust-lang/rust/issues/92181
     # * https://reviews.llvm.org/D116528
-    RUSTENV['RUSTFLAGS_BOOTSTRAP'] = (
-        f'-Clinker={clang_path} -Clink-arg=-fuse-ld=lld '
-        f'-Clink-arg=-Wl,--no-gc-sections)')
+    RUSTENV['RUSTFLAGS_BOOTSTRAP'] = (f'-Clinker={clang_path} '
+                                      f'-Clink-arg=-fuse-ld=lld '
+                                      f'-Clink-arg=-Wl,--no-gc-sections')
     if gcc_toolchain_flag:
         RUSTENV['RUSTFLAGS_BOOTSTRAP'] += f' -Clink-arg={gcc_toolchain_flag} '
     if gcc_toolchain_path:
@@ -181,7 +170,7 @@ def RunXPy(sub, args, gcc_toolchain_path, verbose):
     cmd = [sys.executable, 'x.py', sub]
     if verbose and verbose > 0:
         cmd.append('-' + verbose * 'v')
-    RunCommand(cmd + args, env=RUSTENV)
+    RunCommand(cmd + args, msvc_arch='x64', env=RUSTENV)
 
 
 # Get arguments to run desired test suites, minus disabled tests.

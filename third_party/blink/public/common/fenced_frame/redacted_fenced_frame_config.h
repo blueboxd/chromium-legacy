@@ -26,12 +26,33 @@ FORWARD_DECLARE_TEST(FencedFrameConfigMojomTraitsTest, ConfigMojomTraitsTest);
 
 namespace blink::FencedFrame {
 
-struct AdAuctionData {
+// This is used to represent the "opaque" union variant of "PotentiallyOpaque"
+// mojom types.
+enum class Opaque {
+  kOpaque,
+};
+
+enum ReportingDestination {
+  kBuyer,
+  kSeller,
+  kComponentSeller,
+  kSharedStorageSelectUrl,
+};
+
+struct BLINK_COMMON_EXPORT FencedFrameReporting {
+  // If this is an "opaque-ads" mode fenced frame, there might be an associated
+  // reporting metadata. This is a map from destination type to reporting
+  // metadata which in turn is a map from the event type (registered by the
+  // associated worklet) to the reporting url.
+  // https://github.com/WICG/turtledove/blob/main/Fenced_Frames_Ads_Reporting.md
+  base::flat_map<ReportingDestination, base::flat_map<std::string, GURL>>
+      metadata;
+};
+
+struct BLINK_COMMON_EXPORT AdAuctionData {
   url::Origin interest_group_owner;
   std::string interest_group_name;
 };
-
-using ReportingMetadata = blink::mojom::FencedFrameReporting;
 
 // The metadata for the shared storage runURLSelectionOperation's budget,
 // which includes the shared storage's origin and the amount of budget to
@@ -73,6 +94,28 @@ struct BLINK_COMMON_EXPORT RedactedFencedFrameConfig {
   RedactedFencedFrameConfig();
   ~RedactedFencedFrameConfig();
 
+  const absl::optional<RedactedFencedFrameProperty<GURL>>& mapped_url() const {
+    return mapped_url_;
+  }
+  const absl::optional<RedactedFencedFrameProperty<AdAuctionData>>&
+  ad_auction_data() const {
+    return ad_auction_data_;
+  }
+  const absl::optional<
+      RedactedFencedFrameProperty<std::vector<RedactedFencedFrameConfig>>>&
+  nested_configs() const {
+    return nested_configs_;
+  }
+  const absl::optional<
+      RedactedFencedFrameProperty<SharedStorageBudgetMetadata>>&
+  shared_storage_budget_metadata() const {
+    return shared_storage_budget_metadata_;
+  }
+  const absl::optional<RedactedFencedFrameProperty<FencedFrameReporting>>&
+  reporting_metadata() const {
+    return reporting_metadata_;
+  }
+
  private:
   friend struct content::FencedFrameConfig;
   friend struct mojo::StructTraits<
@@ -89,7 +132,7 @@ struct BLINK_COMMON_EXPORT RedactedFencedFrameConfig {
       nested_configs_;
   absl::optional<RedactedFencedFrameProperty<SharedStorageBudgetMetadata>>
       shared_storage_budget_metadata_;
-  absl::optional<RedactedFencedFrameProperty<ReportingMetadata>>
+  absl::optional<RedactedFencedFrameProperty<FencedFrameReporting>>
       reporting_metadata_;
 };
 
@@ -120,7 +163,7 @@ struct BLINK_COMMON_EXPORT RedactedFencedFrameProperties {
   shared_storage_budget_metadata() const {
     return shared_storage_budget_metadata_;
   }
-  const absl::optional<RedactedFencedFrameProperty<ReportingMetadata>>&
+  const absl::optional<RedactedFencedFrameProperty<FencedFrameReporting>>&
   reporting_metadata() const {
     return reporting_metadata_;
   }
@@ -141,7 +184,7 @@ struct BLINK_COMMON_EXPORT RedactedFencedFrameProperties {
       nested_urn_config_pairs_;
   absl::optional<RedactedFencedFrameProperty<SharedStorageBudgetMetadata>>
       shared_storage_budget_metadata_;
-  absl::optional<RedactedFencedFrameProperty<ReportingMetadata>>
+  absl::optional<RedactedFencedFrameProperty<FencedFrameReporting>>
       reporting_metadata_;
 };
 

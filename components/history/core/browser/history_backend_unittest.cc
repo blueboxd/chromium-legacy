@@ -139,6 +139,7 @@ class HistoryBackendTestDelegate : public HistoryBackend::Delegate {
   HistoryBackendTestDelegate& operator=(const HistoryBackendTestDelegate&) =
       delete;
 
+  bool CanAddURL(const GURL& url) const override;
   void NotifyProfileError(sql::InitStatus init_status,
                           const std::string& diagnostics) override {}
   void SetInMemoryBackend(
@@ -153,9 +154,6 @@ class HistoryBackendTestDelegate : public HistoryBackend::Delegate {
                                       KeywordID keyword_id,
                                       const std::u16string& term) override;
   void NotifyKeywordSearchTermDeleted(URLID url_id) override;
-  void NotifyContentModelAnnotationModified(
-      const URLRow& row,
-      const VisitContentModelAnnotations& model_annotations) override;
   void DBLoaded() override;
 
  private:
@@ -223,18 +221,12 @@ class HistoryBackendTestBase : public testing::Test {
     return urls_deleted_notifications_;
   }
 
-  const std::vector<VisitContentModelAnnotations>
-  modified_content_model_annotations() const {
-    return modified_content_model_annotations_;
-  }
-
   void ClearBroadcastedNotifications() {
     url_visited_notifications_.clear();
     urls_modified_notifications_.clear();
     urls_deleted_notifications_.clear();
     favicon_changed_notifications_page_urls_.clear();
     favicon_changed_notifications_icon_urls_.clear();
-    modified_content_model_annotations_.clear();
   }
 
   base::FilePath test_dir() { return test_dir_; }
@@ -274,12 +266,6 @@ class HistoryBackendTestBase : public testing::Test {
 
   void NotifyKeywordSearchTermDeleted(URLID url_id) {
     mem_backend_->OnKeywordSearchTermDeleted(nullptr, url_id);
-  }
-
-  void NotifyContentModelAnnotationModified(
-      const URLRow& row,
-      const VisitContentModelAnnotations& model_annotations) {
-    modified_content_model_annotations_.push_back(model_annotations);
   }
 
   base::test::TaskEnvironment task_environment_{
@@ -324,10 +310,14 @@ class HistoryBackendTestBase : public testing::Test {
   URLVisitedList url_visited_notifications_;
   URLsModifiedList urls_modified_notifications_;
   URLsDeletedList urls_deleted_notifications_;
-  std::vector<VisitContentModelAnnotations> modified_content_model_annotations_;
 
   base::FilePath test_dir_;
 };
+
+bool HistoryBackendTestDelegate::CanAddURL(const GURL& url) const {
+  // For the purposes of these tests, accept all valid URLs except "chrome://".
+  return url.is_valid() && !url.SchemeIs("chrome");
+}
 
 void HistoryBackendTestDelegate::SetInMemoryBackend(
     std::unique_ptr<InMemoryHistoryBackend> backend) {
@@ -363,12 +353,6 @@ void HistoryBackendTestDelegate::NotifyKeywordSearchTermUpdated(
 
 void HistoryBackendTestDelegate::NotifyKeywordSearchTermDeleted(URLID url_id) {
   test_->NotifyKeywordSearchTermDeleted(url_id);
-}
-
-void HistoryBackendTestDelegate::NotifyContentModelAnnotationModified(
-    const URLRow& row,
-    const VisitContentModelAnnotations& model_annotations) {
-  test_->NotifyContentModelAnnotationModified(row, model_annotations);
 }
 
 void HistoryBackendTestDelegate::DBLoaded() {
@@ -1694,7 +1678,6 @@ TEST_F(HistoryBackendTest, AddContentModelAnnotationsWithNoEntryInVisitTable) {
   VisitContentAnnotations got_content_annotations;
   ASSERT_FALSE(backend_->db()->GetContentAnnotationsForVisit(
       visit_id, &got_content_annotations));
-  ASSERT_TRUE(modified_content_model_annotations().empty());
 }
 
 TEST_F(HistoryBackendTest, AddRelatedSearchesWithNoEntryInVisitTable) {
@@ -1834,11 +1817,6 @@ TEST_F(HistoryBackendTest, AddContentModelAnnotations) {
       0.5f, {{/*id=*/"1", /*weight=*/1}, {/*id=*/"2", /*weight=*/1}}, 123, {}};
   backend_->AddContentModelAnnotationsForVisit(
       visit_id, model_annotations_without_entities);
-  std::vector<VisitContentModelAnnotations> annotations =
-      modified_content_model_annotations();
-  ASSERT_EQ(annotations.size(), 1u);
-  ASSERT_EQ(annotations.at(0).visibility_score, 0.5f);
-  ASSERT_EQ(annotations.at(0).categories.size(), 2u);
   VisitContentModelAnnotations model_annotations_only_entities = {
       -1.0f,
       {},
@@ -1850,10 +1828,6 @@ TEST_F(HistoryBackendTest, AddContentModelAnnotations) {
   VisitContentAnnotations got_content_annotations;
   ASSERT_TRUE(backend_->db()->GetContentAnnotationsForVisit(
       visit_id, &got_content_annotations));
-  annotations = modified_content_model_annotations();
-  ASSERT_EQ(annotations.size(), 2u);
-  ASSERT_EQ(annotations.at(1).visibility_score, -1.0f);
-  ASSERT_EQ(annotations.at(1).categories.size(), 0u);
 
   // Model annotations should be merged from both calls.
   EXPECT_EQ(VisitContentAnnotationFlag::kNone,
@@ -4079,6 +4053,26 @@ TEST_F(HistoryBackendTest, AddClusters_GetCluster) {
   VerifyCluster(backend_->GetCluster(2, true), {0});
 }
 
+TEST_F(HistoryBackendTest, ReserveNextClusterId_GetCluster) {
+  int64_t cluster_id = backend_->ReserveNextClusterId();
+
+  // We call from the DB instead of from the backend since the DB does
+  // additional checking around visit count.
+  auto cluster = backend_->db_->GetCluster(cluster_id);
+  EXPECT_EQ(cluster.cluster_id, cluster_id);
+  EXPECT_TRUE(cluster.should_show_on_prominent_ui_surfaces);
+}
+
+TEST_F(HistoryBackendTest, ReserveNextClusterId_AddVisitsToCluster_GetCluster) {
+  int64_t cluster_id = backend_->ReserveNextClusterId();
+
+  AddAnnotatedVisit(1);
+  AddAnnotatedVisit(2);
+  backend_->AddVisitsToCluster(cluster_id, {1, 2});
+
+  VerifyCluster(backend_->GetCluster(cluster_id, false), {cluster_id, {2, 1}});
+}
+
 TEST_F(HistoryBackendTest, GetRedirectChainStart) {
   auto last_visit_time = base::Time::Now();
   const auto add_visit = [&](std::string url, VisitID referring_visit,
@@ -4243,6 +4237,46 @@ TEST_F(HistoryBackendTest, GetRedirectChain) {
   EXPECT_EQ(chain3[0].visit_id, chain3_ids[0]);
   EXPECT_EQ(chain3[1].visit_id, chain3_ids[1]);
   EXPECT_EQ(chain3[2].visit_id, chain3_ids[2]);
+}
+
+TEST_F(HistoryBackendTest, AddSyncedVisitAddsOnlyValidURLs) {
+  const ui::PageTransition kLink = ui::PageTransitionFromInt(
+      ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_CHAIN_START |
+      ui::PAGE_TRANSITION_CHAIN_END);
+
+  // Note: Per AddSyncedVisit() preconditions (DCHECKs), the passed visit MUST
+  // have visit_time and originator_cache_guid, but MUST NOT have visit_id or
+  // url_id.
+
+  // First, try to add some visits with unwanted URLs. These should *not* get
+  // added to the DB.
+  // Note that in this test, all valid URLs except "chrome://" ones are
+  // considered valid; see HistoryBackendTestDelegate::CanAddURL.
+  VisitRow foreign_visit;
+  foreign_visit.visit_time = base::Time::Now();
+  foreign_visit.transition = kLink;
+  foreign_visit.originator_cache_guid = "originator";
+  EXPECT_EQ(kInvalidVisitID,
+            backend_->AddSyncedVisit(GURL("chrome://settings"), u"Settings",
+                                     /*hidden=*/false, foreign_visit,
+                                     absl::nullopt, absl::nullopt));
+  EXPECT_EQ(kInvalidVisitID,
+            backend_->AddSyncedVisit(GURL("Not a URL at all"), u"Title",
+                                     /*hidden=*/false, foreign_visit,
+                                     absl::nullopt, absl::nullopt));
+
+  // A regular old URL should get added successfully.
+  VisitID added_id = backend_->AddSyncedVisit(
+      GURL("https://some.url"), u"Title", /*hidden=*/false, foreign_visit,
+      absl::nullopt, absl::nullopt);
+  EXPECT_NE(added_id, kInvalidVisitID);
+  VisitRow added_visit;
+  EXPECT_TRUE(backend_->GetVisitByID(added_id, &added_visit));
+  EXPECT_EQ(foreign_visit.visit_time, added_visit.visit_time);
+  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+      foreign_visit.transition, added_visit.transition));
+  EXPECT_EQ(foreign_visit.originator_cache_guid,
+            added_visit.originator_cache_guid);
 }
 
 TEST_F(HistoryBackendTest, DeleteAllForeignVisitsDoesNotDeleteLocalVisits) {

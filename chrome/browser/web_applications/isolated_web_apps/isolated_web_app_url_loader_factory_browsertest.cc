@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/web_applications/test/isolated_web_app_test_utils.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_trust_checker.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
@@ -20,6 +21,8 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/web_package/signed_web_bundles/ed25519_public_key.h"
+#include "components/web_package/signed_web_bundles/signed_web_bundle_id.h"
 #include "components/web_package/test_support/signed_web_bundles/web_bundle_signer.h"
 #include "components/web_package/web_bundle_builder.h"
 #include "content/public/common/content_features.h"
@@ -28,6 +31,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "url/url_constants.h"
 
 namespace web_app {
 
@@ -86,6 +90,11 @@ class IsolatedWebAppURLLoaderFactoryBrowserTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUp();
   }
 
+  void TearDown() override {
+    SetTrustedWebBundleIdsForTesting({});
+    InProcessBrowserTest::TearDown();
+  }
+
   std::unique_ptr<KeyedService> CreateWebAppProvider(Profile* profile) {
     auto provider = std::make_unique<FakeWebAppProvider>(profile);
     provider->SetDefaultFakeSubsystems();
@@ -102,6 +111,11 @@ class IsolatedWebAppURLLoaderFactoryBrowserTest : public InProcessBrowserTest {
   void RegisterWebApp(std::unique_ptr<WebApp> web_app) {
     provider()->GetRegistrarMutable().registry().emplace(web_app->app_id(),
                                                          std::move(web_app));
+  }
+
+  void TrustWebBundleId() {
+    SetTrustedWebBundleIdsForTesting(
+        {*web_package::SignedWebBundleId::Create(kTestEd25519WebBundleId)});
   }
 
   base::FilePath SignAndWriteBundleToDisk(
@@ -206,6 +220,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedWebAppURLLoaderFactoryBrowserTest, LoadsBundle) {
   std::unique_ptr<WebApp> iwa = CreateIsolatedWebApp(
       kUrl, IsolationData{IsolationData::InstalledBundle{.path = bundle_path}});
   RegisterWebApp(std::move(iwa));
+  TrustWebBundleId();
 
   NavigateAndWaitForTitle(kUrl, u"Hello Isolated Apps");
 }
@@ -224,6 +239,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedWebAppURLLoaderFactoryBrowserTest,
   std::unique_ptr<WebApp> iwa = CreateIsolatedWebApp(
       kUrl, IsolationData{IsolationData::InstalledBundle{.path = bundle_path}});
   RegisterWebApp(std::move(iwa));
+  TrustWebBundleId();
 
   NavigateAndWaitForTitle(kUrl, u"title from js");
 }
@@ -251,6 +267,7 @@ fetch('title.txt')
   std::unique_ptr<WebApp> iwa = CreateIsolatedWebApp(
       kUrl, IsolationData{IsolationData::InstalledBundle{.path = bundle_path}});
   RegisterWebApp(std::move(iwa));
+  TrustWebBundleId();
 
   NavigateAndWaitForTitle(kUrl, u"some data");
 }
@@ -266,6 +283,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedWebAppURLLoaderFactoryBrowserTest,
   std::unique_ptr<WebApp> iwa = CreateIsolatedWebApp(
       kUrl, IsolationData{IsolationData::InstalledBundle{.path = bundle_path}});
   RegisterWebApp(std::move(iwa));
+  TrustWebBundleId();
 
   NavigateAndWaitForError(
       kUrl,
@@ -284,6 +302,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedWebAppURLLoaderFactoryBrowserTest,
   std::unique_ptr<WebApp> iwa = CreateIsolatedWebApp(
       kUrl, IsolationData{IsolationData::InstalledBundle{.path = bundle_path}});
   RegisterWebApp(std::move(iwa));
+  TrustWebBundleId();
 
   NavigateAndWaitForError(
       kUrl.Resolve("/non-existing"),
@@ -291,6 +310,87 @@ IN_PROC_BROWSER_TEST_F(IsolatedWebAppURLLoaderFactoryBrowserTest,
       "contain a response for the provided URL: "
       "isolated-app://4tkrnsmftl4ggvvdkfth3piainqragus2qbhf7rlz2a3wo3rh4wqaaic/"
       "non-existing");
+}
+
+IN_PROC_BROWSER_TEST_F(IsolatedWebAppURLLoaderFactoryBrowserTest,
+                       UrlLoaderFactoryCanUseServiceWorker) {
+  web_package::WebBundleBuilder builder;
+  builder.AddExchange(kUrl, {{":status", "200"}, {"content-type", "text/html"}},
+                      R"html(
+<html>
+  <head>
+    <script type="text/javascript" src="/script.js"></script>
+  </head>
+</html>
+)html");
+  builder.AddExchange(kUrl.Resolve("/title.txt"),
+                      {{":status", "200"}, {"content-type", "text/plain"}},
+                      "data from web bundle");
+  builder.AddExchange(kUrl.Resolve("/script.js"),
+                      {{":status", "200"}, {"content-type", "text/javascript"}},
+                      R"js(
+const policy = trustedTypes.createPolicy('default', {
+  createScriptURL(url) {
+    return new URL(url, document.baseURI);
+  },
+});
+
+const wait_for_activated = async (registration) => {
+  const worker = registration.active;
+  if (worker.state == 'activated') {
+    return;
+  }
+
+  await new Promise(resolve => {
+    worker.addEventListener('statechange', () => {
+      if (worker.state = 'activated') {
+        resolve();
+      }
+    });
+  });
+};
+
+const register_service_worker = async () => {
+  const registration = await navigator.serviceWorker.register(
+    policy.createScriptURL('service_worker.js'), {
+      scope: '/',
+    }
+  );
+
+  await wait_for_activated(await navigator.serviceWorker.ready);
+
+  return registration;
+};
+
+window.addEventListener('load', (async () => {
+  const registration = await register_service_worker();
+  const request = await fetch('title.txt');
+  document.title = await request.text();
+}));
+)js");
+  builder.AddExchange(kUrl.Resolve("/service_worker.js"),
+                      {{":status", "200"}, {"content-type", "text/javascript"}},
+                      R"js(
+addEventListener('fetch', (event) => {
+  event.respondWith((async () => {
+    response = await fetch(event.request);
+    text = await response.text();
+    return new Response(text + ' data from service worker');
+  })());
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(clients.claim());
+});
+)js");
+  RegisterWebApp(CreateIsolatedWebApp(
+      GURL(kUrl),
+      IsolationData{IsolationData::InstalledBundle{
+          .path = SignAndWriteBundleToDisk(builder.CreateBundle())}}));
+  TrustWebBundleId();
+
+  NavigateAndWaitForTitle(GURL(kUrl),
+                          u"data from web bundle data from service worker");
 }
 
 }  // namespace

@@ -79,6 +79,22 @@ base::scoped_nsprotocol<id<MTLTexture>> CreateMetalTexture(
   return mtl_texture;
 }
 
+bool IsFormatSupported(viz::ResourceFormat resource_format) {
+  switch (resource_format) {
+    case viz::ResourceFormat::RGBA_8888:
+    case viz::ResourceFormat::RGBX_8888:
+    case viz::ResourceFormat::BGRA_8888:
+    case viz::ResourceFormat::BGRX_8888:
+    case viz::ResourceFormat::RGBA_F16:
+    case viz::ResourceFormat::RED_8:
+    case viz::ResourceFormat::BGRA_1010102:
+    case viz::ResourceFormat::RGBA_1010102:
+      return true;
+    default:
+      return false;
+  }
+}
+
 }  // anonymous namespace
 
 // Representation of a SharedImageBackingIOSurface as a Dawn Texture.
@@ -343,41 +359,6 @@ IOSurfaceImageBackingFactory::IOSurfaceImageBackingFactory(
       image_factory_(image_factory) {
   gpu_memory_buffer_formats_ =
       feature_info->feature_flags().gpu_memory_buffer_formats;
-
-  for (int i = 0; i <= viz::RESOURCE_FORMAT_MAX; ++i) {
-    auto format = static_cast<viz::ResourceFormat>(i);
-    FormatInfo& info = format_info_[i];
-    BufferFormatInfo& buffer_format_info = buffer_format_info_[i];
-    if (!info.enabled || !IsGpuMemoryBufferFormatSupported(format)) {
-      continue;
-    }
-    const gfx::BufferFormat buffer_format = viz::BufferFormat(format);
-    switch (buffer_format) {
-      case gfx::BufferFormat::RGBA_8888:
-      case gfx::BufferFormat::RGBX_8888:
-      case gfx::BufferFormat::BGRA_8888:
-      case gfx::BufferFormat::BGRX_8888:
-      case gfx::BufferFormat::RGBA_F16:
-      case gfx::BufferFormat::R_8:
-      case gfx::BufferFormat::BGRA_1010102:
-      case gfx::BufferFormat::RGBA_1010102:
-        break;
-      default:
-        continue;
-    }
-    if (!gpu_memory_buffer_formats_.Has(buffer_format))
-      continue;
-    buffer_format_info.allow_scanout = true;
-    buffer_format_info.buffer_format = buffer_format;
-    DCHECK_EQ(info.image_internal_format,
-              gl::BufferFormatToGLInternalFormat(buffer_format));
-    if (base::Contains(gpu_preferences.texture_target_exception_list,
-                       gfx::BufferUsageAndFormat(gfx::BufferUsage::SCANOUT,
-                                                 buffer_format))) {
-      buffer_format_info.target_for_scanout =
-          gpu::GetPlatformSpecificTextureTarget();
-    }
-  }
 }
 
 IOSurfaceImageBackingFactory::~IOSurfaceImageBackingFactory() = default;
@@ -421,7 +402,6 @@ IOSurfaceImageBackingFactory::CreateSharedImage(
     gfx::GpuMemoryBufferHandle handle,
     gfx::BufferFormat buffer_format,
     gfx::BufferPlane plane,
-    SurfaceHandle surface_handle,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     GrSurfaceOrigin surface_origin,
@@ -449,15 +429,14 @@ IOSurfaceImageBackingFactory::CreateSharedImage(
       !NativeBufferNeedsPlatformSpecificTextureTarget(buffer_format, plane)
           ? GL_TEXTURE_2D
           : gpu::GetPlatformSpecificTextureTarget();
-  scoped_refptr<gl::GLImage> image =
-      MakeGLImage(client_id, std::move(handle), buffer_format, color_space,
-                  plane, surface_handle, size);
+  scoped_refptr<gl::GLImage> image = MakeGLImage(
+      client_id, std::move(handle), buffer_format, color_space, plane, size);
   if (!image) {
     LOG(ERROR) << "Failed to create image.";
     return nullptr;
   }
   gl::GLImageIOSurface* image_io_surface =
-      gl::GLImageIOSurface::FromGLImage(image.get());
+      gl::GLImage::ToGLImageIOSurface(image.get());
   if (!image_io_surface) {
     LOG(ERROR) << "Created image was not IOSurface-backed.";
     return nullptr;
@@ -508,14 +487,13 @@ scoped_refptr<gl::GLImage> IOSurfaceImageBackingFactory::MakeGLImage(
     gfx::BufferFormat format,
     const gfx::ColorSpace& color_space,
     gfx::BufferPlane plane,
-    SurfaceHandle surface_handle,
     const gfx::Size& size) {
   if (!image_factory_)
     return nullptr;
 
   return image_factory_->CreateImageForGpuMemoryBuffer(
       std::move(handle), size, format, color_space, plane, client_id,
-      surface_handle);
+      kNullSurfaceHandle);
 }
 
 bool IOSurfaceImageBackingFactory::IsSupported(
@@ -576,17 +554,19 @@ IOSurfaceImageBackingFactory::CreateSharedImageInternal(
     uint32_t usage,
     base::span<const uint8_t> pixel_data) {
   const FormatInfo& format_info = GetFormatInfo(format);
-  const BufferFormatInfo& buffer_format_info = GetBufferFormatInfo(format);
-  GLenum target = buffer_format_info.target_for_scanout;
+  const gfx::BufferFormat buffer_format =
+      viz::BufferFormat(format.resource_format());
 
-  if (!buffer_format_info.allow_scanout) {
+  if (!IsFormatSupported(format.resource_format()) ||
+      !gpu_memory_buffer_formats_.Has(buffer_format)) {
     LOG(ERROR) << "CreateSharedImage: SCANOUT shared images unavailable. "
-                  "Buffer format= "
-               << gfx::BufferFormatToString(buffer_format_info.buffer_format);
+                  "Format= "
+               << format.ToString();
     return nullptr;
   }
 
-  if (!CanCreateSharedImage(size, pixel_data, format_info, target)) {
+  GLenum texture_target = gpu::GetPlatformSpecificTextureTarget();
+  if (!CanCreateSharedImage(size, pixel_data, format_info, texture_target)) {
     return nullptr;
   }
 
@@ -600,13 +580,11 @@ IOSurfaceImageBackingFactory::CreateSharedImageInternal(
   // operations.
   gfx::ScopedIOSurface io_surface;
   const uint32_t io_surface_plane = 0;
-  gfx::BufferFormat io_surface_format = buffer_format_info.buffer_format;
   const gfx::GenericSharedMemoryId io_surface_id;
   {
     gl::ScopedProgressReporter scoped_progress_reporter(progress_reporter_);
     const bool should_clear = false;
-    io_surface.reset(
-        gfx::CreateIOSurface(size, io_surface_format, should_clear));
+    io_surface.reset(gfx::CreateIOSurface(size, buffer_format, should_clear));
     if (!io_surface) {
       LOG(ERROR) << "CreateSharedImage: Failed to create bindable image";
       return nullptr;
@@ -629,9 +607,9 @@ IOSurfaceImageBackingFactory::CreateSharedImageInternal(
   DCHECK(!format_info.swizzle);
   DCHECK(use_passthrough_);
   auto result = std::make_unique<IOSurfaceImageBacking>(
-      io_surface, io_surface_plane, io_surface_format, io_surface_id, mailbox,
-      format, size, color_space, surface_origin, alpha_type, usage, target,
-      framebuffer_attachment_angle, is_cleared);
+      io_surface, io_surface_plane, buffer_format, io_surface_id, mailbox,
+      format, size, color_space, surface_origin, alpha_type, usage,
+      texture_target, framebuffer_attachment_angle, is_cleared);
   if (!pixel_data.empty()) {
     gl::ScopedProgressReporter scoped_progress_reporter(progress_reporter_);
     result->InitializePixels(format_info.adjusted_format, format_info.gl_type,

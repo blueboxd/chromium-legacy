@@ -1122,6 +1122,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Enterprise.Dlp.Errors.Adaptor"
+    enum="EnterpriseDlpPolicyCrOSAdaptorError" expires_after="2023-06-01">
+  <owner>accorsi@google.com</owner>
+  <owner>chromeos-dlp@google.com</owner>
+  <summary>
+    Recorded when an error occurs during adaptor usage in the Data Leak
+    Prevention daemon.
+  </summary>
+</histogram>
+
 <histogram name="Enterprise.Dlp.Errors.Fanotify"
     enum="EnterpriseDlpPolicyCrOSFanotifyError" expires_after="2023-06-01">
   <owner>accorsi@google.com</owner>
@@ -1132,12 +1142,22 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Enterprise.Dlp.Errors.FileDatabase"
+    enum="EnterpriseDlpPolicyCrOSFileDatabaseError" expires_after="2023-06-01">
+  <owner>accorsi@google.com</owner>
+  <owner>chromeos-dlp@google.com</owner>
+  <summary>
+    Recorded when an error occurs while performing database operations in the
+    Data Leak Prevention daemon.
+  </summary>
+</histogram>
+
 <histogram name="Enterprise.Dlp.Errors.FilesPolicySetup" enum="Boolean"
     expires_after="2023-06-01">
   <owner>accorsi@google.com</owner>
   <owner>chromeos-dlp@google.com</owner>
   <summary>
-    Recorded when an error occurs during the Data Leak Prevention files policy
+    Record whether an error occurs during the Data Leak Prevention files policy
     setup.
   </summary>
 </histogram>
@@ -1147,9 +1167,16 @@ chromium-metrics-reviews@google.com.
   <owner>accorsi@google.com</owner>
   <owner>chromeos-dlp@google.com</owner>
   <summary>
-    Recorded when a Data Leak Prevention event is not reported because of report
-    queue setup issues.
+    Record whether a Data Leak Prevention event is not reported because of
+    report queue setup issues.
   </summary>
+</histogram>
+
+<histogram name="Enterprise.Dlp.FanotifyDeleteEventSupport" enum="Boolean"
+    expires_after="2023-06-01">
+  <owner>accorsi@google.com</owner>
+  <owner>chromeos-dlp@google.com</owner>
+  <summary>Record whether the kernel supports fanotify delete events.</summary>
 </histogram>
 
 <histogram name="Enterprise.Dlp.FileActionBlocked"

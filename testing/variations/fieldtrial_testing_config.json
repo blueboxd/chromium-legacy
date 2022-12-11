@@ -59,13 +59,24 @@
     "AlignWakeUps": [
         {
             "platforms": [
+                "android",
                 "android_webview",
-                "ios"
+                "chromeos",
+                "chromeos_lacros",
+                "fuchsia",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
             ],
             "experiments": [
                 {
                     "name": "Enabled",
+                    "params": {
+                        "leeway": "16ms"
+                    },
                     "enable_features": [
+                        "AddTaskLeeway",
                         "AlignWakeUps",
                         "ExplicitHighResolutionTimerWin"
                     ]
@@ -1609,12 +1620,10 @@
             ],
             "experiments": [
                 {
-                    "name": "EnabledPolicy_CacheSize6_ModerateCacheSize4-2_20220921",
+                    "name": "EnabledPolicy_CacheSize6_20220921",
                     "params": {
-                        "background_cache_size_on_moderate_pressure": "2",
                         "cache_size": "6",
-                        "foreground_cache_size": "0",
-                        "foreground_cache_size_on_moderate_pressure": "4"
+                        "foreground_cache_size": "0"
                     },
                     "enable_features": [
                         "BFCachePerformanceManagerPolicy",
@@ -3440,6 +3449,28 @@
                     "name": "Enabled",
                     "enable_features": [
                         "CCTPackageNameRecording"
+                    ]
+                }
+            ]
+        }
+    ],
+    "DIPSPersistedDatabase": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "persist_database": "true"
+                    },
+                    "enable_features": [
+                        "DIPS"
                     ]
                 }
             ]
@@ -6147,6 +6178,26 @@
             ]
         }
     ],
+    "JourneysNonSupportedLocales": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20221206",
+                    "params": {
+                        "JourneysLocaleOrLanguageAllowlist": "*"
+                    },
+                    "enable_features": [
+                        "Journeys"
+                    ]
+                }
+            ]
+        }
+    ],
     "JourneysPersistence": [
         {
             "platforms": [
@@ -6886,10 +6937,10 @@
             ],
             "experiments": [
                 {
-                    "name": "NoBackground-ForYou2",
+                    "name": "NoBackground-ForYou3",
                     "params": {
                         "new-user-modules": "nux-google-apps,nux-set-as-default,signin-view",
-                        "onboarding-group": "NoBackgroundSynthetic-ForYou2"
+                        "onboarding-group": "NoBackgroundSynthetic-ForYou3"
                     },
                     "enable_features": [
                         "NuxOnboarding"
@@ -10154,8 +10205,7 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
-                        "DesktopScreenshots",
-                        "SharingDesktopScreenshotsEdit"
+                        "DesktopScreenshots"
                     ]
                 }
             ]
@@ -10677,26 +10727,6 @@
                     },
                     "enable_features": [
                         "SyncAndroidLimitNTPPromoImpressions"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SyncAndroidPromosRevamp": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "EnabledWithIllustrationAndTitle_3",
-                    "enable_features": [
-                        "SyncAndroidPromosWithIllustration",
-                        "SyncAndroidPromosWithTitle"
-                    ],
-                    "disable_features": [
-                        "SyncAndroidPromosWithAlternativeTitle",
-                        "SyncAndroidPromosWithSingleButton"
                     ]
                 }
             ]
@@ -11315,30 +11345,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "PreloadMediaEngagementData"
-                    ]
-                }
-            ]
-        }
-    ],
-    "UnifiedPasswordManagerAndroid": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "api_error_list_version": "1",
-                        "fallback_on_user_affecting_read_operations": "true",
-                        "ignored_api_errors": "11005,11006",
-                        "min_gms_core_version_no_dots": "223012000",
-                        "retriable_api_errors": "7,17,20,22,11009"
-                    },
-                    "enable_features": [
-                        "UnifiedPasswordManagerAndroid",
-                        "UnifiedPasswordManagerErrorMessages",
-                        "UnifiedPasswordManagerReenrollment"
                     ]
                 }
             ]

@@ -4,19 +4,9 @@
 
 #include "components/web_package/signed_web_bundles/signed_web_bundle_signature_stack_entry.h"
 
-#include "base/strings/stringprintf.h"
 #include "components/web_package/mojom/web_bundle_parser.mojom.h"
 
 namespace web_package {
-
-// static
-base::expected<SignedWebBundleSignatureStackEntry, std::string>
-SignedWebBundleSignatureStackEntry::Create(
-    const mojom::BundleIntegrityBlockSignatureStackEntryPtr entry) {
-  return SignedWebBundleSignatureStackEntry(
-      entry->complete_entry_cbor, entry->attributes_cbor, entry->public_key,
-      entry->signature);
-}
 
 SignedWebBundleSignatureStackEntry::SignedWebBundleSignatureStackEntry(
     const std::vector<uint8_t>& complete_entry_cbor,
@@ -28,7 +18,23 @@ SignedWebBundleSignatureStackEntry::SignedWebBundleSignatureStackEntry(
       public_key_(public_key),
       signature_(signature) {}
 
+bool SignedWebBundleSignatureStackEntry::operator==(
+    const SignedWebBundleSignatureStackEntry& other) const {
+  return complete_entry_cbor_ == other.complete_entry_cbor_ &&
+         attributes_cbor_ == other.attributes_cbor_ &&
+         public_key_ == other.public_key_ && signature_ == other.signature_;
+}
+
+bool SignedWebBundleSignatureStackEntry::operator!=(
+    const SignedWebBundleSignatureStackEntry& other) const {
+  return !operator==(other);
+}
+
 SignedWebBundleSignatureStackEntry::SignedWebBundleSignatureStackEntry(
+    const SignedWebBundleSignatureStackEntry&) = default;
+
+SignedWebBundleSignatureStackEntry&
+SignedWebBundleSignatureStackEntry::operator=(
     const SignedWebBundleSignatureStackEntry&) = default;
 
 SignedWebBundleSignatureStackEntry::~SignedWebBundleSignatureStackEntry() =

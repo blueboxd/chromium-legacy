@@ -626,9 +626,10 @@ void NativeInputMethodEngineObserver::OnJapaneseDecoderConnected(bool bound) {
   if (!bound) {
     return;
   }
-  if (!base::FeatureList::IsEnabled(features::kSystemJapanesePhysicalTyping) &&
-      IsJapaneseSettingsMigrationComplete(*prefs_)) {
-    SetJapaneseSettingsMigrationComplete(*prefs_, false);
+  if (!base::FeatureList::IsEnabled(features::kSystemJapanesePhysicalTyping)) {
+    if (IsJapaneseSettingsMigrationComplete(*prefs_)) {
+      SetJapaneseSettingsMigrationComplete(*prefs_, false);
+    }
     return;
   }
   if (IsJapaneseSettingsMigrationComplete(*prefs_)) {
@@ -665,11 +666,13 @@ void NativeInputMethodEngineObserver::ConnectToImeService(
 
   // TODO(b/232341104): Add metrics to track how long this takes to init the
   // connection.
-  connection_factory_->ConnectToJapaneseDecoder(
-      japanese_decoder_.BindNewEndpointAndPassReceiver(),
-      base::BindOnce(
-          &NativeInputMethodEngineObserver::OnJapaneseDecoderConnected,
-          weak_ptr_factory_.GetWeakPtr()));
+  if (base::FeatureList::IsEnabled(features::kSystemJapanesePhysicalTyping)) {
+    connection_factory_->ConnectToJapaneseDecoder(
+        japanese_decoder_.BindNewEndpointAndPassReceiver(),
+        base::BindOnce(
+            &NativeInputMethodEngineObserver::OnJapaneseDecoderConnected,
+            weak_ptr_factory_.GetWeakPtr()));
+  }
   // If this is fast enough, maybe this code can block the ConnectToInputMethod
   // function on waiting for the migration if and only if the input_method
   // engine is JP.

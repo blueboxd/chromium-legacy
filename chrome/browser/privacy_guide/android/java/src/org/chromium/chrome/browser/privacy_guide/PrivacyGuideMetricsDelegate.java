@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.privacy_guide;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.browser.safe_browsing.SafeBrowsingState;
+import org.chromium.components.content_settings.CookieControlsMode;
 
 /**
  * A delegate class to record metrics associated with each card inside
@@ -88,5 +90,77 @@ class PrivacyGuideMetricsDelegate {
      */
     static void recordMetricsForDoneButton() {
         RecordUserAction.record("Settings.PrivacyGuide.NextClickCompletion");
+    }
+
+    /**
+     * A method to record metrics on MSBB toggle change of the Privacy Guide's {@link MSBBFragment}.
+     */
+    static void recordMetricsOnMSBBChange(boolean isMSBBOn) {
+        if (isMSBBOn) {
+            RecordUserAction.record("Settings.PrivacyGuide.ChangeMSBBOn");
+        } else {
+            RecordUserAction.record("Settings.PrivacyGuide.ChangeMSBBOff");
+        }
+    }
+
+    /**
+     * A method to record metrics on the History Sync toggle change of the Privacy Guide's {@link
+     * SyncFragment}.
+     */
+    static void recordMetricsOnSyncChange(boolean isHistorySyncOn) {
+        if (isHistorySyncOn) {
+            RecordUserAction.record("Settings.PrivacyGuide.ChangeHistorySyncOn");
+        } else {
+            RecordUserAction.record("Settings.PrivacyGuide.ChangeHistorySyncOff");
+        }
+    }
+
+    /**
+     * A method to record metrics on Safe Browsing radio button change of the Privacy Guide's {@link
+     * SafeBrowsingFragment}.
+     */
+    static void recordMetricsOnSafeBrowsingChange(@SafeBrowsingState int safeBrowsingState) {
+        switch (safeBrowsingState) {
+            case SafeBrowsingState.ENHANCED_PROTECTION:
+                RecordUserAction.record("Settings.PrivacyGuide.ChangeSafeBrowsingEnhanced");
+                break;
+            case SafeBrowsingState.STANDARD_PROTECTION:
+                RecordUserAction.record("Settings.PrivacyGuide.ChangeSafeBrowsingStandard");
+                break;
+            default:
+                assert false : "Unexpected SafeBrowsingState " + safeBrowsingState;
+        }
+    }
+
+    /**
+     * A method to record metrics on Cookie Controls radio button change of the Privacy Guide's
+     * {@link CookiesFragment}.
+     */
+    static void recordMetricsOnCookieControlsChange(@CookieControlsMode int cookieControlsMode) {
+        switch (cookieControlsMode) {
+            case CookieControlsMode.INCOGNITO_ONLY:
+                RecordUserAction.record("Settings.PrivacyGuide.ChangeCookiesBlock3PIncognito");
+                break;
+            case CookieControlsMode.BLOCK_THIRD_PARTY:
+                RecordUserAction.record("Settings.PrivacyGuide.ChangeCookiesBlock3P");
+                break;
+            default:
+                assert false : "Unexpected CookieControlMode " + cookieControlsMode;
+        }
+    }
+
+    /**
+     * A method to record metrics on the back click of a card {@link
+     * PrivacyGuideFragment.FragmentType} in Privacy Guide.
+     * TODO(crbug.com/1238896): Support for other fragment types (SAFE_BROWSING, COOKIES)
+     *
+     * @param fragmentType A privacy guide {@link PrivacyGuideFragment.FragmentType}.
+     */
+    static void recordMetricsOnBackForCard(@PrivacyGuideFragment.FragmentType int fragmentType) {
+        switch (fragmentType) {
+            case PrivacyGuideFragment.FragmentType.SYNC: {
+                RecordUserAction.record("Settings.PrivacyGuide.BackClickHistorySync");
+            }
+        }
     }
 }

@@ -9,7 +9,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/memory/ref_counted.h"
 #include "net/base/net_export.h"
 #include "net/cert/pki/certificate_policies.h"
 #include "net/cert/pki/parse_certificate.h"
@@ -36,6 +35,15 @@ using ParsedCertificateList =
 // member are valid, unless otherwise specified. See the documentation for each
 // member or the documentation of the type it returns.
 class NET_EXPORT ParsedCertificate {
+ private:
+  // Used to make constructors private while still being compatible with
+  // |std::make_shared|.
+  class PrivateConstructor {
+   private:
+    friend ParsedCertificate;
+    PrivateConstructor() = default;
+  };
+
  public:
   // Map from OID to ParsedExtension.
   using ExtensionsMap = std::map<der::Input, ParsedExtension>;
@@ -62,6 +70,8 @@ class NET_EXPORT ParsedCertificate {
       std::vector<std::shared_ptr<const net::ParsedCertificate>>* chain,
       CertErrors* errors);
 
+  explicit ParsedCertificate(PrivateConstructor);
+  ~ParsedCertificate();
   ParsedCertificate(const ParsedCertificate&) = delete;
   ParsedCertificate& operator=(const ParsedCertificate&) = delete;
 
@@ -244,14 +254,6 @@ class NET_EXPORT ParsedCertificate {
                     ParsedExtension* parsed_extension) const;
 
  private:
-  ParsedCertificate();
-  ~ParsedCertificate();
-
-  class ParsedCertificateDeleter {
-   public:
-    void operator()(ParsedCertificate* p) { delete p; }
-  };
-
   // The backing store for the certificate data.
   bssl::UniquePtr<CRYPTO_BUFFER> cert_data_;
 

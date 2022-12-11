@@ -66,6 +66,9 @@ GetResourceFormat(gfx::BufferFormat format);
 
 VIZ_RESOURCE_FORMAT_EXPORT bool GLSupportsFormat(ResourceFormat format);
 
+// Returns true formats that require YUV (aka YCbCr) sampler.
+VIZ_RESOURCE_FORMAT_EXPORT bool IsYuvFormat(ResourceFormat format);
+
 #if BUILDFLAG(ENABLE_VULKAN)
 VIZ_RESOURCE_FORMAT_EXPORT bool HasVkFormat(ResourceFormat format);
 VIZ_RESOURCE_FORMAT_EXPORT VkFormat ToVkFormat(ResourceFormat format);
@@ -77,10 +80,6 @@ VIZ_RESOURCE_FORMAT_EXPORT wgpu::TextureFormat ToDawnFormat(
 // WGPUTextureFormat instead.
 VIZ_RESOURCE_FORMAT_EXPORT WGPUTextureFormat
 ToWGPUFormat(ResourceFormat format);
-
-#if BUILDFLAG(IS_APPLE)
-VIZ_RESOURCE_FORMAT_EXPORT unsigned int ToMTLPixelFormat(ResourceFormat format);
-#endif
 
 // Gets the closest SkColorType for a given `format` and `plane_index`. For
 // single planar formats (eg. RGBA) the plane_index is not required and is

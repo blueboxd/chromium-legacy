@@ -82,6 +82,9 @@ class WaylandWindow : public PlatformWindow,
   // to do so (this is not needed upon window initialization).
   virtual void UpdateWindowScale(bool update_bounds);
 
+  // Propagates the buffer scale of the next commit to exo.
+  virtual void PropagateBufferScale(float new_scale) = 0;
+
   WaylandSurface* root_surface() const { return root_surface_.get(); }
   WaylandSubsurface* primary_subsurface() const {
     return primary_subsurface_.get();
@@ -109,6 +112,7 @@ class WaylandWindow : public PlatformWindow,
   // subsurface_stack_below_.size() >= below.
   bool ArrangeSubsurfaceStack(size_t above, size_t below);
   bool CommitOverlays(uint32_t frame_id,
+                      int64_t seq,
                       std::vector<wl::WaylandOverlayConfig>& overlays);
 
   // Called when the focus changed on this window.
@@ -234,6 +238,7 @@ class WaylandWindow : public PlatformWindow,
     WindowTiledEdges tiled_edges;
   };
 
+  // Configure related:
   virtual void HandleToplevelConfigure(int32_t width,
                                        int32_t height,
                                        const WindowStates& window_states);
@@ -262,6 +267,23 @@ class WaylandWindow : public PlatformWindow,
   // size that GPU renders at.
   virtual void UpdateVisualSize(const gfx::Size& size_px);
 
+  // Called by shell surfaces to indicate that this window can start submitting
+  // frames. Updating state based on configure is handled separately to this.
+  void OnSurfaceConfigureEvent();
+
+  // Tells if the surface has already been configured. This will be true after
+  // the first set of configure event and ack request, meaning that wl_surface
+  // can attach buffers.
+  virtual bool IsSurfaceConfigured() = 0;
+
+  // Sends configure acknowledgement to the wayland server.
+  virtual void AckConfigure(uint32_t serial) = 0;
+
+  // Updates the window decorations, if possible at the moment. Denotes that
+  // window will request new window_geometry, if there're no existing state
+  // changes in flight to server.
+  virtual void UpdateDecorations();
+
   // Handles close requests.
   virtual void OnCloseRequest();
 
@@ -275,24 +297,11 @@ class WaylandWindow : public PlatformWindow,
   virtual void OnDragLeave();
   virtual void OnDragSessionClose(ui::mojom::DragOperation operation);
 
-  // Tells if the surface has already been configured.
-  virtual bool IsSurfaceConfigured() = 0;
-
-  // Called by shell surfaces to indicate that this window can start submitting
-  // frames.
-  void OnSurfaceConfigureEvent();
-
   // Sets the window geometry.
-  virtual void SetWindowGeometry(gfx::Rect bounds);
+  virtual void SetWindowGeometry(gfx::Size size_dip);
 
   // Returns the offset of the window geometry within the window surface.
   gfx::Vector2d GetWindowGeometryOffsetInDIP() const;
-
-  // Sends configure acknowledgement to the wayland server.
-  virtual void AckConfigure(uint32_t serial) = 0;
-
-  // Updates the window decorations, if possible at the moment.
-  virtual void UpdateDecorations();
 
   // Returns the effective decoration insets.
   gfx::Insets GetDecorationInsetsInDIP() const;
@@ -381,9 +390,6 @@ class WaylandWindow : public PlatformWindow,
   // Updates mask for this window.
   virtual void UpdateWindowMask() = 0;
 
-  // Processes the pending bounds in dip.
-  void ProcessPendingBoundsDip(uint32_t serial);
-
   // [Deprecated]
   // If the given |bounds_px| violates size constraints set for this window,
   // fixes them so they don't.
@@ -393,6 +399,12 @@ class WaylandWindow : public PlatformWindow,
   // fixes them so they don't.
   gfx::Rect AdjustBoundsToConstraintsDIP(const gfx::Rect& bounds_dip);
 
+  const gfx::Size& restored_size_dip() const { return restored_size_dip_; }
+
+  // Configure related:
+  // Processes the pending bounds in dip.
+  void ProcessPendingBoundsDip(uint32_t serial);
+
   // Processes the size information form visual size update and returns true if
   // any pending configure is fulfilled.
   bool ProcessVisualSizeUpdate(const gfx::Size& size_px);
@@ -400,14 +412,17 @@ class WaylandWindow : public PlatformWindow,
   // Applies pending bounds.
   virtual void ApplyPendingBounds();
 
-  gfx::Rect pending_bounds_dip() const { return pending_bounds_dip_; }
-  void set_pending_bounds_dip(const gfx::Rect& rect) {
-    pending_bounds_dip_ = rect;
-  }
-  gfx::Size pending_size_px() const { return pending_size_px_; }
-  void set_pending_size_px(const gfx::Size& size) { pending_size_px_ = size; }
+  // PendingConfigureState describes the content of a configure sent from the
+  // wayland server.
+  struct PendingConfigureState {
+    absl::optional<gfx::Rect> bounds_dip;
+    absl::optional<gfx::Size> size_px;
+  };
 
-  const gfx::Size& restored_size_dip() const { return restored_size_dip_; }
+  // This holds the requested state for the next configure from the server.
+  // The window may get several configuration events that update the pending
+  // bounds or other state.
+  PendingConfigureState pending_configure_state_;
 
  private:
   friend class WaylandBufferManagerViewportTest;
@@ -526,19 +541,6 @@ class WaylandWindow : public PlatformWindow,
   // any frame updates. This flag causes root_surface_->ApplyPendingBounds() to
   // be invoked during UpdateVisualSize() in unit tests.
   bool apply_pending_state_on_update_visual_size_for_testing_ = false;
-
-  // These bounds attributes below have suffixes that indicate units used.
-  // Wayland operates in DIP but the platform operates in physical pixels so
-  // our WaylandWindow is the link that has to translate the units. See also
-  // comments in the implementation.
-  //
-  // Bounds that will be applied when the window state is finalized. The window
-  // may get several configuration events that update the pending bounds, and
-  // only upon finalizing the state is the latest value stored as the current
-  // bounds via |ApplyPendingBounds|. Measured in DIP because updated in the
-  // handler that receives DIP from Wayland.
-  gfx::Rect pending_bounds_dip_;
-  gfx::Size pending_size_px_;
 
   // The size of the platform window before it went maximized or fullscreen in
   // dip.

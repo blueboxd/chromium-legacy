@@ -82,6 +82,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/skia_conversions.h"
@@ -910,12 +911,14 @@ void SkiaRenderer::SwapBuffers(SwapFrameData swap_frame_data) {
   DCHECK(output_surface_->capabilities().supports_viewporter ||
          viewport_size_for_swap_buffers() == surface_size_for_swap_buffers());
   TRACE_EVENT0("viz,benchmark", "SkiaRenderer::SwapBuffers");
+
   OutputSurfaceFrame output_frame;
   output_frame.latency_info = std::move(swap_frame_data.latency_info);
   output_frame.top_controls_visible_height_changed =
       swap_frame_data.top_controls_visible_height_changed;
   output_frame.choreographer_vsync_id = swap_frame_data.choreographer_vsync_id;
   output_frame.size = viewport_size_for_swap_buffers();
+  output_frame.data.seq = swap_frame_data.seq;
   if (use_partial_swap_) {
     swap_buffer_rect_.Intersect(gfx::Rect(surface_size_for_swap_buffers()));
     output_frame.sub_buffer_rect = swap_buffer_rect_;
@@ -3242,7 +3245,7 @@ bool SkiaRenderer::CanSkipRenderPassOverlay(
   // loop through the list in a reverse order since there might be multiple
   // render pass overlays with the same render pass id.
   RenderPassOverlayParams* overlay_found = nullptr;
-  bool Found_in_available_backings = false;
+  bool found_in_available_backings = false;
   for (auto rit = in_flight_render_pass_overlay_backings_.rbegin();
        rit != in_flight_render_pass_overlay_backings_.rend(); ++rit) {
     if (rit->render_pass_id == render_pass_id) {
@@ -3260,7 +3263,7 @@ bool SkiaRenderer::CanSkipRenderPassOverlay(
          rit != available_render_pass_overlay_backings_.rend();
          ++rit, ++index) {
       if (rit->render_pass_id == render_pass_id) {
-        Found_in_available_backings = true;
+        found_in_available_backings = true;
         // Cannot use reverse_iterator. Convert it to const_iterator.
         it_to_delete =
             available_render_pass_overlay_backings_.begin() +
@@ -3292,7 +3295,7 @@ bool SkiaRenderer::CanSkipRenderPassOverlay(
 
   if (no_change_in_rpdq && no_change_in_filters &&
       no_change_in_backdrop_filters) {
-    if (Found_in_available_backings) {
+    if (found_in_available_backings) {
       in_flight_render_pass_overlay_backings_.push_back(*overlay_found);
       available_render_pass_overlay_backings_.erase(it_to_delete);
       *output_render_pass_overlay =
@@ -3502,21 +3505,18 @@ void SkiaRenderer::PrepareRenderPassOverlay(
       overlay_params->render_pass_backing;
   overlay->mailbox = dst_overlay_backing.mailbox;
 
-  // Still call BeginPaintRenderPass/EndPaint when skipping the render pass, so
-  // we get the notification (DidReceiveReleasedOverlays) for releaseing the
-  // mailbox of the skipped rendering.
-  current_canvas_ = skia_output_surface_->BeginPaintRenderPass(
-      quad->render_pass_id, dst_overlay_backing.size,
-      dst_overlay_backing.format, /*mipmap=*/false,
-      RenderPassBackingSkColorSpace(dst_overlay_backing),
-      /*is_overlay=*/true, overlay->mailbox);
-  if (!current_canvas_) {
-    DLOG(ERROR)
-        << "BeginPaintRenderPass() in PrepareRenderPassOverlay() failed.";
-    return;
-  }
-
   if (!can_skip_render_pass) {
+    current_canvas_ = skia_output_surface_->BeginPaintRenderPass(
+        quad->render_pass_id, dst_overlay_backing.size,
+        dst_overlay_backing.format, /*mipmap=*/false,
+        RenderPassBackingSkColorSpace(dst_overlay_backing),
+        /*is_overlay=*/true, overlay->mailbox);
+    if (!current_canvas_) {
+      DLOG(ERROR)
+          << "BeginPaintRenderPass() in PrepareRenderPassOverlay() failed.";
+      return;
+    }
+
     // Clear the backing to ARGB(0,0,0,0).
     current_canvas_->clear(SkColorSetARGB(0, 0, 0, 0));
 
@@ -3570,10 +3570,10 @@ void SkiaRenderer::PrepareRenderPassOverlay(
       DrawSingleImage(content_image.get(), valid_texel_bounds, &rpdq_params,
                       &paint, &params);
     }
-  }
-  current_canvas_ = nullptr;
 
-  EndPaint(/*failed=*/false);
+    current_canvas_ = nullptr;
+    EndPaint(/*failed=*/false);
+  }
 
 #if BUILDFLAG(IS_APPLE)
   // Adjust |bounds_rect| to contain the whole buffer and at the right location.

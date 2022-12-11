@@ -233,7 +233,7 @@ class WaylandWindowTest : public WaylandTest {
       WaylandWindow* dispatching_window,
       const std::vector<WaylandWindow*>& non_dispatching_windows) {
     auto* pointer_focused_window =
-        connection_->wayland_window_manager()->GetCurrentPointerFocusedWindow();
+        connection_->window_manager()->GetCurrentPointerFocusedWindow();
 
     ASSERT_TRUE(pointer_focused_window);
     Event::DispatcherApi(&test_mouse_event_).set_target(pointer_focused_window);
@@ -247,7 +247,7 @@ class WaylandWindowTest : public WaylandTest {
       const std::vector<WaylandWindow*>& non_dispatching_windows) {
     ASSERT_LT(dispatching_windows.size(), 2u);
     auto* touch_focused_window =
-        connection_->wayland_window_manager()->GetCurrentTouchFocusedWindow();
+        connection_->window_manager()->GetCurrentTouchFocusedWindow();
     // There must be focused window to dispatch.
     if (dispatching_windows.size() == 0)
       EXPECT_FALSE(touch_focused_window);
@@ -273,8 +273,8 @@ class WaylandWindowTest : public WaylandTest {
       const std::vector<WaylandWindow*>& dispatching_windows,
       const std::vector<WaylandWindow*>& non_dispatching_windows) {
     ASSERT_LT(dispatching_windows.size(), 2u);
-    auto* keyboard_focused_window = connection_->wayland_window_manager()
-                                        ->GetCurrentKeyboardFocusedWindow();
+    auto* keyboard_focused_window =
+        connection_->window_manager()->GetCurrentKeyboardFocusedWindow();
 
     // There must be focused window to dispatch.
     if (dispatching_windows.size() == 0)
@@ -2557,6 +2557,8 @@ TEST_P(WaylandWindowTest, GetPreferredOutput) {
     output2->SetRect(gfx::Rect(1921, 0, 1920, 1080));
   });
 
+  WaitForAllDisplaysReady();
+
   // Client side WaylandOutput ids.
   ASSERT_EQ(2u, screen_->GetAllDisplays().size());
   const uint32_t output1_id =
@@ -2598,6 +2600,8 @@ TEST_P(WaylandWindowTest, GetPreferredOutput) {
     wl::TestOutput* output3 = server->CreateAndInitializeOutput();
     output3->SetRect(gfx::Rect(0, 1081, 1920, 1080));
   });
+
+  WaitForAllDisplaysReady();
 
   ASSERT_EQ(3u, screen_->GetAllDisplays().size());
   const uint32_t output3_id =
@@ -2693,6 +2697,8 @@ TEST_P(WaylandWindowTest, GetChildrenPreferredOutput) {
     wl::TestOutput* output2 = server->CreateAndInitializeOutput();
     output2->SetRect(gfx::Rect(1921, 0, 1920, 1080));
   });
+
+  WaitForAllDisplaysReady();
 
   // Client side WaylandOutput ids.
   ASSERT_EQ(2u, screen_->GetAllDisplays().size());
@@ -3223,7 +3229,7 @@ TEST_P(WaylandWindowTest, MAYBE_ReattachesBackgroundOnShow) {
   background.z_order = INT32_MIN;
   background.buffer_id = buffer_id1;
   overlays.push_back(std::move(background));
-  buffer_manager_gpu_->CommitOverlays(window->GetWidget(), 1u,
+  buffer_manager_gpu_->CommitOverlays(window->GetWidget(), 1u, gl::FrameData(),
                                       std::move(overlays));
   PostToServerAndWait([surface_id](wl::TestWaylandServerThread* server) {
     auto* mock_surface = server->GetObject<wl::MockSurface>(surface_id);
@@ -3261,7 +3267,7 @@ TEST_P(WaylandWindowTest, MAYBE_ReattachesBackgroundOnShow) {
   primary.z_order = 0;
   primary.buffer_id = buffer_id2;
   overlays.push_back(std::move(primary));
-  buffer_manager_gpu_->CommitOverlays(window->GetWidget(), 2u,
+  buffer_manager_gpu_->CommitOverlays(window->GetWidget(), 2u, gl::FrameData(),
                                       std::move(overlays));
 
   PostToServerAndWait([surface_id](wl::TestWaylandServerThread* server) {

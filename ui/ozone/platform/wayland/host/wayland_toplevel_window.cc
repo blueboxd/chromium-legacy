@@ -460,7 +460,8 @@ void WaylandToplevelWindow::HandleAuraToplevelConfigure(
   // the fullscreen mode, wayland may set the width and height to be 1. Instead,
   // explicitly set the bounds to the current desired ones or the previous
   // bounds.
-  gfx::Rect bounds_dip(pending_bounds_dip());
+  gfx::Rect bounds_dip(
+      pending_configure_state_.bounds_dip.value_or(gfx::Rect()));
   if (width_dip > 1 && height_dip > 1) {
     bounds_dip.SetRect(x, y, width_dip, height_dip);
     const auto insets = GetDecorationInsetsInDIP();
@@ -473,9 +474,10 @@ void WaylandToplevelWindow::HandleAuraToplevelConfigure(
                                                 : GetBoundsInDIP();
   }
 
-  set_pending_bounds_dip(AdjustBoundsToConstraintsDIP(bounds_dip));
-  set_pending_size_px(
-      delegate()->ConvertRectToPixels(pending_bounds_dip()).size());
+  bounds_dip = AdjustBoundsToConstraintsDIP(bounds_dip);
+  pending_configure_state_.bounds_dip = bounds_dip;
+  pending_configure_state_.size_px =
+      delegate()->ConvertRectToPixels(bounds_dip).size();
 
   // Store the restored bounds if current state differs from the normal state.
   // It can be client or compositor side change from normal to something else.
@@ -514,8 +516,6 @@ void WaylandToplevelWindow::SetOrigin(const gfx::Point& origin) {
 
 void WaylandToplevelWindow::HandleSurfaceConfigure(uint32_t serial) {
   ProcessPendingBoundsDip(serial);
-  set_pending_bounds_dip({});
-  set_pending_size_px({});
 }
 
 void WaylandToplevelWindow::UpdateVisualSize(const gfx::Size& size_px) {
@@ -532,8 +532,7 @@ void WaylandToplevelWindow::UpdateVisualSize(const gfx::Size& size_px) {
 
     if (set_geometry_on_next_frame_) {
       auto size_dip = gfx::ScaleToRoundedSize(size_px, 1.f / window_scale());
-      // TODO(crbug.com/3814157): Use DIP bounds instead.
-      SetWindowGeometry(gfx::Rect(size_dip));
+      SetWindowGeometry(size_dip);
       set_geometry_on_next_frame_ = false;
     }
   }
@@ -587,13 +586,13 @@ bool WaylandToplevelWindow::IsSurfaceConfigured() {
   return shell_toplevel() ? shell_toplevel()->IsConfigured() : false;
 }
 
-void WaylandToplevelWindow::SetWindowGeometry(gfx::Rect bounds_dip) {
+void WaylandToplevelWindow::SetWindowGeometry(gfx::Size size_dip) {
   DCHECK(connection()->SupportsSetWindowGeometry());
 
   if (!shell_toplevel_)
     return;
 
-  gfx::Rect geometry_dip(bounds_dip.size());
+  gfx::Rect geometry_dip(size_dip);
 
   const auto insets = GetDecorationInsetsInDIP();
   if (state_ == PlatformWindowState::kNormal && !insets.IsEmpty())
@@ -608,6 +607,17 @@ void WaylandToplevelWindow::AckConfigure(uint32_t serial) {
 void WaylandToplevelWindow::UpdateDecorations() {
   if (!state_change_in_transit_)
     set_geometry_on_next_frame_ = true;
+}
+
+void WaylandToplevelWindow::PropagateBufferScale(float new_scale) {
+  if (!IsSurfaceConfigured())
+    return;
+
+  if (!last_sent_buffer_scale_ ||
+      last_sent_buffer_scale_.value() != new_scale) {
+    shell_toplevel()->SetScaleFactor(new_scale);
+    last_sent_buffer_scale_ = new_scale;
+  }
 }
 
 bool WaylandToplevelWindow::IsClientControlledWindowMovementSupported() const {

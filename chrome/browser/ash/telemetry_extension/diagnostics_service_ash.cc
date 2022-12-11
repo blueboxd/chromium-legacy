@@ -15,6 +15,7 @@
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd_diagnostics.mojom.h"
 #include "chromeos/ash/services/cros_healthd/public/mojom/nullable_primitives.mojom.h"
 #include "chromeos/crosapi/mojom/diagnostics_service.mojom.h"
+#include "chromeos/crosapi/mojom/nullable_primitives.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -373,15 +374,18 @@ void DiagnosticsServiceAsh::RunSignalStrengthRoutine(
 }
 
 void DiagnosticsServiceAsh::RunSmartctlCheckRoutine(
+    crosapi::mojom::UInt32ValuePtr percentage_used_threshold,
     RunSmartctlCheckRoutineCallback callback) {
-  GetService()->RunSmartctlCheckRoutine(base::BindOnce(
-      [](crosapi::mojom::DiagnosticsService::RunSmartctlCheckRoutineCallback
-             callback,
-         cros_healthd::mojom::RunRoutineResponsePtr ptr) {
-        std::move(callback).Run(
-            converters::ConvertDiagnosticsPtr(std::move(ptr)));
-      },
-      std::move(callback)));
+  GetService()->RunSmartctlCheckRoutine(
+      converters::ConvertDiagnosticsPtr(std::move(percentage_used_threshold)),
+      base::BindOnce(
+          [](crosapi::mojom::DiagnosticsService::RunSmartctlCheckRoutineCallback
+                 callback,
+             cros_healthd::mojom::RunRoutineResponsePtr ptr) {
+            std::move(callback).Run(
+                converters::ConvertDiagnosticsPtr(std::move(ptr)));
+          },
+          std::move(callback)));
 }
 
 }  // namespace ash

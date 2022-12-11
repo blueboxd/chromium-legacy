@@ -379,8 +379,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kBackgroundTracingPerformanceMark);
 BLINK_COMMON_EXPORT extern const base::FeatureParam<std::string>
     kBackgroundTracingPerformanceMark_AllowList;
 
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kJXL);
-
 // Main controls for ad serving API features.
 //
 // Backend storage + kill switch for Interest Group API origin trials.
@@ -957,6 +955,15 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
 // via enterprise policy.
 BLINK_COMMON_EXPORT bool
 IsThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframesEnabled();
+
+// Allows certain origin trials to be enabled using third-party tokens
+// associated with the origin of external speculation rules.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kSpeculationRulesHeaderEnableThirdPartyOriginTrial);
+
+// Controls whether the SpeculationRulesPrefetchFuture origin trial can be
+// enabled.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSpeculationRulesPrefetchFuture);
 
 }  // namespace features
 }  // namespace blink

@@ -2284,6 +2284,10 @@ void RenderFrameHostManager::PrepareForInnerDelegateAttach(
   attach_inner_delegate_callback_ = std::move(callback);
   DCHECK_EQ(attach_to_inner_delegate_state_, AttachToInnerDelegateState::NONE);
   attach_to_inner_delegate_state_ = AttachToInnerDelegateState::PREPARE_FRAME;
+
+  // TODO(https://crbug.com/1398111): Some of these may no longer be necessary
+  // now that MimeHandlerView's embedded case uses the same code path as the
+  // full page case.
   if (current_frame_host()->ShouldDispatchBeforeUnload(
           false /* check_subframes_only */)) {
     // If there are beforeunload handlers in the frame or a nested subframe we
@@ -3756,6 +3760,16 @@ void RenderFrameHostManager::CommitPending(
   // happen for each same-site navigation.
   RenderViewHostImpl* old_rvh = old_render_frame_host->render_view_host();
   RenderViewHostImpl* new_rvh = render_frame_host_->render_view_host();
+
+  // TODO(crbug.com/1324149): Remove diagnostic asserts below.
+  if (is_main_frame && old_view) {
+    RenderWidgetHostViewBase* old_rwhvb =
+        static_cast<RenderWidgetHostViewBase*>(old_view);
+    CHECK(old_rwhvb->host());
+    CHECK_EQ(old_rwhvb->host(), old_rvh->GetWidget());
+    CHECK_EQ(old_rwhvb->host()->frame_tree(), &frame_tree_node_->frame_tree());
+  }
+
   if (is_main_frame && old_view && old_rvh != new_rvh) {
     // Note that this hides the RenderWidget but does not hide the Page. If it
     // did hide the Page then making a new RenderFrameHost on another call to
@@ -3770,6 +3784,15 @@ void RenderFrameHostManager::CommitPending(
   // another child frame, the RenderWidgetHostView comes from a parent, but if
   // this renderer frame is live its ancestors must be as well.
   DCHECK(new_view);
+
+  // TODO(crbug.com/1324149): Remove diagnostic asserts below.
+  if (is_main_frame) {
+    RenderWidgetHostViewBase* new_rwhvb =
+        static_cast<RenderWidgetHostViewBase*>(new_view);
+    CHECK(new_rwhvb->host());
+    CHECK_EQ(new_rwhvb->host(), new_rvh->GetWidget());
+    CHECK_EQ(new_rwhvb->host()->frame_tree(), &frame_tree_node_->frame_tree());
+  }
 
   if (focus_render_view) {
     if (is_main_frame) {
@@ -4252,26 +4275,21 @@ void RenderFrameHostManager::CreateNewFrameForInnerDelegateAttachIfNecessary() {
       "RenderFrameHostManager::CreateNewFrameForInnerDelegateAttachIfNecessary",
       ChromeTrackEvent::kFrameTreeNodeInfo, *frame_tree_node_);
   DCHECK(is_attaching_inner_delegate());
-  // Remove all navigations and any speculative frames which might interfere
-  // with the loading state.
-  // TODO(https://crbug.com/1220337): Ensure that there are no pending commit
-  // cross-document NavigationRequests at this point. Maybe wait for all
-  // navigations to finish from PrepareForInnerDelegateAttach() before
-  // continuing instead of cancelling the navigations from here?
-  current_frame_host()->ResetOwnedNavigationRequests(
-      NavigationDiscardReason::kNewNavigation);
-  current_frame_host()->ResetLoadingState();
-  // Remove any speculative frames first and ongoing navigation state. This
-  // should reset the loading state for good.
-  frame_tree_node_->ResetNavigationRequest(
-      NavigationDiscardReason::kNewNavigation);
-  if (speculative_render_frame_host_) {
-    // The FrameTreeNode::ResetNavigationRequest call above may not have cleaned
-    // up the speculative RenderFrameHost if the NavigationRequest had already
-    // been transferred to RenderFrameHost. Ensure it is cleaned up now.
-    DiscardUnusedFrame(UnsetSpeculativeRenderFrameHost(
-        NavigationDiscardReason::kNewNavigation));
+  // There should be no navigations happening on the frame to attach the inner
+  // delegate to. This is guaranteed by `is_attaching_inner_delegate()` state
+  // checks, which will prevent NavigationRequests from being created on this
+  // frame. Since that state will be set synchronously after we got the
+  // RenderFrameCreated notification for this frame, no navigation should be
+  // able to start on the frame.
+  if (current_frame_host()->HasPendingCommitNavigation() ||
+      frame_tree_node_->navigation_request() ||
+      speculative_render_frame_host_) {
+    NOTREACHED();
+    base::debug::DumpWithoutCrashing();
+    NotifyPrepareForInnerDelegateAttachComplete(false /* success */);
+    return;
   }
+  DCHECK(!current_frame_host()->is_loading());
 
   DCHECK(!current_frame_host()->is_main_frame());
   if (current_frame_host()->GetSiteInstance() ==
@@ -4284,6 +4302,10 @@ void RenderFrameHostManager::CreateNewFrameForInnerDelegateAttachIfNecessary() {
     NotifyPrepareForInnerDelegateAttachComplete(true /* success */);
     return;
   }
+
+  // TODO(https://crbug.com/1398111): Some of these may no longer be necessary
+  // now that MimeHandlerView's embedded case uses the same code path as the
+  // full page case.
 
   // We need a new RenderFrameHost in its parent's SiteInstance to be able to
   // safely use the WebContentsImpl attach API.

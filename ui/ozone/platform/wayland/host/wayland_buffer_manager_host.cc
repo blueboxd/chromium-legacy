@@ -64,7 +64,7 @@ void WaylandBufferManagerHost::OnChannelDestroyed() {
   DCHECK(base::CurrentUIThread::IsSet());
 
   buffer_backings_.clear();
-  for (auto* window : connection_->wayland_window_manager()->GetAllWindows())
+  for (auto* window : connection_->window_manager()->GetAllWindows())
     window->OnChannelDestroyed();
 
   buffer_manager_gpu_associated_.reset();
@@ -266,6 +266,7 @@ uint32_t WaylandBufferManagerHost::GetBufferFormat(WaylandSurface* requestor,
 void WaylandBufferManagerHost::CommitOverlays(
     gfx::AcceleratedWidget widget,
     uint32_t frame_id,
+    const gl::FrameData& data,
     std::vector<wl::WaylandOverlayConfig> overlays) {
   DCHECK(base::CurrentUIThread::IsSet());
 
@@ -277,15 +278,14 @@ void WaylandBufferManagerHost::CommitOverlays(
     error_message_ = "Invalid widget.";
     TerminateGpuProcess();
   }
-  WaylandWindow* window =
-      connection_->wayland_window_manager()->GetWindow(widget);
+  WaylandWindow* window = connection_->window_manager()->GetWindow(widget);
   // In tab dragging, window may have been destroyed when buffers reach here. We
   // omit buffer commits and OnSubmission, because the corresponding buffer
   // queue in gpu process should be destroyed soon.
   if (!window)
     return;
 
-  window->CommitOverlays(frame_id, overlays);
+  window->CommitOverlays(frame_id, data.seq, overlays);
 }
 
 void WaylandBufferManagerHost::DestroyBuffer(uint32_t buffer_id) {

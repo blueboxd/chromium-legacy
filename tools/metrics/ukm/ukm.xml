@@ -905,11 +905,17 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="SubFrame.MobileFriendliness.AllowUserZoom" enum="Boolean">
+    <obsolete>
+      Deprecated 12/2022.
+    </obsolete>
     <summary>
       Whether the page allows the user to zoom in/out, in the AMP subframe.
     </summary>
   </metric>
   <metric name="SubFrame.MobileFriendliness.BadTapTargetsRatio">
+    <obsolete>
+      Deprecated 12/2022.
+    </obsolete>
     <summary>
       Percentage of tap targets whose center position is within another tap
       target (expanded by a margin), in the AMP subframe. The detail of the
@@ -918,6 +924,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="SubFrame.MobileFriendliness.SmallTextRatio">
+    <obsolete>
+      Deprecated 12/2022.
+    </obsolete>
     <summary>
       Percentage of small font text area in total text area, in the AMP
       subframe.
@@ -925,23 +934,35 @@ be describing additional metrics about the same event.
   </metric>
   <metric
       name="SubFrame.MobileFriendliness.TextContentOutsideViewportPercentage">
+    <obsolete>
+      Deprecated 12/2022.
+    </obsolete>
     <summary>
       Percentage of pixels of text and images horizontally outside the viewport,
       relative to the frame width, in the AMP subframe.
     </summary>
   </metric>
   <metric name="SubFrame.MobileFriendliness.ViewportDeviceWidth" enum="Boolean">
+    <obsolete>
+      Deprecated 12/2022.
+    </obsolete>
     <summary>
       Whether the width of the viewport is specified as device-width or not, in
       the AMP subframe.
     </summary>
   </metric>
   <metric name="SubFrame.MobileFriendliness.ViewportHardcodedWidth">
+    <obsolete>
+      Deprecated 12/2022.
+    </obsolete>
     <summary>
       Specified hardcoded viewport width in CSS pixels, in the AMP subframe.
     </summary>
   </metric>
   <metric name="SubFrame.MobileFriendliness.ViewportInitialScaleX10">
+    <obsolete>
+      Deprecated 12/2022.
+    </obsolete>
     <summary>
       Specified initial viewport scaling, in the AMP subframe, multiplied by 10.
       1 means 0.1, 100 means 10. [1-100].
@@ -12627,6 +12648,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="BadTapTargetsRatio">
+    <obsolete>
+      Deprecated 12/2022 in favor of MobileFriendliness.TappedBadTargets.
+    </obsolete>
     <summary>
       Percentage of tap targets whose center position is within another tap
       target (expanded by a margin). The detail of the algorithm is
@@ -14826,6 +14850,12 @@ be describing additional metrics about the same event.
       A boolean indicating if any mainpage request in the redirect chain or
       committed request had cookies set on it. Only set when a query result was
       received from the cookie manager before event recording.
+    </summary>
+  </metric>
+  <metric name="MainFrameResource.RequestHasNoStore" enum="Boolean">
+    <summary>
+      A boolean indicating if any mainpage resource has a 'Cache-control:
+      no-store' response header. Recorded only for main frame request.
     </summary>
   </metric>
   <metric name="MainFrameResource.RequestStartToReceiveHeadersEnd">
@@ -17793,6 +17823,13 @@ be describing additional metrics about the same event.
       bigger than 1000ms and the maximum window size is 5000ms. This metric's
       integral value is 100x the fractional cumulative layout shift score
       described in the explainer.
+    </summary>
+  </metric>
+  <metric name="MainFrameResource.RequestHasNoStore" enum="Boolean">
+    <summary>
+      A boolean indicating if any prerender activation page load mainpage
+      resource has a 'Cache-control: no-store' response header. Recorded only
+      for main frame request.
     </summary>
   </metric>
   <metric name="Timing.ActivationToFirstContentfulPaint">

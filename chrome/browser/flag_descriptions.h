@@ -286,6 +286,9 @@ extern const char kAutofillUpstreamAllowAdditionalEmailDomainsDescription[];
 extern const char kAutofillUpstreamAllowAllEmailDomainsName[];
 extern const char kAutofillUpstreamAllowAllEmailDomainsDescription[];
 
+extern const char kAutofillMoreProminentPopupName[];
+extern const char kAutofillMoreProminentPopupDescription[];
+
 extern const char kAutofillUseConsistentPopupSettingsIconsName[];
 extern const char kAutofillUseConsistentPopupSettingsIconsDescription[];
 
@@ -674,9 +677,6 @@ extern const char kEnableIsolatedWebAppDevModeDescription[];
 extern const char kEnableLensStandaloneFlagId[];
 extern const char kEnableLensStandaloneName[];
 extern const char kEnableLensStandaloneDescription[];
-
-extern const char kEnableLensInstructionChipImprovementsName[];
-extern const char kEnableLensInstructionChipImprovementsDescription[];
 
 extern const char kEnableRegionSearchOnPdfViewerName[];
 extern const char kEnableRegionSearchOnPdfViewerDescription[];
@@ -1239,6 +1239,9 @@ extern const char kOsSettingsAppNotificationsPageDescription[];
 extern const char kOverviewButtonName[];
 extern const char kOverviewButtonDescription[];
 
+extern const char kOverviewDeskNavigationName[];
+extern const char kOverviewDeskNavigationDescription[];
+
 extern const char kOverlayScrollbarsName[];
 extern const char kOverlayScrollbarsDescription[];
 
@@ -1449,6 +1452,9 @@ extern const char kNoncedPartitionedCookiesDescription[];
 
 extern const char kThirdPartyStoragePartitioningName[];
 extern const char kThirdPartyStoragePartitioningDescription[];
+
+extern const char kScreenSaverPreviewName[];
+extern const char kScreenSaverPreviewDescription[];
 
 extern const char kScrollableTabStripFlagId[];
 extern const char kScrollableTabStripName[];
@@ -2705,9 +2711,6 @@ extern const char kAmbientSubpageUIChangeDescription[];
 extern const char kApnRevampName[];
 extern const char kApnRevampDescription[];
 
-extern const char kAppDiscoveryForOobeName[];
-extern const char kAppDiscoveryForOobeDescription[];
-
 extern const char kArcCustomTabsExperimentName[];
 extern const char kArcCustomTabsExperimentDescription[];
 
@@ -2807,6 +2810,9 @@ extern const char kBluetoothUseFlossDescription[];
 extern const char kBluetoothUseLLPrivacyName[];
 extern const char kBluetoothUseLLPrivacyDescription[];
 
+extern const char kCalendarJellyName[];
+extern const char kCalendarJellyDescription[];
+
 extern const char kCalendarViewName[];
 extern const char kCalendarViewDescription[];
 
@@ -2893,9 +2899,6 @@ extern const char kBruschettaDescription[];
 
 extern const char kBruschettaAlphaMigrateName[];
 extern const char kBruschettaAlphaMigrateDescription[];
-
-extern const char kCameraAppDocScanDlcName[];
-extern const char kCameraAppDocScanDlcDescription[];
 
 extern const char kCameraAppLowStorageWarningName[];
 extern const char kCameraAppLowStorageWarningDescription[];
@@ -3743,11 +3746,6 @@ extern const char kChromeWideEchoCancellationDescription[];
 extern const char kDcheckIsFatalName[];
 extern const char kDcheckIsFatalDescription[];
 #endif  // BUILDFLAG(DCHECK_IS_CONFIGURABLE)
-
-#if BUILDFLAG(ENABLE_JXL_DECODER)
-extern const char kEnableJXLName[];
-extern const char kEnableJXLDescription[];
-#endif  // BUILDFLAG(ENABLE_JXL_DECODER)
 
 #if BUILDFLAG(ENABLE_NACL)
 extern const char kNaclName[];

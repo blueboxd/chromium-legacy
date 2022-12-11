@@ -487,6 +487,11 @@ const char kAutofillPreventOverridingPrefilledValuesDescription[] =
     "When enabled, Autofill won't override any field values that have not been "
     "filled by Autofill";
 
+const char kAutofillMoreProminentPopupName[] = "More prominent Autofill popup";
+const char kAutofillMoreProminentPopupDescription[] =
+    "If enabled Autofill's popup becomes more prominent, i.e. its shadow "
+    "becomes more emphasized, position is also updated";
+
 const char kAutofillUseConsistentPopupSettingsIconsName[] =
     "Consistent Autofill settings icon";
 const char kAutofillUseConsistentPopupSettingsIconsDescription[] =
@@ -1251,12 +1256,6 @@ const char kEnableLensStandaloneName[] = "Enable Lens features in Chrome.";
 const char kEnableLensStandaloneDescription[] =
     "Enables Lens image and region search to learn about the visual content "
     "you see while you browse and shop on the web.";
-
-const char kEnableLensInstructionChipImprovementsName[] =
-    "Enable improvements to the Lens instruction chip.";
-const char kEnableLensInstructionChipImprovementsDescription[] =
-    "Enables improvements to the Lens instruction chip when using the region "
-    "search feature.";
 
 const char kEnableRegionSearchOnPdfViewerName[] =
     "Enable Region Search on PDF viewer.";
@@ -2238,6 +2237,12 @@ const char kOverviewButtonName[] = "Overview button at the status area";
 const char kOverviewButtonDescription[] =
     "If enabled, always show the overview button at the status area.";
 
+const char kOverviewDeskNavigationName[] =
+    "CrOS Labs: Overview Desk Navigation";
+const char kOverviewDeskNavigationDescription[] =
+    "Stay in overview when navigating between desks using a swipe gesture or "
+    "keyboard shortcut.";
+
 const char kPageContentAnnotationsName[] = "Page content annotations";
 const char kPageContentAnnotationsDescription[] =
     "Enables page content to be annotated on-device.";
@@ -2581,6 +2586,11 @@ const char kThirdPartyStoragePartitioningDescription[] =
     "Note: this is under active development and may result in unexpected "
     "behavior. Please file bugs at https://bugs.chromium.org/p/chromium/issues/"
     "entry?labels=StoragePartitioning-trial-bugs&components=Blink%3EStorage.";
+
+const char kScreenSaverPreviewName[] = "Screen saver preview";
+const char kScreenSaverPreviewDescription[] =
+    "Enables the screen saver preview feature which allows the users to "
+    "preview current screen saver.";
 
 const char kScrollableTabStripFlagId[] = "scrollable-tabstrip";
 const char kScrollableTabStripName[] = "Tab Scrolling";
@@ -4878,6 +4888,10 @@ const char kBluetoothUseLLPrivacyDescription[] =
     "Enable address resolution offloading to Bluetooth Controller if "
     "supported. Modifying this flag will cause Bluetooth Controller to reset.";
 
+const char kCalendarJellyName[] = "Enable Calendar Jelly features";
+const char kCalendarJellyDescription[] =
+    "Enables Jelly changes for the sys tray Calendar views.";
+
 const char kCalendarViewName[] =
     "Productivity experiment: Monthly Calendar View";
 const char kCalendarViewDescription[] =
@@ -5019,11 +5033,6 @@ const char kBruschettaAlphaMigrateName[] = "Migration for Bruschetta Alpha";
 const char kBruschettaAlphaMigrateDescription[] =
     "Enable this flag to migrate a Bruschetta installed during the alpha. "
     "Requires the bruschetta flag to be enabled.";
-
-const char kCameraAppDocScanDlcName[] = "Camera App Doc Scan DLC";
-const char kCameraAppDocScanDlcDescription[] =
-    "Enables this flag to allow downloading document scanning feature via DLC "
-    "and use it in the camera app";
 
 extern const char kCameraAppLowStorageWarningName[] =
     "Camera App Low Storage Warning";
@@ -6457,13 +6466,6 @@ const char kDcheckIsFatalDescription[] =
     "By default Chrome will evaluate in this build, but only log failures, "
     "rather than crashing. If enabled, DCHECKs will crash the calling process.";
 #endif  // BUILDFLAG(DCHECK_IS_CONFIGURABLE)
-
-#if BUILDFLAG(ENABLE_JXL_DECODER)
-const char kEnableJXLName[] = "Enable JXL image format";
-const char kEnableJXLDescription[] =
-    "Adds image decoding support for the JPEG XL image format. NOTE: JPEG XL "
-    "format will be removed in Chrome 110 release.";
-#endif  // BUILDFLAG(ENABLE_JXL_DECODER)
 
 #if BUILDFLAG(ENABLE_NACL)
 const char kNaclName[] = "Native Client";

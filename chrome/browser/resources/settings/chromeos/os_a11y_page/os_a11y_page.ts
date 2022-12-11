@@ -28,7 +28,7 @@ import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/po
 
 import {SettingsToggleButtonElement} from '../../controls/settings_toggle_button.js';
 import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
-import {Route, Router} from '../../router.js';
+import {Route, Router} from '../router.js';
 import {DeepLinkingBehavior, DeepLinkingBehaviorInterface} from '../deep_linking_behavior.js';
 import {routes} from '../os_route.js';
 import {RouteOriginBehavior, RouteOriginBehaviorInterface} from '../route_origin_behavior.js';
@@ -173,10 +173,6 @@ class OsSettingsA11yPageElement extends OsSettingsA11yPageElementBase {
     if (routes.A11Y_AUDIO_AND_CAPTIONS) {
       this.addFocusConfig(
           routes.A11Y_AUDIO_AND_CAPTIONS, '#audio-and-captions-page-trigger');
-    }
-    if (routes.A11Y_SELECT_TO_SPEAK) {
-      this.addFocusConfig(
-          routes.A11Y_SELECT_TO_SPEAK, '#select-to-speak-subpage-trigger');
     }
 
     this.addWebUiListener(

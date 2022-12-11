@@ -35,6 +35,7 @@
 #include "cc/base/switches.h"
 #include "chrome/browser/ash/android_sms/android_sms_switches.h"
 #include "chrome/browser/ash/app_list/search/files/item_suggest_cache.h"
+#include "chrome/browser/ash/app_list/search/search_features.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/fast_checkout/fast_checkout_features.h"
 #include "chrome/browser/feature_guide/notifications/feature_notification_guide_service.h"
@@ -60,7 +61,6 @@
 #include "chrome/browser/sharing_hub/sharing_hub_features.h"
 #include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/site_isolation/about_flags.h"
-#include "chrome/browser/ui/app_list/search/search_features.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/unexpire_flags.h"
@@ -291,7 +291,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-#include "components/supervised_user/core/common/features.h"  // nogncheck
+#include "chrome/browser/supervised_user/supervised_user_features/supervised_user_features.h"  // nogncheck
 #endif  // ENABLE_SUPERVISED_USERS
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)
@@ -978,6 +978,22 @@ const FeatureEntry::Choice kLacrosAvailabilityPolicyChoices[] = {
      crosapi::browser_util::kLacrosAvailabilityPolicyLacrosOnly},
 };
 
+const FeatureEntry::Choice kLacrosDataBackwardMigrationModePolicyChoices[] = {
+    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
+    {crosapi::browser_util::kLacrosDataBackwardMigrationModePolicyNone,
+     crosapi::browser_util::kLacrosDataBackwardMigrationModePolicySwitch,
+     crosapi::browser_util::kLacrosDataBackwardMigrationModePolicyNone},
+    {crosapi::browser_util::kLacrosDataBackwardMigrationModePolicyKeepNone,
+     crosapi::browser_util::kLacrosDataBackwardMigrationModePolicySwitch,
+     crosapi::browser_util::kLacrosDataBackwardMigrationModePolicyKeepNone},
+    {crosapi::browser_util::kLacrosDataBackwardMigrationModePolicyKeepSafeData,
+     crosapi::browser_util::kLacrosDataBackwardMigrationModePolicySwitch,
+     crosapi::browser_util::kLacrosDataBackwardMigrationModePolicyKeepSafeData},
+    {crosapi::browser_util::kLacrosDataBackwardMigrationModePolicyKeepAll,
+     crosapi::browser_util::kLacrosDataBackwardMigrationModePolicySwitch,
+     crosapi::browser_util::kLacrosDataBackwardMigrationModePolicyKeepAll},
+};
+
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 const FeatureEntry::Choice kForceUIDirectionChoices[] = {
@@ -1550,14 +1566,14 @@ const FeatureEntry::FeatureVariation
          std::size(kOmniboxDynamicMaxAutocomplete102), nullptr}};
 
 const FeatureEntry::FeatureParam kOmniboxUniformRowHeight36[] = {
-    {"OmniboxSuggestionVerticalMargin", "8"}};
+    {"OmniboxRichSuggestionVerticalMargin", "4"}};
 const FeatureEntry::FeatureParam kOmniboxUniformRowHeight40[] = {
-    {"OmniboxSuggestionVerticalMargin", "10"}};
+    {"OmniboxRichSuggestionVerticalMargin", "6"}};
 
 const FeatureEntry::FeatureVariation kOmniboxSuggestionHeightVariations[] = {
-    {"36px height for all omnibox suggestions", kOmniboxUniformRowHeight36,
+    {"36px omnibox suggestions", kOmniboxUniformRowHeight36,
      std::size(kOmniboxUniformRowHeight36), nullptr},
-    {"40px height for all omnibox suggestions", kOmniboxUniformRowHeight40,
+    {"40px omnibox suggestions", kOmniboxUniformRowHeight40,
      std::size(kOmniboxUniformRowHeight40), nullptr},
 };
 
@@ -3117,18 +3133,6 @@ constexpr FeatureEntry::FeatureVariation kLensStandaloneVariations[] = {
      std::size(kLensStandaloneWithSidePanel), nullptr},
 };
 
-constexpr FeatureEntry::FeatureParam
-    kLensInstructionChipWithImageSelectionIcon[] = {
-        {"use-selection-icon-with-image", "true"}};
-constexpr FeatureEntry::FeatureParam kLensInstructionChipWithAltString[] = {
-    {"use-alt-chip-string", "true"}};
-constexpr FeatureEntry::FeatureVariation kLensInstructionChipVariations[] = {
-    {"With Image Selection Icon", kLensInstructionChipWithImageSelectionIcon,
-     std::size(kLensInstructionChipWithImageSelectionIcon), nullptr},
-    {"With Alt Text", kLensInstructionChipWithAltString,
-     std::size(kLensInstructionChipWithAltString), nullptr},
-};
-
 constexpr FeatureEntry::FeatureParam kLensFormatOptimizationJPEG[] = {
     {"use-webp-image-search", "false"},
     {"use-webp-region-search", "false"},
@@ -3527,6 +3531,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kShowAutofillTypePredictionsName,
      flag_descriptions::kShowAutofillTypePredictionsDescription, kOsAll,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillShowTypePredictions)},
+    {"autofill-more-prominent-popup",
+     flag_descriptions::kAutofillMoreProminentPopupName,
+     flag_descriptions::kAutofillMoreProminentPopupDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillMoreProminentPopup)},
     {"autofill-use-consistent-popup-settings-icons",
      flag_descriptions::kAutofillUseConsistentPopupSettingsIconsName,
      flag_descriptions::kAutofillUseConsistentPopupSettingsIconsDescription,
@@ -3704,6 +3712,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"bluetooth-use-llprivacy", flag_descriptions::kBluetoothUseLLPrivacyName,
      flag_descriptions::kBluetoothUseLLPrivacyDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(bluez::features::kLinkLayerPrivacy)},
+    {"calendar-jelly", flag_descriptions::kCalendarJellyName,
+     flag_descriptions::kCalendarJellyDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kCalendarJelly)},
     {"calendar-view", flag_descriptions::kCalendarViewName,
      flag_descriptions::kCalendarViewDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kCalendarView)},
@@ -3783,6 +3794,10 @@ const FeatureEntry kFeatureEntries[] = {
     // Used to carry the policy value crossing the Chrome process lifetime.
     {crosapi::browser_util::kLacrosAvailabilityPolicyInternalName, "", "",
      kOsCrOS, MULTI_VALUE_TYPE(kLacrosAvailabilityPolicyChoices)},
+    // Used to carry the policy value crossing the Chrome process lifetime.
+    {crosapi::browser_util::kLacrosDataBackwardMigrationModePolicyInternalName,
+     "", "", kOsCrOS,
+     MULTI_VALUE_TYPE(kLacrosDataBackwardMigrationModePolicyChoices)},
     {kLacrosSupportInternalName, flag_descriptions::kLacrosSupportName,
      flag_descriptions::kLacrosSupportDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kLacrosSupport)},
@@ -3929,6 +3944,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAmbientSubpageUIChangeName,
      flag_descriptions::kAmbientSubpageUIChangeDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kAmbientSubpageUIChange)},
+    {"screen-saver-preview", flag_descriptions::kScreenSaverPreviewName,
+     flag_descriptions::kScreenSaverPreviewDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kScreenSaverPreview)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -5142,9 +5160,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"auto-framing-override", flag_descriptions::kAutoFramingOverrideName,
      flag_descriptions::kAutoFramingOverrideDescription, kOsCrOS,
      MULTI_VALUE_TYPE(kAutoFramingOverrideChoices)},
-    {"camera-app-doc-scan-dlc", flag_descriptions::kCameraAppDocScanDlcName,
-     flag_descriptions::kCameraAppDocScanDlcDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kCameraAppDocScanDlc)},
     {"camera-app-low-storage-warning",
      flag_descriptions::kCameraAppLowStorageWarningName,
      flag_descriptions::kCameraAppLowStorageWarningDescription, kOsCrOS,
@@ -5371,7 +5386,7 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"omnibox-default-browser-pedal",
      flag_descriptions::kOmniboxDefaultBrowserPedalName,
-     flag_descriptions::kOmniboxDefaultBrowserPedalDescription, kOsAll,
+     flag_descriptions::kOmniboxDefaultBrowserPedalDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxDefaultBrowserPedal)},
 
     {"omnibox-report-assisted-query-stats",
@@ -6648,6 +6663,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"cros-labs-float-window", flag_descriptions::kFloatWindow,
      flag_descriptions::kFloatWindowDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::wm::features::kFloatWindow)},
+    {"cros-labs-overview-desk-navigation",
+     flag_descriptions::kOverviewDeskNavigationName,
+     flag_descriptions::kOverviewDeskNavigationDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kOverviewDeskNavigation)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -7772,12 +7791,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(download::features::kSmartSuggestionForLargeDownloads)},
 #endif  // BUILDFLAG(IS_ANDROID)
 
-#if BUILDFLAG(ENABLE_JXL_DECODER)
-    {"enable-jxl", flag_descriptions::kEnableJXLName,
-     flag_descriptions::kEnableJXLDescription, kOsAll,
-     FEATURE_VALUE_TYPE(blink::features::kJXL)},
-#endif  // BUILDFLAG(ENABLE_JXL_DECODER)
-
 #if BUILDFLAG(IS_ANDROID)
     {"messages-for-android-ads-blocked",
      flag_descriptions::kMessagesForAndroidAdsBlockedName,
@@ -8261,15 +8274,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(lens::features::kLensStandalone,
                                     kLensStandaloneVariations,
                                     "GoogleLensDesktopContextMenuSearch")},
-
-    {"enable-lens-instruction-chip-improvements",
-     flag_descriptions::kEnableLensInstructionChipImprovementsName,
-     flag_descriptions::kEnableLensInstructionChipImprovementsDescription,
-     kOsDesktop,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         lens::features::kLensInstructionChipImprovements,
-         kLensInstructionChipVariations,
-         "LensInstructionChipImprovements")},
 
     {"enable-lens-region-search-static-page",
      flag_descriptions::kLensRegionSearchStaticPageName,
@@ -9680,6 +9684,14 @@ bool ShouldSkipConditionalFeatureEntry(const flags_ui::FlagsStorage* storage,
   // Skip lacros-availability-policy always. This is a pseudo entry
   // and used to carry the policy value crossing the Chrome's lifetime.
   if (!strcmp(crosapi::browser_util::kLacrosAvailabilityPolicyInternalName,
+              entry.internal_name)) {
+    return true;
+  }
+
+  // Skip lacros-backward-data-migration-policy always. This is a pseudo entry
+  // and used to carry the policy value crossing the Chrome's lifetime.
+  if (!strcmp(crosapi::browser_util::
+                  kLacrosDataBackwardMigrationModePolicyInternalName,
               entry.internal_name)) {
     return true;
   }

@@ -13,9 +13,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr_exclusion.h"
 #include "base/memory/ref_counted.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/task_features.h"
 #include "base/threading/platform_thread.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/tick_clock.h"
 
 namespace base {
@@ -83,7 +83,7 @@ void TimerBase::SetTaskRunner(scoped_refptr<SequencedTaskRunner> task_runner) {
 }
 
 scoped_refptr<SequencedTaskRunner> TimerBase::GetTaskRunner() {
-  return task_runner_ ? task_runner_ : SequencedTaskRunnerHandle::Get();
+  return task_runner_ ? task_runner_ : SequencedTaskRunner::GetCurrentDefault();
 }
 
 void TimerBase::Stop() {
@@ -365,14 +365,11 @@ DeadlineTimer::~DeadlineTimer() = default;
 void DeadlineTimer::Start(const Location& posted_from,
                           TimeTicks deadline,
                           OnceClosure user_task,
-                          ExactDeadline exact) {
+                          subtle::DelayPolicy delay_policy) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   AbandonScheduledTask();
   user_task_ = std::move(user_task);
   posted_from_ = posted_from;
-  subtle::DelayPolicy delay_policy =
-      exact ? subtle::DelayPolicy::kPrecise
-            : subtle::DelayPolicy::kFlexiblePreferEarly;
   ScheduleNewTask(deadline, delay_policy);
 }
 

@@ -207,7 +207,8 @@ DesktopCaptureImplementation CreatePlatformDependentVideoCaptureDevice(
     if ((device_out = CreateScreenCaptureKitDeviceMac(desktop_id)))
       return kScreenCaptureKitDeviceMac;
   }
-  if ((base::FeatureList::IsEnabled(kDesktopCaptureMacV2))) {
+  if ((base::FeatureList::IsEnabled(kDesktopCaptureMacV2))
+      && __builtin_available(macOS 10.8, *)) {
     if ((device_out = CreateDesktopCaptureDeviceMac(desktop_id)))
       return kDesktopCaptureDeviceMac;
   }

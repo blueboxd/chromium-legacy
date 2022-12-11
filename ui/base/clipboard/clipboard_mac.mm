@@ -143,7 +143,7 @@ bool ClipboardMac::IsFormatAvailable(
   if (format == ClipboardFormatType::PngType() ||
       format == ClipboardFormatType::BitmapType()) {
     return [types containsObject:NSPasteboardTypePNG] ||
-           [types containsObject:NSPasteboardTypeTIFF];
+           [types containsObject:NSTIFFPboardType];
   }
   return [types containsObject:format.ToNSString()];
 }

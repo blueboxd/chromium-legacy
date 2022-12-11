@@ -16,7 +16,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "ui/base/clipboard/clipboard.h"
-#include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/clipboard_util_mac.h"
 
 namespace bookmarks {
@@ -293,7 +292,8 @@ bool ReadBookmarksFromPasteboard(
 
 bool PasteboardContainsBookmarks(NSPasteboard* pb) {
   NSArray* availableTypes = @[
-    ui::kUTTypeWebKitWebURLsWithTitles, kUTTypeChromiumBookmarkDictionaryList
+    ui::ClipboardUtil::UTIForWebURLsAndTitles(),
+    kUTTypeChromiumBookmarkDictionaryList
   ];
   return [pb availableTypeFromArray:availableTypes] != nil;
 }

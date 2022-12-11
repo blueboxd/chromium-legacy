@@ -5,6 +5,7 @@
 #ifndef UI_BASE_CLIPBOARD_CLIPBOARD_CONSTANTS_H_
 #define UI_BASE_CLIPBOARD_CLIPBOARD_CONSTANTS_H_
 
+
 #include "base/component_export.h"
 #include "build/build_config.h"
 
@@ -18,13 +19,13 @@ class NSString;
 
 namespace ui {
 
-// ----- PLATFORM NEUTRAL MIME TYPES -----
-
+// Platform-Neutral MIME type constants.
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES) extern const char kMimeTypeText[];
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES) extern const char kMimeTypeTextUtf8[];
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES) extern const char kMimeTypeURIList[];
-// Non-standard type for downloading files after drop events. Only works on
-// Windows. See https://crbug.com/860557 and https://crbug.com/425170.
+// Unstandardized format for downloading files after drop events. Now only
+// works in Windows, but used to also work in Linux and MacOS.
+// See https://crbug.com/860557 and https://crbug.com/425170.
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
 extern const char kMimeTypeDownloadURL[];
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
@@ -38,15 +39,13 @@ extern const char kMimeTypeOctetStream[];
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
 extern const char kMimeTypeWindowDrag[];
 
-// ----- CHROMEOS MIME TYPES -----
-
+// Chrome OS-specific MIME type constants.
 #if BUILDFLAG(IS_CHROMEOS)
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
 extern const char kMimeTypeDataTransferEndpoint[];
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
-// ----- LINUX & CHROMEOS & FUCHSIA MIME TYPES -----
-
+// Linux-specific MIME type constants (also used in Fuchsia).
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
 extern const char kMimeTypeLinuxUtf8String[];
@@ -57,8 +56,6 @@ extern const char kMimeTypeLinuxText[];
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) ||
         // BUILDFLAG(IS_FUCHSIA)
 
-// ----- EVERYTHING EXCEPT FOR APPLE MIME TYPES -----
-
 #if !BUILDFLAG(IS_APPLE)
 // TODO(dcheng): This name is temporary. See crbug.com/106449.
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
@@ -66,57 +63,27 @@ extern const char kMimeTypeWebCustomData[];
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
 extern const char kMimeTypeWebkitSmartPaste[];
 #else
+// MacOS-specific Uniform Type Identifiers.
 
-// ----- APPLE UNIFORM TYPES -----
-
-// Mail.app and TextEdit accept drags that have both HTML and image types on
-// them, but don't process them correctly <http://crbug.com/55879>. Therefore,
-// if there is an image type, don't put the HTML data on as HTML, but rather
-// put it on as this Chrome-only type. External apps won't see HTML but
-// Chrome will know enough to read it as HTML. <http://crbug.com/55879>
-COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
-extern NSString* const kUTTypeChromiumImageAndHTML;
-
-// Data type always placed on dragging pasteboards. There is never any data
-// associated with this type; it's only used to ensure that Chromium supports
-// any drag initiated inside of Chromium, whether or not data has been
-// associated with it.
-COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
-extern NSString* const kUTTypeChromiumInitiatedDrag;
-
-// A type specifying web custom data. The data is pickled.
+// Pickled data.
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
 extern NSString* const kUTTypeChromiumWebCustomData;
 
-// It is the common convention on the Mac and on iOS that password managers tag
-// confidential data with this type. There's no data associated with this
-// type. See http://nspasteboard.org/ for more info.
+// Tells us if WebKit was the last to write to the pasteboard. There's no
+// actual data associated with this type.
+COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
+extern NSString* const kWebSmartPastePboardType;
+
+// Data format used to tag the current data as confidential.
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
 extern NSString* const kUTTypeConfidentialData;
 
-// A publicly-used type for the name of a URL.
-COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES) extern NSString* const kUTTypeURLName;
-
-// A type specifying that WebKit or a WebKit-derived browser engine like Blink
-// was the last to write to the pasteboard. There's no data associated with this
-// type.
-COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
-extern NSString* const kUTTypeWebKitWebSmartPaste;
-
-// A type used by WebKit to add an array of URLs with titles to the clipboard.
-COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
-extern NSString* const kUTTypeWebKitWebURLsWithTitles;
-
 #endif  // BUILDFLAG(IS_APPLE)
-
-// ----- ANDROID MIME TYPES -----
 
 #if BUILDFLAG(IS_ANDROID)
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
 extern const char kMimeTypeImageURI[];
 #endif  // BUILDFLAG(IS_ANDROID)
-
-// ----- OTHER RELATED CONSTANTS -----
 
 // Max number of custom formats which can be registered per write operation.
 // Windows / X11 clipboards enter an unrecoverable state after registering

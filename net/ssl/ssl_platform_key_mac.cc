@@ -361,39 +361,23 @@ scoped_refptr<SSLPrivateKey> CreateSSLPrivateKeyForSecKey(
 
   if (__builtin_available(macOS 10.12, *)) {
     return base::MakeRefCounted<ThreadedSSLPrivateKey>(
-        std::make_unique<SSLPlatformKeySecKey>(std::move(pubkey), private_key),
+        std::make_unique<SSLPlatformKeySecKey>(std::move(pubkey), key),
         GetSSLPlatformKeyTaskRunner());
   }
 
   const CSSM_KEY* cssm_key;
-  OSStatus status = SecKeyGetCSSMKey(private_key, &cssm_key);
+  OSStatus status = SecKeyGetCSSMKey(key, &cssm_key);
   if (status != noErr) {
     OSSTATUS_LOG(WARNING, status);
     return nullptr;
   }
 
   return base::MakeRefCounted<ThreadedSSLPrivateKey>(
-      std::make_unique<SSLPlatformKeyCSSM>(std::move(pubkey), private_key,
+      std::make_unique<SSLPlatformKeyCSSM>(std::move(pubkey), key,
                                            cssm_key),
       GetSSLPlatformKeyTaskRunner());
 }
 
 }  // namespace
 
-scoped_refptr<SSLPrivateKey> CreateSSLPrivateKeyForSecIdentity(
-    const X509Certificate* certificate,
-    SecIdentityRef identity) {
-  base::ScopedCFTypeRef<SecKeyRef> private_key;
-  OSStatus status =
-      SecIdentityCopyPrivateKey(identity, private_key.InitializeInto());
-  if (status != noErr) {
-    OSSTATUS_LOG(WARNING, status);
-    return nullptr;
-  }
-
-  return CreateSSLPrivateKeyForSecKey(certificate, private_key.get());
-}
-
 #pragma clang diagnostic pop  // "-Wdeprecated-declarations"
-
-}  // namespace net

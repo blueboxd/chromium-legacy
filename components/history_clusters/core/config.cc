@@ -107,6 +107,9 @@ Config::Config() {
             "JourneysPersistClustersInHistoryDbPeriodMinutes",
             persist_clusters_in_history_db_period_minutes);
 
+    persist_on_query = base::GetFieldTrialParamByFeatureAsBool(
+        internal::kPersistedClusters, "persist_on_query", persist_on_query);
+
     max_persisted_clusters_to_fetch = base::GetFieldTrialParamByFeatureAsInt(
         internal::kPersistedClusters, "max_persisted_clusters_to_fetch",
         max_persisted_clusters_to_fetch);
@@ -173,11 +176,29 @@ Config::Config() {
             "omnibox_history_cluster_provider_score",
             omnibox_history_cluster_provider_score);
 
+    omnibox_history_cluster_provider_inherit_search_match_score =
+        base::GetFieldTrialParamByFeatureAsBool(
+            internal::kOmniboxHistoryClusterProvider,
+            "omnibox_history_cluster_provider_inherit_search_match_score",
+            omnibox_history_cluster_provider_inherit_search_match_score);
+
+    omnibox_history_cluster_provider_rank_above_searches =
+        base::GetFieldTrialParamByFeatureAsBool(
+            internal::kOmniboxHistoryClusterProvider,
+            "omnibox_history_cluster_provider_rank_above_searches",
+            omnibox_history_cluster_provider_rank_above_searches);
+
     omnibox_history_cluster_provider_shortcuts =
         base::GetFieldTrialParamByFeatureAsBool(
             internal::kOmniboxHistoryClusterProvider,
             "omnibox_history_cluster_provider_shortcuts",
             omnibox_history_cluster_provider_shortcuts);
+
+    omnibox_history_cluster_provider_allow_default =
+        base::GetFieldTrialParamByFeatureAsBool(
+            internal::kOmniboxHistoryClusterProvider,
+            "omnibox_history_cluster_provider_allow_default",
+            omnibox_history_cluster_provider_allow_default);
 
     omnibox_history_cluster_provider_navigation_intent_score_threshold =
         base::GetFieldTrialParamByFeatureAsInt(
@@ -191,12 +212,6 @@ Config::Config() {
             internal::kOmniboxHistoryClusterProvider,
             "omnibox_history_cluster_provider_on_navigation_intents",
             omnibox_history_cluster_provider_on_navigation_intents);
-
-    omnibox_history_cluster_provider_free_ranking =
-        base::GetFieldTrialParamByFeatureAsBool(
-            internal::kOmniboxHistoryClusterProvider,
-            "omnibox_history_cluster_provider_free_ranking",
-            omnibox_history_cluster_provider_free_ranking);
   }
 
   // The `kOnDeviceClusteringKeywordFiltering` feature and child params.

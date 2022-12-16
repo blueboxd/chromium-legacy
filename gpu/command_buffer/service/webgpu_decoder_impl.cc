@@ -23,7 +23,6 @@
 #include "base/trace_event/trace_event.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
-#include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/webgpu_cmd_format.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
@@ -259,7 +258,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
                                               gl::GLImage* image) override {
     NOTREACHED();
   }
-#else
+#elif !BUILDFLAG(IS_ANDROID)
   void AttachImageToTextureWithClientBinding(uint32_t client_texture_id,
                                              uint32_t texture_target,
                                              gl::GLImage* image) override {
@@ -272,6 +271,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
     NOTREACHED();
     return nullptr;
   }
+#if !BUILDFLAG(IS_ANDROID)
   std::unique_ptr<gles2::AbstractTexture> CreateAbstractTexture(
       GLenum target,
       GLenum internal_format,
@@ -284,6 +284,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
     NOTREACHED();
     return nullptr;
   }
+#endif
   bool IsCompressedTextureFormat(unsigned format) override {
     NOTREACHED();
     return false;
@@ -499,23 +500,20 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
            WGPUDevice device,
            WGPUTextureUsage usage,
            std::vector<WGPUTextureFormat> view_formats) {
-      viz::ResourceFormat format = (representation->format()).resource_format();
+      viz::SharedImageFormat format = representation->format();
       // Include list of formats this is tested to work with.
       // See gpu/command_buffer/tests/webgpu_mailbox_unittest.cc
-      switch (format) {
+      if (format != viz::SharedImageFormat::kBGRA_8888 &&
 // TODO(crbug.com/1241369): Handle additional formats.
 #if !BUILDFLAG(IS_MAC)
-        case viz::ResourceFormat::RGBA_8888:
-#endif  // !BUILDFLAG(IS_MAC)
-        case viz::ResourceFormat::BGRA_8888:
-        case viz::ResourceFormat::RGBA_F16:
-          break;
-        default:
-          return nullptr;
+          format != viz::SharedImageFormat::kRGBA_8888 &&
+#endif
+          format != viz::SharedImageFormat::kRGBA_F16) {
+        return nullptr;
       }
 
       // Make sure we can create a WebGPU texture for this format
-      if (viz::ToWGPUFormat(format) == WGPUTextureFormat_Undefined) {
+      if (ToWGPUFormat(format) == WGPUTextureFormat_Undefined) {
         return nullptr;
       }
 
@@ -1595,7 +1593,8 @@ int32_t WebGPUDecoderImpl::GetPreferredAdapterIndex(
     adapter.GetProperties(&adapterProperties);
 
     if (force_fallback &&
-        adapterProperties.adapterType != WGPUAdapterType_CPU) {
+        (adapterProperties.adapterType != WGPUAdapterType_CPU ||
+         adapterProperties.backendType != WGPUBackendType_Vulkan)) {
       continue;
     }
 
@@ -1956,6 +1955,11 @@ error::Error WebGPUDecoderImpl::HandleDissociateMailboxForPresent(
     // before destroy.
     // TODO(crbug.com/1242712): Use the C++ WebGPU API.
     const auto& procs = dawn::native::GetProcs();
+
+    // Push an error scope to capture errors here. The texture may be
+    // an error texture, so this code would produce additional errors
+    // which should not be visible to the client.
+    procs.devicePushErrorScope(device, WGPUErrorFilter_Validation);
     WGPUTextureView view = procs.textureCreateView(texture, nullptr);
 
     WGPURenderPassColorAttachment color_attachment = {};
@@ -1989,6 +1993,16 @@ error::Error WebGPUDecoderImpl::HandleDissociateMailboxForPresent(
     procs.renderPassEncoderRelease(pass);
     procs.commandEncoderRelease(encoder);
     procs.textureViewRelease(view);
+
+    // Pop the error scope and log errors.
+    procs.devicePopErrorScope(
+        device,
+        [](WGPUErrorType, const char* message, void*) {
+          if (message) {
+            DLOG(ERROR) << "Clear contents to black had error: " << message;
+          }
+        },
+        nullptr);
   }
 
   associated_shared_image_map_.erase(it);

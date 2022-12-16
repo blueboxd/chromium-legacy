@@ -6,11 +6,15 @@
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_FENCED_FRAME_REDACTED_FENCED_FRAME_CONFIG_MOJOM_TRAITS_H_
 
 #include "mojo/public/cpp/bindings/enum_traits.h"
+#include "mojo/public/cpp/bindings/union_traits.h"
 #include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/common/fenced_frame/redacted_fenced_frame_config.h"
-#include "third_party/blink/public/mojom/fenced_frame/fenced_frame_config.mojom-forward.h"
+#include "third_party/blink/public/mojom/fenced_frame/fenced_frame_config.mojom.h"
 
 namespace mojo {
+
+template <typename T>
+using Prop = blink::FencedFrame::RedactedFencedFrameProperty<T>;
 
 template <>
 struct BLINK_COMMON_EXPORT
@@ -68,20 +72,200 @@ struct BLINK_COMMON_EXPORT
 };
 
 template <>
+class BLINK_COMMON_EXPORT
+    UnionTraits<blink::mojom::PotentiallyOpaqueURLDataView, Prop<GURL>> {
+ public:
+  static const GURL& transparent(const Prop<GURL>& mapped_url) {
+    return *mapped_url.potentially_opaque_value;
+  }
+  static blink::FencedFrame::Opaque opaque(const Prop<GURL>&) {
+    return blink::FencedFrame::Opaque::kOpaque;
+  }
+
+  static bool Read(blink::mojom::PotentiallyOpaqueURLDataView data,
+                   Prop<GURL>* out);
+
+  static blink::mojom::PotentiallyOpaqueURLDataView::Tag GetTag(
+      const Prop<GURL>& mapped_url);
+};
+
+template <>
+class BLINK_COMMON_EXPORT
+    UnionTraits<blink::mojom::PotentiallyOpaqueSizeDataView, Prop<gfx::Size>> {
+ public:
+  static const gfx::Size& transparent(const Prop<gfx::Size>& size) {
+    return *size.potentially_opaque_value;
+  }
+  static blink::FencedFrame::Opaque opaque(const Prop<gfx::Size>&) {
+    return blink::FencedFrame::Opaque::kOpaque;
+  }
+
+  static bool Read(blink::mojom::PotentiallyOpaqueSizeDataView data,
+                   Prop<gfx::Size>* out);
+
+  static blink::mojom::PotentiallyOpaqueSizeDataView::Tag GetTag(
+      const Prop<gfx::Size>& size);
+};
+
+template <>
+class BLINK_COMMON_EXPORT
+    UnionTraits<blink::mojom::PotentiallyOpaqueBoolDataView, Prop<bool>> {
+ public:
+  static const bool& transparent(const Prop<bool>& flag) {
+    return *flag.potentially_opaque_value;
+  }
+  static blink::FencedFrame::Opaque opaque(const Prop<bool>&) {
+    return blink::FencedFrame::Opaque::kOpaque;
+  }
+
+  static bool Read(blink::mojom::PotentiallyOpaqueBoolDataView data,
+                   Prop<bool>* out);
+
+  static blink::mojom::PotentiallyOpaqueBoolDataView::Tag GetTag(
+      const Prop<bool>& flag);
+};
+
+template <>
+class BLINK_COMMON_EXPORT
+    UnionTraits<blink::mojom::PotentiallyOpaqueAdAuctionDataDataView,
+                Prop<blink::FencedFrame::AdAuctionData>> {
+ public:
+  static const blink::FencedFrame::AdAuctionData& transparent(
+      const Prop<blink::FencedFrame::AdAuctionData>& ad_auction_data) {
+    return *ad_auction_data.potentially_opaque_value;
+  }
+  static blink::FencedFrame::Opaque opaque(
+      const Prop<blink::FencedFrame::AdAuctionData>&) {
+    return blink::FencedFrame::Opaque::kOpaque;
+  }
+
+  static bool Read(blink::mojom::PotentiallyOpaqueAdAuctionDataDataView data,
+                   Prop<blink::FencedFrame::AdAuctionData>* out);
+
+  static blink::mojom::PotentiallyOpaqueAdAuctionDataDataView::Tag GetTag(
+      const Prop<blink::FencedFrame::AdAuctionData>& ad_auction_data);
+};
+
+template <>
+class BLINK_COMMON_EXPORT UnionTraits<
+    blink::mojom::PotentiallyOpaqueConfigVectorDataView,
+    Prop<std::vector<blink::FencedFrame::RedactedFencedFrameConfig>>> {
+ public:
+  static const std::vector<blink::FencedFrame::RedactedFencedFrameConfig>&
+  transparent(
+      const Prop<std::vector<blink::FencedFrame::RedactedFencedFrameConfig>>&
+          config_vector) {
+    return *config_vector.potentially_opaque_value;
+  }
+  static blink::FencedFrame::Opaque opaque(
+      const Prop<std::vector<blink::FencedFrame::RedactedFencedFrameConfig>>&) {
+    return blink::FencedFrame::Opaque::kOpaque;
+  }
+
+  static bool Read(
+      blink::mojom::PotentiallyOpaqueConfigVectorDataView data,
+      Prop<std::vector<blink::FencedFrame::RedactedFencedFrameConfig>>* out);
+
+  static blink::mojom::PotentiallyOpaqueConfigVectorDataView::Tag GetTag(
+      const Prop<std::vector<blink::FencedFrame::RedactedFencedFrameConfig>>&
+          config_vector);
+};
+
+template <>
+class BLINK_COMMON_EXPORT
+    UnionTraits<blink::mojom::PotentiallyOpaqueReportingMetadataDataView,
+                Prop<blink::FencedFrame::FencedFrameReporting>> {
+ public:
+  static const blink::FencedFrame::FencedFrameReporting& transparent(
+      const Prop<blink::FencedFrame::FencedFrameReporting>&
+          fenced_frame_reporting) {
+    return *fenced_frame_reporting.potentially_opaque_value;
+  }
+  static blink::FencedFrame::Opaque opaque(
+      const Prop<blink::FencedFrame::FencedFrameReporting>&) {
+    return blink::FencedFrame::Opaque::kOpaque;
+  }
+
+  static bool Read(
+      blink::mojom::PotentiallyOpaqueReportingMetadataDataView data,
+      Prop<blink::FencedFrame::FencedFrameReporting>* out);
+
+  static blink::mojom::PotentiallyOpaqueReportingMetadataDataView::Tag GetTag(
+      const Prop<blink::FencedFrame::FencedFrameReporting>&
+          fenced_frame_reporting);
+};
+
+template <>
+class BLINK_COMMON_EXPORT UnionTraits<
+    blink::mojom::PotentiallyOpaqueSharedStorageBudgetMetadataDataView,
+    Prop<blink::FencedFrame::SharedStorageBudgetMetadata>> {
+ public:
+  static const blink::FencedFrame::SharedStorageBudgetMetadata& transparent(
+      const Prop<blink::FencedFrame::SharedStorageBudgetMetadata>&
+          shared_storage_budget_metadata) {
+    return *shared_storage_budget_metadata.potentially_opaque_value;
+  }
+  static blink::FencedFrame::Opaque opaque(
+      const Prop<blink::FencedFrame::SharedStorageBudgetMetadata>&) {
+    return blink::FencedFrame::Opaque::kOpaque;
+  }
+
+  static bool Read(
+      blink::mojom::PotentiallyOpaqueSharedStorageBudgetMetadataDataView data,
+      Prop<blink::FencedFrame::SharedStorageBudgetMetadata>* out);
+
+  static blink::mojom::PotentiallyOpaqueSharedStorageBudgetMetadataDataView::Tag
+  GetTag(const Prop<blink::FencedFrame::SharedStorageBudgetMetadata>&
+             shared_storage_budget_metadata);
+};
+
+template <>
 struct BLINK_COMMON_EXPORT
     StructTraits<blink::mojom::FencedFrameConfigDataView,
                  blink::FencedFrame::RedactedFencedFrameConfig> {
-  static blink::mojom::PotentiallyOpaqueURLPtr mapped_url(
-      const blink::FencedFrame::RedactedFencedFrameConfig& config);
-  static blink::mojom::PotentiallyOpaqueAdAuctionDataPtr ad_auction_data(
-      const blink::FencedFrame::RedactedFencedFrameConfig& config);
-  static blink::mojom::PotentiallyOpaqueConfigVectorPtr nested_configs(
-      const blink::FencedFrame::RedactedFencedFrameConfig& config);
-  static blink::mojom::PotentiallyOpaqueSharedStorageBudgetMetadataPtr
+  static const GURL& urn_uuid(
+      const blink::FencedFrame::RedactedFencedFrameConfig& config) {
+    // Whenever a redacted config is sent over an IPC, its `urn_` member is
+    // expected to be non-nullopt.
+    return config.urn_uuid_.value();
+  }
+  static const absl::optional<Prop<GURL>>& mapped_url(
+      const blink::FencedFrame::RedactedFencedFrameConfig& config) {
+    return config.mapped_url_;
+  }
+  static const absl::optional<Prop<gfx::Size>>& container_size(
+      const blink::FencedFrame::RedactedFencedFrameConfig& config) {
+    return config.container_size_;
+  }
+  static const absl::optional<Prop<gfx::Size>>& content_size(
+      const blink::FencedFrame::RedactedFencedFrameConfig& config) {
+    return config.content_size_;
+  }
+  static const absl::optional<Prop<bool>>&
+  deprecated_should_freeze_initial_size(
+      const blink::FencedFrame::RedactedFencedFrameConfig& config) {
+    return config.deprecated_should_freeze_initial_size_;
+  }
+  static const absl::optional<Prop<blink::FencedFrame::AdAuctionData>>&
+  ad_auction_data(const blink::FencedFrame::RedactedFencedFrameConfig& config) {
+    return config.ad_auction_data_;
+  }
+  static const absl::optional<
+      Prop<std::vector<blink::FencedFrame::RedactedFencedFrameConfig>>>&
+  nested_configs(const blink::FencedFrame::RedactedFencedFrameConfig& config) {
+    return config.nested_configs_;
+  }
+  static const absl::optional<
+      Prop<blink::FencedFrame::SharedStorageBudgetMetadata>>&
   shared_storage_budget_metadata(
-      const blink::FencedFrame::RedactedFencedFrameConfig& config);
-  static blink::mojom::PotentiallyOpaqueReportingMetadataPtr reporting_metadata(
-      const blink::FencedFrame::RedactedFencedFrameConfig& config);
+      const blink::FencedFrame::RedactedFencedFrameConfig& config) {
+    return config.shared_storage_budget_metadata_;
+  }
+  static const absl::optional<Prop<blink::FencedFrame::FencedFrameReporting>>&
+  reporting_metadata(
+      const blink::FencedFrame::RedactedFencedFrameConfig& config) {
+    return config.reporting_metadata_;
+  }
 
   static bool Read(blink::mojom::FencedFrameConfigDataView data,
                    blink::FencedFrame::RedactedFencedFrameConfig* out_config);
@@ -91,18 +275,42 @@ template <>
 struct BLINK_COMMON_EXPORT
     StructTraits<blink::mojom::FencedFramePropertiesDataView,
                  blink::FencedFrame::RedactedFencedFrameProperties> {
-  static blink::mojom::PotentiallyOpaqueURLPtr mapped_url(
-      const blink::FencedFrame::RedactedFencedFrameProperties& properties);
-  static blink::mojom::PotentiallyOpaqueAdAuctionDataPtr ad_auction_data(
-      const blink::FencedFrame::RedactedFencedFrameProperties& properties);
+  static const absl::optional<Prop<GURL>>& mapped_url(
+      const blink::FencedFrame::RedactedFencedFrameProperties& properties) {
+    return properties.mapped_url_;
+  }
+  static const absl::optional<Prop<gfx::Size>>& container_size(
+      const blink::FencedFrame::RedactedFencedFrameProperties& properties) {
+    return properties.container_size_;
+  }
+  static const absl::optional<Prop<gfx::Size>>& content_size(
+      const blink::FencedFrame::RedactedFencedFrameProperties& properties) {
+    return properties.content_size_;
+  }
+  static const absl::optional<Prop<bool>>&
+  deprecated_should_freeze_initial_size(
+      const blink::FencedFrame::RedactedFencedFrameProperties& properties) {
+    return properties.deprecated_should_freeze_initial_size_;
+  }
+  static const absl::optional<Prop<blink::FencedFrame::AdAuctionData>>&
+  ad_auction_data(
+      const blink::FencedFrame::RedactedFencedFrameProperties& properties) {
+    return properties.ad_auction_data_;
+  }
   static blink::mojom::PotentiallyOpaqueURNConfigVectorPtr
   nested_urn_config_pairs(
       const blink::FencedFrame::RedactedFencedFrameProperties& properties);
-  static blink::mojom::PotentiallyOpaqueSharedStorageBudgetMetadataPtr
+  static const absl::optional<
+      Prop<blink::FencedFrame::SharedStorageBudgetMetadata>>&
   shared_storage_budget_metadata(
-      const blink::FencedFrame::RedactedFencedFrameProperties& properties);
-  static blink::mojom::PotentiallyOpaqueReportingMetadataPtr reporting_metadata(
-      const blink::FencedFrame::RedactedFencedFrameProperties& properties);
+      const blink::FencedFrame::RedactedFencedFrameProperties& properties) {
+    return properties.shared_storage_budget_metadata_;
+  }
+  static const absl::optional<Prop<blink::FencedFrame::FencedFrameReporting>>&
+  reporting_metadata(
+      const blink::FencedFrame::RedactedFencedFrameProperties& properties) {
+    return properties.reporting_metadata_;
+  }
 
   static bool Read(
       blink::mojom::FencedFramePropertiesDataView data,

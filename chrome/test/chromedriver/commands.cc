@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <functional>
 #include <list>
 #include <utility>
 
@@ -39,24 +40,23 @@ void ExecuteGetStatus(const base::Value::Dict& params,
   // W3C defined data:
   // ChromeDriver doesn't have a preset limit on number of active sessions,
   // so we are always ready.
-  base::DictionaryValue info;
-  info.GetDict().Set("ready", true);
-  info.GetDict().Set("message",
-                     base::StringPrintf("%s ready for new sessions.",
-                                        kChromeDriverProductShortName));
+  base::Value::Dict info;
+  info.Set("ready", true);
+  info.Set("message", base::StringPrintf("%s ready for new sessions.",
+                                         kChromeDriverProductShortName));
 
   // ChromeDriver specific data:
-  base::DictionaryValue build;
-  build.GetDict().Set("version", kChromeDriverVersion);
-  info.SetKey("build", std::move(build));
+  base::Value::Dict build;
+  build.Set("version", kChromeDriverVersion);
+  info.Set("build", std::move(build));
 
-  base::DictionaryValue os;
-  os.GetDict().Set("name", base::SysInfo::OperatingSystemName());
-  os.GetDict().Set("version", base::SysInfo::OperatingSystemVersion());
-  os.GetDict().Set("arch", base::SysInfo::OperatingSystemArchitecture());
-  info.SetKey("os", std::move(os));
+  base::Value::Dict os;
+  os.Set("name", base::SysInfo::OperatingSystemName());
+  os.Set("version", base::SysInfo::OperatingSystemVersion());
+  os.Set("arch", base::SysInfo::OperatingSystemArchitecture());
+  info.Set("os", std::move(os));
 
-  callback.Run(Status(kOk), base::Value::ToUniquePtrValue(std::move(info)),
+  callback.Run(Status(kOk), std::make_unique<base::Value>(std::move(info)),
                std::string(), kW3CDefault);
 }
 
@@ -87,7 +87,7 @@ namespace {
 
 void OnGetSession(const base::WeakPtr<size_t>& session_remaining_count,
                   const base::RepeatingClosure& all_get_session_func,
-                  base::ListValue* session_list,
+                  base::Value::List& session_list,
                   const Status& status,
                   std::unique_ptr<base::Value> value,
                   const std::string& session_id,
@@ -102,7 +102,7 @@ void OnGetSession(const base::WeakPtr<size_t>& session_remaining_count,
     session.Set("id", session_id);
     session.Set("capabilities",
                 base::Value::FromUniquePtrValue(std::move(value)));
-    session_list->GetList().Append(std::move(session));
+    session_list.Append(std::move(session));
   }
 
   if (!*session_remaining_count) {
@@ -119,10 +119,12 @@ void ExecuteGetSessions(const Command& session_capabilities_command,
                         const CommandCallback& callback) {
   size_t get_remaining_count = session_thread_map->size();
   base::WeakPtrFactory<size_t> weak_ptr_factory(&get_remaining_count);
-  std::unique_ptr<base::ListValue> session_list(new base::ListValue());
+  base::Value::List session_list;
 
   if (!get_remaining_count) {
-    callback.Run(Status(kOk), std::move(session_list), session_id, false);
+    callback.Run(Status(kOk),
+                 std::make_unique<base::Value>(std::move(session_list)),
+                 session_id, false);
     return;
   }
 
@@ -133,13 +135,15 @@ void ExecuteGetSessions(const Command& session_capabilities_command,
     session_capabilities_command.Run(
         params, iter->first,
         base::BindRepeating(&OnGetSession, weak_ptr_factory.GetWeakPtr(),
-                            run_loop.QuitClosure(), session_list.get()));
+                            run_loop.QuitClosure(), std::ref(session_list)));
   }
   base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(), base::Seconds(10));
   run_loop.Run();
 
-  callback.Run(Status(kOk), std::move(session_list), session_id, false);
+  callback.Run(Status(kOk),
+               std::make_unique<base::Value>(std::move(session_list)),
+               session_id, false);
 }
 
 namespace {

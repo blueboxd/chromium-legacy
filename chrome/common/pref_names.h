@@ -875,6 +875,10 @@ extern const char kKerberosEnabled[];
 extern const char kIsolatedWebAppInstallForceList[];
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
+#if BUILDFLAG(IS_WIN)
+extern const char kCloudApAuthEnabled[];
+#endif  // BUILDFLAG(IS_WIN)
+
 extern const char kCertRevocationCheckingEnabled[];
 extern const char kCertRevocationCheckingRequiredLocalAnchors[];
 extern const char kSSLVersionMin[];
@@ -1053,7 +1057,6 @@ extern const char kLacrosDockedMagnifierEnabled[];
 extern const char kAllowDinosaurEasterEgg[];
 
 #if BUILDFLAG(IS_ANDROID)
-extern const char kClickedUpdateMenuItem[];
 extern const char kLatestVersionWhenClickedUpdateMenuItem[];
 #endif
 
@@ -1204,6 +1207,7 @@ extern const char kShowCaretBrowsingDialog[];
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 extern const char kLacrosLaunchSwitch[];
+extern const char kLacrosSelection[];
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

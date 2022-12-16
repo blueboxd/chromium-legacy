@@ -105,17 +105,6 @@ PasswordNoteAction NoteChangeResultToPasswordNoteEditDialogAction(
   return PasswordNoteAction::kNoteNotChanged;
 }
 
-void LogMetricsAddCredential(const password_manager::PasswordForm& form) {
-  password_manager::metrics_util::
-      LogUserInteractionsWhenAddingCredentialFromSettings(
-          password_manager::metrics_util::
-              AddCredentialFromSettingsUserInteractions::kCredentialAdded);
-  if (!form.notes.empty() && form.notes[0].value.length() > 0) {
-    password_manager::metrics_util::LogPasswordNoteActionInSettings(
-        PasswordNoteAction::kNoteAddedInAddDialog);
-  }
-}
-
 }  // namespace
 
 namespace password_manager {
@@ -253,7 +242,6 @@ void SavedPasswordsPresenter::AddCredentialAsync(
   PasswordForm form = GenerateFormFromCredential(credential, type);
 
   GetStoreFor(form).AddLogin(form, base::BindOnce(std::move(completion)));
-  LogMetricsAddCredential(form);
 }
 
 bool SavedPasswordsPresenter::AddCredential(
@@ -266,7 +254,13 @@ bool SavedPasswordsPresenter::AddCredential(
   PasswordForm form = GenerateFormFromCredential(credential, type);
 
   GetStoreFor(form).AddLogin(form);
-  LogMetricsAddCredential(form);
+
+  if (form.type == password_manager::PasswordForm::Type::kManuallyAdded) {
+    if (!form.notes.empty() && form.notes[0].value.length() > 0) {
+      password_manager::metrics_util::LogPasswordNoteActionInSettings(
+          PasswordNoteAction::kNoteAddedInAddDialog);
+    }
+  }
 
   return true;
 }

@@ -266,6 +266,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Tab.AgeAtDeletion" units="ms" expires_after="2023-12-13">
+  <owner>ewannpv@chromium.org</owner>
+  <owner>gambard@chromium.org</owner>
+  <owner>bling-team@google.com</owner>
+  <summary>
+    The age of a Tab when closed (Time between creation time on the current
+    device and closure time).
+  </summary>
+</histogram>
+
 <histogram name="Tab.AgeUponRestoreFromColdStart" units="minutes"
     expires_after="M88">
   <owner>dtrainor@chromium.org</owner>
@@ -468,6 +478,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Tab.Preview.TimeToNotifyObserversAfterCaptureReceived"
     units="microseconds" expires_after="2022-11-27">
+  <obsolete>
+    Removed 12/2022. Not actively used because reported values are 0 most of the
+    time. It would be more useful to report number of discards per day.
+  </obsolete>
   <owner>dfried@chromium.org</owner>
   <owner>collinbaker@chromium.org</owner>
   <summary>
@@ -482,6 +496,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Tab.Preview.TimeToStoreAfterFrameReceived"
     units="microseconds" expires_after="2022-11-27">
+  <obsolete>
+    Removed 12/2022. Not actively used because reported values are 0 most of the
+    time. It would be more useful to report number of discards per day.
+  </obsolete>
   <owner>dfried@chromium.org</owner>
   <owner>collinbaker@chromium.org</owner>
   <summary>
@@ -505,6 +523,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Tab.Preview.VideoCaptureDuration" units="ms"
     expires_after="2022-11-27">
+  <obsolete>
+    Removed 12/2022. Not actively used because reported values are 0 most of the
+    time. It would be more useful to report number of discards per day.
+  </obsolete>
   <owner>dfried@chromium.org</owner>
   <owner>collinbaker@chromium.org</owner>
   <summary>
@@ -565,6 +587,18 @@ chromium-metrics-reviews@google.com.
   <summary>
     [iOS] The number of tabs of the current window at the time of a renderer
     termination.
+  </summary>
+</histogram>
+
+<histogram name="Tab.RestoreClosedTab" enum="Boolean"
+    expires_after="2023-11-30">
+  <owner>sreejakshetty@chromium.org</owner>
+  <owner>chrome-brapp-loading@google.com</owner>
+  <summary>
+    [Desktop] This metric is recorded whenever a tab is restored by the user.
+    Set to true if the tab is restored from ClosedTabCache and false indicates
+    the tab is restored normally. This accounts for all types of tab restores
+    i.e., in a closed window, closed group also on startup tab restores.
   </summary>
 </histogram>
 
@@ -1666,7 +1700,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Tabs.RecentlyClosed.HistoricalSaverCloseType"
-    enum="HistoricalSaverCloseType" expires_after="2023-04-09">
+    enum="HistoricalSaverCloseType" expires_after="2023-06-11">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <summary>

@@ -1301,7 +1301,7 @@ void NativeWidgetNSWindowBridge::FullscreenControllerToggleFullscreen() {
   // break cross-display fullscreen transitions by losing focus of the
   // transitioning window (crbug.com/1338659) or changing the z-order of
   // windows on the previous space. Making the window key here seems to
-  // alleviate those apparent defects (crbug.com/1392542). 
+  // alleviate those apparent defects (crbug.com/1392542).
   if (is_key_window)
     [window_ makeKeyAndOrderFront:nil];
 }
@@ -1593,6 +1593,10 @@ void NativeWidgetNSWindowBridge::OrderChildren() {
     } else {
       if (child_window.parentWindow == window)
         continue;
+      if (immersive_mode_controller_ &&
+          immersive_mode_controller_->overlay_window() == child_window) {
+        continue;
+      }
       [window addChildWindow:child_window ordered:NSWindowAbove];
     }
   }
@@ -1665,6 +1669,18 @@ void NativeWidgetNSWindowBridge::UpdateWindowGeometry() {
   // after the frame from the compositor arrives.
   if (content_resized && ![window_ isOpaque])
     invalidate_shadow_on_frame_swap_ = true;
+}
+
+void NativeWidgetNSWindowBridge::MoveChildrenTo(
+    NativeWidgetNSWindowBridge* target) {
+  // Make a copy of `child_windows_` because it will be updated during the loop.
+  std::vector<NativeWidgetNSWindowBridge*> child_windows(child_windows_);
+  for (NativeWidgetNSWindowBridge* child : child_windows) {
+    if (child != target) {
+      child->SetParent(target->id_);
+      child->host()->OnWindowParentChanged(target->id_);
+    }
+  }
 }
 
 void NativeWidgetNSWindowBridge::UpdateWindowDisplay() {

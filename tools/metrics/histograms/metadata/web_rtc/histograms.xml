@@ -167,20 +167,35 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="WebRTC.Audio.AgcSetLevel" units="level"
-    expires_after="2023-04-16">
-  <owner>hlundin@chromium.org</owner>
+<histogram name="WebRTC.Audio.Apm.RecommendedInputVolume.OnChangeToMatchTarget"
+    units="volume" expires_after="2023-12-31">
+  <owner>silen@chromium.org</owner>
+  <owner>alessiob@chromium.org</owner>
   <owner>webrtc-audio-uma@google.com</owner>
   <summary>
-    The automatic gain control (AGC) in WebRTC tries to adjust the microphone
-    gain to maintain a strong audio level, but without clipping (saturation).
-    The histogram will log a new value every time the AGC changes the target
-    level.
+    The recommended input volume when adjusted to match the target level - i.e.,
+    not adjusted to handle clipping input. A log call is made every time that
+    such a volume changes during an active WebRTC call.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Audio.Apm.{InputVolumeType}.OnChange" units="volume"
+    expires_after="2023-12-31">
+  <owner>silen@chromium.org</owner>
+  <owner>alessiob@chromium.org</owner>
+  <owner>webrtc-audio-uma@google.com</owner>
+  <summary>
+    The {InputVolumeType} input volume. A log call is made every time that the
+    volume changes during an active WebRTC call.
+  </summary>
+  <token key="InputVolumeType">
+    <variant name="AppliedInputVolume" summary="applied"/>
+    <variant name="RecommendedInputVolume" summary="recommended"/>
+  </token>
+</histogram>
+
 <histogram name="WebRTC.Audio.Apm.{InputVolumeType}.{Metric}Average"
-    units="level" expires_after="2023-12-31">
+    units="volume" expires_after="2023-12-31">
   <owner>silen@chromium.org</owner>
   <owner>alessiob@chromium.org</owner>
   <owner>webrtc-audio-uma@google.com</owner>
@@ -514,7 +529,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.Audio.EchoCanceller.ReliableDelayEstimates"
-    enum="WebRTCAecDelayEstimateReliability" expires_after="2023-04-09">
+    enum="WebRTCAecDelayEstimateReliability" expires_after="2023-06-11">
   <owner>peah@chromium.org</owner>
   <owner>saza@chromium.org</owner>
   <owner>webrtc-audio-uma@google.com</owner>
@@ -668,7 +683,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.AudioInputSampleRate" enum="AudioSampleRate"
-    expires_after="2023-04-11">
+    expires_after="2023-06-11">
   <owner>saza@chromium.org</owner>
   <owner>olka@chromium.org</owner>
   <owner>webrtc-audio-uma@google.com</owner>
@@ -736,84 +751,6 @@ chromium-metrics-reviews@google.com.
     The difference between the bandwidth estimate at 2 seconds and 20 seconds
     into a WebRTC call, with a min at 0, which is supposed to capture the how
     much the initial bandwidth estimate overshot the actual bandwidth available.
-  </summary>
-</histogram>
-
-<histogram name="WebRTC.BWE.MidCallProbing.Initiated" units="kbps"
-    expires_after="2020-02-16">
-  <owner>philipel@chromium.org</owner>
-  <summary>
-    The bitrate that will be probed, triggered by an update to the max
-    configured bitrate.
-  </summary>
-</histogram>
-
-<histogram name="WebRTC.BWE.MidCallProbing.ProbedKbps" units="kbps"
-    expires_after="2020-03-01">
-  <owner>philipel@chromium.org</owner>
-  <summary>
-    The resulting bitrate probed, triggered by an update to the max configured
-    bitrate.
-  </summary>
-</histogram>
-
-<histogram name="WebRTC.BWE.MidCallProbing.Success" units="kbps"
-    expires_after="2020-02-16">
-  <owner>philipel@chromium.org</owner>
-  <summary>
-    A successful probing attempt for a given bitrate, triggered by an update to
-    the max configured bitrate. NOTE! This is not the resulting bitrate from a
-    probing attempt, see WebRTC.BWE.MidCallProbing.ProbedKbps.
-  </summary>
-</histogram>
-
-<histogram name="WebRTC.BWE.Probing.ProbeClusterSizeInBytes" units="bytes"
-    expires_after="2022-01-23">
-  <owner>jonasolsson@chromium.org</owner>
-  <owner>crodbro@chromium.org</owner>
-  <summary>
-    The size in bytes of the probe cluster. Counted for each cluster once all
-    its packets have been sent.
-  </summary>
-</histogram>
-
-<histogram name="WebRTC.BWE.Probing.ProbesPerCluster" units="units"
-    expires_after="2022-01-23">
-  <owner>jonasolsson@chromium.org</owner>
-  <owner>crodbro@chromium.org</owner>
-  <summary>
-    The size in packets of the probe cluster. Counted for each cluster once all
-    its packets have been sent.
-  </summary>
-</histogram>
-
-<histogram name="WebRTC.BWE.Probing.TimePerProbeCluster" units="ms"
-    expires_after="2022-08-28">
-  <owner>jonasolsson@chromium.org</owner>
-  <owner>crodbro@chromium.org</owner>
-  <summary>
-    The time from sending the first to the last packet of the probe cluster.
-    Counted for each cluster once all its packets have been sent.
-  </summary>
-</histogram>
-
-<histogram name="WebRTC.BWE.Probing.TotalFailedProbeClusters" units="units"
-    expires_after="2020-10-01">
-  <owner>jonasolsson@chromium.org</owner>
-  <owner>crodbro@chromium.org</owner>
-  <summary>
-    Counts the amount of probe clusters that timed out. Counted when the prober
-    is destroyed.
-  </summary>
-</histogram>
-
-<histogram name="WebRTC.BWE.Probing.TotalProbeClustersRequested" units="units"
-    expires_after="2022-01-16">
-  <owner>jonasolsson@chromium.org</owner>
-  <owner>crodbro@chromium.org</owner>
-  <summary>
-    Counts the amount of probe clusters that the bitrate prober created. Counted
-    when the prober is destroyed.
   </summary>
 </histogram>
 
@@ -1397,7 +1334,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.PeerConnection.RtcpMux" enum="PeerConnectionRtcpMux"
-    expires_after="2023-04-07">
+    expires_after="2023-06-11">
   <owner>hta@chromium.org</owner>
   <owner>webrtc-dev@chromium.org</owner>
   <summary>
@@ -1696,6 +1633,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.PeerConnection.ValidBundledExtensionIds"
+    units="boolean" expires_after="2023-07-01">
+  <owner>hta@chromium.org</owner>
+  <owner>webrtc-dev@chromium.org</owner>
+  <owner>phancke@microsoft.com</owner>
+  <summary>
+    Measures whether the remote description contains a RTP header extension id
+    collision that is not allowed by the IETFs BUNDLE specification. Recorded
+    for every remote description.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.PeerConnection.ValidBundledPayloadTypes"
     units="boolean" expires_after="2023-06-01">
   <owner>hbos@chromium.org</owner>
@@ -1980,7 +1929,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.UserMediaRequest.Result2"
-    enum="MediaStreamRequestResult2" expires_after="2023-04-09">
+    enum="MediaStreamRequestResult2" expires_after="2023-06-11">
   <owner>toprice@chromium.org</owner>
   <owner>agpalak@chromium.org</owner>
   <summary>

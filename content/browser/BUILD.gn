@@ -1033,6 +1033,8 @@ source_set("browser") {
     "indexed_db/indexed_db_callbacks.h",
     "indexed_db/indexed_db_class_factory.cc",
     "indexed_db/indexed_db_class_factory.h",
+    "indexed_db/indexed_db_client_state_checker_wrapper.cc",
+    "indexed_db/indexed_db_client_state_checker_wrapper.h",
     "indexed_db/indexed_db_compaction_task.cc",
     "indexed_db/indexed_db_compaction_task.h",
     "indexed_db/indexed_db_connection.cc",
@@ -1284,6 +1286,8 @@ source_set("browser") {
     "media_session/media_session_service.cc",
     "memory/swap_metrics_driver_impl.cc",
     "memory/swap_metrics_driver_impl.h",
+    "memory_pressure/user_level_memory_pressure_signal_generator.cc",
+    "memory_pressure/user_level_memory_pressure_signal_generator.h",
     "message_port_provider.cc",
     "metrics/histogram_controller.cc",
     "metrics/histogram_controller.h",
@@ -1446,6 +1450,9 @@ source_set("browser") {
     "preloading/prefetch/prefetch_serving_page_metrics_container.cc",
     "preloading/prefetch/prefetch_serving_page_metrics_container.h",
     "preloading/prefetch/prefetch_status.h",
+    "preloading/prefetch/prefetch_streaming_url_loader.cc",
+    "preloading/prefetch/prefetch_streaming_url_loader.h",
+    "preloading/prefetch/prefetch_streaming_url_loader_status.h",
     "preloading/prefetch/prefetch_type.cc",
     "preloading/prefetch/prefetch_type.h",
     "preloading/prefetch/prefetch_url_loader_interceptor.cc",
@@ -1596,6 +1603,8 @@ source_set("browser") {
     "renderer_host/global_routing_id.cc",
     "renderer_host/http_error_navigation_throttle.cc",
     "renderer_host/http_error_navigation_throttle.h",
+    "renderer_host/indexed_db_client_state_checker_factory.cc",
+    "renderer_host/indexed_db_client_state_checker_factory.h",
     "renderer_host/input/fling_controller.cc",
     "renderer_host/input/fling_controller.h",
     "renderer_host/input/fling_scheduler.cc",
@@ -1682,6 +1691,8 @@ source_set("browser") {
     "renderer_host/input/touchscreen_tap_suppression_controller.h",
     "renderer_host/ipc_utils.cc",
     "renderer_host/ipc_utils.h",
+    "renderer_host/isolated_context_util.cc",
+    "renderer_host/isolated_context_util.h",
     "renderer_host/isolated_web_app_throttle.cc",
     "renderer_host/isolated_web_app_throttle.h",
     "renderer_host/keep_alive_handle_factory.cc",
@@ -2228,8 +2239,8 @@ source_set("browser") {
     "webid/federated_auth_request_impl.h",
     "webid/federated_auth_request_page_data.cc",
     "webid/federated_auth_request_page_data.h",
-    "webid/federated_manifest_requester.cc",
-    "webid/federated_manifest_requester.h",
+    "webid/federated_provider_fetcher.cc",
+    "webid/federated_provider_fetcher.h",
     "webid/flags.cc",
     "webid/flags.h",
     "webid/idp_network_request_manager.cc",
@@ -2300,6 +2311,13 @@ source_set("browser") {
     "worker_host/worker_script_loader_factory.h",
   ]
 
+  if (!is_android && !is_fuchsia) {
+    sources += [
+      "smart_card/smart_card_service.cc",
+      "smart_card/smart_card_service.h",
+    ]
+  }
+
   # TODO(crbug.com/1327384): Remove `permissions_common`.
   # DO NOT add unrelated entries to this block.
   deps += [ "//components/permissions:permissions_common" ]
@@ -2366,8 +2384,10 @@ source_set("browser") {
       "lock_screen/lock_screen_storage_impl.h",
       "ml/ml_service_impl_cros.cc",
       "ml/ml_service_impl_cros.h",
+      "renderer_host/pepper/firewall_hole_proxy.cc",
     ]
     deps += [
+      "//chromeos/crosapi/mojom",
       "//chromeos/services/machine_learning/public/cpp",
       "//chromeos/services/machine_learning/public/mojom",
       "//components/value_store",
@@ -2399,9 +2419,9 @@ source_set("browser") {
       "//chromeos/ash/components/dbus",
       "//chromeos/ash/components/dbus/debug_daemon",
       "//chromeos/ash/components/network",
+      "//chromeos/ash/components/system",
       "//chromeos/ash/resources",
       "//chromeos/resources",
-      "//chromeos/system",
       "//components/chromeos_camera:mojo_mjpeg_decode_accelerator",
       "//components/session_manager/core",
       "//services/data_decoder/public/cpp",

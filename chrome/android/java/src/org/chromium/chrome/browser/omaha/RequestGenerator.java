@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.omaha;
 
-import android.content.Context;
 import android.os.Build;
 import android.text.format.DateUtils;
 import android.util.Xml;
@@ -35,13 +34,10 @@ public abstract class RequestGenerator {
     private static final String SALT = "omahaSalt";
     private static final String URL_OMAHA_SERVER = "https://update.googleapis.com/service/update2";
 
-    private final Context mApplicationContext;
-
-    protected RequestGenerator(Context context) {
-        mApplicationContext = context.getApplicationContext();
+    protected RequestGenerator() {
         UniqueIdentificationGeneratorFactory.registerGenerator(
                 SettingsSecureBasedIdentificationGenerator.GENERATOR_ID,
-                new SettingsSecureBasedIdentificationGenerator(getContext()), false);
+                new SettingsSecureBasedIdentificationGenerator(), false);
     }
 
     /**
@@ -134,13 +130,6 @@ public abstract class RequestGenerator {
         }
 
         return writer.toString();
-    }
-
-    /**
-     * Returns the application context.
-     */
-    protected Context getContext() {
-        return mApplicationContext;
     }
 
     @VisibleForTesting

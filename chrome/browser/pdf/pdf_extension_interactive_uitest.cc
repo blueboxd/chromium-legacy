@@ -18,6 +18,7 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/focus_changed_observer.h"
+#include "content/public/test/hit_test_region_observer.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
@@ -244,12 +245,18 @@ views::Widget* TouchSelectText(content::WebContents* contents,
 IN_PROC_BROWSER_TEST_F(PDFExtensionInteractiveUITest,
                        ContextMenuOpensFromTouchSelectionMenu) {
   const GURL url = embedded_test_server()->GetURL("/pdf/text_large.pdf");
-  content::WebContents* const guest_contents = LoadPdfGetGuestContents(url);
-  ASSERT_TRUE(guest_contents);
+  extensions::MimeHandlerViewGuest* guest = LoadPdfGetMimeHandlerView(url);
+  ASSERT_TRUE(guest);
 
-  gfx::Point screen_pos =
-      ConvertPageCoordToScreenCoord(guest_contents, {12, 12});
-  views::Widget* widget = TouchSelectText(GetActiveWebContents(), screen_pos);
+  content::RenderFrameHost* guest_mainframe = guest->GetGuestMainFrame();
+  ASSERT_TRUE(guest_mainframe);
+  content::WaitForHitTestData(guest_mainframe);
+
+  const gfx::Point point_in_root_coords =
+      guest_mainframe->GetView()->TransformPointToRootCoordSpace(
+          ConvertPageCoordToScreenCoord(guest_mainframe, {12, 12}));
+  views::Widget* widget =
+      TouchSelectText(GetActiveWebContents(), point_in_root_coords);
   ASSERT_TRUE(widget);
   views::View* menu = widget->GetContentsView();
   ASSERT_TRUE(menu);
@@ -287,14 +294,18 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionInteractiveUITest,
   // Use test.pdf here because it has embedded font metrics. With a fixed zoom,
   // coordinates should be consistent across platforms.
   const GURL url = embedded_test_server()->GetURL("/pdf/test.pdf#zoom=100");
-  content::WebContents* const guest_contents = LoadPdfGetGuestContents(url);
-  ASSERT_TRUE(guest_contents);
+  extensions::MimeHandlerViewGuest* guest = LoadPdfGetMimeHandlerView(url);
+  ASSERT_TRUE(guest);
+
+  content::RenderFrameHost* guest_mainframe = guest->GetGuestMainFrame();
+  ASSERT_TRUE(guest_mainframe);
+  content::WaitForHitTestData(guest_mainframe);
 
   views::Widget* widget = TouchSelectText(GetActiveWebContents(), {473, 166});
   ASSERT_TRUE(widget);
 
   auto* touch_selection_controller =
-      guest_contents->GetRenderWidgetHostView()
+      guest_mainframe->GetView()
           ->GetTouchSelectionControllerClientManager()
           ->GetTouchSelectionController();
 

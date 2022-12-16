@@ -353,7 +353,7 @@ const base::FeatureParam<bool> kChromeAppsDeprecationHideLaunchAnyways{
 // disruptive notifications.
 BASE_FEATURE(kDisruptiveNotificationPermissionRevocation,
              "DisruptiveNotificationPermissionRevocation",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable DNS over HTTPS (DoH).
 BASE_FEATURE(kDnsOverHttps,
@@ -806,6 +806,10 @@ BASE_FEATURE(kMicrosoftOfficeWebAppExperiment,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
+BASE_FEATURE(kMigrateExternalPrefsToWebAppDB,
+             "MigrateExternalPrefsToWebAppDB",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 BASE_FEATURE(kMoveWebApp,
              "MoveWebApp",
              base::FeatureState::FEATURE_DISABLED_BY_DEFAULT);
@@ -988,11 +992,6 @@ const base::FeatureParam<int>
     kSafetyCheckNotificationPermissionsLowEnagementLimit{
         &kSafetyCheckNotificationPermissions,
         "low-engagement-notification-count", 4};
-
-// Enables unused site permission module in Safety Check.
-BASE_FEATURE(kSafetyCheckUnusedSitePermissions,
-             "SafetyCheckUnusedSitePermissions",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

@@ -15,6 +15,7 @@ source_set("signin") {
     "//components/signin/internal/identity_manager",
     "//components/sync/driver",
     "//google_apis",
+    "//ios/chrome/browser/signin:capabilities_types",
     "//ios/chrome/browser/signin:system_identity",
   ]
 }
@@ -23,6 +24,14 @@ source_set("signin_error_api") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [ "signin_error_api.h" ]
   deps = []
+  frameworks = [ "Foundation.framework" ]
+}
+
+source_set("signin_identity_api") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [ "signin_identity_api.h" ]
+  deps = [ ":signin_sso_api" ]
+  public_deps = [ "//ios/chrome/browser/signin:system_identity_manager" ]
   frameworks = [ "Foundation.framework" ]
 }
 
@@ -62,6 +71,7 @@ source_set("test_support") {
     "//base/test:test_support",
     "//components/signin/public/identity_manager",
     "//google_apis",
+    "//ios/chrome/browser/signin:capabilities_types",
     "//ios/chrome/browser/signin:fake_account_details_view_controller",
     "//ios/chrome/browser/signin:fake_system_identity",
     "//ios/chrome/browser/signin:system_identity",
@@ -94,6 +104,7 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//components/signin/internal/identity_manager",
+    "//ios/chrome/browser/signin:capabilities_types",
     "//ios/chrome/browser/signin:fake_system_identity",
     "//testing/gmock",
     "//testing/gtest",

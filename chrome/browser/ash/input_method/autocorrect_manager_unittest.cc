@@ -53,12 +53,20 @@ constexpr char kVKAutocorrectV2ActionHistogramName[] =
     "InputMethod.Assistive.AutocorrectV2.Actions.VK";
 constexpr char kPKAutocorrectV2ActionHistogramName[] =
     "InputMethod.Assistive.AutocorrectV2.Actions.PK";
+constexpr char kPKAutocorrectV2ActionEnabledByDefaultHistogramName[] =
+    "InputMethod.Assistive.AutocorrectV2.Actions.PK.EnabledByDefault";
 constexpr char kAutocorrectV2AcceptLatency[] =
     "InputMethod.Assistive.AutocorrectV2.Latency.Accept";
+constexpr char kAutocorrectV2AcceptLatencyEnabledByDefault[] =
+    "InputMethod.Assistive.AutocorrectV2.Latency.Accept.EnabledByDefault";
 constexpr char kAutocorrectV2RejectLatency[] =
     "InputMethod.Assistive.AutocorrectV2.Latency.Reject";
+constexpr char kAutocorrectV2RejectLatencyEnabledByDefault[] =
+    "InputMethod.Assistive.AutocorrectV2.Latency.Reject.EnabledByDefault";
 constexpr char kAutocorrectV2ExitFieldLatency[] =
     "InputMethod.Assistive.AutocorrectV2.Latency.ExitField";
+constexpr char kAutocorrectV2ExitFieldLatencyEnabledByDefault[] =
+    "InputMethod.Assistive.AutocorrectV2.Latency.ExitField.EnabledByDefault";
 constexpr char kAutocorrectV2VkPendingLatency[] =
     "InputMethod.Assistive.AutocorrectV2.Latency.VkPending";
 constexpr char kAutocorrectV2PkPendingLatency[] =
@@ -69,8 +77,12 @@ constexpr char kAutocorrectV2QualityVkRejectedHistName[] =
     "InputMethod.Assistive.AutocorrectV2.Quality.VkRejected";
 constexpr char kAutocorrectV2QualityPkAcceptedHistName[] =
     "InputMethod.Assistive.AutocorrectV2.Quality.PkAccepted";
+constexpr char kAutocorrectV2QualityDefaultPkAcceptedHistName[] =
+    "InputMethod.Assistive.AutocorrectV2.Quality.PkAccepted.EnabledByDefault";
 constexpr char kAutocorrectV2QualityPkRejectedHistName[] =
     "InputMethod.Assistive.AutocorrectV2.Quality.PkRejected";
+constexpr char kAutocorrectV2QualityDefaultPkRejectedHistName[] =
+    "InputMethod.Assistive.AutocorrectV2.Quality.PkRejected.EnabledByDefault";
 constexpr char kAutocorrectV2Distance2dVkAcceptedHistName[] =
     "InputMethod.Assistive.AutocorrectV2.Distance."
     "OriginalLengthVsLevenshteinDistance.VkAccepted";
@@ -95,6 +107,10 @@ constexpr char kAutocorrectV2PkUserPreferenceAll[] =
     "InputMethod.Assistive.AutocorrectV2.PkUserPreference.All";
 constexpr char kAutocorrectV2PkUserPreferenceEnglish[] =
     "InputMethod.Assistive.AutocorrectV2.PkUserPreference.English";
+constexpr char kAutocorrectV2PkRejectionHistName[] =
+    "InputMethod.Assistive.AutocorrectV2.Rejection.PK";
+constexpr char kAutocorrectV2VkRejectionHistName[] =
+    "InputMethod.Assistive.AutocorrectV2.Rejection.VK";
 
 constexpr char kUsEnglishEngineId[] = "xkb:us::eng";
 constexpr char kUsInternationalEngineId[] = "xkb:us:intl:eng";
@@ -116,7 +132,8 @@ void ExpectAutocorrectHistograms(const base::HistogramTester& histogram_tester,
                                  int accepted,
                                  int cleared_underline,
                                  int exited_text_field_with_underline = 0,
-                                 int invalid_range = 0) {
+                                 int invalid_range = 0,
+                                 bool enabled_by_default = false) {
   // Window shown metrics.
   histogram_tester.ExpectBucketCount(kCoverageHistogramName,
                                      AssistiveType::kAutocorrectWindowShown,
@@ -135,6 +152,10 @@ void ExpectAutocorrectHistograms(const base::HistogramTester& histogram_tester,
     histogram_tester.ExpectBucketCount(kPKAutocorrectV2ActionHistogramName,
                                        AutocorrectActions::kWindowShown,
                                        window_shown);
+    histogram_tester.ExpectBucketCount(
+        kPKAutocorrectV2ActionEnabledByDefaultHistogramName,
+        AutocorrectActions::kWindowShown,
+        enabled_by_default ? window_shown : 0);
   }
 
   // Underlined metrics.
@@ -155,6 +176,9 @@ void ExpectAutocorrectHistograms(const base::HistogramTester& histogram_tester,
     histogram_tester.ExpectBucketCount(kPKAutocorrectV2ActionHistogramName,
                                        AutocorrectActions::kUnderlined,
                                        underlined);
+    histogram_tester.ExpectBucketCount(
+        kPKAutocorrectV2ActionEnabledByDefaultHistogramName,
+        AutocorrectActions::kUnderlined, enabled_by_default ? underlined : 0);
   }
 
   // Revert metrics.
@@ -172,6 +196,9 @@ void ExpectAutocorrectHistograms(const base::HistogramTester& histogram_tester,
   } else {
     histogram_tester.ExpectBucketCount(kPKAutocorrectV2ActionHistogramName,
                                        AutocorrectActions::kReverted, reverted);
+    histogram_tester.ExpectBucketCount(
+        kPKAutocorrectV2ActionEnabledByDefaultHistogramName,
+        AutocorrectActions::kReverted, enabled_by_default ? reverted : 0);
   }
 
   // Accept metrics.
@@ -189,6 +216,10 @@ void ExpectAutocorrectHistograms(const base::HistogramTester& histogram_tester,
     histogram_tester.ExpectBucketCount(
         kPKAutocorrectV2ActionHistogramName,
         AutocorrectActions::kUserAcceptedAutocorrect, accepted);
+    histogram_tester.ExpectBucketCount(
+        kPKAutocorrectV2ActionEnabledByDefaultHistogramName,
+        AutocorrectActions::kUserAcceptedAutocorrect,
+        enabled_by_default ? accepted : 0);
   }
 
   // Clear underline metrics.
@@ -206,6 +237,10 @@ void ExpectAutocorrectHistograms(const base::HistogramTester& histogram_tester,
     histogram_tester.ExpectBucketCount(
         kPKAutocorrectV2ActionHistogramName,
         AutocorrectActions::kUserActionClearedUnderline, cleared_underline);
+    histogram_tester.ExpectBucketCount(
+        kPKAutocorrectV2ActionEnabledByDefaultHistogramName,
+        AutocorrectActions::kUserActionClearedUnderline,
+        enabled_by_default ? cleared_underline : 0);
   }
 
   // Invalid Range metrics.
@@ -223,6 +258,10 @@ void ExpectAutocorrectHistograms(const base::HistogramTester& histogram_tester,
     histogram_tester.ExpectBucketCount(kPKAutocorrectV2ActionHistogramName,
                                        AutocorrectActions::kInvalidRange,
                                        invalid_range);
+    histogram_tester.ExpectBucketCount(
+        kPKAutocorrectV2ActionEnabledByDefaultHistogramName,
+        AutocorrectActions::kInvalidRange,
+        enabled_by_default ? invalid_range : 0);
   }
 
   // Exited text field with underline.
@@ -244,6 +283,10 @@ void ExpectAutocorrectHistograms(const base::HistogramTester& histogram_tester,
         kPKAutocorrectV2ActionHistogramName,
         AutocorrectActions::kUserExitedTextFieldWithUnderline,
         exited_text_field_with_underline);
+    histogram_tester.ExpectBucketCount(
+        kPKAutocorrectV2ActionEnabledByDefaultHistogramName,
+        AutocorrectActions::kUserExitedTextFieldWithUnderline,
+        enabled_by_default ? exited_text_field_with_underline : 0);
   }
 
   const int total_actions = window_shown + underlined + reverted + accepted +
@@ -263,15 +306,26 @@ void ExpectAutocorrectHistograms(const base::HistogramTester& histogram_tester,
                                     visible_vk ? total_actions : 0);
   histogram_tester.ExpectTotalCount(kPKAutocorrectV2ActionHistogramName,
                                     visible_vk ? 0 : total_actions);
+  histogram_tester.ExpectTotalCount(
+      kPKAutocorrectV2ActionEnabledByDefaultHistogramName,
+      (visible_vk || !enabled_by_default) ? 0 : total_actions);
 
   // Latency metrics.
   histogram_tester.ExpectTotalCount(kDelayHistogramName, reverted);
   histogram_tester.ExpectTotalCount(kAutocorrectV2AcceptLatency, accepted);
+  histogram_tester.ExpectTotalCount(kAutocorrectV2AcceptLatencyEnabledByDefault,
+                                    enabled_by_default ? accepted : 0);
   histogram_tester.ExpectTotalCount(kAutocorrectV2ExitFieldLatency,
                                     exited_text_field_with_underline);
   histogram_tester.ExpectTotalCount(
+      kAutocorrectV2ExitFieldLatencyEnabledByDefault,
+      enabled_by_default ? exited_text_field_with_underline : 0);
+  histogram_tester.ExpectTotalCount(
       kAutocorrectV2RejectLatency,
       reverted + cleared_underline + invalid_range);
+  histogram_tester.ExpectTotalCount(
+      kAutocorrectV2RejectLatencyEnabledByDefault,
+      enabled_by_default ? reverted + cleared_underline + invalid_range : 0);
   histogram_tester.ExpectTotalCount(
       kAutocorrectV2VkPendingLatency,
       visible_vk ? cleared_underline + reverted + accepted + invalid_range +
@@ -320,6 +374,12 @@ ui::ime::AssistiveWindowButton CreateHighlightedUndoButton(
 ui::KeyEvent CreateKeyEvent(ui::DomKey key, ui::DomCode code) {
   return ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, code, ui::EF_NONE,
                       key, ui::EventTimeForNow());
+}
+
+ui::KeyEvent PressKeyWithCtrl(const ui::DomCode& code) {
+  return ui::KeyEvent(ui::EventType::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, code,
+                      ui::EF_CONTROL_DOWN, ui::DomKey::NONE,
+                      ui::EventTimeForNow());
 }
 
 ui::KeyEvent KeyA() {
@@ -1021,6 +1081,28 @@ TEST_F(AutocorrectManagerTest,
                               /*cleared_underline=*/0);
 }
 
+TEST_F(
+    AutocorrectManagerTest,
+    InsertingEnoughCharsRecordsMetricWhenAcceptingAutocorrectEnabledByDefault) {
+  feature_list_.Reset();
+  feature_list_.InitWithFeatures({features::kAutocorrectByDefault},
+                                 DisabledFeatures());
+  manager_.OnActivate(kUsEnglishEngineId);
+  manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
+
+  // Add characters.
+  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"c the b", 7, 7);
+
+  ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/false,
+                              /*window_shown=*/0, /*underlined=*/1,
+                              /*reverted=*/0, /*accepted=*/1,
+                              /*cleared_underline=*/0,
+                              /*exited_text_field_with_underline=*/0,
+                              /*invalid_range=*/0,
+                              /*enabled_by_default=*/true);
+}
+
 TEST_F(AutocorrectManagerTest,
        RemovingCharsDoesNotRecordMetricsForPendingAutocorrect) {
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
@@ -1050,6 +1132,30 @@ TEST_F(AutocorrectManagerTest,
                               /*window_shown=*/0, /*underlined=*/1,
                               /*reverted=*/0, /*accepted=*/0,
                               /*cleared_underline=*/1);
+}
+
+TEST_F(
+    AutocorrectManagerTest,
+    InsertingCharsRecordsMetricsWhenClearingAutocorrectWhenEnabledByDefault) {
+  feature_list_.Reset();
+  feature_list_.InitWithFeatures({features::kAutocorrectByDefault},
+                                 DisabledFeatures());
+  manager_.OnActivate(kUsEnglishEngineId);
+  manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
+  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the a", 5, 5);
+
+  mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(),
+                                                      base::DoNothing());
+  manager_.OnSurroundingTextChanged(u" the b", 6, 6);
+
+  ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/false,
+                              /*window_shown=*/0, /*underlined=*/1,
+                              /*reverted=*/0, /*accepted=*/0,
+                              /*cleared_underline=*/1,
+                              /*exited_text_field_with_underline=*/0,
+                              /*invalid_range=*/0,
+                              /*enabled_by_default=*/true);
 }
 
 TEST_F(AutocorrectManagerTest,
@@ -1130,6 +1236,32 @@ TEST_F(AutocorrectManagerTest,
                               /*invalid_range*/ 1);
 }
 
+TEST_F(
+    AutocorrectManagerTest,
+    OnSurroundingRecordsMetricsCorrectlyForNullInputContextWhenEnabledByDefault) {
+  feature_list_.Reset();
+  feature_list_.InitWithFeatures({features::kAutocorrectByDefault},
+                                 DisabledFeatures());
+  manager_.OnActivate(kUsEnglishEngineId);
+  // Create a pending autocorrect range.
+  manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
+
+  // Make Input context null.
+  ui::IMEBridge::Get()->SetInputContextHandler(nullptr);
+  // Null input context invalidates the previous range even if rules are
+  // triggered to accept the range.
+  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the abc", 7, 7);
+
+  ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/false,
+                              /*window_shown=*/0, /*underlined=*/1,
+                              /*reverted=*/0, /*accepted=*/0,
+                              /*cleared_underline=*/0,
+                              /*exited_text_field_with_underline*/ 0,
+                              /*invalid_range*/ 1,
+                              /*enabled_by_default=*/true);
+}
+
 TEST_F(AutocorrectManagerTest,
        MovingCursorDoesNotRecordMetricsForPendingAutocorrect) {
   manager_.HandleAutocorrect(gfx::Range(4, 7), u"teh", u"the");
@@ -1172,6 +1304,28 @@ TEST_F(AutocorrectManagerTest,
                               /*window_shown=*/1, /*underlined=*/1,
                               /*reverted=*/0, /*accepted=*/0,
                               /*cleared_underline=*/0);
+}
+
+TEST_F(AutocorrectManagerTest,
+       MovingCursorToRangeEndRecordsMetricsForShownUndoWindowEnableByDefault) {
+  feature_list_.Reset();
+  feature_list_.InitWithFeatures({features::kAutocorrectByDefault},
+                                 DisabledFeatures());
+  manager_.OnActivate(kUsEnglishEngineId);
+  manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
+
+  // This suppresses strict mock.
+  EXPECT_CALL(mock_suggestion_handler_, SetAssistiveWindowProperties(_, _, _));
+  // Moving cursor inside the range does not increase window_shown.
+  manager_.OnSurroundingTextChanged(u"the", 3, 3);
+
+  ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/false,
+                              /*window_shown=*/1, /*underlined=*/1,
+                              /*reverted=*/0, /*accepted=*/0,
+                              /*cleared_underline=*/0,
+                              /*exited_text_field_with_underline=*/0,
+                              /*invalid_range=*/0,
+                              /*enabled_by_default=*/true);
 }
 
 TEST_F(AutocorrectManagerTest,
@@ -1255,6 +1409,25 @@ TEST_F(AutocorrectManagerTest, OnBlurRecordsMetricsWhenClearingRange) {
                               /*reverted=*/0, /*accepted=*/0,
                               /*cleared_underline=*/0,
                               /*exited_text_field_with_underline=*/1);
+}
+
+TEST_F(AutocorrectManagerTest,
+       OnBlurRecordsMetricsWhenClearingRangeEnabledByDefault) {
+  feature_list_.Reset();
+  feature_list_.InitWithFeatures({features::kAutocorrectByDefault},
+                                 DisabledFeatures());
+  manager_.OnActivate(kUsEnglishEngineId);
+
+  manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
+  manager_.OnBlur();
+
+  ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/false,
+                              /*window_shown=*/0, /*underlined=*/1,
+                              /*reverted=*/0, /*accepted=*/0,
+                              /*cleared_underline=*/0,
+                              /*exited_text_field_with_underline=*/1,
+                              /*invalid_range=*/0,
+                              /*enabled_by_default=*/true);
 }
 
 TEST_F(AutocorrectManagerTest,
@@ -1682,6 +1855,25 @@ TEST_F(AutocorrectManagerTest, UndoRecordsMetricsAfterRevert) {
                               /*exited_text_field_with_underline=*/0);
 }
 
+TEST_F(AutocorrectManagerTest, UndoRecordsMetricsAfterRevertEnableByDefault) {
+  feature_list_.Reset();
+  feature_list_.InitWithFeatures({features::kAutocorrectByDefault},
+                                 DisabledFeatures());
+  manager_.OnActivate(kUsEnglishEngineId);
+
+  manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
+  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+
+  manager_.UndoAutocorrect();
+  ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/false,
+                              /*window_shown=*/0, /*underlined=*/1,
+                              /*reverted=*/1, /*accepted=*/0,
+                              /*cleared_underline=*/0,
+                              /*exited_text_field_with_underline=*/0,
+                              /*invalid_range=*/0,
+                              /*enabled_by_default=*/true);
+}
+
 TEST_F(AutocorrectManagerTest, HandleAutocorrectRecordsMetricsWhenVkIsVisible) {
   keyboard_client_->set_keyboard_visible_for_test(true);
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
@@ -2045,6 +2237,29 @@ TEST_F(AutocorrectManagerTest, RecordQualityBreakdownForLowerCasedLetter) {
                                      4);
 }
 
+TEST_F(AutocorrectManagerTest, RecordQualityBreakdownForDefaultPkAccepted) {
+  feature_list_.Reset();
+  feature_list_.InitWithFeatures({features::kAutocorrectByDefault},
+                                 DisabledFeatures());
+  manager_.OnActivate(kUsEnglishEngineId);
+  manager_.HandleAutocorrect(gfx::Range(0, 8), u"françaisss", u"français");
+
+  // Accept autocorrect implicitly.
+  manager_.OnSurroundingTextChanged(u"français ", 9, 9);
+  manager_.OnSurroundingTextChanged(u"français abc", 12, 12);
+
+  histogram_tester_.ExpectBucketCount(
+      kAutocorrectV2QualityDefaultPkAcceptedHistName,
+      AutocorrectQualityBreakdown::kSuggestionRemovedLetters, 1);
+  histogram_tester_.ExpectBucketCount(
+      kAutocorrectV2QualityDefaultPkAcceptedHistName,
+      AutocorrectQualityBreakdown::kSuggestionResolved, 1);
+  histogram_tester_.ExpectTotalCount(
+      kAutocorrectV2QualityDefaultPkAcceptedHistName, 2);
+  histogram_tester_.ExpectTotalCount(kAutocorrectV2QualityPkAcceptedHistName,
+                                     2);
+}
+
 TEST_F(AutocorrectManagerTest, RecordQualityBreakdownForVkAccepted) {
   keyboard_client_->set_keyboard_visible_for_test(true);
   manager_.HandleAutocorrect(gfx::Range(0, 8), u"françaisss", u"français");
@@ -2100,6 +2315,34 @@ TEST_F(AutocorrectManagerTest, RecordQualityBreakdownForPkRejected) {
   histogram_tester_.ExpectBucketCount(
       kAutocorrectV2QualityPkRejectedHistName,
       AutocorrectQualityBreakdown::kSuggestionResolved, 1);
+  histogram_tester_.ExpectTotalCount(kAutocorrectV2QualityPkRejectedHistName,
+                                     2);
+  histogram_tester_.ExpectTotalCount(
+      kAutocorrectV2QualityDefaultPkRejectedHistName, 0);
+}
+
+TEST_F(AutocorrectManagerTest, RecordQualityBreakdownDefaultForPkRejected) {
+  feature_list_.Reset();
+  feature_list_.InitWithFeatures({features::kAutocorrectByDefault},
+                                 DisabledFeatures());
+  manager_.OnActivate(kUsEnglishEngineId);
+  manager_.HandleAutocorrect(gfx::Range(0, 8), u"françaisss", u"français");
+
+  // Accept autocorrect implicitly.
+  manager_.OnSurroundingTextChanged(u"français ", 9, 9);
+  // Clear range.
+  mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(),
+                                                      base::DoNothing());
+  manager_.OnSurroundingTextChanged(u"franças ", 8, 8);
+
+  histogram_tester_.ExpectBucketCount(
+      kAutocorrectV2QualityDefaultPkRejectedHistName,
+      AutocorrectQualityBreakdown::kSuggestionRemovedLetters, 1);
+  histogram_tester_.ExpectBucketCount(
+      kAutocorrectV2QualityDefaultPkRejectedHistName,
+      AutocorrectQualityBreakdown::kSuggestionResolved, 1);
+  histogram_tester_.ExpectTotalCount(
+      kAutocorrectV2QualityDefaultPkRejectedHistName, 2);
   histogram_tester_.ExpectTotalCount(kAutocorrectV2QualityPkRejectedHistName,
                                      2);
 }
@@ -2258,6 +2501,283 @@ TEST_F(AutocorrectManagerTest, RecordDistanceMetricAlmostMaxLength) {
   histogram_tester_.ExpectTotalCount(kAutocorrectV2Distance2dPkAcceptedHistName,
                                      1);
 }
+
+TEST_F(AutocorrectManagerTest, RecordRejectionForPkUndoWithKeyboard) {
+  manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
+  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+
+  {
+    ::testing::InSequence seq;
+
+    AssistiveWindowProperties shown_properties =
+        CreateVisibleUndoWindowProperties(u"teh", u"the");
+
+    EXPECT_CALL(mock_suggestion_handler_,
+                SetAssistiveWindowProperties(_, shown_properties, _));
+
+    ui::ime::AssistiveWindowButton button = CreateHighlightedUndoButton(u"teh");
+    EXPECT_CALL(mock_suggestion_handler_,
+                SetButtonHighlighted(_, button, true, _));
+
+    AssistiveWindowProperties hidden_properties =
+        CreateHiddenUndoWindowProperties();
+    EXPECT_CALL(mock_suggestion_handler_,
+                SetAssistiveWindowProperties(_, hidden_properties, _));
+  }
+
+  manager_.OnSurroundingTextChanged(u"the ", 1, 1);
+  manager_.OnKeyEvent(CreateKeyEvent(ui::DomKey::NONE, ui::DomCode::ARROW_UP));
+  manager_.OnKeyEvent(CreateKeyEvent(ui::DomKey::NONE, ui::DomCode::ENTER));
+
+  histogram_tester_.ExpectBucketCount(
+      kAutocorrectV2PkRejectionHistName,
+      AutocorrectRejectionBreakdown::kUndoWithKeyboard, 1);
+  histogram_tester_.ExpectBucketCount(
+      kAutocorrectV2PkRejectionHistName,
+      AutocorrectRejectionBreakdown::kSuggestionRejected, 1);
+  histogram_tester_.ExpectTotalCount(kAutocorrectV2PkRejectionHistName, 2);
+}
+
+TEST_F(AutocorrectManagerTest, RecordRejectionForPkUndoControlZ) {
+  manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
+  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+
+  manager_.OnKeyEvent(PressKeyWithCtrl(ui::DomCode::US_Z));
+  mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(),
+                                                      base::DoNothing());
+  manager_.OnSurroundingTextChanged(u"teh ", 4, 4);
+
+  histogram_tester_.ExpectBucketCount(kAutocorrectV2PkRejectionHistName,
+                                      AutocorrectRejectionBreakdown::kUndoCtrlZ,
+                                      1);
+  histogram_tester_.ExpectBucketCount(
+      kAutocorrectV2PkRejectionHistName,
+      AutocorrectRejectionBreakdown::kSuggestionRejected, 1);
+  histogram_tester_.ExpectTotalCount(kAutocorrectV2PkRejectionHistName, 2);
+}
+
+TEST_F(AutocorrectManagerTest, RecordRejectionForPkControlBackspace) {
+  manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
+  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+
+  manager_.OnKeyEvent(PressKeyWithCtrl(ui::DomCode::BACKSPACE));
+  mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(),
+                                                      base::DoNothing());
+  manager_.OnSurroundingTextChanged(u"", 0, 0);
+
+  histogram_tester_.ExpectBucketCount(
+      kAutocorrectV2PkRejectionHistName,
+      AutocorrectRejectionBreakdown::kRejectedCtrlBackspace, 1);
+  histogram_tester_.ExpectBucketCount(
+      kAutocorrectV2PkRejectionHistName,
+      AutocorrectRejectionBreakdown::kSuggestionRejected, 1);
+  histogram_tester_.ExpectTotalCount(kAutocorrectV2PkRejectionHistName, 2);
+}
+
+struct RejectCase {
+  std::string test_name;
+  bool vk_visible;
+  std::string histogram_name;
+};
+
+class RejectMetric : public AutocorrectManagerTest,
+                     public testing::WithParamInterface<RejectCase> {};
+
+TEST_P(RejectMetric, RecordRejectionForMetricOther) {
+  const RejectCase& test_case = GetParam();
+  keyboard_client_->set_keyboard_visible_for_test(test_case.vk_visible);
+  manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
+
+  // Accept autocorrect implicitly.
+  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  // Clear range.
+  mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(),
+                                                      base::DoNothing());
+  manager_.OnSurroundingTextChanged(u"teh ", 4, 4);
+
+  histogram_tester_.ExpectBucketCount(
+      test_case.histogram_name, AutocorrectRejectionBreakdown::kRejectionOther,
+      1);
+  histogram_tester_.ExpectBucketCount(
+      test_case.histogram_name,
+      AutocorrectRejectionBreakdown::kSuggestionRejected, 1);
+  histogram_tester_.ExpectTotalCount(test_case.histogram_name, 2);
+}
+
+TEST_P(RejectMetric, RecordRejectionForVkUndo) {
+  const RejectCase& test_case = GetParam();
+  keyboard_client_->set_keyboard_visible_for_test(test_case.vk_visible);
+  manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
+  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+
+  manager_.UndoAutocorrect();
+
+  histogram_tester_.ExpectBucketCount(
+      test_case.histogram_name,
+      AutocorrectRejectionBreakdown::kUndoWithoutKeyboard, 1);
+  histogram_tester_.ExpectBucketCount(
+      test_case.histogram_name,
+      AutocorrectRejectionBreakdown::kSuggestionRejected, 1);
+  histogram_tester_.ExpectTotalCount(test_case.histogram_name, 2);
+}
+
+TEST_P(RejectMetric, RecordRejectionForBackspace) {
+  const RejectCase& test_case = GetParam();
+  keyboard_client_->set_keyboard_visible_for_test(test_case.vk_visible);
+  manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
+  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+
+  if (!test_case.vk_visible) {
+    manager_.OnKeyEvent(
+        CreateKeyEvent(ui::DomKey::NONE, ui::DomCode::BACKSPACE));
+  }
+  mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(),
+                                                      base::DoNothing());
+  manager_.OnSurroundingTextChanged(u"th", 2, 2);
+
+  histogram_tester_.ExpectBucketCount(
+      test_case.histogram_name,
+      AutocorrectRejectionBreakdown::kRejectedBackspace,
+      test_case.vk_visible ? 0 : 1);
+  histogram_tester_.ExpectBucketCount(
+      test_case.histogram_name, AutocorrectRejectionBreakdown::kRemovedLetters,
+      1);
+  histogram_tester_.ExpectBucketCount(
+      test_case.histogram_name,
+      AutocorrectRejectionBreakdown::kSuggestionRejected, 1);
+  histogram_tester_.ExpectTotalCount(test_case.histogram_name,
+                                     test_case.vk_visible ? 2 : 3);
+}
+
+TEST_P(RejectMetric, RecordRejectionForFullSelectionTyping) {
+  const RejectCase& test_case = GetParam();
+  keyboard_client_->set_keyboard_visible_for_test(test_case.vk_visible);
+  manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
+  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+
+  manager_.OnSurroundingTextChanged(u"the ", 0, 3);
+  mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(),
+                                                      base::DoNothing());
+  manager_.OnSurroundingTextChanged(u"new ", 4, 4);
+
+  histogram_tester_.ExpectBucketCount(
+      test_case.histogram_name,
+      AutocorrectRejectionBreakdown::kRejectedTypingFull, 1);
+  histogram_tester_.ExpectBucketCount(
+      test_case.histogram_name,
+      AutocorrectRejectionBreakdown::kSuggestionRejected, 1);
+  histogram_tester_.ExpectTotalCount(test_case.histogram_name, 2);
+}
+
+TEST_P(RejectMetric, RecordRejectionForPartialSelectionTyping) {
+  const RejectCase& test_case = GetParam();
+  keyboard_client_->set_keyboard_visible_for_test(test_case.vk_visible);
+  manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
+  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+
+  manager_.OnSurroundingTextChanged(u"the ", 0, 2);
+  mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(),
+                                                      base::DoNothing());
+  manager_.OnSurroundingTextChanged(u"newe ", 3, 3);
+
+  histogram_tester_.ExpectBucketCount(
+      test_case.histogram_name,
+      AutocorrectRejectionBreakdown::kRejectedTypingPartial, 1);
+  histogram_tester_.ExpectBucketCount(
+      test_case.histogram_name,
+      AutocorrectRejectionBreakdown::kSuggestionRejected, 1);
+  histogram_tester_.ExpectTotalCount(test_case.histogram_name, 2);
+}
+
+TEST_P(RejectMetric, RecordRejectionForFullWithExternalSelectionTyping) {
+  const RejectCase& test_case = GetParam();
+  keyboard_client_->set_keyboard_visible_for_test(test_case.vk_visible);
+  manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
+  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+
+  manager_.OnSurroundingTextChanged(u"the ", 0, 4);
+  mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(),
+                                                      base::DoNothing());
+  manager_.OnSurroundingTextChanged(u"new ", 4, 4);
+
+  histogram_tester_.ExpectBucketCount(
+      test_case.histogram_name,
+      AutocorrectRejectionBreakdown::kRejectedTypingFullWithExternal, 1);
+  histogram_tester_.ExpectBucketCount(
+      test_case.histogram_name,
+      AutocorrectRejectionBreakdown::kSuggestionRejected, 1);
+  histogram_tester_.ExpectTotalCount(test_case.histogram_name, 2);
+}
+
+TEST_P(RejectMetric, RecordRejectionForPartialWithExternalSelectionTyping) {
+  const RejectCase& test_case = GetParam();
+  keyboard_client_->set_keyboard_visible_for_test(test_case.vk_visible);
+  manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
+  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+
+  manager_.OnSurroundingTextChanged(u"the ", 2, 4);
+  mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(),
+                                                      base::DoNothing());
+  manager_.OnSurroundingTextChanged(u"thnew", 5, 5);
+
+  histogram_tester_.ExpectBucketCount(
+      test_case.histogram_name,
+      AutocorrectRejectionBreakdown::kRejectedTypingPartialWithExternal, 1);
+  histogram_tester_.ExpectBucketCount(
+      test_case.histogram_name,
+      AutocorrectRejectionBreakdown::kSuggestionRejected, 1);
+  histogram_tester_.ExpectTotalCount(test_case.histogram_name, 2);
+}
+
+TEST_P(RejectMetric, RecordRejectionForTypingNoSelection) {
+  const RejectCase& test_case = GetParam();
+  keyboard_client_->set_keyboard_visible_for_test(test_case.vk_visible);
+  manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
+  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+
+  {
+    ::testing::InSequence seq;
+
+    AssistiveWindowProperties shown_properties =
+        CreateVisibleUndoWindowProperties(u"teh", u"the");
+
+    EXPECT_CALL(mock_suggestion_handler_,
+                SetAssistiveWindowProperties(_, shown_properties, _));
+
+    AssistiveWindowProperties hidden_properties =
+        CreateHiddenUndoWindowProperties();
+    EXPECT_CALL(mock_suggestion_handler_,
+                SetAssistiveWindowProperties(_, hidden_properties, _));
+  }
+
+  manager_.OnSurroundingTextChanged(u"the ", 2, 2);
+  mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(),
+                                                      base::DoNothing());
+  manager_.OnSurroundingTextChanged(u"thee ", 3, 3);
+
+  histogram_tester_.ExpectBucketCount(
+      test_case.histogram_name,
+      AutocorrectRejectionBreakdown::kRejectedTypingNoSelection, 1);
+  histogram_tester_.ExpectBucketCount(
+      test_case.histogram_name,
+      AutocorrectRejectionBreakdown::kSuggestionRejected, 1);
+  histogram_tester_.ExpectTotalCount(test_case.histogram_name, 2);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    AutocorrectManagerTest,
+    RejectMetric,
+    testing::ValuesIn<RejectCase>({
+        {"VkEnabled",
+         /*vk_visible=*/true,
+         /*histogram_name=*/kAutocorrectV2VkRejectionHistName},
+        {"VkDisabled",
+         /*vk_visible=*/false,
+         /*histogram_name=*/kAutocorrectV2PkRejectionHistName},
+    }),
+    [](const testing::TestParamInfo<RejectCase> info) {
+      return info.param.test_name;
+    });
 
 struct PkUserPrefCase {
   std::string test_name;

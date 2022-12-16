@@ -21,6 +21,7 @@
 #import "components/metrics/demographics/demographic_metrics_provider.h"
 #import "components/password_manager/core/common/password_manager_features.h"
 #import "components/prefs/pref_service.h"
+#import "components/search_engines/template_url_service.h"
 #import "components/sync/base/pref_names.h"
 #import "components/unified_consent/unified_consent_service.h"
 #import "components/variations/variations_associated_data.h"
@@ -31,6 +32,8 @@
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 #import "ios/chrome/browser/ntp/features.h"
+#import "ios/chrome/browser/search_engines/search_engines_util.h"
+#import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
@@ -42,7 +45,6 @@
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/feature_flags.h"
 #import "ios/chrome/browser/ui/thumb_strip/thumb_strip_feature.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
-#import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/unified_consent/unified_consent_service_factory.h"
 #import "ios/chrome/browser/web/web_navigation_browser_agent.h"
@@ -145,15 +147,6 @@ NSString* SerializedValue(const base::Value* value) {
       @"Clearing browser history timed out");
 }
 
-+ (NSError*)clearBrowsingCookies {
-  if (chrome_test_util::ClearBrowsingCookies()) {
-    return nil;
-  }
-
-  return testing::NSErrorWithLocalizedDescription(
-      @"Clearing browser cookies timed out");
-}
-
 + (NSInteger)browsingHistoryEntryCountWithError:
     (NSError* __autoreleasing*)error {
   return chrome_test_util::GetBrowsingHistoryEntryCount(error);
@@ -218,10 +211,6 @@ NSString* SerializedValue(const base::Value* value) {
 + (void)startReloading {
   WebNavigationBrowserAgent::FromBrowser(chrome_test_util::GetMainBrowser())
       ->Reload();
-}
-
-+ (NamedGuide*)guideWithName:(GuideName*)name view:(UIView*)view {
-  return [NamedGuide guideWithName:name view:view];
 }
 
 + (void)openURLFromExternalApp:(NSString*)URL {
@@ -1118,9 +1107,13 @@ NSString* SerializedValue(const base::Value* value) {
 }
 
 + (BOOL)isUseLensToSearchForImageEnabled {
+  TemplateURLService* service =
+      ios::TemplateURLServiceFactory::GetForBrowserState(
+          chrome_test_util::GetOriginalBrowserState());
   return base::FeatureList::IsEnabled(kUseLensToSearchForImage) &&
          ios::provider::IsLensSupported() &&
-         ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_TABLET;
+         ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_TABLET &&
+         search_engines::SupportsSearchImageWithLens(service);
 }
 
 + (BOOL)isThumbstripEnabledForWindowWithNumber:(int)windowNumber {

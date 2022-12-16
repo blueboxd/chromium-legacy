@@ -24,7 +24,6 @@
 #include "chrome/browser/push_messaging/push_messaging_features.h"
 #include "chrome/browser/share/share_features.h"
 #include "chrome/browser/signin/signin_features.h"
-#include "chrome/browser/supervised_user/supervised_user_features/supervised_user_features.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/video_tutorials/switches.h"
 #include "chrome/common/chrome_features.h"
@@ -64,6 +63,7 @@
 #include "components/shared_highlighting/core/common/shared_highlighting_features.h"
 #include "components/signin/public/base/signin_switches.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
+#include "components/supervised_user/core/common/features.h"
 #include "components/sync/base/features.h"
 #include "components/webapps/browser/features.h"
 #include "content/public/common/content_features.h"
@@ -97,6 +97,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &autofill::features::kAutofillEnableSupportForHonorificPrefixes,
     &autofill::features::kAutofillEnableUpdateVirtualCardEnrollment,
     &autofill::features::kAutofillEnableVirtualCardMetadata,
+    &autofill::features::kAutofillEnableCardProductName,
     &blink::features::kForceWebContentsDarkMode,
     &blink::features::kOSKResizesVisualViewportByDefault,
     &blink::features::kPrerender2,
@@ -173,7 +174,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kAllowNewIncognitoTabIntents,
     &kAndroidScrollOptimizations,
     &kAndroidSearchEngineChoiceNotification,
-    &kAssistantConsentModal,
     &kAssistantConsentSimplifiedText,
     &kAssistantConsentV2,
     &kAssistantIntentExperimentId,
@@ -208,7 +208,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCCTResizableForFirstParties,
     &kCCTResizableForThirdParties,
     &kCCTResizableSideSheet,
-    &kCCTRetainingState,
     &kCCTRetainingStateInMemory,
     &kCCTResourcePrefetch,
     &kCCTShowAboutBlankUrl,
@@ -238,7 +237,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kContextualSearchThinWebViewImplementation,
     &kDeferKeepScreenOnDuringGesture,
     &kDirectActions,
-    &kDuetTabStripIntegrationAndroid,
     &kExperimentsForAgsa,
     &kExploreSites,
     &kFocusOmniboxInIncognitoTabIntents,
@@ -266,7 +264,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kOmniboxModernizeVisualUpdate,
     &kOpaqueOriginForIncomingIntents,
     &kOptimizeGeolocationHeaderGeneration,
-    &kOptimizeLayoutsForPullRefresh,
     &kPostTaskFocusTab,
     &kProbabilisticCryptidRenderer,
     &kReachedCodeProfiler,
@@ -275,6 +272,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kRelatedSearches,
     &kRelatedSearchesInBar,
     &kRelatedSearchesUi,
+    &kReportParentalControlSitesChild,
     &kRequestDesktopSiteDefaults,
     &kRequestDesktopSiteDefaultsControl,
     &kRequestDesktopSiteDefaultsControlSynthetic,
@@ -283,14 +281,9 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kRequestDesktopSiteOptInSynthetic,
     &kRequestDesktopSiteDefaultsDowngrade,
     &kSafeModeForCachedFlags,
-    &kSearchEnginePromoExistingDevice,
-    &kSearchEnginePromoExistingDeviceV2,
-    &kSearchEnginePromoNewDevice,
-    &kSearchEnginePromoNewDeviceV2,
     &kShowScrollableMVTOnNTPAndroid,
     &kFeedPositionAndroid,
     &kSearchResumptionModuleAndroid,
-    &kSpannableInlineAutocomplete,
     &kSpecialLocaleWrapper,
     &kSpecialUserDecision,
     &kSuppressToolbarCaptures,
@@ -319,7 +312,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kTrustedWebActivityQualityEnforcement,
     &kTrustedWebActivityQualityEnforcementForced,
     &kTrustedWebActivityQualityEnforcementWarning,
-    &kShowExtendedPreloadingSetting,
     &kStartSurfaceAndroid,
     &kStartSurfaceReturnTime,
     &kStartSurfaceRefactor,
@@ -342,6 +334,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &paint_preview::kPaintPreviewDemo,
     &language::kAppLanguagePrompt,
     &language::kAppLanguagePromptULP,
+    &language::kCctAutoTranslate,
     &language::kDetailedLanguageSettings,
     &language::kExplicitLanguageAsk,
     &language::kForceAppLanguagePrompt,
@@ -361,17 +354,11 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &omnibox::kAdaptiveSuggestionsCount,
     &omnibox::kAndroidAuxiliarySearch,
     &omnibox::kMostVisitedTiles,
-    &omnibox::kMostVisitedTilesDynamicSpacing,
     &omnibox::kMostVisitedTilesTitleWrapAround,
     &omnibox::kOmniboxAssistantVoiceSearch,
-    &omnibox::kOmniboxHeaderPaddingUpdate,
     &omnibox::kOmniboxMatchToolbarAndStatusBarColor,
     &omnibox::kOmniboxRemoveExcessiveRecycledViewClearCalls,
-    &omnibox::kOmniboxRemoveSuggestionHeaderCapitalization,
-    &omnibox::kOmniboxRemoveSuggestionHeaderChevron,
     &omnibox::kOmniboxMostVisitedTilesAddRecycledViewPool,
-    &omnibox::kOmniboxMostVisitedTilesFadingOnTablet,
-    &omnibox::kOmniboxMostVisitedTilesOnSrp,
     &omnibox::kOmniboxOnClobberFocusTypeOnContent,
     &omnibox::kSuggestionAnswersColorReverse,
     &omnibox::kUpdatedConnectionSecurityIndicators,
@@ -382,8 +369,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &password_manager::features::kBiometricTouchToFill,
     &password_manager::features::kEnablePasswordsAccountStorage,
     &password_manager::features::kLeakDetectionUnauthenticated,
-    &password_manager::features::kPasswordDomainCapabilitiesFetching,
-    &password_manager::features::kPasswordChange,
     &password_manager::features::kRecoverFromNeverSaveAndroid,
     &password_manager::features::kUnifiedCredentialManagerDryRun,
     &password_manager::features::kUnifiedPasswordManagerAndroid,
@@ -482,10 +467,6 @@ BASE_FEATURE(kAndroidSearchEngineChoiceNotification,
              "AndroidSearchEngineChoiceNotification",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kAssistantConsentModal,
-             "AssistantConsentModal",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kAssistantConsentSimplifiedText,
              "AssistantConsentSimplifiedText",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -533,7 +514,7 @@ BASE_FEATURE(kCastDeviceFilter,
 
 BASE_FEATURE(kClearOmniboxFocusAfterNavigation,
              "ClearOmniboxFocusAfterNavigation",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kCloseTabSuggestions,
              "CloseTabSuggestions",
@@ -565,7 +546,7 @@ BASE_FEATURE(kCCTNewDownloadTab,
 
 BASE_FEATURE(kCCTFeatureUsage,
              "CCTFeatureUsage",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kCCTIncognito, "CCTIncognito", base::FEATURE_ENABLED_BY_DEFAULT);
 
@@ -629,10 +610,6 @@ BASE_FEATURE(kCCTResourcePrefetch,
              "CCTResourcePrefetch",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kCCTRetainingState,
-             "CCTRetainingState",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kCCTRetainingStateInMemory,
              "CCTRetainingStateInMemory",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -655,7 +632,7 @@ BASE_FEATURE(kDontAutoHideBrowserControls,
 
 BASE_FEATURE(kCacheDeprecatedSystemLocationSetting,
              "CacheDeprecatedSystemLocationSetting",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kChromeNewDownloadTab,
              "ChromeNewDownloadTab",
@@ -751,10 +728,6 @@ BASE_FEATURE(kDownloadHomeForExternalApp,
              "DownloadHomeForExternalApp",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kDuetTabStripIntegrationAndroid,
-             "DuetTabStripIntegrationAndroid",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kExperimentsForAgsa,
              "ExperimentsForAgsa",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -797,22 +770,6 @@ BASE_FEATURE(kInstantStart, "InstantStart", base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kIsVoiceSearchEnabledCache,
              "IsVoiceSearchEnabledCache",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kSearchEnginePromoExistingDevice,
-             "SearchEnginePromo.ExistingDevice",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kSearchEnginePromoExistingDeviceV2,
-             "SearchEnginePromo.ExistingDeviceVer2",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kSearchEnginePromoNewDevice,
-             "SearchEnginePromo.NewDevice",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kSearchEnginePromoNewDeviceV2,
-             "SearchEnginePromo.NewDeviceVer2",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kNewTabPageTilesTitleWrapAround,
@@ -861,15 +818,11 @@ BASE_FEATURE(kOpaqueOriginForIncomingIntents,
 
 BASE_FEATURE(kOptimizeGeolocationHeaderGeneration,
              "OptimizeGeolocationHeaderGeneration",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kOptimizeLayoutsForPullRefresh,
-             "OptimizeLayoutsForPullRefresh",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kPostTaskFocusTab,
              "PostTaskFocusTab",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kProbabilisticCryptidRenderer,
              "ProbabilisticCryptidRenderer",
@@ -898,6 +851,10 @@ BASE_FEATURE(kRelatedSearchesInBar,
 BASE_FEATURE(kRelatedSearchesUi,
              "RelatedSearchesUi",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kReportParentalControlSitesChild,
+             "ReportParentalControlSitesChild",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kRequestDesktopSiteDefaults,
              "RequestDesktopSiteDefaults",
@@ -934,10 +891,6 @@ BASE_FEATURE(kSafeModeForCachedFlags,
 BASE_FEATURE(kShowScrollableMVTOnNTPAndroid,
              "ShowScrollableMVTOnNTPAndroid",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kSpannableInlineAutocomplete,
-             "SpannableInlineAutocomplete",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSpecialLocaleWrapper,
              "SpecialLocaleWrapper",
@@ -1049,10 +1002,6 @@ BASE_FEATURE(kTrustedWebActivityQualityEnforcementForced,
 
 BASE_FEATURE(kTrustedWebActivityQualityEnforcementWarning,
              "TrustedWebActivityQualityEnforcementWarning",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kShowExtendedPreloadingSetting,
-             "ShowExtendedPreloadingSetting",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kStartSurfaceAndroid,

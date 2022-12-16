@@ -541,6 +541,28 @@ Request* Request::CreateRequestWithRequestOrString(
       return nullptr;
     }
 
+    // Check the permissions policy on `execution_context` as part of the
+    // "Should request be allowed to use feature?" algorithm
+    // (https://www.w3.org/TR/permissions-policy/#algo-should-request-be-allowed-to-use-feature).
+    // The check against request’s origin is done in `BrowsingTopicsURLLoader`
+    // that is able to cover redirects.
+    if (!execution_context->IsFeatureEnabled(
+            mojom::blink::PermissionsPolicyFeature::kBrowsingTopics)) {
+      exception_state.ThrowTypeError(
+          "The \"browsing-topics\" Permissions Policy denied the use of "
+          "fetch(<url>, {browsingTopics: true}).");
+      return nullptr;
+    }
+
+    if (!execution_context->IsFeatureEnabled(
+            mojom::blink::PermissionsPolicyFeature::
+                kBrowsingTopicsBackwardCompatible)) {
+      exception_state.ThrowTypeError(
+          "The \"interest-cohort\" Permissions Policy denied the use of "
+          "fetch(<url>, {browsingTopics: true}).");
+      return nullptr;
+    }
+
     request->SetBrowsingTopics(init->browsingTopics());
   }
 
@@ -769,14 +791,6 @@ Request* Request::CreateRequestWithRequestOrString(
     // "Let |reader| be the result of getting reader from |dummyStream|."
     // "Read all bytes from |dummyStream| with |reader|."
     input_request->BodyBuffer()->CloseAndLockAndDisturb();
-  }
-
-  // Back/forward-cache is interested in use of the "Authorization" header.
-  if (r->getHeaders() &&
-      r->getHeaders()->has("Authorization", exception_state)) {
-    execution_context->GetScheduler()->RegisterStickyFeature(
-        SchedulingPolicy::Feature::kAuthorizationHeader,
-        {SchedulingPolicy::DisableBackForwardCache()});
   }
 
   // "Return |r|."

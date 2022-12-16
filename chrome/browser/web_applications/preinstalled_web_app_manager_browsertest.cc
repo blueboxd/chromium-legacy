@@ -31,6 +31,7 @@
 #include "chrome/browser/web_applications/test/test_file_utils.h"
 #include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
+#include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/user_uninstalled_preinstalled_web_app_prefs.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -62,9 +63,9 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/public/cpp/test/app_list_test_api.h"
-#include "chrome/browser/ui/app_list/app_list_client_impl.h"
-#include "chrome/browser/ui/app_list/app_list_syncable_service.h"
-#include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
+#include "chrome/browser/ash/app_list/app_list_client_impl.h"
+#include "chrome/browser/ash/app_list/app_list_syncable_service.h"
+#include "chrome/browser/ash/app_list/app_list_syncable_service_factory.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -301,19 +302,36 @@ class PreinstalledWebAppManagerBrowserTest
 
 class PreinstalledWebAppManagerTestWithExternalPrefRead
     : public PreinstalledWebAppManagerBrowserTestBase,
-      public testing::WithParamInterface<bool> {
+      public testing::WithParamInterface<test::ExternalPrefMigrationTestCases> {
  public:
   PreinstalledWebAppManagerTestWithExternalPrefRead() {
-    if (GetParam()) {
-      feature_list_.InitWithFeatures(
-          {features::kRecordWebAppDebugInfo,
-           features::kUseWebAppDBInsteadOfExternalPrefs},
-          {});
-    } else {
-      feature_list_.InitWithFeatures(
-          {features::kRecordWebAppDebugInfo},
-          {features::kUseWebAppDBInsteadOfExternalPrefs});
+    std::vector<base::test::FeatureRef> enabled_features{
+        features::kRecordWebAppDebugInfo};
+    std::vector<base::test::FeatureRef> disabled_features;
+
+    switch (GetParam()) {
+      case test::ExternalPrefMigrationTestCases::kDisableMigrationReadPref:
+        disabled_features.push_back(features::kMigrateExternalPrefsToWebAppDB);
+        disabled_features.push_back(
+            features::kUseWebAppDBInsteadOfExternalPrefs);
+        break;
+      case test::ExternalPrefMigrationTestCases::kDisableMigrationReadDB:
+        disabled_features.push_back(features::kMigrateExternalPrefsToWebAppDB);
+        enabled_features.push_back(
+            features::kUseWebAppDBInsteadOfExternalPrefs);
+        break;
+      case test::ExternalPrefMigrationTestCases::kEnableMigrationReadPref:
+        enabled_features.push_back(features::kMigrateExternalPrefsToWebAppDB);
+        disabled_features.push_back(
+            features::kUseWebAppDBInsteadOfExternalPrefs);
+        break;
+      case test::ExternalPrefMigrationTestCases::kEnableMigrationReadDB:
+        enabled_features.push_back(features::kMigrateExternalPrefsToWebAppDB);
+        enabled_features.push_back(
+            features::kUseWebAppDBInsteadOfExternalPrefs);
+        break;
     }
+    feature_list_.InitWithFeatures(enabled_features, disabled_features);
   }
 
  private:
@@ -1386,8 +1404,14 @@ IN_PROC_BROWSER_TEST_F(PreinstalledWebAppManagerWithCloudGamingBrowserTest,
 
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         PreinstalledWebAppManagerTestWithExternalPrefRead,
-                         ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    PreinstalledWebAppManagerTestWithExternalPrefRead,
+    ::testing::Values(
+        test::ExternalPrefMigrationTestCases::kDisableMigrationReadPref,
+        test::ExternalPrefMigrationTestCases::kDisableMigrationReadDB,
+        test::ExternalPrefMigrationTestCases::kEnableMigrationReadPref,
+        test::ExternalPrefMigrationTestCases::kEnableMigrationReadDB),
+    test::GetExternalPrefMigrationTestName);
 
 }  // namespace web_app

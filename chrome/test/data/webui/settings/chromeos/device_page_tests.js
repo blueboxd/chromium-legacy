@@ -6,9 +6,9 @@ import 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 
 import {crosAudioConfigMojomWebui, DevicePageBrowserProxyImpl, fakeCrosAudioConfig, IdleBehavior, LidClosedBehavior, NoteAppLockScreenSupport, Router, routes, setCrosAudioConfigForTesting, setDisplayApiForTesting, StorageSpaceState} from 'chrome://os-settings/chromeos/os_settings.js';
 import {getDeepActiveElement} from 'chrome://resources/ash/common/util.js';
-import {assert} from 'chrome://resources/js/assert.js';
-import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {assert} from 'chrome://resources/ash/common/assert.js';
+import {webUIListenerCallback} from 'chrome://resources/ash/common/cr.m.js';
+import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks, waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
@@ -23,7 +23,9 @@ const TestNames = {
   Audio: 'audio',
   Display: 'display',
   Keyboard: 'keyboard',
+  PerDeviceMouse: 'per-device mouse',
   NightLight: 'night light',
+  PerDeviceKeyboard: 'per-device keyboard',
   Pointers: 'pointers',
   PointingStick: 'pointing stick',
   Power: 'power',
@@ -275,7 +277,7 @@ suite('SettingsDevicePage', function() {
 
     DevicePageBrowserProxyImpl.setInstanceForTesting(
         new TestDevicePageBrowserProxy());
-
+    setDeviceSplitEnabled(true);
     // Allow the light DOM to be distributed to os-settings-animated-pages.
     setTimeout(done);
   });
@@ -461,6 +463,16 @@ suite('SettingsDevicePage', function() {
         `${elementDesc} should be focused for settingId=${settingId}.`);
   }
 
+  /**
+   * Set enableInputDeviceSettingsSplit feature flag to true for split tests.
+   * @param {!boolean} isEnabled
+   */
+  function setDeviceSplitEnabled(isEnabled) {
+    loadTimeData.overrideValues({
+      enableInputDeviceSettingsSplit: isEnabled,
+    });
+  }
+
   test(assert(TestNames.DevicePage), async function() {
     await init();
     assertTrue(isVisible(devicePage.shadowRoot.querySelector('#pointersRow')));
@@ -470,9 +482,12 @@ suite('SettingsDevicePage', function() {
     // enableAudioSettingsPage feature flag by default is turned on in tests.
     assertTrue(isVisible(devicePage.shadowRoot.querySelector('#audioRow')));
 
-    // enableInputDeviceSettingsSplit feature flag by default is turned off.
-    assertFalse(isVisible(devicePage.shadowRoot.querySelector('#mouseRow')));
-    assertFalse(isVisible(
+    // enableInputDeviceSettingsSplit feature flag by default is turned on.
+    assertTrue(
+        isVisible(devicePage.shadowRoot.querySelector('#perDeviceMouseRow')));
+    assertTrue(isVisible(
+        devicePage.shadowRoot.querySelector('#perDeviceTouchpadRow')));
+    assertTrue(isVisible(
         devicePage.shadowRoot.querySelector('#perDeviceKeyboardRow')));
 
     webUIListenerCallback('has-mouse-changed', false);
@@ -496,27 +511,49 @@ suite('SettingsDevicePage', function() {
     assertFalse(isVisible(devicePage.shadowRoot.querySelector('#audioRow')));
   });
 
-  test('mouse row visibility', async function() {
-    loadTimeData.overrideValues({
-      enableInputDeviceSettingsSplit: true,
-    });
+  test('per-device-mouse row visibility', async function() {
+    setDeviceSplitEnabled(false);
     await init();
-    assertTrue(isVisible(devicePage.shadowRoot.querySelector('#mouseRow')));
+    assertFalse(
+        isVisible(devicePage.shadowRoot.querySelector('#perDeviceMouseRow')));
+  });
+
+  test('per-device-touchpad row visibility', async function() {
+    setDeviceSplitEnabled(false);
+    await init();
+    assertFalse(isVisible(
+        devicePage.shadowRoot.querySelector('#perDeviceTouchpadRow')));
   });
 
   test('per-device-keyboard row visibility', async function() {
-    // Set enableInputDeviceSettingsSplit feature flag to true for split tests.
-    loadTimeData.overrideValues({
-      enableInputDeviceSettingsSplit: true,
-    });
+    setDeviceSplitEnabled(false);
     await init();
-    assertTrue(isVisible(
+    assertFalse(isVisible(
         devicePage.shadowRoot.querySelector('#perDeviceKeyboardRow')));
+  });
 
-    // Set enableInputDeviceSettingsSplit feature flag back to false to avoid
-    // corrupting other tests.
-    loadTimeData.overrideValues({
-      enableInputDeviceSettingsSplit: false,
+  suite(assert(TestNames.PerDeviceKeyboard), function() {
+    let perDeviceKeyboardPage;
+    setup(async function() {
+      await init();
+      const row = assert(
+          devicePage.shadowRoot.querySelector(`#main #perDeviceKeyboardRow`));
+      row.click();
+      assertEquals(
+          routes.PER_DEVICE_KEYBOARD, Router.getInstance().getCurrentRoute());
+      const page =
+          devicePage.shadowRoot.querySelector('settings-per-device-keyboard');
+      assert(page);
+      return Promise.resolve(page).then(function(page) {
+        perDeviceKeyboardPage = page;
+      });
+    });
+
+    test('per-device keyboard subpage visibility', function() {
+      assertEquals(
+          routes.PER_DEVICE_KEYBOARD, Router.getInstance().getCurrentRoute());
+      assertTrue(isVisible(perDeviceKeyboardPage.shadowRoot.querySelector(
+          '#perDeviceKeyboardSubpageTitle')));
     });
   });
 
@@ -563,6 +600,41 @@ suite('SettingsDevicePage', function() {
       const inputVolumeSlider =
           audioPage.shadowRoot.querySelector('#audioInputGainVolumeSlider');
       assertTrue(isVisible(inputVolumeSlider), 'audioInputGainVolumeSlider');
+      const noiseCancellationSubsectionHeader =
+          audioPage.shadowRoot.querySelector(
+              '#audioInputNoiseCancellationLabel');
+      assertTrue(isVisible(noiseCancellationSubsectionHeader));
+      assertEquals(
+          'Noise Cancellation', noiseCancellationSubsectionHeader.textContent);
+      const noiseCancellationToggle = audioPage.shadowRoot.querySelector(
+          '#audioInputNoiseCancellationToggle');
+      assertTrue(isVisible(noiseCancellationToggle));
+    });
+  });
+
+  suite(assert(TestNames.PerDeviceMouse), function() {
+    let perDeviceMousePage;
+
+    setup(async function() {
+      await init();
+      const row = assert(
+          devicePage.shadowRoot.querySelector(`#main #perDeviceMouseRow`));
+      row.click();
+      assertEquals(
+          routes.PER_DEVICE_MOUSE, Router.getInstance().getCurrentRoute());
+      const page =
+          devicePage.shadowRoot.querySelector('settings-per-device-mouse');
+      assert(page);
+      return Promise.resolve(page).then(function(page) {
+        perDeviceMousePage = page;
+      });
+    });
+
+    test('per-device mouse subpage visibility', function() {
+      assertEquals(
+          routes.PER_DEVICE_MOUSE, Router.getInstance().getCurrentRoute());
+      assertTrue(isVisible(perDeviceMousePage.shadowRoot.querySelector(
+          '#perDeviceMouseSubpageTitle')));
     });
   });
 
@@ -887,6 +959,18 @@ suite('SettingsDevicePage', function() {
           crosAudioConfigMojomWebui.MuteState.kNotMuted,
           audioPage.audioSystemProperties_.outputMuteState);
       assertFalse(audioPage.isOutputMuted_);
+    });
+
+    test('simulate input mute button press test', async function() {
+      const inputMuteButton =
+          audioPage.shadowRoot.querySelector('#audioInputGainMuteButton');
+
+      assertFalse(audioPage.getIsInputMutedForTest());
+
+      inputMuteButton.click();
+      await flushTasks();
+
+      assertTrue(audioPage.getIsInputMutedForTest());
     });
   });
 

@@ -76,6 +76,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/fenced_frame/redacted_fenced_frame_config.h"
 #include "third_party/blink/public/mojom/fenced_frame/fenced_frame.mojom.h"
+#include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -84,7 +85,7 @@ namespace content {
 class FencedFrameURLMapping;
 
 extern const char kUrnUuidPrefix[];
-GURL GenerateUrnUuid();
+GURL CONTENT_EXPORT GenerateUrnUuid();
 
 using AdAuctionData = blink::FencedFrame::AdAuctionData;
 using ReportingMetadata = blink::FencedFrame::FencedFrameReporting;
@@ -191,8 +192,10 @@ class CONTENT_EXPORT FencedFrameProperty {
 // selectURL return urns as handles to `FencedFrameConfig`s.
 struct CONTENT_EXPORT FencedFrameConfig {
   FencedFrameConfig();
-  explicit FencedFrameConfig(const GURL& url);
+  explicit FencedFrameConfig(const GURL& mapped_url);
+  FencedFrameConfig(const GURL& urn_uuid, const GURL& url);
   FencedFrameConfig(
+      const GURL& urn_uuid,
       const GURL& url,
       const SharedStorageBudgetMetadata& shared_storage_budget_metadata,
       const ReportingMetadata& reporting_metadata = ReportingMetadata());
@@ -206,7 +209,26 @@ struct CONTENT_EXPORT FencedFrameConfig {
   blink::FencedFrame::RedactedFencedFrameConfig RedactFor(
       FencedFrameEntity entity) const;
 
+  absl::optional<GURL> urn_uuid_;
+
   absl::optional<FencedFrameProperty<GURL>> mapped_url_;
+
+  // The initial size of the outer container (the size that the embedder sees
+  // for the fenced frame). This will only be respected if the embedder hasn't
+  // explicitly declared a size for the <fencedframe> element, and will be
+  // disregarded if the embedder subsequently resizes the fenced frame.
+  absl::optional<FencedFrameProperty<gfx::Size>> container_size_;
+
+  // The size of the inner frame (the size that the fenced frame sees for
+  // itself).
+  absl::optional<FencedFrameProperty<gfx::Size>> content_size_;
+
+  // Whether we should use the old size freezing behavior for backwards
+  // compatibility. (The old behavior is to freeze the fenced frame to its size
+  // at navigation start, coerced to a list of allowed sizes. The new behavior
+  // uses `container_size` and `content_size` above.)
+  absl::optional<FencedFrameProperty<bool>>
+      deprecated_should_freeze_initial_size_;
 
   // Extra data set if `mapped_url` is the result of a FLEDGE auction. Used
   // to fill in `AdAuctionDocumentData` for the fenced frame that navigates
@@ -270,6 +292,13 @@ struct CONTENT_EXPORT FencedFrameProperties {
       FencedFrameEntity entity) const;
 
   absl::optional<FencedFrameProperty<GURL>> mapped_url_;
+
+  absl::optional<FencedFrameProperty<gfx::Size>> container_size_;
+
+  absl::optional<FencedFrameProperty<gfx::Size>> content_size_;
+
+  absl::optional<FencedFrameProperty<bool>>
+      deprecated_should_freeze_initial_size_;
 
   absl::optional<FencedFrameProperty<AdAuctionData>> ad_auction_data_;
 

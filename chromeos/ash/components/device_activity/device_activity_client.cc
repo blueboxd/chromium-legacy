@@ -320,9 +320,10 @@ DeviceActivityClient::GetSaveStatusRequest() {
             private_computing::PrivateComputingUseCase::CROS_FRESNEL_DAILY);
         status.set_last_ping_utc_date(last_ping_utc_date);
         break;
-      case psm_rlwe::RlweUseCase::CROS_FRESNEL_7DAY_ACTIVE:
-        break;
       case psm_rlwe::RlweUseCase::CROS_FRESNEL_28DAY_ACTIVE:
+        status.set_use_case(private_computing::PrivateComputingUseCase::
+                                CROS_FRESNEL_28DAY_ACTIVE);
+        status.set_last_ping_utc_date(last_ping_utc_date);
         break;
       case psm_rlwe::RlweUseCase::CROS_FRESNEL_FIRST_ACTIVE:
         break;
@@ -675,6 +676,27 @@ void DeviceActivityClient::TransitionOutOfIdle(
         }
 
         break;
+      case psm_rlwe::RlweUseCase::CROS_FRESNEL_28DAY_ACTIVE:
+        // Check membership continues when the cached local state pref
+        // is not set. The local state pref may not be set if the device is
+        // new, powerwashed, recovered, RMA, or the local state was corrupted.
+        if (base::FeatureList::IsEnabled(
+                features::kDeviceActiveClient28DayActiveCheckMembership) &&
+            !current_use_case->IsLastKnownPingTimestampSet()) {
+          TransitionToCheckMembershipOprf(current_use_case);
+          return;
+        }
+
+        // |TransitionToCheckIn| if the local state pref is set.
+        if (base::FeatureList::IsEnabled(
+                features::kDeviceActiveClient28DayActiveCheckIn)) {
+          // During rollout, we perform CheckIn without CheckMembership for
+          // powerwash, recovery, or RMA devices.
+          TransitionToCheckIn(current_use_case);
+          return;
+        }
+
+        break;
       default:
         VLOG(1) << "Use case is not supported yet. "
                 << psm_rlwe::RlweUseCase_Name(
@@ -780,6 +802,13 @@ void DeviceActivityClient::TransitionToCheckMembershipOprf(
 
   // Report UMA histogram for transitioning state to |kCheckingMembershipOprf|.
   RecordStateCountMetric(state_);
+
+  std::vector<psm_rlwe::RlwePlaintextId> psm_ids =
+      current_use_case->GetPsmIdentifiersToQuery();
+
+  // Initializes the PSM rlwe client with the appropriate psm id values that we
+  // want to check membership for. This varies by fixed and n-day use cases.
+  current_use_case->SetPsmRlweClient(psm_ids);
 
   // Generate PSM Oprf request body.
   const auto status_or_oprf_request =

@@ -12,6 +12,7 @@ GEN('#include "build/build_config.h"');
 GEN('#include "build/chromeos_buildflags.h"');
 GEN('#include "chrome/browser/ui/ui_features.h"');
 GEN('#include "chrome/common/chrome_features.h"');
+GEN('#include "components/content_settings/core/common/features.h"');
 GEN('#include "components/performance_manager/public/features.h"');
 GEN('#include "components/privacy_sandbox/privacy_sandbox_features.h"');
 GEN('#include "components/autofill/core/common/autofill_features.h"');
@@ -341,7 +342,7 @@ var CrSettingsSafetyCheckPermissionsTest = class extends CrSettingsBrowserTest {
   get featureListInternal() {
     return {
       enabled: [
-        'features::kSafetyCheckUnusedSitePermissions',
+        'content_settings::features::kSafetyCheckUnusedSitePermissions',
         'features::kSafetyCheckNotificationPermissions',
       ],
     };
@@ -380,9 +381,15 @@ TEST_F('CrSettingsSiteListTest', 'DISABLED_SiteList', function() {
 });
 
 // TODO(crbug.com/929455): When the bug is fixed, merge
-// SiteListEmbargoedOrigin into SiteList
+// SiteListEmbargoedOrigin into SiteList.
 TEST_F('CrSettingsSiteListTest', 'SiteListEmbargoedOrigin', function() {
   runMochaSuite('SiteListEmbargoedOrigin');
+});
+
+// TODO(crbug.com/929455): When the bug is fixed, merge
+// SiteListCookiesExceptionTypes into SiteList.
+TEST_F('CrSettingsSiteListTest', 'SiteListCookiesExceptionTypes', function() {
+  runMochaSuite('SiteListCookiesExceptionTypes');
 });
 
 TEST_F('CrSettingsSiteListTest', 'EditExceptionDialog', function() {
@@ -614,9 +621,16 @@ TEST_F(
       runMochaSuite('PrivacySandboxPageTests');
     });
 
-TEST_F('CrSettingsPrivacySandboxPageTest', 'TopicsSubpageTests', function() {
-  runMochaSuite('PrivacySandboxTopicsSubpageTests');
-});
+// TODO(crbug.com/1400768): Flaky on Mac.
+GEN('#if BUILDFLAG(IS_MAC)');
+GEN('#define MAYBE_TopicsSubpageTests DISABLED_TopicsSubpageTests');
+GEN('#else');
+GEN('#define MAYBE_TopicsSubpageTests TopicsSubpageTests');
+GEN('#endif');
+TEST_F(
+    'CrSettingsPrivacySandboxPageTest', 'MAYBE_TopicsSubpageTests', function() {
+      runMochaSuite('PrivacySandboxTopicsSubpageTests');
+    });
 
 TEST_F(
     'CrSettingsPrivacySandboxPageTest', 'AdMeasurementSubpageTests',
@@ -730,6 +744,15 @@ var CrSettingsCookiesPageTest = class extends CrSettingsBrowserTest {
   get browsePreload() {
     return 'chrome://settings/test_loader.html?module=settings/cookies_page_test.js';
   }
+
+  /** @override */
+  get featureList() {
+    return {
+      enabled: [
+        'privacy_sandbox::kPrivacySandboxSettings4',
+      ],
+    };
+  }
 };
 
 // Flaky on MacOS bots and times out on Linux Dbg: https://crbug.com/1240747
@@ -746,18 +769,29 @@ TEST_F('CrSettingsCookiesPageTest', 'FirstPartySetsUIEnabled', function() {
   runMochaSuite('CrSettingsCookiesPageTest_FirstPartySetsUIEnabled');
 });
 
+GEN('#if BUILDFLAG(IS_CHROMEOS_LACROS)');
+TEST_F('CrSettingsCookiesPageTest', 'LacrosSecondaryProfile', function() {
+  runMochaSuite('CrSettingsCookiesPageTest_lacrosSecondaryProfile');
+});
+GEN('#endif');
+
+GEN('#if (BUILDFLAG(IS_MAC)) || (BUILDFLAG(IS_LINUX) && !defined(NDEBUG))');
+GEN('#define MAYBE_PrivacySandboxSettings4Disabled DISABLED_PrivacySandboxSettings4Disabled');
+GEN('#else');
+GEN('#define MAYBE_PrivacySandboxSettings4Disabled PrivacySandboxSettings4Disabled');
+GEN('#endif');
+TEST_F(
+    'CrSettingsCookiesPageTest', 'MAYBE_PrivacySandboxSettings4Disabled',
+    function() {
+      runMochaSuite('PrivacySandboxSettings4Disabled');
+    });
+
 var CrSettingsRouteTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://settings/test_loader.html?module=settings/route_tests.js';
   }
 };
-
-GEN('#if BUILDFLAG(IS_CHROMEOS_LACROS)');
-TEST_F('CrSettingsCookiesPageTest', 'LacrosSecondaryProfile', function() {
-  runMochaSuite('CrSettingsCookiesPageTest_lacrosSecondaryProfile');
-});
-GEN('#endif');
 
 TEST_F('CrSettingsRouteTest', 'Basic', function() {
   runMochaSuite('route');
@@ -830,7 +864,7 @@ var CrSettingsUnusedSitePermissionsTest = class extends CrSettingsBrowserTest {
   get featureList() {
     return {
       enabled: [
-        'features::kSafetyCheckUnusedSitePermissions',
+        'content_settings::features::kSafetyCheckUnusedSitePermissions',
       ],
     };
   }
@@ -851,6 +885,7 @@ var CrSettingsSiteSettingsPageTest = class extends CrSettingsBrowserTest {
     return {
       enabled: [
         'privacy_sandbox::kPrivacySandboxSettings4',
+        'content_settings::features::kSafetyCheckUnusedSitePermissions',
       ],
     };
   }
@@ -862,6 +897,18 @@ TEST_F('CrSettingsSiteSettingsPageTest', 'SiteSettingsPage', function() {
 
 TEST_F(
     'CrSettingsSiteSettingsPageTest', 'PrivacySandboxSettings4Disabled',
+    function() {
+      mocha.run();
+    });
+
+TEST_F(
+    'CrSettingsSiteSettingsPageTest', 'UnusedSitePermissionsReview',
+    function() {
+      mocha.run();
+    });
+
+TEST_F(
+    'CrSettingsSiteSettingsPageTest', 'UnusedSitePermissionsReviewDisabled',
     function() {
       mocha.run();
     });
@@ -901,8 +948,16 @@ TEST_F(
  ['SearchEngines', 'search_engines_page_test.js'],
  ['SearchPage', 'search_page_test.js'],
  ['Search', 'search_settings_test.js'],
+ ['SecurityKeysBioEnrollment', 'security_keys_bio_enrollment_test.js'],
+ [
+   'SecurityKeysCredentialManagement',
+   'security_keys_credential_management_test.js'
+ ],
+ ['SecurityKeysResetDialog', 'security_keys_reset_dialog_test.js'],
+ ['SecurityKeysSetPinDialog', 'security_keys_set_pin_dialog_test.js'],
  ['SecurityKeysPhonesSubpage', 'security_keys_phones_subpage_test.js'],
  ['SecureDns', 'secure_dns_test.js'],
+ ['SiteDataTest', 'site_data_test.js'],
  ['SiteDetailsPermission', 'site_details_permission_tests.js'],
  ['SiteEntry', 'site_entry_tests.js'],
  ['SiteFavicon', 'site_favicon_test.js'],
@@ -980,11 +1035,6 @@ GEN('#endif');
 
 GEN('#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && !BUILDFLAG(IS_CHROMEOS_ASH)');
 registerTest('MetricsReporting', 'metrics_reporting_tests.js');
-GEN('#endif');
-
-// TODO(crbug.com/1395417): Flaky on Linux
-GEN('#if !BUILDFLAG(IS_LINUX)');
-registerTest('SecurityKeysSubpage', 'security_keys_subpage_test.js');
 GEN('#endif');
 
 function registerTest(testName, module, caseName) {

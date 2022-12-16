@@ -283,9 +283,11 @@ void ShowSnapPreview(aura::Window* window,
       /*allow_haptic_feedback=*/false);
 }
 
-void CommitSnap(aura::Window* window, chromeos::SnapDirection snap_direction) {
+void CommitSnap(aura::Window* window,
+                chromeos::SnapDirection snap_direction,
+                float snap_ratio) {
   chromeos::SnapController::Get()->CommitSnap(window, snap_direction,
-                                              chromeos::kDefaultSnapRatio);
+                                              snap_ratio);
 }
 
 }  // namespace
@@ -357,10 +359,12 @@ ShellSurfaceBase::~ShellSurfaceBase() {
 void ShellSurfaceBase::Activate() {
   TRACE_EVENT0("exo", "ShellSurfaceBase::Activate");
 
-  if (pending_show_widget_)
+  if (!widget_ || pending_show_widget_) {
     initially_activated_ = true;
+    return;
+  }
 
-  if (!widget_ || widget_->IsActive())
+  if (widget_->IsActive())
     return;
 
   widget_->Activate();
@@ -369,10 +373,12 @@ void ShellSurfaceBase::Activate() {
 void ShellSurfaceBase::Deactivate() {
   TRACE_EVENT0("exo", "ShellSurfaceBase::Deactivate");
 
-  if (pending_show_widget_)
+  if (!widget_ || pending_show_widget_) {
     initially_activated_ = false;
+    return;
+  }
 
-  if (!widget_ || !widget_->IsActive())
+  if (!widget_->IsActive())
     return;
 
   widget_->Deactivate();
@@ -494,16 +500,19 @@ void ShellSurfaceBase::HideSnapPreview() {
   ShowSnapPreview(widget_->GetNativeWindow(), chromeos::SnapDirection::kNone);
 }
 
-void ShellSurfaceBase::SetSnappedToPrimary() {
-  CommitSnap(widget_->GetNativeWindow(), chromeos::SnapDirection::kPrimary);
+void ShellSurfaceBase::SetSnapPrimary(float snap_ratio) {
+  CommitSnap(widget_->GetNativeWindow(), chromeos::SnapDirection::kPrimary,
+             snap_ratio);
 }
 
-void ShellSurfaceBase::SetSnappedToSecondary() {
-  CommitSnap(widget_->GetNativeWindow(), chromeos::SnapDirection::kSecondary);
+void ShellSurfaceBase::SetSnapSecondary(float snap_ratio) {
+  CommitSnap(widget_->GetNativeWindow(), chromeos::SnapDirection::kSecondary,
+             snap_ratio);
 }
 
 void ShellSurfaceBase::UnsetSnap() {
-  CommitSnap(widget_->GetNativeWindow(), chromeos::SnapDirection::kNone);
+  CommitSnap(widget_->GetNativeWindow(), chromeos::SnapDirection::kNone,
+             chromeos::kDefaultSnapRatio);
 }
 
 void ShellSurfaceBase::SetCanGoBack() {
@@ -741,13 +750,16 @@ void ShellSurfaceBase::DisableMovement() {
 void ShellSurfaceBase::UpdateResizability() {
   SetCanResize(CalculateCanResize());
   auto max_size = GetMaximumSize();
+  bool max_size_resizability_only = false;
+  if (widget_ && widget_->GetNativeWindow()) {
+    max_size_resizability_only = widget_->GetNativeWindow()->GetProperty(
+        kMaximumSizeForResizabilityOnly);
+  }
 
-  // Allow maximizeing if the max size is bigger than 32k resolution.
+  // Allow maximizing if the max size is bigger than 32k resolution.
   SetCanMaximize(CanResize() && !parent_ &&
                  ash::desks_util::IsDeskContainerId(container_) &&
-                 (max_size.IsEmpty() ||
-                  (max_size.width() > ash::kAllowMaximizeThreshold &&
-                   max_size.height() > ash::kAllowMaximizeThreshold)));
+                 (max_size.IsEmpty() || max_size_resizability_only));
 }
 
 void ShellSurfaceBase::RebindRootSurface(Surface* root_surface,
@@ -1465,7 +1477,6 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   aura::Window* window = widget_->GetNativeWindow();
   window->SetName(base::StringPrintf("ExoShellSurface-%d", shell_id++));
   window->AddChild(host_window());
-  // Works for both mash and non-mash. https://crbug.com/839521
   window->SetEventTargetingPolicy(
       aura::EventTargetingPolicy::kTargetAndDescendants);
   InstallCustomWindowTargeter();

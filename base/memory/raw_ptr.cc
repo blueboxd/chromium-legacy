@@ -118,7 +118,9 @@ void CheckThatAddressIsntWithinFirstPartitionPage(uintptr_t address) {
 #elif BUILDFLAG(USE_ASAN_BACKUP_REF_PTR)
 
 #include <sanitizer/asan_interface.h>
-#include "base/debug/alias.h"
+#include "base/allocator/partition_allocator/partition_alloc_base/debug/alias.h"
+#include "base/compiler_specific.h"
+#include "base/debug/asan_service.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr_asan_service.h"
 #include "base/process/process.h"
@@ -158,7 +160,7 @@ bool IsFreedHeapPointer(void const volatile* ptr) {
 // Force a non-optimizable memory load operation to trigger an ASan crash.
 NOINLINE NOT_TAIL_CALLED void CrashImmediatelyOnUseAfterFree(
     void const volatile* ptr) {
-  NO_CODE_FOLDING();
+  PA_NO_CODE_FOLDING();
   auto unused = *reinterpret_cast<char const volatile*>(ptr);
   asm volatile("" : "+r"(unused));
 }
@@ -189,7 +191,7 @@ void AsanBackupRefPtrImpl::AsanCheckIfValidExtraction(
     // to catch the potential subsequent dangling dereference, but don't report
     // the extraction itself.
     if (service.is_extraction_check_enabled()) {
-      RawPtrAsanService::Log(
+      debug::AsanService::GetInstance()->Log(
           "=================================================================\n"
           "==%d==WARNING: MiraclePtr: dangling-pointer-extraction on address "
           "%p\n"
@@ -197,7 +199,7 @@ void AsanBackupRefPtrImpl::AsanCheckIfValidExtraction(
           Process::Current().Pid(), ptr);
       __sanitizer_print_stack_trace();
       __asan_describe_address(const_cast<void*>(ptr));
-      RawPtrAsanService::Log(
+      debug::AsanService::GetInstance()->Log(
           "A regular ASan report will follow if the extracted pointer is "
           "dereferenced later.\n"
           "Otherwise, it is still likely a bug to rely on the address of an "

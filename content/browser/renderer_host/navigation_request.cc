@@ -36,6 +36,8 @@
 #include "base/types/optional_util.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "components/attribution_reporting/os_registration.h"
+#include "components/attribution_reporting/os_support.mojom.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -163,7 +165,6 @@
 #include "third_party/blink/public/common/security/address_space_feature.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
-#include "third_party/blink/public/mojom/conversions/attribution_reporting.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/mojom/loader/mixed_content.mojom.h"
 #include "third_party/blink/public/mojom/loader/transferrable_url_loader.mojom.h"
@@ -477,10 +478,9 @@ void AddAdditionalRequestHeaders(
 
     if (base::FeatureList::IsEnabled(
             blink::features::kAttributionReportingCrossAppWeb)) {
-      bool has_os_support = AttributionManager::GetOsSupport() ==
-                            blink::mojom::AttributionOsSupport::kEnabled;
       headers->SetHeader("Attribution-Reporting-Support",
-                         has_os_support ? "web, os" : "web");
+                         attribution_reporting::GetSupportHeader(
+                             AttributionManager::GetOsSupport()));
     }
   }
 }
@@ -1872,7 +1872,8 @@ NavigationRequest::NavigationRequest(
   navigation_handle_proxy_ = std::make_unique<NavigationHandleProxy>(this);
 #endif
 
-  if (NeedsUrlLoader() && common_params_->url.SchemeIsHTTPOrHTTPS()) {
+  if (base::FeatureList::IsEnabled(features::kNavigationRequestPreconnect) &&
+      NeedsUrlLoader() && common_params_->url.SchemeIsHTTPOrHTTPS()) {
     BrowserContext* browser_context =
         frame_tree_node_->navigator().controller().GetBrowserContext();
     if (GetContentClient()->browser()->ShouldPreconnectNavigation(
@@ -2206,8 +2207,7 @@ FencedFrameURLMapping& NavigationRequest::GetFencedFrameURLMap() {
   // `inner_frame_tree` is true for navigations inside the main frame of a
   // nested fenced frame's `FrameTree`, and false otherwise. This is only the
   // case for the MPArch implementation of fenced frames.
-  bool is_inner_frame_tree =
-      frame_tree_node_->frame_tree().type() == FrameTree::Type::kFencedFrame;
+  bool is_inner_frame_tree = frame_tree_node_->IsInFencedFrameTree();
   FrameTreeNode* node_to_use =
       is_inner_frame_tree
           ? frame_tree_node_->render_manager()->GetOuterDelegateNode()
@@ -2456,9 +2456,20 @@ void NavigationRequest::BeginNavigationImpl() {
           policy_container_builder_->FinalPolicies().cross_origin_opener_policy,
           origin, net::NetworkAnonymizationKey(site, site));
 
-      // Select an appropriate RenderFrameHost.
-      render_frame_host_ =
-          frame_tree_node_->render_manager()->GetFrameHostForNavigation(this);
+      if (auto result =
+              frame_tree_node_->render_manager()->GetFrameHostForNavigation(
+                  this);
+          result.has_value()) {
+        render_frame_host_ = result.value();
+      } else {
+        switch (result.error()) {
+          case GetFrameHostForNavigationFailed::kCouldNotReinitializeMainFrame:
+            // TODO(https://crbug.com/1400535): This was unhandled before and
+            // remains explicitly unhandled. This branch may be removed in the
+            // future.
+            break;
+        }
+      }
 
       CHECK(Navigator::CheckWebUIRendererDoesNotDisplayNormalURL(
           render_frame_host_, GetUrlInfo(),
@@ -3205,27 +3216,18 @@ bool NavigationRequest::AreOriginAgentClustersEnabledByDefault() const {
 }
 
 bool NavigationRequest::IsIsolationImplied() {
-  if (!response())
-    return false;
-
   if (!AreOriginAgentClustersEnabledByDefault())
     return false;
 
-  return response_head_->parsed_headers->origin_agent_cluster ==
-         network::mojom::OriginAgentClusterValue::kAbsent;
+  return !response() || response_head_->parsed_headers->origin_agent_cluster ==
+                            network::mojom::OriginAgentClusterValue::kAbsent;
 }
 
 void NavigationRequest::DetermineOriginAgentClusterEndResult() {
-  DCHECK_EQ(state_, WILL_PROCESS_RESPONSE);
-
+  DCHECK(state_ == WILL_PROCESS_RESPONSE || state_ == WILL_FAIL_REQUEST ||
+         state_ == CANCELING);
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  // This cannot simply calculate an origin from the committing URL, as Android
-  // WebView allows embedders to use loadDataWithBaseURL() to commit a data: URL
-  // with an arbitrary base URL.
-  const url::Origin origin =
-      IsLoadDataWithBaseURL()
-          ? url::Origin::Create(common_params_->base_url_for_data_url)
-          : url::Origin::Create(common_params_->url);
+  url::Origin origin = GetOriginToCommit().value();
   const IsolationContext& isolation_context =
       render_frame_host_->GetSiteInstance()->GetIsolationContext();
 
@@ -3252,11 +3254,13 @@ void NavigationRequest::DetermineOriginAgentClusterEndResult() {
     // between explicitly requesting OAC (on or off) and having no related
     // header.
     bool was_explicitly_requested =
+        response_head_ &&
         response_head_->parsed_headers->origin_agent_cluster ==
-        network::mojom::OriginAgentClusterValue::kTrue;
+            network::mojom::OriginAgentClusterValue::kTrue;
     bool was_explicitly_not_requested =
+        response_head_ &&
         response_head_->parsed_headers->origin_agent_cluster ==
-        network::mojom::OriginAgentClusterValue::kFalse;
+            network::mojom::OriginAgentClusterValue::kFalse;
 
     if (got_origin_agent_cluster) {
       if (was_explicitly_requested) {
@@ -3318,8 +3322,8 @@ void NavigationRequest::DetermineOriginAgentClusterEndResult() {
   // (recorded just above) has been made based on an absent Origin-Agent-Cluster
   // http header.
   commit_params_->origin_agent_cluster_left_as_default =
-      response_head_->parsed_headers->origin_agent_cluster ==
-      network::mojom::OriginAgentClusterValue::kAbsent;
+      !response_head_ || response_head_->parsed_headers->origin_agent_cluster ==
+                             network::mojom::OriginAgentClusterValue::kAbsent;
 }
 
 void NavigationRequest::ProcessOriginAgentClusterEndResult() {
@@ -3653,18 +3657,21 @@ void NavigationRequest::OnResponseStarted(
     mojo::ScopedDataPipeConsumerHandle response_body,
     GlobalRequestID request_id,
     bool is_download,
-    blink::NavigationDownloadPolicy download_policy,
     net::NetworkAnonymizationKey network_anonymization_key,
     absl::optional<SubresourceLoaderParams> subresource_loader_params,
     EarlyHints early_hints) {
+  if (is_download) {
+    download_policy().RecordHistogram();
+  }
+
   ScopedCrashKeys crash_keys(*this);
 
   // The |loader_|'s job is finished. It must not call the NavigationRequest
   // anymore from now.
   loader_.reset();
   if (is_download)
-    RecordDownloadUseCountersPrePolicyCheck(download_policy);
-  is_download_ = is_download && download_policy.IsDownloadAllowed();
+    RecordDownloadUseCountersPrePolicyCheck();
+  is_download_ = is_download && download_policy().IsDownloadAllowed();
   if (is_download_)
     RecordDownloadUseCountersPostPolicyCheck();
   request_id_ = request_id;
@@ -3910,16 +3917,19 @@ void NavigationRequest::OnResponseStarted(
     // TODO(https://crbug.com/1181712): Handle the cases when the prerender is
     // cancelled and RFH is destroyed while NavigationRequest is alive.
   } else if (response_should_be_rendered_) {
-    render_frame_host_ =
-        frame_tree_node_->render_manager()->GetFrameHostForNavigation(this);
-
-    // Update the associated RenderFrameHost type, which could have changed
-    // due to redirects during navigation.
-    SetAssociatedRFHType(
-        render_frame_host_ ==
-                frame_tree_node_->render_manager()->current_frame_host()
-            ? AssociatedRenderFrameHostType::CURRENT
-            : AssociatedRenderFrameHostType::SPECULATIVE);
+    if (auto result =
+            frame_tree_node_->render_manager()->GetFrameHostForNavigation(this);
+        result.has_value()) {
+      render_frame_host_ = result.value();
+    } else {
+      switch (result.error()) {
+        case GetFrameHostForNavigationFailed::kCouldNotReinitializeMainFrame:
+          // TODO(https://crbug.com/1400535): This was unhandled before and
+          // remains explicitly unhandled. This branch may be removed in the
+          // future.
+          break;
+      }
+    }
 
     if (!Navigator::CheckWebUIRendererDoesNotDisplayNormalURL(
             render_frame_host_, GetUrlInfo(),
@@ -3931,9 +3941,6 @@ void NavigationRequest::OnResponseStarted(
   }
   if (!render_frame_host_)
     DCHECK(!response_should_be_rendered_);
-
-  if (render_frame_host_)
-    DetermineOriginAgentClusterEndResult();
 
   if (!commit_params_->is_browser_initiated && render_frame_host_ &&
       render_frame_host_->GetProcess() !=
@@ -4147,9 +4154,16 @@ NavigationRequest::CreateNavigationEarlyHintsManagerParams(
   // The CrossOriginRedirectAfterEarlyHints variant of
   // Navigation.MainFrame.TimeToReadyToCommit2 histogram tracks the performance
   // impacts.
-  RenderProcessHost* process = frame_tree_node_->render_manager()
-                                   ->GetFrameHostForNavigation(this)
-                                   ->GetProcess();
+  auto result =
+      frame_tree_node_->render_manager()->GetFrameHostForNavigation(this);
+
+  // Early hints is an optimization; if it is not possible to get a suitable
+  // RenderFrameHost for any reason, just bail out.
+  if (!result.has_value()) {
+    return absl::nullopt;
+  }
+
+  RenderProcessHost* process = result.value()->GetProcess();
 
   // The process is shutting down.
   if (!process->GetBrowserContext())
@@ -4264,8 +4278,20 @@ void NavigationRequest::OnRequestFailedInternal(
       // https://crbug.com/1125106.
       common_params_->navigation_type =
           ConvertToCrossDocumentType(common_params_->navigation_type);
-      render_frame_host =
-          frame_tree_node_->render_manager()->GetFrameHostForNavigation(this);
+      if (auto result =
+              frame_tree_node_->render_manager()->GetFrameHostForNavigation(
+                  this);
+          result.has_value()) {
+        render_frame_host = result.value();
+      } else {
+        switch (result.error()) {
+          case GetFrameHostForNavigationFailed::kCouldNotReinitializeMainFrame:
+            // TODO(https://crbug.com/1400535): This was unhandled
+            // before and remains explicitly unhandled. This branch may be
+            // removed in the future.
+            break;
+        }
+      }
       break;
   }
   // Sanity check that we haven't changed the RenderFrameHost picked for the
@@ -5000,6 +5026,8 @@ void NavigationRequest::CommitErrorPage(
     const absl::optional<std::string>& error_page_content) {
   DCHECK(!IsSameDocument());
 
+  DetermineOriginAgentClusterEndResult();
+
   UpdateCommitNavigationParamsHistory();
 
   common_params_->should_replace_current_entry =
@@ -5080,6 +5108,8 @@ void NavigationRequest::CommitNavigation() {
 
   if (!CoopCoepSanityCheck())
     return;
+
+  DetermineOriginAgentClusterEndResult();
 
   UpdateCommitNavigationParamsHistory();
   DCHECK(NeedsUrlLoader() == !!response_head_ ||
@@ -6006,14 +6036,13 @@ bool NavigationRequest::IsSameDocument() const {
   return NavigationTypeUtils::IsSameDocument(common_params_->navigation_type);
 }
 
-void NavigationRequest::RecordDownloadUseCountersPrePolicyCheck(
-    blink::NavigationDownloadPolicy download_policy) {
+void NavigationRequest::RecordDownloadUseCountersPrePolicyCheck() {
   RenderFrameHost* rfh = frame_tree_node_->current_frame_host();
   GetContentClient()->browser()->LogWebFeatureForCurrentPage(
       rfh, blink::mojom::WebFeature::kDownloadPrePolicyCheck);
 
   // Log UseCounters for opener navigations.
-  if (download_policy.IsType(
+  if (download_policy().IsType(
           blink::NavigationDownloadType::kOpenerCrossOrigin)) {
     rfh->AddMessageToConsole(
         blink::mojom::ConsoleMessageLevel::kError,
@@ -6027,26 +6056,26 @@ void NavigationRequest::RecordDownloadUseCountersPrePolicyCheck(
   }
 
   // Log UseCounters for download in sandbox.
-  if (download_policy.IsType(blink::NavigationDownloadType::kSandbox)) {
+  if (download_policy().IsType(blink::NavigationDownloadType::kSandbox)) {
     GetContentClient()->browser()->LogWebFeatureForCurrentPage(
         rfh, blink::mojom::WebFeature::kDownloadInSandbox);
   }
 
   // Log UseCounters for download without user activation.
-  if (download_policy.IsType(blink::NavigationDownloadType::kNoGesture)) {
+  if (download_policy().IsType(blink::NavigationDownloadType::kNoGesture)) {
     GetContentClient()->browser()->LogWebFeatureForCurrentPage(
         rfh, blink::mojom::WebFeature::kDownloadWithoutUserGesture);
   }
 
   // Log UseCounters for download in ad frame without user activation.
-  if (download_policy.IsType(
+  if (download_policy().IsType(
           blink::NavigationDownloadType::kAdFrameNoGesture)) {
     GetContentClient()->browser()->LogWebFeatureForCurrentPage(
         rfh, blink::mojom::WebFeature::kDownloadInAdFrameWithoutUserGesture);
   }
 
   // Log UseCounters for download in ad frame.
-  if (download_policy.IsType(blink::NavigationDownloadType::kAdFrame)) {
+  if (download_policy().IsType(blink::NavigationDownloadType::kAdFrame)) {
     GetContentClient()->browser()->LogWebFeatureForCurrentPage(
         rfh, blink::mojom::WebFeature::kDownloadInAdFrame);
   }
@@ -7285,9 +7314,16 @@ RenderFrameHostImpl* NavigationRequest::GetRenderFrameHost() const {
 
 NavigationRequest::AssociatedRenderFrameHostType
 NavigationRequest::GetAssociatedRFHType() const {
-  CHECK_LT(state_, READY_TO_COMMIT)
-      << "Use GetRenderFrameHost() instead when the final RenderFrameHost for "
-         "the navigation had been picked";
+  // `associated_rfh_type_` might not be accurate after the navigation had
+  // moved to the RFH. This is because if another navigation had committed and
+  // committed a new RFH that replaces the current RFH, the
+  // `associated_rfh_type_` might be stale and needs to be updated. However,
+  // we only update the value for non-pending commit navigations (i.e. the
+  // NavigationRequest owned by the FrameTreeNode). See the comments in
+  // `RenderFrameHostManager::CommitPendingIfNecessary()` for more details.
+  CHECK(state_ < READY_TO_COMMIT || state_ == WILL_FAIL_REQUEST)
+      << "Use GetRenderFrameHost() instead when the final RenderFrameHost "
+         "for the navigation has been picked";
   return associated_rfh_type_;
 }
 
@@ -8492,12 +8528,9 @@ NavigationRequest::GetRuntimeFeatureStateContext() {
 // fields from the bitfield can be computed from the browser process. This
 // function is a partial attempt at doing it.
 void NavigationRequest::ComputeDownloadPolicy() {
-  blink::NavigationDownloadPolicy& download_policy =
-      common_params_->download_policy;
-
   // [ViewSource]
   if (GetNavigationEntry() && GetNavigationEntry()->IsViewSourceMode()) {
-    download_policy.SetDisallowed(blink::NavigationDownloadType::kViewSource);
+    download_policy().SetDisallowed(blink::NavigationDownloadType::kViewSource);
   }
 
   // [Sandbox]
@@ -8506,7 +8539,7 @@ void NavigationRequest::ComputeDownloadPolicy() {
       (commit_params_->frame_policy.sandbox_flags &
        network::mojom::WebSandboxFlags::kDownloads) ==
           network::mojom::WebSandboxFlags::kDownloads) {
-    download_policy.SetDisallowed(blink::NavigationDownloadType::kSandbox);
+    download_policy().SetDisallowed(blink::NavigationDownloadType::kSandbox);
   }
 
   // TODO(arthursonzogni): Check if the following fields from the

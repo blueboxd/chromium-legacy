@@ -47,6 +47,7 @@
 #include "content/browser/indexed_db/transaction_impl.h"
 #include "ipc/ipc_channel.h"
 #include "storage/browser/blob/blob_data_handle.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key_path.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key_range.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_metadata.h"
@@ -352,9 +353,11 @@ void IndexedDBDatabase::TransactionFinished(
 
 void IndexedDBDatabase::ScheduleOpenConnection(
     IndexedDBBucketStateHandle bucket_state_handle,
-    std::unique_ptr<IndexedDBPendingConnection> connection) {
-  connection_coordinator_.ScheduleOpenConnection(std::move(bucket_state_handle),
-                                                 std::move(connection));
+    std::unique_ptr<IndexedDBPendingConnection> connection,
+    scoped_refptr<IndexedDBClientStateCheckerWrapper> client_state_checker) {
+  connection_coordinator_.ScheduleOpenConnection(
+      std::move(bucket_state_handle), std::move(connection),
+      std::move(client_state_checker));
 }
 
 void IndexedDBDatabase::ScheduleDeleteDatabase(
@@ -1716,7 +1719,8 @@ Status IndexedDBDatabase::OpenInternal() {
 
 std::unique_ptr<IndexedDBConnection> IndexedDBDatabase::CreateConnection(
     IndexedDBBucketStateHandle bucket_state_handle,
-    scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks) {
+    scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
+    scoped_refptr<IndexedDBClientStateCheckerWrapper> client_state_checker) {
   std::unique_ptr<IndexedDBConnection> connection =
       std::make_unique<IndexedDBConnection>(
           std::move(bucket_state_handle), class_factory_,
@@ -1725,7 +1729,7 @@ std::unique_ptr<IndexedDBConnection> IndexedDBDatabase::CreateConnection(
                               weak_factory_.GetWeakPtr()),
           base::BindOnce(&IndexedDBDatabase::ConnectionClosed,
                          weak_factory_.GetWeakPtr()),
-          database_callbacks);
+          database_callbacks, std::move(client_state_checker));
   connections_.insert(connection.get());
   return connection;
 }
@@ -1742,8 +1746,42 @@ void IndexedDBDatabase::SendVersionChangeToAllConnections(int64_t old_version,
                                                           int64_t new_version) {
   if (force_closing_)
     return;
-  for (const auto* connection : connections())
-    connection->callbacks()->OnVersionChange(old_version, new_version);
+  for (auto* connection : connections()) {
+    // Before invoking this method, the `IndexedDBConnectionCoordinator` had set
+    // the request state to `kPendingNoConnections`. Now the request will be
+    // blocked until all the existing connections to this database is closed.
+    // There are three possible ways for the connection to be closed:
+    // 1. If the client is already pending close, then the `VersionChange` event
+    // will be ignored and the open request will be deemed blocked until the
+    // pending close completes.
+    // 2. If the client is active, the `VersionChange` event will be enqueued
+    // and the registered event listener will be fired asynchronously. The event
+    // listener should be responsible for actively closing the IndexedDB
+    // connection. The document won't be eligible for BFCache before the
+    // connection is closed if it receives the `versionchange` event.
+    // 3. While the above two cases rely on the `VersionChange` event to be
+    // delivered to the renderer process, the third case happens purely from the
+    // IndexedDB/browser context. If the client is inactive, the `VersionChange`
+    // event will not be delivered, instead, a mojo call is sent to the browser
+    // process to disallow the activation of the inactive client, which will
+    // close the connection as part of the destruction.
+    // No matter which path it follows, the `SendVersionChangeToAllConnections`
+    // method is executed asynchronously.
+    if (base::FeatureList::IsEnabled(
+            blink::features::kAllowPageWithIDBConnectionInBFCache)) {
+      connection->RequireClientToBeActive(base::BindOnce(
+          [](base::WeakPtr<IndexedDBConnection> connection, int64_t old_version,
+             int64_t new_version, bool was_client_active) {
+            if (connection && was_client_active) {
+              connection->callbacks()->OnVersionChange(old_version,
+                                                       new_version);
+            }
+          },
+          connection->GetWeakPtr(), old_version, new_version));
+    } else {
+      connection->callbacks()->OnVersionChange(old_version, new_version);
+    }
+  }
 }
 
 void IndexedDBDatabase::ConnectionClosed(IndexedDBConnection* connection) {

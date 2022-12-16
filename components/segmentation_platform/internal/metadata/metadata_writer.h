@@ -11,6 +11,7 @@
 #include "base/memory/raw_ptr.h"
 #include "components/segmentation_platform/internal/database/ukm_types.h"
 #include "components/segmentation_platform/public/proto/model_metadata.pb.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace segmentation_platform {
 
@@ -20,8 +21,8 @@ class MetadataWriter {
   explicit MetadataWriter(proto::SegmentationModelMetadata* metadata);
   ~MetadataWriter();
 
-  MetadataWriter(MetadataWriter&) = delete;
-  MetadataWriter& operator=(MetadataWriter&) = delete;
+  MetadataWriter(const MetadataWriter&) = delete;
+  MetadataWriter& operator=(const MetadataWriter&) = delete;
 
   // Defines a feature based on UMA metric.
   struct UMAFeature {
@@ -139,6 +140,25 @@ class MetadataWriter {
   void SetDefaultSegmentationMetadataConfig(
       int min_signal_collection_length_days = 7,
       int signal_storage_length_days = 28);
+
+  // Adds a BinaryClassifier.
+  void AddOutputConfigForBinaryClassifier(float threshold,
+                                          const std::string& positive_label,
+                                          const std::string& negative_label);
+
+  // Adds a MultiClassClassifier.
+  void AddOutputConfigForMultiClassClassifier(
+      const std::vector<std::string>& class_labels,
+      int top_k_outputs,
+      absl::optional<float> threshold);
+
+  // Adds a BinnedClassifier.
+  void AddOutputConfigForBinnedClassifier(
+      const std::vector<std::pair<float, std::string>>& bins,
+      std::string underflow_label);
+
+  // Append a delay trigger for training data collection.
+  void AddDelayTrigger(uint64_t delay_sec);
 
  private:
   const raw_ptr<proto::SegmentationModelMetadata> metadata_;

@@ -621,6 +621,9 @@ void DlpFilesController::RequestCopyAccess(
     return;
   }
 
+  // TODO(http://b/262223235) check for the actual component.
+  file_access_request.set_destination_component(::dlp::SYSTEM);
+
   chromeos::DlpClient::Get()->RequestFileAccess(
       file_access_request,
       base::BindOnce(
@@ -814,6 +817,7 @@ void DlpFilesController::CheckIfLaunchAllowed(
     case apps::AppType::kStandaloneBrowser:
     case apps::AppType::kRemote:
     case apps::AppType::kBorealis:
+    case apps::AppType::kBruschetta:
     case apps::AppType::kSystemWeb:
       break;
   }

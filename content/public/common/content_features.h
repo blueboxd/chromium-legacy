@@ -81,12 +81,13 @@ CONTENT_EXPORT BASE_DECLARE_FEATURE(
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kFedCm);
 CONTENT_EXPORT extern const char kFedCmAutoSigninFieldTrialParamName[];
 CONTENT_EXPORT extern const char kFedCmIdpSignoutFieldTrialParamName[];
-CONTENT_EXPORT extern const char kFedCmIframeSupportFieldTrialParamName[];
 CONTENT_EXPORT extern const char kFedCmIdpSigninStatusFieldTrialParamName[];
 CONTENT_EXPORT extern const char
     kFedCmIdpSigninStatusMetricsOnlyFieldTrialParamName[];
+CONTENT_EXPORT BASE_DECLARE_FEATURE(kFedCmIframeSupport);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kFedCmMetricsEndpoint);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kFedCmMultipleIdentityProviders);
+CONTENT_EXPORT BASE_DECLARE_FEATURE(kFedCmUserInfo);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kFirstPartySets);
 CONTENT_EXPORT extern const base::FeatureParam<bool>
     kFirstPartySetsClearSiteDataOnChangedSets;
@@ -159,6 +160,7 @@ CONTENT_EXPORT BASE_DECLARE_FEATURE(kMojoVideoCapture);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kMojoVideoCaptureSecondary);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kMouseSubframeNoImplicitCapture);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kNavigationNetworkResponseQueue);
+CONTENT_EXPORT BASE_DECLARE_FEATURE(kNavigationRequestPreconnect);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kNetworkQualityEstimatorWebHoldback);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kNetworkServiceInProcess);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kNeverSlowMode);
@@ -213,6 +215,30 @@ CONTENT_EXPORT BASE_DECLARE_FEATURE(kSiteIsolationForGuests);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kDisableProcessReuse);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kSkipEarlyCommitPendingForCrashedFrame);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kServiceWorkerBypassFetchHandler);
+// ServiceWorkerBypassFetchHandlerStrategy provides the info how to decide if
+// the request should bypass fetch handlers or not.
+enum class ServiceWorkerBypassFetchHandlerStrategy {
+  // Use the allowlist provided by
+  // kServiceWorkerBypassFetchHandlerBypassedOrigins. If the request url's
+  // origin is in the list, fetch handlers are bypassed.
+  kAllowList,
+
+  // This option is to run the feature locally for the debugging purpose. It is
+  // used for the feature toggle in about:flags etc. It simply bypasses fetch
+  // handlers for all the main resource requests regardless of the url while the
+  // feature is enabled.
+  //
+  // This is set as a default value, but the origin trial uses a different
+  // mechanism to enable the feature per origin. When the feature is enabled by
+  // the origin trial, ServiceWorkerVersion in content/browser should contain
+  // the origin trial token. If the browser successfully confirm the token,
+  // fetch handlers are always bypassed regardless of
+  // ServiceWorkerBypassFetchHandlerStrategy.
+  kFeatureOptIn,
+};
+CONTENT_EXPORT extern const base::FeatureParam<
+    ServiceWorkerBypassFetchHandlerStrategy>
+    kServiceWorkerBypassFetchHandlerStrategy;
 enum class ServiceWorkerBypassFetchHandlerTarget {
   // Bypass fetch handlers for main resource (navigation) requests. Fetch
   // handlers will be bypassed regardless of the current ServiceWorker running
@@ -265,11 +291,13 @@ CONTENT_EXPORT BASE_DECLARE_FEATURE(kWebAssemblyDynamicTiering);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(
     kEnableExperimentalWebAssemblyStackSwitching);
 #endif  // defined(ARCH_CPU_X86_64)
+CONTENT_EXPORT BASE_DECLARE_FEATURE(kWebAssemblyGarbageCollection);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kWebAssemblyLazyCompilation);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kWebAssemblyRelaxedSimd);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kWebAssemblyTiering);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kWebAssemblyTrapHandler);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kWebAuthConditionalUI);
+CONTENT_EXPORT BASE_DECLARE_FEATURE(kWebAuthnTouchToFillCredentialSelection);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kWebBluetooth);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kWebBluetoothNewPermissionsBackend);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kWebBundles);
@@ -280,7 +308,6 @@ CONTENT_EXPORT BASE_DECLARE_FEATURE(kWebOtpBackendAuto);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kWebPayments);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kWebRtcUseGpuMemoryBufferVideoFrames);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kWebUICodeCache);
-CONTENT_EXPORT BASE_DECLARE_FEATURE(kWebUIReportOnlyTrustedTypes);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kWebUsb);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kWebXr);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kWebXrArModule);

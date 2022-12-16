@@ -23,7 +23,7 @@
 #include "remoting/base/session_options.h"
 #include "remoting/codec/webrtc_video_encoder_av1.h"
 #include "remoting/codec/webrtc_video_encoder_vpx.h"
-#include "remoting/protocol/video_channel_state_observer.h"
+#include "remoting/protocol/video_stream_event_router.h"
 #include "remoting/protocol/webrtc_video_frame_adapter.h"
 #include "third_party/webrtc/api/video_codecs/av1_profile.h"
 #include "third_party/webrtc/api/video_codecs/sdp_video_format.h"
@@ -117,10 +117,10 @@ WebrtcVideoEncoderWrapper::WebrtcVideoEncoderWrapper(
     const SessionOptions& session_options,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
-    base::WeakPtr<VideoChannelStateObserver> video_channel_state_observer)
+    base::WeakPtr<VideoStreamEventRouter> video_stream_event_router)
     : main_task_runner_(main_task_runner),
       encode_task_runner_(encode_task_runner),
-      video_channel_state_observer_(video_channel_state_observer) {
+      video_stream_event_router_(video_stream_event_router) {
   codec_type_ = webrtc::PayloadStringToCodecType(format.name);
   switch (codec_type_) {
     case webrtc::kVideoCodecVP8:
@@ -205,15 +205,6 @@ int32_t WebrtcVideoEncoderWrapper::InitEncode(
     DCHECK_EQ(1, codec_settings->VP9().numberOfSpatialLayers);
   }
 
-  // If the client has requested a specific framerate for this encoder then
-  // update the target framerate on the RtpSender for this video streams.
-  if (target_frame_rate_ != kTargetFrameRate) {
-    main_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&VideoChannelStateObserver::OnTargetFramerateChanged,
-                       video_channel_state_observer_, target_frame_rate_));
-  }
-
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
@@ -295,6 +286,20 @@ int32_t WebrtcVideoEncoderWrapper::Encode(
     // nullptr the second time.
     LOG(ERROR) << "Frame provided with missing frame-stats.";
     return WEBRTC_VIDEO_CODEC_ERROR;
+  }
+
+  if (!screen_id_.has_value()) {
+    screen_id_ = frame_stats_->screen_id;
+
+    // Now that we know which screen id this encoder is associated with, we can
+    // let that video stream know if a non-default framerate has been requested.
+    if (target_frame_rate_ != kTargetFrameRate) {
+      main_task_runner_->PostTask(
+          FROM_HERE,
+          base::BindOnce(&VideoStreamEventRouter::OnTargetFramerateChanged,
+                         video_stream_event_router_, *screen_id_,
+                         target_frame_rate_));
+    }
   }
 
   frame_stats_->encode_started_time = now;
@@ -389,14 +394,7 @@ void WebrtcVideoEncoderWrapper::SetRates(
     const RateControlParameters& parameters) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  int bitrate_kbps = parameters.bitrate.get_sum_kbps();
-  if (bitrate_kbps_ != bitrate_kbps) {
-    bitrate_kbps_ = bitrate_kbps;
-    main_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&VideoChannelStateObserver::OnTargetBitrateChanged,
-                       video_channel_state_observer_, bitrate_kbps));
-  }
+  bitrate_kbps_ = parameters.bitrate.get_sum_kbps();
 }
 
 void WebrtcVideoEncoderWrapper::OnRttUpdate(int64_t rtt_ms) {
@@ -497,15 +495,13 @@ void WebrtcVideoEncoderWrapper::OnFrameEncoded(
     frame_stats_->encode_ended_time = base::TimeTicks::Now();
     frame_stats_->rtt_estimate = rtt_estimate_;
     frame_stats_->bandwidth_estimate_kbps = bitrate_kbps_;
+    // WebrtcFrameSchedulerConstantRate cannot estimate this delay. Set it to 0
+    // so the client can still calculate the derived stats.
+    frame_stats_->send_pending_delay = base::TimeDelta();
     frame->stats = std::move(frame_stats_);
 
     frame->rtp_timestamp = rtp_timestamp_;
   }
-
-  main_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&VideoChannelStateObserver::OnFrameEncoded,
-                                video_channel_state_observer_, encode_result,
-                                frame.get()));
 
   if (encode_result != WebrtcVideoEncoder::EncodeResult::SUCCEEDED) {
     // TODO(crbug.com/1192865): Store this error and communicate it to WebRTC
@@ -547,9 +543,9 @@ void WebrtcVideoEncoderWrapper::OnFrameEncoded(
   // base::OnTaskRunnerDeleter posts the frame-deleter task to run after this
   // task has executed.
   main_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&VideoChannelStateObserver::OnEncodedFrameSent,
-                                video_channel_state_observer_, send_result,
-                                std::ref(*frame)));
+      FROM_HERE, base::BindOnce(&VideoStreamEventRouter::OnEncodedFrameSent,
+                                video_stream_event_router_, *screen_id_,
+                                send_result, std::ref(*frame)));
 }
 
 void WebrtcVideoEncoderWrapper::NotifyFrameDropped() {

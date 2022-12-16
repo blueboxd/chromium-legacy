@@ -169,7 +169,6 @@ class CategorizedWorkerPoolImpl;
 class CategorizedWorkerPoolJob;
 class CategorizedWorkerPool;
 class DiskDataAllocator;
-class H264Encoder;
 class IdentifiabilityActiveSampler;
 class RTCVideoDecoderAdapter;
 class RTCVideoEncoder;
@@ -177,7 +176,7 @@ class SourceStream;
 class VideoFrameResourceProvider;
 class WebRtcVideoFrameAdapter;
 class LegacyWebRtcVideoFrameAdapter;
-class VpxEncoder;
+class VideoTrackRecorderImplContextProvider;
 class WorkerThread;
 namespace scheduler {
 class NonMainThreadImpl;
@@ -256,6 +255,9 @@ class FakeDriveService;
 namespace device {
 class UsbContext;
 }
+namespace discardable_memory {
+class ClientDiscardableSharedMemoryManager;
+}
 namespace disk_cache {
 class BackendImpl;
 class InFlightIO;
@@ -303,6 +305,9 @@ class PaintCanvasVideoRenderer;
 }  // namespace media
 namespace memory_instrumentation {
 class OSMetrics;
+}
+namespace memory_pressure {
+class UserLevelMemoryPressureSignalGenerator;
 }
 namespace metrics {
 class AndroidMetricsServiceClient;
@@ -589,6 +594,7 @@ class BASE_EXPORT ScopedAllowBlocking {
   friend class ios_web_view::WebViewBrowserState;
   friend class media::FileVideoCaptureDeviceFactory;
   friend class memory_instrumentation::OSMetrics;
+  friend class memory_pressure::UserLevelMemoryPressureSignalGenerator;
   friend class metrics::AndroidMetricsServiceClient;
   friend class metrics::CleanExitBeacon;
   friend class module_installer::ScopedAllowModulePakLoad;
@@ -706,10 +712,9 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
   friend class base::SimpleThread;
   friend class blink::CategorizedWorkerPoolImpl;
   friend class blink::CategorizedWorkerPoolJob;
-  friend class blink::H264Encoder;
   friend class blink::IdentifiabilityActiveSampler;
   friend class blink::SourceStream;
-  friend class blink::VpxEncoder;
+  friend class blink::VideoTrackRecorderImplContextProvider;
   friend class blink::WorkerThread;
   friend class blink::scheduler::NonMainThreadImpl;
   friend class chrome_cleaner::ResetShortcutsComponent;
@@ -824,6 +829,8 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
   friend class content::
       BrowserGpuChannelHostFactory;                 // http://crbug.com/125248
   friend class dbus::Bus;                           // http://crbug.com/125222
+  friend class discardable_memory::
+      ClientDiscardableSharedMemoryManager;         // http://crbug.com/1396355
   friend class disk_cache::BackendImpl;             // http://crbug.com/74623
   friend class disk_cache::InFlightIO;              // http://crbug.com/74623
   friend class midi::TaskService;                   // https://crbug.com/796830

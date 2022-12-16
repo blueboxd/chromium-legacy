@@ -4891,6 +4891,11 @@ interface IdentityCredential : Credential
     attribute @@toStringTag
     getter token
     method constructor
+interface IdentityProvider
+    static method login
+    static method logout
+    attribute @@toStringTag
+    method constructor
 interface IdleDeadline
     attribute @@toStringTag
     getter didTimeout
@@ -5253,6 +5258,7 @@ interface MLGraphBuilder
     method relu
     method resample2d
     method reshape
+    method sigmoid
     method softmax
     method sub
 interface MLModelLoader
@@ -6610,6 +6616,7 @@ interface PerformanceEntry
     getter entryType
     getter name
     getter navigationId
+    getter source
     getter startTime
     method constructor
     method toJSON

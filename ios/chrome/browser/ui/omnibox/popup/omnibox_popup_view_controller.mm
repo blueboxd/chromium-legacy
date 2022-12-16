@@ -122,6 +122,11 @@ const CGFloat kHeaderPadding = 2.0f;
 /// updated.
 @property(nonatomic, assign) BOOL shouldHideCarousel;
 
+/// Cached `tableView.contentSize.height` used in `viewDidLayoutSubviews` to
+/// avoid infinite loop and redudant computation when updating table view's
+/// content inset.
+@property(nonatomic, assign) CGFloat cachedContentHeight;
+
 @end
 
 @implementation OmniboxPopupViewController
@@ -131,6 +136,7 @@ const CGFloat kHeaderPadding = 2.0f;
     _forwardsScrollEvents = YES;
     _preselectedMatchGroupIndex = 0;
     _visibleSuggestionCount = 0;
+    _cachedContentHeight = 0;
     NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
     if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
       // The iPad keyboard can cover some of the rows of the scroll view. The
@@ -171,7 +177,7 @@ const CGFloat kHeaderPadding = 2.0f;
   }
   UITableViewStyle style = IsOmniboxActionsVisualTreatment2()
                                ? UITableViewStyleInsetGrouped
-                               : UITableViewStylePlain;
+                               : UITableViewStyleGrouped;
   self.tableView = [[SelfSizingTableView alloc] initWithFrame:CGRectZero
                                                         style:style];
   self.tableView.delegate = self;
@@ -285,6 +291,13 @@ const CGFloat kHeaderPadding = 2.0f;
   [super viewWillDisappear:animated];
   UMA_HISTOGRAM_MEDIUM_TIMES("MobileOmnibox.PopupOpenDuration",
                              base::TimeTicks::Now() - self.viewAppearanceTime);
+}
+
+- (void)viewDidLayoutSubviews {
+  if (self.tableView.contentSize.height != self.cachedContentHeight) {
+    self.cachedContentHeight = self.tableView.contentSize.height;
+    [self updateContentInsetForKeyboard];
+  }
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size
@@ -648,6 +661,12 @@ const CGFloat kHeaderPadding = 2.0f;
     return FLT_MIN;
   }
 
+  // When most visited tiles are enabled, only allow section separator under the
+  // verbatim suggestion.
+  if (base::FeatureList::IsEnabled(omnibox::kMostVisitedTiles) && section > 0) {
+    return FLT_MIN;
+  }
+
   return IsOmniboxActionsVisualTreatment1() ? kFooterHeightVariation1
                                             : kFooterHeightVariation2;
 }
@@ -887,15 +906,20 @@ const CGFloat kHeaderPadding = 2.0f;
   }
 }
 
-/// Adjust the inset on the table view to prevent keyboard from overlapping the
-/// text.
+/// Adjust the inset on the table view to allow user to scroll to suggestions
+/// below the keyboard.
 - (void)updateContentInsetForKeyboard {
+  // Disable content inset update when scrolling dismisses the keyboard.
+  if (base::FeatureList::IsEnabled(kEnableSuggestionsScrollingOnIPad) ||
+      self.tableView.contentSize.height <= 0) {
+    return;
+  }
   UIWindow* currentWindow = self.tableView.window;
   CGRect absoluteRect =
       [self.tableView convertRect:self.tableView.bounds
                 toCoordinateSpace:currentWindow.coordinateSpace];
   CGFloat windowHeight = CGRectGetHeight(currentWindow.bounds);
-  CGFloat bottomInset = windowHeight - self.tableView.contentSize.height -
+  CGFloat bottomInset = windowHeight - self.tableView.visibleSize.height -
                         self.keyboardHeight - absoluteRect.origin.y -
                         self.bottomPadding - self.topPadding;
   bottomInset = MAX(self.bottomPadding, -bottomInset);
@@ -964,8 +988,7 @@ const CGFloat kHeaderPadding = 2.0f;
 - (void)keyboardDidShow:(NSNotification*)notification {
   self.keyboardHeight =
       [KeyboardObserverHelper keyboardHeightInWindow:self.tableView.window];
-  if (self.tableView.contentSize.height > 0)
-    [self updateContentInsetForKeyboard];
+  [self updateContentInsetForKeyboard];
 }
 
 - (void)keyboardDidChangeFrame:(NSNotification*)notification {

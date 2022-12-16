@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/dips/dips_database.h"
 #include "chrome/browser/dips/dips_state.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 
 class GURL;
 
@@ -29,8 +30,10 @@ class DIPSStorage {
 
   void RemoveEvents(base::Time delete_begin,
                     base::Time delete_end,
-                    const UrlPredicate& predicate,
+                    network::mojom::ClearDataFilterPtr filter,
                     const DIPSEventRemovalType type);
+
+  void RemoveRows(const std::vector<std::string>& sites);
 
   // DIPS Helper Method Impls --------------------------------------------------
 
@@ -43,29 +46,13 @@ class DIPSStorage {
   // Record that |url| redirected the user without writing to storage.
   void RecordStatelessBounce(const GURL& url, base::Time time);
 
-  // Storage querying Methods
-  // -----------------------------------------------------------
-  // Returns all sites that did a bounce after |range_start| with their last
-  // user interaction occurring before |last_interaction|.
-  std::vector<std::string> GetSitesThatBounced(
-      base::Time range_start,
-      base::Time last_interaction) const;
-
-  // Returns all sites that did a stateful bounce after |range_start| with their
-  // last user interaction occurring before |last_interaction|.
-  std::vector<std::string> GetSitesThatBouncedWithState(
-      base::Time range_start,
-      base::Time last_interaction) const;
-
-  // Returns all sites which use storage after |range_start| with their last
-  // user interaction occurring before |last_interaction|.
-  std::vector<std::string> GetSitesThatUsedStorage(
-      base::Time range_start,
-      base::Time last_interaction) const;
-
   // Utility Methods -----------------------------------------------------------
 
   static size_t SetPrepopulateChunkSizeForTesting(size_t size);
+  void SetClockForTesting(base::Clock* clock) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    db_->SetClockForTesting(clock);
+  }
 
   // For each site in |sites|, set the interaction and storage timestamps to
   // |time|. Note this may run asynchronously -- the DB is not guaranteed to be

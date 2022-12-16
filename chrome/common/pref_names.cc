@@ -2330,6 +2330,11 @@ const char kIsolatedWebAppInstallForceList[] =
     "profile.isolated_web_app.install.forcelist";
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
+#if BUILDFLAG(IS_WIN)
+// The integer value of the CloudAPAuthEnabled policy.
+const char kCloudApAuthEnabled[] = "auth.cloud_ap_auth.enabled";
+#endif  // BUILDFLAG(IS_WIN)
+
 // Boolean that specifies whether to enable revocation checking (best effort)
 // by default.
 const char kCertRevocationCheckingEnabled[] = "ssl.rev_checking.enabled";
@@ -3133,9 +3138,6 @@ const char kLacrosAccessibilityVirtualKeyboardEnabled[] =
 const char kAllowDinosaurEasterEgg[] = "allow_dinosaur_easter_egg";
 
 #if BUILDFLAG(IS_ANDROID)
-// Whether the update menu item was clicked. Used to facilitate logging whether
-// Chrome was updated after the menu item is clicked.
-const char kClickedUpdateMenuItem[] = "omaha.clicked_update_menu_item";
 // The latest version of Chrome available when the user clicked on the update
 // menu item.
 const char kLatestVersionWhenClickedUpdateMenuItem[] =
@@ -3473,13 +3475,21 @@ const char kShowCaretBrowsingDialog[] =
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enum pref indicating how to launch the Lacros browser. It is managed by
-// LacrosAvailability policy can have one of the following values:
+// LacrosAvailability policy and can have one of the following values:
 // 0: User choice (default value).
 // 1: Lacros is disallowed.
 // 2: Lacros is enabled but not the pimary browser.
 // 3: Lacros is enabled as the primary browser.
 // 4: Lacros is the only available browser.
 const char kLacrosLaunchSwitch[] = "lacros_launch_switch";
+
+// Enum pref indicating which Lacros browser to launch: rootfs or stateful. It
+// is managed by LacrosSelection policy and can have one of the following
+// values:
+// 0: User choice (default value).
+// 1: Always load rootfs Lacros.
+// 2: Always load stateful Lacros.
+const char kLacrosSelection[] = "lacros_selection";
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

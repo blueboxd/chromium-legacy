@@ -56,6 +56,8 @@ bool IsSupportedAccessPoint(signin_metrics::AccessPoint access_point) {
     case signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_TOP_PROMO:
     case signin_metrics::AccessPoint::
         ACCESS_POINT_POST_DEVICE_RESTORE_SIGNIN_PROMO:
+    case signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_CARD_MENU_PROMO:
+    case signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_BOTTOM_PROMO:
       return true;
     case signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE:
     case signin_metrics::AccessPoint::ACCESS_POINT_NTP_LINK:
@@ -91,6 +93,7 @@ bool IsSupportedAccessPoint(signin_metrics::AccessPoint access_point) {
     case signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS_SYNC_OFF_ROW:
     case signin_metrics::AccessPoint::
         ACCESS_POINT_POST_DEVICE_RESTORE_BACKGROUND_SIGNIN:
+    case signin_metrics::AccessPoint::ACCESS_POINT_NTP_SIGNED_OUT_ICON:
     case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
       return false;
   }
@@ -155,6 +158,9 @@ void RecordImpressionsTilSigninButtonsHistogramForAccessPoint(
         ACCESS_POINT_POST_DEVICE_RESTORE_SIGNIN_PROMO:
     case signin_metrics::AccessPoint::
         ACCESS_POINT_POST_DEVICE_RESTORE_BACKGROUND_SIGNIN:
+    case signin_metrics::AccessPoint::ACCESS_POINT_NTP_SIGNED_OUT_ICON:
+    case signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_CARD_MENU_PROMO:
+    case signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_BOTTOM_PROMO:
     case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
       NOTREACHED() << "Unexpected value for access point "
                    << static_cast<int>(access_point);
@@ -221,6 +227,9 @@ void RecordImpressionsTilDismissHistogramForAccessPoint(
         ACCESS_POINT_POST_DEVICE_RESTORE_SIGNIN_PROMO:
     case signin_metrics::AccessPoint::
         ACCESS_POINT_POST_DEVICE_RESTORE_BACKGROUND_SIGNIN:
+    case signin_metrics::AccessPoint::ACCESS_POINT_NTP_SIGNED_OUT_ICON:
+    case signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_CARD_MENU_PROMO:
+    case signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_BOTTOM_PROMO:
     case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
       NOTREACHED() << "Unexpected value for access point "
                    << static_cast<int>(access_point);
@@ -287,6 +296,9 @@ void RecordImpressionsTilXButtonHistogramForAccessPoint(
         ACCESS_POINT_POST_DEVICE_RESTORE_SIGNIN_PROMO:
     case signin_metrics::AccessPoint::
         ACCESS_POINT_POST_DEVICE_RESTORE_BACKGROUND_SIGNIN:
+    case signin_metrics::AccessPoint::ACCESS_POINT_NTP_SIGNED_OUT_ICON:
+    case signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_CARD_MENU_PROMO:
+    case signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_BOTTOM_PROMO:
     case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
       NOTREACHED() << "Unexpected value for access point "
                    << static_cast<int>(access_point);
@@ -342,6 +354,9 @@ const char* DisplayedCountPreferenceKey(
         ACCESS_POINT_POST_DEVICE_RESTORE_SIGNIN_PROMO:
     case signin_metrics::AccessPoint::
         ACCESS_POINT_POST_DEVICE_RESTORE_BACKGROUND_SIGNIN:
+    case signin_metrics::AccessPoint::ACCESS_POINT_NTP_SIGNED_OUT_ICON:
+    case signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_CARD_MENU_PROMO:
+    case signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_BOTTOM_PROMO:
     case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
       return nullptr;
   }
@@ -395,6 +410,9 @@ const char* AlreadySeenSigninViewPreferenceKey(
         ACCESS_POINT_POST_DEVICE_RESTORE_SIGNIN_PROMO:
     case signin_metrics::AccessPoint::
         ACCESS_POINT_POST_DEVICE_RESTORE_BACKGROUND_SIGNIN:
+    case signin_metrics::AccessPoint::ACCESS_POINT_NTP_SIGNED_OUT_ICON:
+    case signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_CARD_MENU_PROMO:
+    case signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_BOTTOM_PROMO:
     case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
       return nullptr;
   }
@@ -804,7 +822,11 @@ const char* AlreadySeenSigninViewPreferenceKey(
 - (void)signinPromoViewDidTapSigninWithNewAccount:
     (SigninPromoView*)signinPromoView {
   DCHECK(!self.identity);
-  DCHECK(self.signinPromoViewVisible);
+  // The promo on top of the feed is only logged as visible when most of it can
+  // be seen, so it can be used without `self.signinPromoViewVisible`.
+  DCHECK(self.signinPromoViewVisible ||
+         self.accessPoint ==
+             signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_TOP_PROMO);
   DCHECK(!self.invalidClosedOrNeverVisible);
   [self sendImpressionsTillSigninButtonsHistogram];
   // On iOS, the promo does not have a button to add and account when there is
@@ -841,8 +863,12 @@ const char* AlreadySeenSigninViewPreferenceKey(
 }
 
 - (void)signinPromoViewCloseButtonWasTapped:(SigninPromoView*)view {
-  DCHECK(self.signinPromoViewVisible);
   DCHECK(!self.invalidClosedOrNeverVisible);
+  // The promo on top of the feed is only logged as visible when most of it can
+  // be seen, so it can be dismissed without `self.signinPromoViewVisible`.
+  DCHECK(self.signinPromoViewVisible ||
+         self.accessPoint ==
+             signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_TOP_PROMO);
   self.signinPromoViewState = ios::SigninPromoViewState::Closed;
   const char* alreadySeenSigninViewPreferenceKey =
       AlreadySeenSigninViewPreferenceKey(self.accessPoint);

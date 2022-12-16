@@ -2,18 +2,37 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {AcceleratorInfo, AcceleratorState, AcceleratorType} from 'chrome://shortcut-customization/js/shortcut_types.js';
+import {AcceleratorState, AcceleratorType, DefaultAcceleratorInfo, TextAcceleratorInfo, TextAcceleratorPart} from 'chrome://shortcut-customization/js/shortcut_types.js';
+
 
 export function createDefaultAcceleratorInfo(
     modifier: number, keycode: number, keyDisplay: string,
-    locked = false): AcceleratorInfo {
+    locked = false): DefaultAcceleratorInfo {
   return {
-    accelerator: {
-      modifiers: modifier,
-      keyCode: keycode,
+    layoutProperties: {
+      defaultAccelerator: {
+        keyDisplay: keyDisplay,
+        accelerator: {
+          modifiers: modifier,
+          keyCode: keycode,
+        },
+      },
     },
-    keyDisplay: keyDisplay,
     locked: locked,
+    state: AcceleratorState.kEnabled,
+    type: AcceleratorType.kDefault,
+  };
+}
+
+export function createTextAcceleratorInfo(
+    parts: TextAcceleratorPart[], locked = false): TextAcceleratorInfo {
+  return {
+    layoutProperties: {
+      textAccelerator: {
+        textAccelerator: parts,
+      },
+    },
+    locked,
     state: AcceleratorState.kEnabled,
     type: AcceleratorType.kDefault,
   };
@@ -21,13 +40,17 @@ export function createDefaultAcceleratorInfo(
 
 export function createUserAcceleratorInfo(
     modifier: number, keycode: number, keyDisplay: string,
-    locked = false): AcceleratorInfo {
+    locked = false): DefaultAcceleratorInfo {
   return {
-    accelerator: {
-      modifiers: modifier,
-      keyCode: keycode,
+    layoutProperties: {
+      defaultAccelerator: {
+        keyDisplay: keyDisplay,
+        accelerator: {
+          modifiers: modifier,
+          keyCode: keycode,
+        },
+      },
     },
-    keyDisplay: keyDisplay,
     locked: locked,
     state: AcceleratorState.kEnabled,
     type: AcceleratorType.kUser,

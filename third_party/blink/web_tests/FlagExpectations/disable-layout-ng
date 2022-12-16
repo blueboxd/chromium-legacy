@@ -11,7 +11,6 @@
 # Tests that fail in legacy but pass in NG
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 external/wpt/html/semantics/forms/the-selectmenu-element/selectmenu-option-arbitrary-content-displayed.tentative.html [ Failure ]
 crbug.com/626703 external/wpt/fullscreen/api/document-exit-fullscreen-nested-in-iframe.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-sizing/aspect-ratio/replaced-element-039.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-sizing/aspect-ratio/replaced-element-040.html [ Failure ]
@@ -21,7 +20,6 @@ crbug.com/626703 external/wpt/geolocation-API/enabled-by-permission-policy-attri
 crbug.com/626703 external/wpt/geolocation-API/enabled-by-permissions-policy.https.sub.html [ Timeout ]
 crbug.com/626703 external/wpt/geolocation-API/enabled-on-self-origin-by-permissions-policy.https.sub.html [ Timeout ]
 crbug.com/626703 external/wpt/webxr/webxr_feature_policy.https.html [ Timeout ]
-crbug.com/626703 external/wpt/webxr/xrSession_requestReferenceSpace_features.https.html [ Timeout ]
 crbug.com/626703 external/wpt/webxr/xr_viewport_scale.https.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-multicol/relative-child-overflowing-container.html [ Failure ]
 crbug.com/626703 external/wpt/html/user-activation/consumption-crossorigin.sub.tentative.html [ Failure Timeout ]
@@ -2177,6 +2175,9 @@ external/wpt/html/semantics/popovers/popover-anchor-multicol-display.tentative.h
 external/wpt/html/semantics/popovers/popover-anchor-scroll-display.tentative.html [ Skip ]
 external/wpt/html/semantics/popovers/popover-anchor-nested-display.tentative.html [ Skip ]
 
+# HTML <selectmenu> depends on CSS Anchor Positioning
+external/wpt/html/semantics/forms/the-selectmenu-element/* [ Skip ]
+
 crbug.com/1303102 external/wpt/css/css-images/object-view-box* [ Skip ]
 
 crbug.com/1303102 virtual/view-transition/external/wpt/css/css-view-transitions/new-content-with-overflow-zoomed.html [ Skip ]
@@ -2191,6 +2192,13 @@ crbug.com/1321217 virtual/view-transition-wide-gamut/external/wpt/css/css-view-t
 crbug.com/1321217 virtual/view-transition/external/wpt/css/css-view-transitions/inline-child-with-filter.html [ Skip ]
 crbug.com/1321217 virtual/view-transition-wide-gamut/external/wpt/css/css-view-transitions/inline-child-with-filter.html [ Skip ]
 crbug.com/1321217 virtual/view-transition/external/wpt/css/css-view-transitions/element-with-overflow.html [ Skip ]
+
+crbug.com/1321217 virtual/view-transition-wide-gamut/external/wpt/css/css-view-transitions/scroller.html [ Skip ]
+crbug.com/1321217 virtual/view-transition/external/wpt/css/css-view-transitions/scroller.html [ Skip ]
+crbug.com/1321217 virtual/view-transition-wide-gamut/external/wpt/css/css-view-transitions/scroller-child.html [ Skip ]
+crbug.com/1321217 virtual/view-transition/external/wpt/css/css-view-transitions/scroller-child.html [ Skip ]
+crbug.com/1321217 virtual/view-transition-wide-gamut/external/wpt/css/css-view-transitions/scroller-child-abspos.html [ Skip ]
+crbug.com/1321217 virtual/view-transition/external/wpt/css/css-view-transitions/scroller-child-abspos.html [ Skip ]
 
 crbug.com/1303102 virtual/view-transition-wide-gamut/external/wpt/css/css-view-transitions/old-content-captures-different-size.html [ Skip ]
 crbug.com/1303102 virtual/view-transition-wide-gamut/external/wpt/css/css-view-transitions/new-content-captures-different-size.html [ Skip ]
@@ -2243,6 +2251,9 @@ crbug.com/591099 fast/css3-text/css3-text-decoration/text-underline-position/tex
 crbug.com/591099 editing/selection/paint-hyphen.html [ Failure Pass ]
 
 crbug.com/1012289 external/wpt/css/css-lists/list-style-type-string-005b.html [ Failure ]
+
+# baseline-source not implemented in legacy.
+crbug.com/591099 external/wpt/css/css-inline/baseline-source/* [ Skip ]
 
 # The initial-letter implements only in LayoutNG.
 crbug.com/1276900 external/wpt/css/css-inline/initial-letter/* [ Skip ]

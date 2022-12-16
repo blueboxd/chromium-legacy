@@ -52,8 +52,8 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 
 <histogram name="BackForwardCache.AllSites.EvictedAfterDocumentRestoredReason"
     enum="BackForwardCacheEvictedAfterDocumentRestoredReason"
-    expires_after="2022-10-01">
-  <owner>hajimehoshi@chromium.org</owner>
+    expires_after="2023-06-13">
+  <owner>fergal@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
     Records the reason why the page is evicted from the back-forward cache but
@@ -67,8 +67,8 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="BackForwardCache.AllSites.HistoryNavigationOutcome"
-    enum="BackForwardCacheHistoryNavigationOutcome" expires_after="2023-04-23">
-  <owner>hajimehoshi@chromium.org</owner>
+    enum="BackForwardCacheHistoryNavigationOutcome" expires_after="2023-06-30">
+  <owner>fergal@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
     When navigating back to a page in the session history, this records whether
@@ -81,8 +81,8 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 
 <histogram
     name="BackForwardCache.AllSites.HistoryNavigationOutcome.BlocklistedFeature"
-    enum="WebSchedulerTrackedFeature" expires_after="2023-04-30">
-  <owner>hajimehoshi@chromium.org</owner>
+    enum="WebSchedulerTrackedFeature" expires_after="2023-06-30">
+  <owner>fergal@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
     When navigating back to a page in the session history, this records what
@@ -98,8 +98,8 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 <histogram
     name="BackForwardCache.AllSites.HistoryNavigationOutcome.BrowsingInstanceNotSwappedReason"
     enum="BackForwardCacheBrowsingInstanceNotSwappedReason"
-    expires_after="2023-05-07">
-  <owner>hajimehoshi@chromium.org</owner>
+    expires_after="2023-06-30">
+  <owner>fergal@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
     When navigating back to a page in the session history and the
@@ -134,8 +134,8 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 
 <histogram
     name="BackForwardCache.AllSites.HistoryNavigationOutcome.NotRestoredReason"
-    enum="BackForwardCacheNotRestoredReason" expires_after="2023-04-30">
-  <owner>hajimehoshi@chromium.org</owner>
+    enum="BackForwardCacheNotRestoredReason" expires_after="2023-06-30">
+  <owner>fergal@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
     When navigating back to a page in the session history, record why it wasn't
@@ -164,8 +164,8 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 
 <histogram name="BackForwardCache.EvictedAfterDocumentRestoredReason"
     enum="BackForwardCacheEvictedAfterDocumentRestoredReason"
-    expires_after="2023-04-23">
-  <owner>hajimehoshi@chromium.org</owner>
+    expires_after="2023-06-30">
+  <owner>fergal@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
     Records the reason why the page is evicted from the back-forward cache but
@@ -190,8 +190,8 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="BackForwardCache.Eviction.TimeUntilProcessKilled" units="ms"
-    expires_after="2022-10-01">
-  <owner>hajimehoshi@chromium.org</owner>
+    expires_after="2023-06-30">
+  <owner>fergal@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
     Records the time duration between the last time when the entry goes to the
@@ -234,8 +234,8 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="BackForwardCache.HistoryNavigationOutcome"
-    enum="BackForwardCacheHistoryNavigationOutcome" expires_after="2022-04-17">
-  <owner>hajimehoshi@chromium.org</owner>
+    enum="BackForwardCacheHistoryNavigationOutcome" expires_after="2023-06-30">
+  <owner>fergal@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
     When navigating back to a page in the session history, this records whether
@@ -248,8 +248,8 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="BackForwardCache.HistoryNavigationOutcome.BlocklistedFeature"
-    enum="WebSchedulerTrackedFeature" expires_after="2023-04-16">
-  <owner>hajimehoshi@chromium.org</owner>
+    enum="WebSchedulerTrackedFeature" expires_after="2023-06-30">
+  <owner>fergal@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
     When navigating back to a page in the session history, this records what
@@ -266,8 +266,8 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 <histogram
     name="BackForwardCache.HistoryNavigationOutcome.BrowsingInstanceNotSwappedReason"
     enum="BackForwardCacheBrowsingInstanceNotSwappedReason"
-    expires_after="2023-05-07">
-  <owner>hajimehoshi@chromium.org</owner>
+    expires_after="2023-06-30">
+  <owner>fergal@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
     When navigating back to a page in the session history and the
@@ -283,9 +283,8 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 <histogram
     name="BackForwardCache.HistoryNavigationOutcome.DisabledForRenderFrameHostReason2"
     enum="BackForwardCacheDisabledForRenderFrameHostReason2"
-    expires_after="2023-04-16">
-  <owner>carlscab@chromium.org</owner>
-  <owner>hajimehoshi@chromium.org</owner>
+    expires_after="2023-06-30">
+  <owner>fergal@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
     For history navigations, records the reason passed to
@@ -303,9 +302,8 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 
 <histogram
     name="BackForwardCache.HistoryNavigationOutcome.DisallowActivationReason"
-    enum="InactiveFrameDisallowActivationReason" expires_after="2021-11-30">
-  <owner>carlscab@chromium.org</owner>
-  <owner>hajimehoshi@chromium.org</owner>
+    enum="InactiveFrameDisallowActivationReason" expires_after="2023-06-30">
+  <owner>fergal@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
     For history navigations, records the reason passed to
@@ -342,8 +340,8 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="BackForwardCache.HistoryNavigationOutcome.NotRestoredReason"
-    enum="BackForwardCacheNotRestoredReason" expires_after="2023-05-07">
-  <owner>hajimehoshi@chromium.org</owner>
+    enum="BackForwardCacheNotRestoredReason" expires_after="2023-06-30">
+  <owner>fergal@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
     When navigating back to a page in the session history, record why it wasn't
@@ -455,7 +453,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 <histogram
     name="BackForwardCache.UnexpectedRendererToBrowserMessage.InterfaceName"
     enum="MojoInterfaceName" expires_after="2023-05-07">
-  <owner>carlscab@google.com</owner>
+  <owner>fergal@google.com</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
     Hash (base::HashMetricName) of a mojo interface name.
@@ -506,7 +504,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
   <summary>Whether the back-forward navigation was served from cache.</summary>
 </histogram>
 
-<histogram name="Navigation.BlobUrl" enum="Boolean" expires_after="M111">
+<histogram name="Navigation.BlobUrl" enum="Boolean" expires_after="2023-06-11">
   <owner>jkokatsu@google.com</owner>
   <owner>chrome-security-owp-team@google.com</owner>
   <summary>
@@ -691,7 +689,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.EngagementTime.Ratio" units="%"
-    expires_after="2023-03-19">
+    expires_after="2023-06-11">
   <owner>estark@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
   <summary>
@@ -701,7 +699,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.GetFrameHostForNavigation.Duration" units="ms"
-    expires_after="2023-01-28">
+    expires_after="2023-06-11">
   <owner>peilinwang@google.com</owner>
   <owner>woa-performance-bugs+jank@google.com</owner>
   <summary>
@@ -806,7 +804,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.IsNavigationSameSite.Duration" units="ms"
-    expires_after="2023-01-28">
+    expires_after="2023-06-11">
   <owner>peilinwang@google.com</owner>
   <owner>woa-performance-bugs+jank@google.com</owner>
   <summary>
@@ -1586,7 +1584,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 
 <histogram
     name="NavigationSuggestion.GetDomainInfoDelayBeforeAllowingNavigation"
-    units="ms" expires_after="2023-01-15">
+    units="ms" expires_after="2023-06-15">
   <owner>meacer@chromium.org</owner>
   <owner>blundell@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
@@ -1602,7 +1600,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 
 <histogram
     name="NavigationSuggestion.IsLookalikeUrlDelayBeforeAllowingNavigation"
-    units="ms" expires_after="2023-01-15">
+    units="ms" expires_after="2023-06-15">
   <owner>meacer@chromium.org</owner>
   <owner>blundell@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
@@ -1618,7 +1616,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 
 <histogram
     name="NavigationSuggestion.PerformChecksDelayBeforeAllowingNavigation"
-    units="ms" expires_after="2023-01-15">
+    units="ms" expires_after="2023-06-15">
   <owner>meacer@chromium.org</owner>
   <owner>blundell@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
@@ -1753,7 +1751,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 
 <histogram
     name="Prerender.Experimental.DefaultSearchEngine.SearchTermExtractorCorrectness"
-    enum="Boolean" expires_after="2023-02-01">
+    enum="Boolean" expires_after="2023-06-11">
   <owner>lingqi@chromium.org</owner>
   <owner>chrome-prerendering@google.com</owner>
   <summary>

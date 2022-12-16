@@ -31,6 +31,11 @@
 #include "ui/views/widget/any_widget_observer.h"
 #include "ui/views/widget/widget.h"
 
+#if BUILDFLAG(IS_WIN)
+#include "base/base_paths_win.h"
+#include "base/test/scoped_path_override.h"
+#endif  // BUILDFLAG(OS_WIN)
+
 using web_app::AppId;
 using GetAppsCallback =
     base::OnceCallback<void(std::vector<app_home::mojom::AppInfoPtr>)>;
@@ -207,7 +212,7 @@ class AppHomePageHandlerTest : public InProcessBrowserTest {
     scoped_refptr<extensions::Extension> extension =
         extensions::Extension::Create(
             base::FilePath(), extensions::mojom::ManifestLocation::kUnpacked,
-            manifest, 0, &error);
+            manifest.GetDict(), 0, &error);
 
     extension_service()->AddExtension(extension.get());
     return extension;
@@ -250,6 +255,15 @@ class AppHomePageHandlerTest : public InProcessBrowserTest {
 
   content::TestWebUI test_web_ui_;
   testing::StrictMock<MockAppHomePage> page_;
+#if BUILDFLAG(IS_WIN)
+  // This prevents SetRunOnOsLoginMode from leaving shortcuts in the Windows
+  // startup directory that cause Chrome to get launched when Windows starts on
+  // a bot. It needs to be in the class so that the override lasts until the
+  // test object is destroyed, because tasks can keep running after the test
+  // method finishes.
+  // See https://crbug.com/1239809
+  base::ScopedPathOverride override_user_startup_{base::DIR_USER_STARTUP};
+#endif  // BUILDFLAG(IS_WIN)
 };
 
 MATCHER_P(MatchAppName, expected_app_name, "") {
@@ -453,7 +467,7 @@ IN_PROC_BROWSER_TEST_F(AppHomePageHandlerTest, SetRunOnOsLoginMode) {
   loop.Run();
   EXPECT_EQ(web_app::RunOnOsLoginMode::kWindowed,
             web_app::WebAppProvider::GetForWebApps(profile())
-                ->registrar()
+                ->registrar_unsafe()
                 .GetAppRunOnOsLoginMode(installed_app_id)
                 .value);
 }

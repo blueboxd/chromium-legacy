@@ -20,7 +20,7 @@ source_set("verify_custom_webkit") {
   deps = [ "//base" ]
 }
 
-source_set("hardware_keyboarr_support") {
+source_set("hardware_keyboard_support") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
@@ -67,6 +67,19 @@ source_set("embedded_test_server_support") {
     "embedded_test_server_handlers.cc",
     "embedded_test_server_handlers.h",
   ]
+}
+
+source_set("system_alert_handler") {
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
+  testonly = true
+  sources = [
+    "system_alert_handler.h",
+    "system_alert_handler.mm",
+  ]
+  deps = [ "//base/test:test_support" ]
 }
 
 source_set("ocmock_support") {

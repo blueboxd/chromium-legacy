@@ -7,9 +7,12 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/component_export.h"
 #include "build/build_config.h"
+#include "printing/buildflags/buildflags.h"
 #include "printing/mojom/print.mojom.h"
 #include "printing/page_range.h"
 #include "printing/page_setup.h"
@@ -37,7 +40,7 @@ mojom::ColorModel ColorModeToColorModel(int color_mode);
 COMPONENT_EXPORT(PRINTING)
 absl::optional<bool> IsColorModelSelected(mojom::ColorModel color_model);
 
-#if defined(USE_CUPS)
+#if BUILDFLAG(USE_CUPS)
 // Get the color model setting name and value for the `color_model`.
 COMPONENT_EXPORT(PRINTING)
 void GetColorModelForModel(mojom::ColorModel color_model,
@@ -49,7 +52,7 @@ void GetColorModelForModel(mojom::ColorModel color_model,
 COMPONENT_EXPORT(PRINTING)
 std::string GetIppColorModelForModel(mojom::ColorModel color_model);
 #endif
-#endif  // defined(USE_CUPS)
+#endif  // BUILDFLAG(USE_CUPS)
 
 class COMPONENT_EXPORT(PRINTING) PrintSettings {
  public:
@@ -254,6 +257,13 @@ class COMPONENT_EXPORT(PRINTING) PrintSettings {
 
   void set_pin_value(const std::string& pin_value) { pin_value_ = pin_value; }
   const std::string& pin_value() const { return pin_value_; }
+
+  void set_client_infos(std::vector<mojom::IppClientInfo> client_infos) {
+    client_infos_ = std::move(client_infos);
+  }
+  const std::vector<mojom::IppClientInfo>& client_infos() const {
+    return client_infos_;
+  }
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
   // Cookie generator. It is used to initialize `PrintedDocument` with its
@@ -358,7 +368,11 @@ class COMPONENT_EXPORT(PRINTING) PrintSettings {
 
   // PIN code entered by the user.
   std::string pin_value_;
-#endif
+
+  // Value of the 'client-info' that will be sent to the printer.
+  // Should only be set for printers that support 'client-info'.
+  std::vector<mojom::IppClientInfo> client_infos_;
+#endif  // BUILDFLAG(IS_CHROMEOS)
 };
 
 }  // namespace printing

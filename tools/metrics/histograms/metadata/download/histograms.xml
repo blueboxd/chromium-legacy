@@ -30,6 +30,7 @@ chromium-metrics-reviews@google.com.
 <variants name="DownloadClient">
   <variant name="__Test__"/>
   <variant name="BackgroundFetch"/>
+  <variant name="Bruschetta"/>
   <variant name="Debugging"/>
   <variant name="MountainInternal"/>
   <variant name="OfflinePage"/>
@@ -61,7 +62,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="Download.ApiFunctions" enum="DownloadFunctions"
-    expires_after="2023-04-09">
+    expires_after="2023-06-11">
   <owner>dtrainor@chromium.org</owner>
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
@@ -715,9 +716,9 @@ chromium-metrics-reviews@google.com.
     enum="MixedContentDownloadDialogEvent" expires_after="2022-12-11">
   <owner>qinmin@chromium.org</owner>
   <summary>
-    Records user interactions with the mixed content download dialog on Android.
-    Records when the dialog is shown, or when user clicks on a button or
-    dismisses the dialog.
+    Records user interactions with the insecure download (formerly the mixed
+    content download) dialog on Android. Records when the dialog is shown, or
+    when user clicks on a button or dismisses the dialog.
   </summary>
 </histogram>
 
@@ -1444,6 +1445,19 @@ chromium-metrics-reviews@google.com.
   <owner>dtrainor@chromium.org</owner>
   <owner>qinmin@chromium.org</owner>
   <summary>Records events for local video thumbnail retrieval.</summary>
+</histogram>
+
+<histogram name="Download.WarningData.ActionAdded" enum="DownloadWarningAction"
+    expires_after="2023-06-07">
+  <owner>xinghuilu@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    Records the warning action that is successfully added in warning action
+    event. Logged each time an action is taken on the download warning. For the
+    SHOWN action, only logged for the first time. Not logged if the action is
+    not added because the first warning is missing or the events have exceeded
+    the max length.
+  </summary>
 </histogram>
 
 <histogram name="Download.WarningData.AddWarningActionEventOutcome"

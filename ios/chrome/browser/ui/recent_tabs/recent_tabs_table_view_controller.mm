@@ -4,8 +4,11 @@
 
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller.h"
 
+#import <objc/runtime.h>
+
 #import "base/check_op.h"
 #import "base/mac/foundation_util.h"
+#import "base/metrics/histogram_functions.h"
 #import "base/metrics/histogram_macros.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
@@ -959,6 +962,11 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
   return [sessionSectionIdentifiers containsObject:sectionIdentifierObject];
 }
 
+// Returns YES if the recent tabs is presented modally.
+- (BOOL)isPresentedModally {
+  return self.navigationController.presentingViewController;
+}
+
 #pragma mark - Consumer Protocol
 
 - (void)refreshUserState:(SessionsSyncUserState)newSessionState {
@@ -1477,6 +1485,11 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
   const sessions::SessionTab* toLoad = nullptr;
   if (openTabs->GetForeignTab(distantTab->session_tag, distantTab->tab_id,
                               &toLoad)) {
+    base::TimeDelta time_since_last_use = base::Time::Now() - toLoad->timestamp;
+    base::UmaHistogramCustomTimes("IOS.DistantTab.TimeSinceLastUse",
+                                  time_since_last_use, base::Minutes(1),
+                                  base::Days(24), 50);
+
     base::RecordAction(base::UserMetricsAction(
         "MobileRecentTabManagerTabFromOtherDeviceOpened"));
     if (self.searchTerms.length) {
@@ -1771,6 +1784,13 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
 
 - (NSArray<UIKeyCommand*>*)keyCommands {
   return @[ UIKeyCommand.cr_close ];
+}
+
+- (BOOL)canPerformAction:(SEL)action withSender:(id)sender {
+  if (sel_isEqual(action, @selector(keyCommand_close))) {
+    return [self isPresentedModally];
+  }
+  return [super canPerformAction:action withSender:sender];
 }
 
 - (void)keyCommand_close {

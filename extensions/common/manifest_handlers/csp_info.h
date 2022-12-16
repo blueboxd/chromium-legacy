@@ -71,6 +71,10 @@ class CSPHandler : public ManifestHandler {
   // ManifestHandler override:
   bool Parse(Extension* extension, std::u16string* error) override;
 
+  // Returns the minimum CSP to use in MV3 extensions. Only exposed for testing.
+  static const char* GetMinimumMV3CSPForTesting();
+  static const char* GetMinimumUnpackedMV3CSPForTesting();
+
  private:
   // Parses the "content_security_policy" dictionary in the manifest.
   bool ParseCSPDictionary(Extension* extension, std::u16string* error);
@@ -83,11 +87,14 @@ class CSPHandler : public ManifestHandler {
                               const base::Value* content_security_policy);
 
   // Parses the content security policy specified in the manifest for sandboxed
-  // pages. This should be called after ParseExtensionPagesCSP.
+  // pages. This should be called after ParseExtensionPagesCSP. If
+  // `allow_remote_sources` is true, this allows the extension to specify remote
+  // sources in the sandbox CSP.
   bool ParseSandboxCSP(Extension* extension,
                        std::u16string* error,
                        base::StringPiece manifest_key,
-                       const base::Value* sandbox_csp);
+                       const base::Value* sandbox_csp,
+                       bool allow_remote_sources);
 
   // Helper to set the extension pages content security policy manifest data.
   bool SetExtensionPagesCSP(Extension* extension,

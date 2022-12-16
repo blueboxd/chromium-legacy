@@ -113,7 +113,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
     @MediumTest
     @Feature({"Payments"})
     public void testNoSupportedPaymentMethods() throws TimeoutException {
-        mPaymentRequestTestRule.openPageAndClickNodeAndWait(
+        mPaymentRequestTestRule.clickNodeAndWait(
                 "buy_with_bobpay", mPaymentRequestTestRule.getShowFailed());
         mPaymentRequestTestRule.expectResultContains(
                 new String[] {"show() rejected", "The payment method", "not supported"});
@@ -123,31 +123,32 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
     @MediumTest
     @Feature({"Payments"})
     public void testHasSupportedPaymentMethods() throws TimeoutException {
-        String[] supportedMethodNames = {"https://bobpay.com"};
-        installMockServiceWorkerPaymentApp("https://bobpay.com", supportedMethodNames, true, true);
+        String[] supportedMethodNames = {"https://bobpay.test"};
+        installMockServiceWorkerPaymentApp("https://bobpay.test", supportedMethodNames, true, true);
 
         PaymentAppServiceBridge.setCanMakePaymentForTesting(true);
         // Payment sheet skips to the app since it is the only available app.
-        mPaymentRequestTestRule.openPageAndClickBuyAndWait(mPaymentRequestTestRule.getDismissed());
+        mPaymentRequestTestRule.clickNodeAndWait("buy", mPaymentRequestTestRule.getDismissed());
     }
 
     @Test
     @MediumTest
     @Feature({"Payments"})
     public void testDoNotCallCanMakePayment() throws TimeoutException {
-        String[] supportedMethodNames1 = {"https://bobpay.com"};
-        installMockServiceWorkerPaymentApp("https://bobpay.com", supportedMethodNames1, true, true);
-
-        String[] supportedMethodNames2 = {"https://kylepay.com/webpay"};
+        String[] supportedMethodNames1 = {"https://bobpay.test"};
         installMockServiceWorkerPaymentApp(
-                "https://kylepay.com/webpay", supportedMethodNames2, true, true);
+                "https://bobpay.test", supportedMethodNames1, true, true);
+
+        String[] supportedMethodNames2 = {"https://kylepay.test/webpay"};
+        installMockServiceWorkerPaymentApp(
+                "https://kylepay.test/webpay", supportedMethodNames2, true, true);
 
         // Sets setCanMakePaymentForTesting(false) to return false for CanMakePayment since there is
         // no real sw payment app, so if CanMakePayment is called then no payment apps will be
         // available, otherwise CanMakePayment is not called.
         PaymentAppServiceBridge.setCanMakePaymentForTesting(false);
 
-        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
+        mPaymentRequestTestRule.triggerUIAndWait("buy", mPaymentRequestTestRule.getReadyForInput());
         Assert.assertEquals(2, mPaymentRequestTestRule.getNumberOfPaymentApps());
     }
 
@@ -155,25 +156,26 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
     @MediumTest
     @Feature({"Payments"})
     public void testCanPreselect() throws TimeoutException {
-        String[] supportedMethodNames = {"https://bobpay.com"};
-        installMockServiceWorkerPaymentApp("https://bobpay.com", supportedMethodNames, true, true);
+        String[] supportedMethodNames = {"https://bobpay.test"};
+        installMockServiceWorkerPaymentApp("https://bobpay.test", supportedMethodNames, true, true);
 
         PaymentAppServiceBridge.setCanMakePaymentForTesting(true);
 
         // Payment sheet skips to the app since it is the only available app.
-        mPaymentRequestTestRule.openPageAndClickBuyAndWait(mPaymentRequestTestRule.getDismissed());
+        mPaymentRequestTestRule.clickNodeAndWait("buy", mPaymentRequestTestRule.getDismissed());
     }
 
     @Test
     @MediumTest
     @Feature({"Payments"})
     public void testCanNotPreselectWithoutName() throws TimeoutException {
-        String[] supportedMethodNames = {"https://bobpay.com"};
-        installMockServiceWorkerPaymentApp("https://bobpay.com", supportedMethodNames, false, true);
+        String[] supportedMethodNames = {"https://bobpay.test"};
+        installMockServiceWorkerPaymentApp(
+                "https://bobpay.test", supportedMethodNames, false, true);
 
         PaymentAppServiceBridge.setCanMakePaymentForTesting(true);
 
-        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
+        mPaymentRequestTestRule.triggerUIAndWait("buy", mPaymentRequestTestRule.getReadyForInput());
         Assert.assertNull(mPaymentRequestTestRule.getSelectedPaymentAppLabel());
     }
 
@@ -181,12 +183,13 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
     @MediumTest
     @Feature({"Payments"})
     public void testCanNotPreselectWithoutIcon() throws TimeoutException {
-        String[] supportedMethodNames = {"https://bobpay.com"};
-        installMockServiceWorkerPaymentApp("https://bobpay.com", supportedMethodNames, true, false);
+        String[] supportedMethodNames = {"https://bobpay.test"};
+        installMockServiceWorkerPaymentApp(
+                "https://bobpay.test", supportedMethodNames, true, false);
 
         PaymentAppServiceBridge.setCanMakePaymentForTesting(true);
 
-        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
+        mPaymentRequestTestRule.triggerUIAndWait("buy", mPaymentRequestTestRule.getReadyForInput());
         Assert.assertNull(mPaymentRequestTestRule.getSelectedPaymentAppLabel());
     }
 
@@ -194,13 +197,13 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
     @MediumTest
     @Feature({"Payments"})
     public void testCanNotPreselectWithoutNameAndIcon() throws TimeoutException {
-        String[] supportedMethodNames = {"https://bobpay.com"};
+        String[] supportedMethodNames = {"https://bobpay.test"};
         installMockServiceWorkerPaymentApp(
-                "https://bobpay.com", supportedMethodNames, false, false);
+                "https://bobpay.test", supportedMethodNames, false, false);
 
         PaymentAppServiceBridge.setCanMakePaymentForTesting(true);
 
-        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
+        mPaymentRequestTestRule.triggerUIAndWait("buy", mPaymentRequestTestRule.getReadyForInput());
         Assert.assertNull(mPaymentRequestTestRule.getSelectedPaymentAppLabel());
     }
 
@@ -208,14 +211,14 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
     @MediumTest
     @Feature({"Payments"})
     public void testPaymentAppProvidingShippingComesFirst() throws TimeoutException {
-        installMockServiceWorkerPaymentAppWithDelegations("https://alicepay.com" /*scope*/,
+        installMockServiceWorkerPaymentAppWithDelegations("https://alicepay.test" /*scope*/,
                 false /*shippingAddress*/, false /*payerName*/, false /*payerPhone*/,
                 false /*payerEmail*/, "noSupportedDelegation" /*name*/);
-        installMockServiceWorkerPaymentAppWithDelegations("https://bobpay.com" /*scope*/,
+        installMockServiceWorkerPaymentAppWithDelegations("https://bobpay.test" /*scope*/,
                 true /*shippingAddress*/, false /*payerName*/, false /*payerPhone*/,
                 false /*payerEmail*/, "shippingSupported1" /*name */);
         // Install the second app supporting shipping delegation to force showing payment sheet.
-        installMockServiceWorkerPaymentAppWithDelegations("https://charliepay.com" /*scope*/,
+        installMockServiceWorkerPaymentAppWithDelegations("https://charliepay.test" /*scope*/,
                 true /*shippingAddress*/, false /*payerName*/, false /*payerPhone*/,
                 false /*payerEmail*/, "shippingSupported2" /*name */);
 
@@ -234,17 +237,17 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
     @MediumTest
     @Feature({"Payments"})
     public void testPaymentAppProvidingContactComesFirst() throws TimeoutException {
-        installMockServiceWorkerPaymentAppWithDelegations("https://alicepay.com" /*scope*/,
+        installMockServiceWorkerPaymentAppWithDelegations("https://alicepay.test" /*scope*/,
                 false /*shippingAddress*/, false /*payerName*/, false /*payerPhone*/,
                 false /*payerEmail*/, "noSupportedDelegation" /*name*/);
-        installMockServiceWorkerPaymentAppWithDelegations("https://bobpay.com" /*scope*/,
+        installMockServiceWorkerPaymentAppWithDelegations("https://bobpay.test" /*scope*/,
                 false /*shippingAddress*/, true /*payerName*/, true /*payerPhone*/,
                 true /*payerEmail*/, "contactSupported" /*name */);
-        installMockServiceWorkerPaymentAppWithDelegations("https://charliepay.com" /*scope*/,
+        installMockServiceWorkerPaymentAppWithDelegations("https://charliepay.test" /*scope*/,
                 false /*shippingAddress*/, false /*payerName*/, false /*payerPhone*/,
                 true /*payerEmail*/, "emailOnlySupported" /*name */);
         // Install the second app supporting contact delegation to force showing payment sheet.
-        installMockServiceWorkerPaymentAppWithDelegations("https://davepay.com" /*scope*/,
+        installMockServiceWorkerPaymentAppWithDelegations("https://davepay.test" /*scope*/,
                 false /*shippingAddress*/, true /*payerName*/, true /*payerPhone*/,
                 true /*payerEmail*/, "contactSupported2" /*name */);
 
@@ -267,18 +270,18 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
     @MediumTest
     @Feature({"Payments"})
     public void testPaymentAppProvidingAllRequiredInfoComesFirst() throws TimeoutException {
-        installMockServiceWorkerPaymentAppWithDelegations("https://alicepay.com" /*scope*/,
+        installMockServiceWorkerPaymentAppWithDelegations("https://alicepay.test" /*scope*/,
                 true /*shippingAddress*/, false /*payerName*/, false /*payerPhone*/,
                 false /*payerEmail*/, "shippingSupported" /*name */);
-        installMockServiceWorkerPaymentAppWithDelegations("https://bobpay.com" /*scope*/,
+        installMockServiceWorkerPaymentAppWithDelegations("https://bobpay.test" /*scope*/,
                 false /*shippingAddress*/, true /*payerName*/, true /*payerPhone*/,
                 true /*payerEmail*/, "contactSupported" /*name */);
-        installMockServiceWorkerPaymentAppWithDelegations("https://charliepay.com" /*scope*/,
+        installMockServiceWorkerPaymentAppWithDelegations("https://charliepay.test" /*scope*/,
                 true /*shippingAddress*/, true /*payerName*/, true /*payerPhone*/,
                 true /*payerEmail*/, "shippingAndContactSupported" /*name*/);
         // Install the second app supporting both shipping and contact delegations to force showing
         // payment sheet.
-        installMockServiceWorkerPaymentAppWithDelegations("https://davepay.com" /*scope*/,
+        installMockServiceWorkerPaymentAppWithDelegations("https://davepay.test" /*scope*/,
                 true /*shippingAddress*/, true /*payerName*/, true /*payerPhone*/,
                 true /*payerEmail*/, "shippingAndContactSupported2" /*name*/);
 
@@ -301,15 +304,15 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
     @MediumTest
     @Feature({"Payments"})
     public void testSkipsToSinglePaymentAppProvidingShipping() throws TimeoutException {
-        installMockServiceWorkerPaymentAppWithDelegations("https://alicepay.com" /*scope*/,
+        installMockServiceWorkerPaymentAppWithDelegations("https://alicepay.test" /*scope*/,
                 false /*shippingAddress*/, false /*payerName*/, false /*payerPhone*/,
                 false /*payerEmail*/, "noSupportedDelegation" /*name*/);
-        installMockServiceWorkerPaymentAppWithDelegations("https://bobpay.com" /*scope*/,
+        installMockServiceWorkerPaymentAppWithDelegations("https://bobpay.test" /*scope*/,
                 true /*shippingAddress*/, false /*payerName*/, false /*payerPhone*/,
                 false /*payerEmail*/, "shippingSupported" /*name */);
 
         PaymentAppServiceBridge.setCanMakePaymentForTesting(true);
-        mPaymentRequestTestRule.openPageAndClickNodeAndWait(
+        mPaymentRequestTestRule.clickNodeAndWait(
                 "buy_with_shipping_requested", mPaymentRequestTestRule.getDismissed());
     }
 
@@ -317,18 +320,18 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
     @MediumTest
     @Feature({"Payments"})
     public void testSkipsToSinglePaymentAppProvidingContact() throws TimeoutException {
-        installMockServiceWorkerPaymentAppWithDelegations("https://alicepay.com" /*scope*/,
+        installMockServiceWorkerPaymentAppWithDelegations("https://alicepay.test" /*scope*/,
                 false /*shippingAddress*/, false /*payerName*/, false /*payerPhone*/,
                 false /*payerEmail*/, "noSupportedDelegation" /*name*/);
-        installMockServiceWorkerPaymentAppWithDelegations("https://bobpay.com" /*scope*/,
+        installMockServiceWorkerPaymentAppWithDelegations("https://bobpay.test" /*scope*/,
                 false /*shippingAddress*/, true /*payerName*/, true /*payerPhone*/,
                 true /*payerEmail*/, "contactSupported" /*name */);
-        installMockServiceWorkerPaymentAppWithDelegations("https://charliepay.com" /*scope*/,
+        installMockServiceWorkerPaymentAppWithDelegations("https://charliepay.test" /*scope*/,
                 false /*shippingAddress*/, false /*payerName*/, false /*payerPhone*/,
                 true /*payerEmail*/, "emailOnlySupported" /*name */);
 
         PaymentAppServiceBridge.setCanMakePaymentForTesting(true);
-        mPaymentRequestTestRule.openPageAndClickNodeAndWait(
+        mPaymentRequestTestRule.clickNodeAndWait(
                 "buy_with_contact_requested", mPaymentRequestTestRule.getDismissed());
     }
 
@@ -336,18 +339,18 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
     @MediumTest
     @Feature({"Payments"})
     public void testSkipsToSinglePaymentAppProvidingAllRequiredInfo() throws TimeoutException {
-        installMockServiceWorkerPaymentAppWithDelegations("https://alicepay.com" /*scope*/,
+        installMockServiceWorkerPaymentAppWithDelegations("https://alicepay.test" /*scope*/,
                 true /*shippingAddress*/, false /*payerName*/, false /*payerPhone*/,
                 false /*payerEmail*/, "shippingSupported" /*name */);
-        installMockServiceWorkerPaymentAppWithDelegations("https://bobpay.com" /*scope*/,
+        installMockServiceWorkerPaymentAppWithDelegations("https://bobpay.test" /*scope*/,
                 false /*shippingAddress*/, true /*payerName*/, true /*payerPhone*/,
                 true /*payerEmail*/, "contactSupported" /*name */);
-        installMockServiceWorkerPaymentAppWithDelegations("https://charliepay.com" /*scope*/,
+        installMockServiceWorkerPaymentAppWithDelegations("https://charliepay.test" /*scope*/,
                 true /*shippingAddress*/, true /*payerName*/, true /*payerPhone*/,
                 true /*payerEmail*/, "shippingAndContactSupported" /*name*/);
 
         PaymentAppServiceBridge.setCanMakePaymentForTesting(true);
-        mPaymentRequestTestRule.openPageAndClickNodeAndWait(
+        mPaymentRequestTestRule.clickNodeAndWait(
                 "buy_with_shipping_and_contact_requested", mPaymentRequestTestRule.getDismissed());
     }
 }

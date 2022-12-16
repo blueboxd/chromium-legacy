@@ -53,7 +53,8 @@ class NtpCustomBackgroundService : public KeyedService,
   void UpdateBackgroundFromSync();
 
   // Invoked when the background is reset on the NTP.
-  void ResetCustomBackgroundInfo();
+  // Virtual for testing.
+  virtual void ResetCustomBackgroundInfo();
 
   // Invoked when a custom background is configured on the NTP.
   void SetCustomBackgroundInfo(const GURL& background_url,
@@ -64,7 +65,8 @@ class NtpCustomBackgroundService : public KeyedService,
                                const std::string& collection_id);
 
   // Invoked when a user selected the "Upload an image" option on the NTP.
-  void SelectLocalBackgroundImage(const base::FilePath& path);
+  // Virtual for testing.
+  virtual void SelectLocalBackgroundImage(const base::FilePath& path);
 
   // Virtual for testing.
   virtual void RefreshBackgroundIfNeeded();

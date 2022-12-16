@@ -72,17 +72,32 @@ class OverlayD3DImageRepresentation : public OverlayImageRepresentation {
  public:
   OverlayD3DImageRepresentation(SharedImageManager* manager,
                                 SharedImageBacking* backing,
-                                MemoryTypeTracker* tracker,
-                                scoped_refptr<gl::GLImage> gl_image);
+                                MemoryTypeTracker* tracker);
   ~OverlayD3DImageRepresentation() override;
 
  private:
   bool BeginReadAccess(gfx::GpuFenceHandle& acquire_fence) override;
   void EndReadAccess(gfx::GpuFenceHandle release_fence) override;
 
-  gl::GLImage* GetGLImage() override;
+  absl::optional<gl::DCLayerOverlayImage> GetDCLayerOverlayImage() override;
+};
 
-  scoped_refptr<gl::GLImage> gl_image_;
+class D3D11VideoDecodeImageRepresentation
+    : public VideoDecodeImageRepresentation {
+ public:
+  D3D11VideoDecodeImageRepresentation(
+      SharedImageManager* manager,
+      SharedImageBacking* backing,
+      MemoryTypeTracker* tracker,
+      Microsoft::WRL::ComPtr<ID3D11Texture2D> texture);
+  ~D3D11VideoDecodeImageRepresentation() override;
+
+ private:
+  bool BeginWriteAccess() override;
+  void EndWriteAccess() override;
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> GetD3D11Texture() const override;
+
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> texture_;
 };
 
 }  // namespace gpu

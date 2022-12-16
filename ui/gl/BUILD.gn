@@ -122,6 +122,8 @@ component("gl") {
     "gpu_switching_manager.h",
     "gpu_timing.cc",
     "gpu_timing.h",
+    "presenter.cc",
+    "presenter.h",
     "progress_reporter.h",
     "scoped_binders.cc",
     "scoped_binders.h",
@@ -139,8 +141,12 @@ component("gl") {
 
   if (is_android) {
     sources += [
+      "android/scoped_a_native_window.cc",
+      "android/scoped_a_native_window.h",
       "android/scoped_java_surface.cc",
       "android/scoped_java_surface.h",
+      "android/scoped_java_surface_control.cc",
+      "android/scoped_java_surface_control.h",
       "android/surface_texture.cc",
       "android/surface_texture.h",
       "android/surface_texture_listener.cc",
@@ -215,8 +221,6 @@ component("gl") {
       sources += [
         "gl_angle_util_vulkan.cc",
         "gl_angle_util_vulkan.h",
-        "gl_image_egl_angle_vulkan.cc",
-        "gl_image_egl_angle_vulkan.h",
       ]
     }
 
@@ -297,6 +301,8 @@ component("gl") {
     sources += [
       "child_window_win.cc",
       "child_window_win.h",
+      "dc_layer_overlay_image.cc",
+      "dc_layer_overlay_image.h",
       "dc_layer_tree.cc",
       "dc_layer_tree.h",
       "dcomp_presenter.cc",
@@ -624,6 +630,7 @@ if (is_android) {
 
   generate_jni("gl_jni_headers") {
     sources = [
+      "../android/java/src/org/chromium/ui/gl/ScopedJavaSurfaceControl.java",
       "../android/java/src/org/chromium/ui/gl/SurfaceTextureListener.java",
       "../android/java/src/org/chromium/ui/gl/SurfaceTexturePlatformWrapper.java",
     ]

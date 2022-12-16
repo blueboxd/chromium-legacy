@@ -66,6 +66,7 @@
 #import "ios/chrome/app/background_mode_buildflags.h"
 #import "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #import "ios/chrome/browser/crash_report/features.h"
+#import "ios/chrome/browser/credential_provider_promo/features.h"
 #import "ios/chrome/browser/flags/chrome_switches.h"
 #import "ios/chrome/browser/flags/ios_chrome_flag_descriptions.h"
 #import "ios/chrome/browser/flags/system_flags.h"
@@ -81,7 +82,6 @@
 #import "ios/chrome/browser/ui/autofill/features.h"
 #import "ios/chrome/browser/ui/bubble/bubble_features.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
-#import "ios/chrome/browser/ui/credential_provider_promo/features.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/download/features.h"
 #import "ios/chrome/browser/ui/first_run/field_trial_constants.h"
@@ -553,14 +553,18 @@ const FeatureEntry::FeatureVariation kOpenInDownloadVariations[] = {
 
 const FeatureEntry::FeatureParam kEnablePinnedTabsBottomPosition[] = {
     {kEnablePinnedTabsParameterName, kEnablePinnedTabsBottomParam}};
-const FeatureEntry::FeatureParam kEnablePinnedTabsTopPosition[] = {
-    {kEnablePinnedTabsParameterName, kEnablePinnedTabsTopParam}};
+const FeatureEntry::FeatureParam kEnablePinnedTabsOverflowBottomPosition[] = {
+    {kEnablePinnedTabsParameterName, kEnablePinnedTabsOverflowBottomParam}};
+const FeatureEntry::FeatureParam kEnablePinnedTabsOverflowTopPosition[] = {
+    {kEnablePinnedTabsParameterName, kEnablePinnedTabsOverflowTopParam}};
 
 const FeatureEntry::FeatureVariation kEnablePinnedTabsVariations[] = {
     {"bottom pinned tabs", kEnablePinnedTabsBottomPosition,
      std::size(kEnablePinnedTabsBottomPosition), nullptr},
-    {"top pinned tabs", kEnablePinnedTabsTopPosition,
-     std::size(kEnablePinnedTabsTopPosition), nullptr},
+    {"overflow + bottom pinned tabs", kEnablePinnedTabsOverflowBottomPosition,
+     std::size(kEnablePinnedTabsOverflowBottomPosition), nullptr},
+    {"overflow + top pinned tabs", kEnablePinnedTabsOverflowTopPosition,
+     std::size(kEnablePinnedTabsOverflowTopPosition), nullptr},
 };
 
 const FeatureEntry::FeatureParam kAutofillBrandingIOSMonotone[] = {
@@ -1325,6 +1329,18 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kIOSForceTranslateEnabledName,
      flag_descriptions::kIOSForceTranslateEnabledDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(translate::kIOSForceTranslateEnabled)},
+    {"iph-price-notifications-while-browsing",
+     flag_descriptions::kIPHPriceNotificationsWhileBrowsingName,
+     flag_descriptions::kIPHPriceNotificationsWhileBrowsingDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         feature_engagement::kIPHPriceNotificationsWhileBrowsingFeature)},
+    {"autofill-offer-to-save-card-with-same-last-four",
+     flag_descriptions::kAutofillOfferToSaveCardWithSameLastFourName,
+     flag_descriptions::kAutofillOfferToSaveCardWithSameLastFourDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillOfferToSaveCardWithSameLastFour)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

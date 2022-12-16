@@ -36,13 +36,25 @@
   </template>
 </div>
 
-<iron-list items="[[getApns_(managedCellularProperties)]]">
+<iron-list items="[[getApns_(managedCellularProperties)]]"
+    on-show-apn-detail-dialog="onShowApnDetailDialog_">
   <template>
     <apn-list-item
         apn="[[item]]"
         is-connected="[[isApnConnected_(index)]]"
         is-auto-detected="[[isApnAutoDetected_(index)]]"
+        should-disallow-disabling-removing="[[shouldDisallowDisablingRemoving_(item)]]"
+        should-disallow-enabling="[[shouldDisallowEnabling_(item)]]"
         guid="[[guid]]">
     </apn-list-item>
   </template>
 </iron-list>
+
+<template is="dom-if" if="[[shouldShowApnDetailDialog_]]" restamp>
+  <apn-detail-dialog id="apnDetailDialog"
+      mode="[[apnDetailDialogMode_]]"
+      guid="[[guid]]"
+      apn-list="[[getCustomApns_(managedCellularProperties)]]"
+      on-close="onApnDetailDialogClose_">
+  </apn-detail-dialog>
+</template>

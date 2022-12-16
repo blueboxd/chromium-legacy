@@ -621,6 +621,7 @@
     "thick",
     "thin",
     "underline",
+    "view",
     "wavy",
     "-webkit-nowrap",
 
@@ -1054,6 +1055,7 @@
     "minimal-ui",
     "browser",
     "window-controls-overlay",
+    "tabbed",
 
     // position
     "sticky",

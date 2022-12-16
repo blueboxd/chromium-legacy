@@ -296,16 +296,16 @@ class ExtensionPrefs : public KeyedService {
   void SetBooleanPref(const std::string& id, const PrefMap& pref, bool value);
   void SetStringPref(const std::string& id,
                      const PrefMap& pref,
-                     const std::string value);
+                     std::string value);
   void SetListPref(const std::string& id,
                    const PrefMap& pref,
-                   base::Value value);
+                   base::Value::List value);
   void SetDictionaryPref(const std::string& id,
                          const PrefMap& pref,
                          base::Value::Dict value);
   void SetTimePref(const std::string& id,
                    const PrefMap& pref,
-                   const base::Time value);
+                   base::Time value);
 
   void UpdateExtensionPref(const std::string& id,
                            base::StringPiece key,
@@ -751,11 +751,6 @@ class ExtensionPrefs : public KeyedService {
   // disabled due to a deprecated reason.
   // TODO(archanasimha): Remove this around M89.
   void MigrateDeprecatedDisableReasons();
-
-  // Looks to see if the Youtube extension is installed, and removes the
-  // FROM_BOOKMARK flag from it's creation flags.
-  // TODO(dmurph): Remove this in m90.
-  void MigrateYoutubeOffBookmarkApps();
 
   // Iterates over the extension pref entries and removes any obsolete keys. We
   // need to do this here specially (rather than in

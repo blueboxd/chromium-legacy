@@ -83,12 +83,6 @@ export class Background extends ChromeVoxState {
 
   /** @private */
   init_() {
-    // Initialize braille, prefs, TTS, and legacy background page first.
-    BrailleBackground.init();
-    ChromeVoxPrefs.init();
-    TtsBackground.init();
-    ChromeVoxBackground.init();
-
     chrome.accessibilityPrivate.onIntroduceChromeVox.addListener(
         () => this.onIntroduceChromeVox_());
 
@@ -113,8 +107,12 @@ export class Background extends ChromeVoxState {
   }
 
   static async init() {
-    // Initialize storage and legacy background first.
+    // Initialize storage, braille, prefs, TTS, and legacy background page
+    // first.
     await LocalStorage.init();
+    BrailleBackground.init();
+    ChromeVoxPrefs.init();
+    TtsBackground.init();
     ChromeVoxBackground.init();
 
     ChromeVoxState.instance = new Background();
@@ -124,11 +122,11 @@ export class Background extends ChromeVoxState {
     BrailleCommandHandler.init();
     ClipboardHandler.init();
     CommandHandler.init();
-    DesktopAutomationHandler.init();
     DownloadHandler.init();
     EventStreamLogger.init();
     FindHandler.init();
     FocusAutomationHandler.init();
+    GestureCommandHandler.init();
     JaPhoneticData.init(JaPhoneticMap.MAP);
     LiveRegions.init();
     LocaleOutputHelper.init();
@@ -138,6 +136,11 @@ export class Background extends ChromeVoxState {
     PanelBackground.init();
     RangeAutomationHandler.init();
 
+    // Allow all async initializers to run simultaneously, but wait for them to
+    // complete before continuing.
+    await Promise.all([
+      DesktopAutomationHandler.init(),
+    ]);
     ChromeVoxState.resolveReadyPromise_();
   }
 

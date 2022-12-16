@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 #include <memory>
+#include <string>
 
 #include "base/strings/string_piece_forward.h"
 #include "build/chromeos_buildflags.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/service_worker_context.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 class Browser;
@@ -31,7 +33,27 @@ namespace web_app {
 
 class WebApp;
 
+// Intended to be used for parameterizing tests that involve OS integration.
+enum class OsIntegrationSubManagersState {
+  kEnabled = 0,
+  kDisabled = 1,
+  kMaxValue = kDisabled
+};
+
 namespace test {
+
+enum class ExternalPrefMigrationTestCases {
+  kDisableMigrationReadPref,
+  kDisableMigrationReadDB,
+  kEnableMigrationReadPref,
+  kEnableMigrationReadDB,
+};
+
+std::string GetExternalPrefMigrationTestName(
+    const ::testing::TestParamInfo<ExternalPrefMigrationTestCases>& info);
+
+std::string GetOsIntegrationSubManagersTestName(
+    const ::testing::TestParamInfo<OsIntegrationSubManagersState>& info);
 
 // Do not use this for installation! Instead, use the utilities in
 // web_app_install_test_util.h.

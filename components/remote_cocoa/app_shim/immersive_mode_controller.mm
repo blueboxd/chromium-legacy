@@ -4,12 +4,14 @@
 
 #include "components/remote_cocoa/app_shim/immersive_mode_controller.h"
 
+#include "base/auto_reset.h"
 #include "base/check.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_block.h"
 #import "components/remote_cocoa/app_shim/bridged_content_view.h"
 #import "components/remote_cocoa/app_shim/immersive_mode_delegate_mac.h"
 #import "components/remote_cocoa/app_shim/native_widget_mac_nswindow.h"
+#import "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace {
@@ -37,13 +39,22 @@ NSView* GetNSTitlebarContainerViewFromWindow(NSWindow* window) {
 
 }  // namespace
 
+@interface ImmersiveModeTitlebarObserver () {
+  base::WeakPtr<remote_cocoa::ImmersiveModeController> _controller;
+  NSView* _overlay_view;
+  BOOL _barrier;
+}
+@end
+
 @implementation ImmersiveModeTitlebarObserver
 
-- (instancetype)initWithOverlayWindow:(NSWindow*)overlay_window
-                          overlayView:(NSView*)overlay_view {
+- (instancetype)initWithController:
+                    (base::WeakPtr<remote_cocoa::ImmersiveModeController>)
+                        controller
+                       overlayView:(NSView*)overlay_view {
   self = [super init];
   if (self) {
-    _overlay_window = overlay_window;
+    _controller = std::move(controller);
     _overlay_view = overlay_view;
   }
   return self;
@@ -79,9 +90,29 @@ NSView* GetNSTitlebarContainerViewFromWindow(NSWindow* window) {
   if (_overlay_view.visibleRect.size.height !=
       _overlay_view.frame.size.height) {
     point_on_screen.y = -_overlay_view.frame.size.height;
+  } else {
+    // If there are sub-windows and the titlebar is fully visible (a y origin of
+    // 0), pin the titlebar. This will prevent the titlebar from autohiding and
+    // causing the sub-windows from moving up when the mouse leaves top chrome.
+    NSRect frame = [change[@"new"] rectValue];
+    if (!_barrier && frame.origin.y == 0 &&
+        _controller->titlebar_lock_count() > 0) {
+      // Add a barrier to prevent re-entry, which is a byproduct of
+      // TitlebarLock() and TitlebarUnlock().
+      base::AutoReset<BOOL> set_barrier(&_barrier, YES);
+      // This lock / unlock scheme is to force the titlebar to be pinned in
+      // place, which can only be done when the titlebar is fully visible.
+      // Existing sub-windows hold a lock, however since the titlebar isn't
+      // fully revealed until this point the existing locks don't actually pin
+      // the titlebar. The existing locks are still important for knowing when
+      // to unpin the titlebar. When all outstanding locks are released the
+      // titlebar be unpinned.
+      _controller->TitlebarLock();
+      _controller->TitlebarUnlock();
+    }
   }
 
-  [_overlay_window setFrameOrigin:point_on_screen];
+  [_controller->overlay_window() setFrameOrigin:point_on_screen];
 }
 
 @end
@@ -103,15 +134,18 @@ NSView* GetNSTitlebarContainerViewFromWindow(NSWindow* window) {
   base::OnceClosure _view_will_appear_callback;
   base::scoped_nsobject<ImmersiveModeTitlebarObserver>
       _immersive_mode_titlebar_observer;
+  NSWindow* _overlay_window;
 }
 @end
 
 @implementation ImmersiveModeTitlebarViewController
 
-- (instancetype)initWithViewWillAppearCallback:
-    (base::OnceClosure)viewWillAppearCallback {
+- (instancetype)initWithOverlayWindow:(NSWindow*)overlay_window
+               viewWillAppearCallback:
+                   (base::OnceClosure)view_will_appear_callback {
   if ((self = [super init])) {
-    _view_will_appear_callback = std::move(viewWillAppearCallback);
+    _overlay_window = overlay_window;
+    _view_will_appear_callback = std::move(view_will_appear_callback);
   }
   return self;
 }
@@ -138,6 +172,15 @@ NSView* GetNSTitlebarContainerViewFromWindow(NSWindow* window) {
   if (!remote_cocoa::IsNSToolbarFullScreenWindow(self.view.window)) {
     return;
   }
+
+  // Attach overlay_widget to NSToolbarFullScreen so that children are placed on
+  // top of the toolbar.
+  // When exitting fullscreeen, we don't re-parent the overlay window back to
+  // the browser window because it seems to trigger re-entrancy in AppKit and
+  // cause crash.  This is safe because sub-widgets will be re-parented to the
+  // browser window and therefore the overlay window won't have any observable
+  // effect.
+  [self.view.window addChildWindow:_overlay_window ordered:NSWindowAbove];
 
   NSView* view = GetNSTitlebarContainerViewFromWindow(self.view.window);
   DCHECK(view);
@@ -271,8 +314,8 @@ bool IsNSToolbarFullScreenWindow(NSWindow* window) {
 ImmersiveModeController::ImmersiveModeController(NSWindow* browser_widget,
                                                  NSWindow* overlay_widget,
                                                  base::OnceClosure callback)
-    : browser_widget_(browser_widget),
-      overlay_widget_(overlay_widget),
+    : browser_window_(browser_widget),
+      overlay_window_(overlay_widget),
       weak_ptr_factory_(this) {
   immersive_mode_window_observer_.reset([[ImmersiveModeWindowObserver alloc]
       initWithController:weak_ptr_factory_.GetWeakPtr()]);
@@ -282,19 +325,20 @@ ImmersiveModeController::ImmersiveModeController(NSWindow* browser_widget,
   // bit. We do not want a separator. Pre-macOS 11 there is no titlebar
   // separator.
   if (@available(macOS 11.0, *)) {
-    browser_widget_.titlebarSeparatorStyle = NSTitlebarSeparatorStyleNone;
+    browser_window_.titlebarSeparatorStyle = NSTitlebarSeparatorStyleNone;
   }
 
   // Create a new NSTitlebarAccessoryViewController that will host the
   // overlay_view_.
   immersive_mode_titlebar_view_controller_.reset(
       [[ImmersiveModeTitlebarViewController alloc]
-          initWithViewWillAppearCallback:std::move(callback)]);
+           initWithOverlayWindow:overlay_window_
+          viewWillAppearCallback:std::move(callback)]);
 
   // Create a NSWindow delegate that will be used to map the AppKit created
   // NSWindow to the overlay view widget's NSWindow.
   immersive_mode_mapper_.reset([[ImmersiveModeMapper alloc] init]);
-  immersive_mode_mapper_.get().originalHostingWindow = overlay_widget_;
+  immersive_mode_mapper_.get().originalHostingWindow = overlay_window_;
   immersive_mode_titlebar_view_controller_.get().view =
       [[ImmersiveModeView alloc]
           initWithImmersiveModeDelegate:immersive_mode_mapper_.get()];
@@ -303,7 +347,7 @@ ImmersiveModeController::ImmersiveModeController(NSWindow* browser_widget,
   // view will be re-parented into the AppKit created NSWindow.
   BridgedContentView* overlay_content_view =
       base::mac::ObjCCastStrict<BridgedContentView>(
-          overlay_widget_.contentView);
+          overlay_window_.contentView);
   [overlay_content_view retain];
   [overlay_content_view removeFromSuperview];
 
@@ -312,15 +356,15 @@ ImmersiveModeController::ImmersiveModeController(NSWindow* browser_widget,
   // window.
   ImmersiveModeTitlebarObserver* titlebar_observer =
       [[[ImmersiveModeTitlebarObserver alloc]
-          initWithOverlayWindow:overlay_widget_
-                    overlayView:overlay_content_view] autorelease];
+          initWithController:weak_ptr_factory_.GetWeakPtr()
+                 overlayView:overlay_content_view] autorelease];
   [immersive_mode_titlebar_view_controller_
       setTitlebarObserver:titlebar_observer];
 
   // The original content view (top chrome) has been moved to the AppKit
   // created NSWindow. Create a new content view but reuse the original bridge
   // so that mouse drags are handled.
-  overlay_widget_.contentView =
+  overlay_window_.contentView =
       [[[BridgedContentView alloc] initWithBridge:overlay_content_view.bridge
                                            bounds:gfx::Rect()] autorelease];
 
@@ -336,12 +380,18 @@ ImmersiveModeController::ImmersiveModeController(NSWindow* browser_widget,
       [[NSTitlebarAccessoryViewController alloc] init]);
   thin_titlebar_view_controller_.get().view =
       [[[NSView alloc] init] autorelease];
+  thin_titlebar_view_controller_.get().view.wantsLayer = YES;
+  thin_titlebar_view_controller_.get().view.layer.backgroundColor =
+      NSColor.blackColor.CGColor;
   thin_titlebar_view_controller_.get().layoutAttribute =
       NSLayoutAttributeBottom;
   thin_titlebar_view_controller_.get().fullScreenMinHeight =
       kThinControllerHeight;
 
+  // Move sub-widgets from the browser widget to the overlay widget so that
+  // they are rendered above the toolbar.
   ObserveOverlayChildWindows();
+  ReparentChildWindows(browser_window_, overlay_window_);
 }
 
 ImmersiveModeController::~ImmersiveModeController() {
@@ -353,22 +403,25 @@ ImmersiveModeController::~ImmersiveModeController() {
   NSView* overlay_content_view =
       immersive_mode_titlebar_view_controller_.get().view.subviews.firstObject;
   [overlay_content_view removeFromSuperview];
-  overlay_widget_.contentView = overlay_content_view;
+  overlay_window_.contentView = overlay_content_view;
   [immersive_mode_titlebar_view_controller_ removeFromParentViewController];
   [immersive_mode_titlebar_view_controller_.get().view release];
   immersive_mode_titlebar_view_controller_.reset();
-  browser_widget_.styleMask |= NSWindowStyleMaskFullSizeContentView;
+  browser_window_.styleMask |= NSWindowStyleMaskFullSizeContentView;
   if (@available(macOS 11.0, *)) {
-    browser_widget_.titlebarSeparatorStyle = NSTitlebarSeparatorStyleAutomatic;
+    browser_window_.titlebarSeparatorStyle = NSTitlebarSeparatorStyleAutomatic;
   }
+
+  // Move sub-widgets back to the browser widget.
+  ReparentChildWindows(overlay_window_, browser_window_);
 }
 
 void ImmersiveModeController::Enable() {
   DCHECK(!enabled_);
   enabled_ = true;
-  [browser_widget_ addTitlebarAccessoryViewController:
+  [browser_window_ addTitlebarAccessoryViewController:
                        immersive_mode_titlebar_view_controller_];
-  [browser_widget_
+  [browser_window_
       addTitlebarAccessoryViewController:thin_titlebar_view_controller_];
   NSRect frame = thin_titlebar_view_controller_.get().view.frame;
   frame.size.height = kThinControllerHeight;
@@ -402,7 +455,7 @@ void ImmersiveModeController::UpdateToolbarVisibility(
       immersive_mode_titlebar_view_controller_.get().fullScreenMinHeight =
           immersive_mode_titlebar_view_controller_.get().view.frame.size.height;
       thin_titlebar_view_controller_.get().hidden = YES;
-      browser_widget_.styleMask &= ~NSWindowStyleMaskFullSizeContentView;
+      browser_window_.styleMask &= ~NSWindowStyleMaskFullSizeContentView;
 
       // Toggling the controller will allow the content view to resize below Top
       // Chrome.
@@ -418,7 +471,7 @@ void ImmersiveModeController::UpdateToolbarVisibility(
       thin_titlebar_view_controller_.get().hidden = NO;
 
       immersive_mode_titlebar_view_controller_.get().fullScreenMinHeight = 0;
-      browser_widget_.styleMask |= NSWindowStyleMaskFullSizeContentView;
+      browser_window_.styleMask |= NSWindowStyleMaskFullSizeContentView;
       break;
     case mojom::ToolbarVisibilityStyle::kNone:
       thin_titlebar_view_controller_.get().hidden = YES;
@@ -437,8 +490,15 @@ void ImmersiveModeController::UpdateToolbarVisibility(
 // will reveal and auto-hide itself based on mouse movement (controlled by
 // AppKit).
 void ImmersiveModeController::SetTitlebarPinned(bool pinned) {
-  // Remove the current, if any, clear controller from the window.
-  [clear_titlebar_view_controller_.get() removeFromParentViewController];
+  // Remove current, if any, clear controllers from the window. For some reason
+  // -removeFromParentViewController does not always remove the controller.
+  // Attempt to remove the current and any stale controllers.
+  for (NSTitlebarAccessoryViewController* c in browser_window_
+           .titlebarAccessoryViewControllers) {
+    if ([c isKindOfClass:[ClearTitlebarViewController class]]) {
+      [c removeFromParentViewController];
+    }
+  }
 
   if (!pinned) {
     clear_titlebar_view_controller_.reset();
@@ -446,31 +506,48 @@ void ImmersiveModeController::SetTitlebarPinned(bool pinned) {
   }
 
   clear_titlebar_view_controller_.reset([[ClearTitlebarViewController alloc]
-      initWithHeight:browser_widget_.contentView.frame.size.height -
+      initWithHeight:browser_window_.contentView.frame.size.height -
                      kThinControllerHeight]);
   clear_titlebar_view_controller_.get().view =
       [[[NSView alloc] init] autorelease];
   clear_titlebar_view_controller_.get().layoutAttribute =
       NSLayoutAttributeBottom;
-  [browser_widget_
+  [browser_window_
       addTitlebarAccessoryViewController:clear_titlebar_view_controller_];
 }
 
 void ImmersiveModeController::ObserveOverlayChildWindows() {
   // Watch the overlay Widget for new child Widgets.
+  auto observe_window = [this](NSWindow* window) {
+    [window addObserver:immersive_mode_window_observer_
+             forKeyPath:@"visible"
+                options:NSKeyValueObservingOptionInitial |
+                        NSKeyValueObservingOptionNew
+                context:nullptr];
+  };
   NativeWidgetMacNSWindow* overlay_window =
-      base::mac::ObjCCastStrict<NativeWidgetMacNSWindow>(overlay_widget_);
+      base::mac::ObjCCastStrict<NativeWidgetMacNSWindow>(overlay_window_);
   overlay_window.childWindowAddedHandler = ^(NSWindow* child) {
     // Ignore non-visible children.
     if (!child.visible) {
       return;
     }
-    [child addObserver:immersive_mode_window_observer_
-            forKeyPath:@"visible"
-               options:NSKeyValueObservingOptionInitial |
-                       NSKeyValueObservingOptionNew
-               context:nullptr];
+    observe_window(child);
   };
+}
+
+void ImmersiveModeController::ReparentChildWindows(NSWindow* source,
+                                                   NSWindow* target) {
+  NativeWidgetNSWindowBridge* source_bridge =
+      NativeWidgetNSWindowBridge::GetFromNativeWindow(source);
+  NativeWidgetNSWindowBridge* target_bridge =
+      NativeWidgetNSWindowBridge::GetFromNativeWindow(target);
+
+  // TODO(kerenzhu): DCHECK(source_bridge && target_bridge)
+  // Only in unittests the associated bridges might not exist.
+  if (source_bridge && target_bridge) {
+    source_bridge->MoveChildrenTo(target_bridge);
+  }
 }
 
 void ImmersiveModeController::TitlebarLock() {

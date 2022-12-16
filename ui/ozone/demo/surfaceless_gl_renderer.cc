@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/display/types/display_snapshot.h"
+#include "ui/gfx/frame_data.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/overlay_plane_data.h"
@@ -93,12 +94,11 @@ bool SurfacelessGlRenderer::BufferWrapper::Initialize(
           ->GetSurfaceFactoryOzone()
           ->CreateNativePixmap(widget, nullptr, size, format,
                                gfx::BufferUsage::SCANOUT);
-  auto image = base::MakeRefCounted<gl::GLImageNativePixmap>(size, format);
-  if (!image->Initialize(std::move(pixmap))) {
+  image_ = gl::GLImageNativePixmap::Create(size, format, std::move(pixmap));
+  if (!image_) {
     LOG(ERROR) << "Failed to create GLImage";
     return false;
   }
-  image_ = image;
 
   glBindFramebufferEXT(GL_FRAMEBUFFER, gl_fb_);
   glBindTexture(GL_TEXTURE_2D, gl_tex_);
@@ -296,7 +296,7 @@ void SurfacelessGlRenderer::RenderFrame() {
   gl_surface_->SwapBuffersAsync(
       base::BindOnce(&SurfacelessGlRenderer::PostRenderFrameTask,
                      weak_ptr_factory_.GetWeakPtr()),
-      base::DoNothing(), gl::FrameData());
+      base::DoNothing(), gfx::FrameData());
 }
 
 void SurfacelessGlRenderer::PostRenderFrameTask(

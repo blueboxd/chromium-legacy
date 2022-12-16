@@ -15,6 +15,7 @@
 #include "chromeos/crosapi/mojom/cros_display_config.mojom.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
 #include "chromeos/crosapi/mojom/emoji_picker.mojom-forward.h"
+#include "chromeos/crosapi/mojom/firewall_hole.mojom.h"
 #include "chromeos/crosapi/mojom/task_manager.mojom.h"
 #include "media/gpu/buildflags.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
@@ -65,6 +66,7 @@ class FeedbackAsh;
 class FieldTrialServiceAsh;
 class FileManagerAsh;
 class FileSystemProviderServiceAsh;
+class FirewallHoleServiceAsh;
 class ForceInstalledTrackerAsh;
 class FullscreenControllerAsh;
 class GeolocationServiceAsh;
@@ -79,7 +81,9 @@ class LoginAsh;
 class LoginScreenStorageAsh;
 class LoginStateAsh;
 class MessageCenterAsh;
+class MetricsAsh;
 class MetricsReportingAsh;
+class MultiCaptureServiceAsh;
 class NativeThemeServiceAsh;
 class NetworkChangeAsh;
 class NetworkSettingsServiceAsh;
@@ -89,7 +93,9 @@ class ParentAccessAsh;
 class PolicyServiceAsh;
 class PowerAsh;
 class PrefsAsh;
+#if BUILDFLAG(USE_CUPS)
 class PrintingMetricsAsh;
+#endif  // BUILDFLAG(USE_CUPS)
 class RemotingAsh;
 class ResourceManagerAsh;
 class ScreenManagerAsh;
@@ -210,6 +216,8 @@ class CrosapiAsh : public mojom::Crosapi {
   void BindFileSystemProviderService(
       mojo::PendingReceiver<mojom::FileSystemProviderService> receiver)
       override;
+  void BindFirewallHoleService(
+      mojo::PendingReceiver<mojom::FirewallHoleService> receiver) override;
   void BindForceInstalledTracker(
       mojo::PendingReceiver<mojom::ForceInstalledTracker> receiver) override;
   void BindFullscreenController(
@@ -254,8 +262,11 @@ class CrosapiAsh : public mojom::Crosapi {
           receiver) override;
   void BindMessageCenter(
       mojo::PendingReceiver<mojom::MessageCenter> receiver) override;
+  void BindMetrics(mojo::PendingReceiver<mojom::Metrics> receiver) override;
   void BindMetricsReporting(
       mojo::PendingReceiver<mojom::MetricsReporting> receiver) override;
+  void BindMultiCaptureService(
+      mojo::PendingReceiver<mojom::MultiCaptureService> receiver) override;
   void BindNativeThemeService(
       mojo::PendingReceiver<mojom::NativeThemeService> receiver) override;
   void BindNetworkChange(
@@ -416,6 +427,10 @@ class CrosapiAsh : public mojom::Crosapi {
 
   LoginStateAsh* login_state_ash() { return login_state_ash_.get(); }
 
+  MultiCaptureServiceAsh* multi_capture_service_ash() {
+    return multi_capture_service_ash_.get();
+  }
+
   NetworkChangeAsh* network_change_ash() { return network_change_ash_.get(); }
 
   NetworkingAttributesAsh* networking_attributes_ash() {
@@ -428,9 +443,11 @@ class CrosapiAsh : public mojom::Crosapi {
 
   ParentAccessAsh* parent_access_ash() { return parent_access_ash_.get(); }
 
+#if BUILDFLAG(USE_CUPS)
   PrintingMetricsAsh* printing_metrics_ash() {
     return printing_metrics_ash_.get();
   }
+#endif  // BUILDFLAG(USE_CUPS)
 
   ScreenManagerAsh* screen_manager_ash() { return screen_manager_ash_.get(); }
 
@@ -511,6 +528,7 @@ class CrosapiAsh : public mojom::Crosapi {
   std::unique_ptr<FileManagerAsh> file_manager_ash_;
   std::unique_ptr<FileSystemProviderServiceAsh>
       file_system_provider_service_ash_;
+  std::unique_ptr<FirewallHoleServiceAsh> firewall_hole_service_ash_;
   std::unique_ptr<ForceInstalledTrackerAsh> force_installed_tracker_ash_;
   std::unique_ptr<FullscreenControllerAsh> fullscreen_controller_ash_;
   std::unique_ptr<GeolocationServiceAsh> geolocation_service_ash_;
@@ -525,7 +543,9 @@ class CrosapiAsh : public mojom::Crosapi {
   std::unique_ptr<LoginScreenStorageAsh> login_screen_storage_ash_;
   std::unique_ptr<LoginStateAsh> login_state_ash_;
   std::unique_ptr<MessageCenterAsh> message_center_ash_;
+  std::unique_ptr<MetricsAsh> metrics_ash_;
   std::unique_ptr<MetricsReportingAsh> metrics_reporting_ash_;
+  std::unique_ptr<MultiCaptureServiceAsh> multi_capture_service_ash_;
   std::unique_ptr<NativeThemeServiceAsh> native_theme_service_ash_;
   std::unique_ptr<NetworkChangeAsh> network_change_ash_;
   std::unique_ptr<NetworkingAttributesAsh> networking_attributes_ash_;
@@ -535,7 +555,9 @@ class CrosapiAsh : public mojom::Crosapi {
   std::unique_ptr<PolicyServiceAsh> policy_service_ash_;
   std::unique_ptr<PowerAsh> power_ash_;
   std::unique_ptr<PrefsAsh> prefs_ash_;
+#if BUILDFLAG(USE_CUPS)
   std::unique_ptr<PrintingMetricsAsh> printing_metrics_ash_;
+#endif  // BUILDFLAG(USE_CUPS)
   std::unique_ptr<ash::ProbeServiceAsh> probe_service_ash_;
   std::unique_ptr<RemotingAsh> remoting_ash_;
   std::unique_ptr<ResourceManagerAsh> resource_manager_ash_;

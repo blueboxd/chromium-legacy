@@ -4,6 +4,7 @@
 
 #include "ash/webui/shortcut_customization_ui/backend/accelerator_configuration_provider.h"
 
+#include <string>
 #include <vector>
 
 #include "ash/accelerators/accelerator_layout_table.h"
@@ -15,7 +16,9 @@
 #include "ash/webui/shortcut_customization_ui/mojom/shortcut_customization.mojom.h"
 #include "base/containers/fixed_flat_map.h"
 #include "base/containers/flat_map.h"
-#include "base/notreached.h"
+#include "base/strings/string_split.h"
+#include "base/strings/utf_string_conversions.h"
+#include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/prefs/pref_service.h"
 #include "mojo/public/cpp/bindings/clone_traits.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -24,81 +27,66 @@
 #include "mojo/public/cpp/bindings/remote_set.h"
 #include "ui/base/ime/ash/input_method_manager.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/chromeos/events/keyboard_capability.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/input_device.h"
+#include "ui/events/keycodes/keyboard_codes_posix.h"
 
 namespace ash {
 
 namespace {
 
-// A map between Top row keys to Function keys.
-// TODO(longbowei): This mapping is temporary, create a helper function in
-// `ui/chromeos/events/keyboard_layout_util.h` to handle fetching the layout
-// keys.
-constexpr auto kLayout2TopRowKeyToFKeyMap =
-    base::MakeFixedFlatMap<ui::KeyboardCode, ui::KeyboardCode>({
-        {ui::KeyboardCode::VKEY_BROWSER_BACK, ui::KeyboardCode::VKEY_F1},
-        {ui::KeyboardCode::VKEY_BROWSER_FORWARD, ui::KeyboardCode::VKEY_F2},
-        {ui::KeyboardCode::VKEY_BROWSER_REFRESH, ui::KeyboardCode::VKEY_F3},
-        {ui::KeyboardCode::VKEY_ZOOM, ui::KeyboardCode::VKEY_F4},
-        {ui::KeyboardCode::VKEY_MEDIA_LAUNCH_APP1, ui::KeyboardCode::VKEY_F5},
-        {ui::KeyboardCode::VKEY_BRIGHTNESS_DOWN, ui::KeyboardCode::VKEY_F6},
-        {ui::KeyboardCode::VKEY_BRIGHTNESS_UP, ui::KeyboardCode::VKEY_F7},
-        {ui::KeyboardCode::VKEY_VOLUME_MUTE, ui::KeyboardCode::VKEY_F8},
-        {ui::KeyboardCode::VKEY_VOLUME_DOWN, ui::KeyboardCode::VKEY_F9},
-        {ui::KeyboardCode::VKEY_VOLUME_UP, ui::KeyboardCode::VKEY_F10},
-    });
-
-// A map between six-pack keys to system keys.
-constexpr auto kSixPackKeyToSystemKeyMap =
-    base::MakeFixedFlatMap<ui::KeyboardCode, ui::KeyboardCode>({
-        {ui::KeyboardCode::VKEY_DELETE, ui::KeyboardCode::VKEY_BACK},
-        {ui::KeyboardCode::VKEY_HOME, ui::KeyboardCode::VKEY_LEFT},
-        {ui::KeyboardCode::VKEY_UP, ui::KeyboardCode::VKEY_PRIOR},
-        {ui::KeyboardCode::VKEY_END, ui::KeyboardCode::VKEY_RIGHT},
-        {ui::KeyboardCode::VKEY_NEXT, ui::KeyboardCode::VKEY_DOWN},
-        {ui::KeyboardCode::VKEY_INSERT, ui::KeyboardCode::VKEY_BACK},
-    });
-
-mojom::AcceleratorInfoPtr CreateAcceleratorInfo(
-    const ui::Accelerator& accelerator,
-    bool locked,
-    mojom::AcceleratorType type,
-    mojom::AcceleratorState state) {
-  mojom::AcceleratorInfoPtr info_mojom = mojom::AcceleratorInfo::New();
-  info_mojom->accelerator = accelerator;
-  info_mojom->key_display = KeycodeToKeyString(accelerator.key_code());
-  info_mojom->locked = locked;
-  info_mojom->type = type;
-  info_mojom->state = state;
-
-  return info_mojom;
+// This map is for KeyboardCodes that don't return a key_display from
+// `KeycodeToKeyString`. The string values here were arbitrarily chosen
+// based on the VKEY enum name.
+// TODO(cambickel): In the future, consolidate this lookup table to be in the
+// same location as the layout table.
+const base::flat_map<ui::KeyboardCode, std::u16string>& GetKeyDisplayMap() {
+  static auto key_display_map =
+      base::NoDestructor(base::flat_map<ui::KeyboardCode, std::u16string>({
+          {ui::KeyboardCode::VKEY_MICROPHONE_MUTE_TOGGLE,
+           u"MicrophoneMuteToggle"},
+          {ui::KeyboardCode::VKEY_KBD_BACKLIGHT_TOGGLE,
+           u"KeyboardBacklightToggle"},
+          {ui::KeyboardCode::VKEY_KBD_BRIGHTNESS_UP, u"KeyboardBrightnessUp"},
+          {ui::KeyboardCode::VKEY_KBD_BRIGHTNESS_DOWN,
+           u"KeyboardBrightnessDown"},
+          {ui::KeyboardCode::VKEY_SLEEP, u"Sleep"},
+          {ui::KeyboardCode::VKEY_NEW, u"NewTab"},
+          {ui::KeyboardCode::VKEY_PRIVACY_SCREEN_TOGGLE,
+           u"PrivacyScreenToggle"},
+          {ui::KeyboardCode::VKEY_ALL_APPLICATIONS, u"OpenLauncher"},
+          {ui::KeyboardCode::VKEY_DICTATE, u"ToggleDictation"},
+          {ui::KeyboardCode::VKEY_WLAN, u"ToggleWifi"},
+          {ui::KeyboardCode::VKEY_EMOJI_PICKER, u"EmojiPicker"},
+          {ui::KeyboardCode::VKEY_SPACE,
+           l10n_util::GetStringUTF16(IDS_SHORTCUT_CUSTOMIZATION_KEY_SPACE)},
+          {ui::KeyboardCode::VKEY_TAB,
+           l10n_util::GetStringUTF16(IDS_SHORTCUT_CUSTOMIZATION_KEY_TAB)},
+          {ui::KeyboardCode::VKEY_ESCAPE,
+           l10n_util::GetStringUTF16(IDS_SHORTCUT_CUSTOMIZATION_KEY_ESCAPE)},
+          {ui::KeyboardCode::VKEY_RETURN,
+           l10n_util::GetStringUTF16(IDS_SHORTCUT_CUSTOMIZATION_KEY_RETURN)},
+          {ui::KeyboardCode::VKEY_BACK,
+           l10n_util::GetStringUTF16(IDS_SHORTCUT_CUSTOMIZATION_KEY_BACKSPACE)},
+      }));
+  return *key_display_map;
 }
 
-std::u16string LookupAcceleratorDescription(mojom::AcceleratorSource source,
-                                            AcceleratorActionId action_id) {
-  switch (source) {
-    case mojom::AcceleratorSource::kAsh:
-      return l10n_util::GetStringUTF16(
-          kAcceleratorActionToStringIdMap.at(action_id));
-    case mojom::AcceleratorSource::kEventRewriter:
-    // TODO(longbowei): Add strings for Browser shortcuts.
-    case mojom::AcceleratorSource::kBrowser:
-    // TODO(michaelcheco): Add strings for Ambient shortcuts.
-    case mojom::AcceleratorSource::kAmbient:
-    case mojom::AcceleratorSource::kAndroid:
-      NOTREACHED();
-      return std::u16string();
-  }
+mojom::DefaultAcceleratorPropertiesPtr CreateDefaultAcceleratorProps(
+    const ui::Accelerator& accelerator) {
+  return mojom::DefaultAcceleratorProperties::New(
+      accelerator, shortcut_ui::GetKeyDisplay(accelerator.key_code()));
 }
+
 mojom::AcceleratorLayoutInfoPtr LayoutInfoToMojom(
     AcceleratorLayoutDetails layout_details) {
   mojom::AcceleratorLayoutInfoPtr layout_info =
       mojom::AcceleratorLayoutInfo::New();
   layout_info->category = layout_details.category;
   layout_info->sub_category = layout_details.sub_category;
-  layout_info->description = LookupAcceleratorDescription(
-      layout_details.source, layout_details.action_id);
+  layout_info->description =
+      l10n_util::GetStringUTF16(layout_details.description_string_id);
   layout_info->style = layout_details.layout_style;
   layout_info->source = layout_details.source;
   layout_info->action = static_cast<uint32_t>(layout_details.action_id);
@@ -114,30 +102,8 @@ bool TopRowKeysAreFunctionKeys() {
   return pref_service->GetBoolean(prefs::kSendFunctionKeys);
 }
 
-bool IsTopRowKey(const ui::KeyboardCode& accelerator_keycode) {
-  // A set that includes all top row keys from different keyboards.
-  // TODO(longbowei): Now only include top row keys from layout2, add more top
-  // row keys from other keyboards in the future.
-  static const base::NoDestructor<base::flat_set<ui::KeyboardCode>>
-      top_row_action_keys({
-          ui::VKEY_BROWSER_BACK,
-          ui::VKEY_BROWSER_REFRESH,
-          ui::VKEY_ZOOM,
-          ui::VKEY_MEDIA_LAUNCH_APP1,
-          ui::VKEY_BRIGHTNESS_DOWN,
-          ui::VKEY_BRIGHTNESS_UP,
-          ui::VKEY_MEDIA_PLAY_PAUSE,
-          ui::VKEY_VOLUME_MUTE,
-          ui::VKEY_VOLUME_DOWN,
-          ui::VKEY_VOLUME_UP,
-      });
-  return base::Contains(*top_row_action_keys, accelerator_keycode);
-}
-
-bool IsSixPackKey(const ui::KeyboardCode& accelerator_keycode) {
-  return base::Contains(kSixPackKeyToSystemKeyMap, accelerator_keycode);
-}
-
+// TODO(zhangwenyu): Remove this and use member function in ui::accelerator
+// class.
 bool IsModifierSet(const ui::Accelerator accelerator, int modifier) {
   return accelerator.modifiers() & modifier;
 }
@@ -161,6 +127,7 @@ AcceleratorConfigurationProvider::AcceleratorConfigurationProvider()
           weak_ptr_factory_.GetWeakPtr()));
 
   UpdateKeyboards();
+  InitializeNonConfigurableAccelerators(GetTextDetailsMap());
 
   // Create LayoutInfos from kAcceleratorLayouts. LayoutInfos are static
   // data that provides additional details for the app for styling.
@@ -250,6 +217,12 @@ void AcceleratorConfigurationProvider::UpdateKeyboards() {
   NotifyAcceleratorsUpdated();
 }
 
+void AcceleratorConfigurationProvider::InitializeNonConfigurableAccelerators(
+    NonConfigurableActionsTextDetailsMap mapping) {
+  non_configurable_actions_mapping_ = std::move(mapping);
+  NotifyAcceleratorsUpdated();
+}
+
 void AcceleratorConfigurationProvider::OnAcceleratorsUpdated(
     mojom::AcceleratorSource source,
     const ActionIdToAcceleratorsMap& mapping) {
@@ -264,42 +237,91 @@ void AcceleratorConfigurationProvider::NotifyAcceleratorsUpdated() {
   }
 }
 
+mojom::TextAcceleratorPropertiesPtr
+AcceleratorConfigurationProvider::CreateTextAcceleratorParts() {
+  // TODO(michaelcheco): Use AcceleratorTextDetails to create
+  // text_parts dynamically.
+  std::vector<mojom::TextAcceleratorPartPtr> text_parts;
+  text_parts.push_back(mojom::TextAcceleratorPart::New(
+      u"ctrl", mojom::TextAcceleratorPartType::kModifier));
+  text_parts.push_back(mojom::TextAcceleratorPart::New(
+      u" + ", mojom::TextAcceleratorPartType::kPlainText));
+  text_parts.push_back(mojom::TextAcceleratorPart::New(
+      u"1 ", mojom::TextAcceleratorPartType::kKey));
+  text_parts.push_back(mojom::TextAcceleratorPart::New(
+      u"through", mojom::TextAcceleratorPartType::kPlainText));
+  text_parts.push_back(mojom::TextAcceleratorPart::New(
+      u"8", mojom::TextAcceleratorPartType::kKey));
+
+  return mojom::TextAcceleratorProperties::New(std::move(text_parts));
+}
+
+mojom::AcceleratorInfoPtr
+AcceleratorConfigurationProvider::CreateTextAcceleratorInfo(
+    const AcceleratorTextDetails& details) {
+  mojom::AcceleratorInfoPtr info_mojom = mojom::AcceleratorInfo::New();
+  info_mojom->locked = true;
+  info_mojom->type = mojom::AcceleratorType::kDefault;
+  info_mojom->state = mojom::AcceleratorState::kEnabled;
+  info_mojom->layout_properties =
+      mojom::LayoutStyleProperties::NewTextAccelerator(
+          CreateTextAcceleratorParts());
+  return info_mojom;
+}
+
+mojom::AcceleratorInfoPtr
+AcceleratorConfigurationProvider::CreateDefaultAcceleratorInfo(
+    const ui::Accelerator& accelerator,
+    bool locked,
+    mojom::AcceleratorType type,
+    mojom::AcceleratorState state) const {
+  mojom::AcceleratorInfoPtr info_mojom = mojom::AcceleratorInfo::New();
+  info_mojom->locked = locked;
+  info_mojom->type = type;
+  info_mojom->state = state;
+  info_mojom->layout_properties =
+      mojom::LayoutStyleProperties::NewDefaultAccelerator(
+          CreateDefaultAcceleratorProps(accelerator));
+
+  return info_mojom;
+}
+
 mojom::AcceleratorInfoPtr
 AcceleratorConfigurationProvider::CreateBaseAcceleratorInfo(
-    ui::Accelerator accelerator) const {
+    const ui::Accelerator& accelerator) const {
   // TODO(longbowei): Some accelerators should not be locked when customization
   // is allowed.
-  return CreateAcceleratorInfo(accelerator, /*locked=*/true,
-                               GetAcceleratorType(accelerator),
-                               mojom::AcceleratorState::kEnabled);
+  return CreateDefaultAcceleratorInfo(accelerator, /*locked=*/true,
+                                      GetAcceleratorType(accelerator),
+                                      mojom::AcceleratorState::kEnabled);
 }
 
 mojom::AcceleratorInfoPtr
 AcceleratorConfigurationProvider::CreateRemappedTopRowAcceleratorInfo(
-    ui::Accelerator accelerator) const {
+    const ui::Accelerator& accelerator) const {
   // Avoid remapping if [Search] is part of original accelerator.
   if (IsModifierSet(accelerator, ui::EF_COMMAND_DOWN) ||
       !TopRowKeysAreFunctionKeys() ||
-      !kLayout2TopRowKeyToFKeyMap.contains(accelerator.key_code())) {
+      !ui::kLayout2TopRowKeyToFKeyMap.contains(accelerator.key_code())) {
     // No remapping is done.
     return nullptr;
   }
   // If top row keys are function keys, top row shortcut will become
   // [Fkey] + [search] + [modifiers]
   ui::Accelerator updated_accelerator(
-      kLayout2TopRowKeyToFKeyMap.at(accelerator.key_code()),
+      ui::kLayout2TopRowKeyToFKeyMap.at(accelerator.key_code()),
       accelerator.modifiers() | ui::EF_COMMAND_DOWN, accelerator.key_state());
   return CreateBaseAcceleratorInfo(updated_accelerator);
 }
 
 mojom::AcceleratorInfoPtr
 AcceleratorConfigurationProvider::CreateRemappedSixPackAcceleratorInfo(
-    ui::Accelerator accelerator) const {
+    const ui::Accelerator& accelerator) const {
   // For all six-pack-keys, avoid remapping if [Search] is part of
   // original accelerator.
   if (IsModifierSet(accelerator, ui::EF_COMMAND_DOWN) ||
       !::features::IsImprovedKeyboardShortcutsEnabled() ||
-      !kSixPackKeyToSystemKeyMap.contains(accelerator.key_code())) {
+      !ui::kSixPackKeyToSystemKeyMap.contains(accelerator.key_code())) {
     return nullptr;
   }
   // Edge cases:
@@ -319,7 +341,7 @@ AcceleratorConfigurationProvider::CreateRemappedSixPackAcceleratorInfo(
           ? accelerator.modifiers() | ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN
           : accelerator.modifiers() | ui::EF_COMMAND_DOWN;
   ui::Accelerator updated_accelerator =
-      ui::Accelerator(kSixPackKeyToSystemKeyMap.at(accelerator.key_code()),
+      ui::Accelerator(ui::kSixPackKeyToSystemKeyMap.at(accelerator.key_code()),
                       updated_modifiers, accelerator.key_state());
 
   return CreateBaseAcceleratorInfo(updated_accelerator);
@@ -327,10 +349,11 @@ AcceleratorConfigurationProvider::CreateRemappedSixPackAcceleratorInfo(
 
 std::vector<mojom::AcceleratorInfoPtr>
 AcceleratorConfigurationProvider::CreateAcceleratorInfoVariants(
-    ui::Accelerator accelerator) const {
+    const ui::Accelerator& accelerator) const {
   std::vector<mojom::AcceleratorInfoPtr> alias_infos;
 
-  if (IsTopRowKey(accelerator.key_code())) {
+  if (Shell::Get()->keyboard_capability()->IsTopRowKey(
+          accelerator.key_code())) {
     // For |top_row_key|, replace the base accelerator info with top-row
     // remapped accelerator info if remapping is done. Otherwise, only show base
     // accelerator info.
@@ -341,7 +364,8 @@ AcceleratorConfigurationProvider::CreateAcceleratorInfoVariants(
     }
   }
 
-  if (IsSixPackKey(accelerator.key_code())) {
+  if (Shell::Get()->keyboard_capability()->IsSixPackKey(
+          accelerator.key_code())) {
     // For |six_pack_key|, show both the base accelerator info and the six-pack
     // remapped accelerator info if remapping is done. Otherwise, only show base
     // accelerator info.
@@ -378,7 +402,34 @@ AcceleratorConfigurationProvider::CreateConfigurationMap() {
     }
     accelerator_config.emplace(source, std::move(accelerators_mojom));
   }
+
+  // Add non-configuarable accelerators.
+  for (const auto& [ambient_action_id, accelerator_text_details] :
+       non_configurable_actions_mapping_) {
+    ActionIdToAcceleratorsInfoMap non_configurable_accelerators;
+    // For text based layout accelerators, we always expect this to be a vector
+    // with a single element.
+    std::vector<mojom::AcceleratorInfoPtr> text_accelerators_info;
+    text_accelerators_info.push_back(
+        CreateTextAcceleratorInfo(accelerator_text_details));
+    non_configurable_accelerators.emplace(ambient_action_id,
+                                          std::move(text_accelerators_info));
+    accelerator_config.emplace(mojom::AcceleratorSource::kAmbient,
+                               std::move(non_configurable_accelerators));
+  }
   return accelerator_config;
+}
+
+std::u16string GetKeyDisplay(ui::KeyboardCode key_code) {
+  // If there's an entry for this key_code in our
+  // map, return that entry's value.
+  auto it = GetKeyDisplayMap().find(key_code);
+  if (it != GetKeyDisplayMap().end()) {
+    return it->second;
+  } else {
+    // Otherwise, get the key_display from a util function.
+    return KeycodeToKeyString(key_code);
+  }
 }
 
 }  // namespace shortcut_ui

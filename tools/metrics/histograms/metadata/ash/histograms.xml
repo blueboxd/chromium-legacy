@@ -346,6 +346,22 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Ash.ArcAppInitialAppsInstallDuration" units="ms"
+    expires_after="2023-12-01">
+  <owner>alemate@chromium.org</owner>
+  <owner>khmel@chromium.org</owner>
+  <owner>arc-performance@google.com</owner>
+  <owner>chromeos-perfmetrics-eng@google.com</owner>
+  <summary>
+    For each user after they opted-in into ARC++, records the duration of
+    initial apps installation. Duration is measured as an interval between the
+    opt-in and the moment when all default apps become either &quot;ready&quot;
+    or &quot;update error&quot;. This is only reported within the same opt-in
+    session, and is not reported if default apps were not installed within the
+    session.
+  </summary>
+</histogram>
+
 <histogram
     name="Ash.Assistant.AnimationSmoothness{AshAssistantAnimationSmoothness}"
     units="%" expires_after="2021-11-21">
@@ -1295,7 +1311,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.CaptureModeController.ScreenshotsPerWeek" units="int"
-    expires_after="2023-04-09">
+    expires_after="2023-06-11">
   <owner>afakhry@chromium.org</owner>
   <owner>gzadina@google.com</owner>
   <summary>
@@ -1913,7 +1929,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.DeskTemplate.AddOrUpdateTemplateStatus"
-    enum="DeskModelAddOrUpdateEntryStatus" expires_after="2023-04-09">
+    enum="DeskModelAddOrUpdateEntryStatus" expires_after="2023-06-11">
   <owner>yzd@google.com</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>
@@ -2236,7 +2252,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.DeviceActivity.MethodCalled" enum="DeviceActivityMethod"
-    expires_after="2023-04-09">
+    expires_after="2023-06-11">
   <owner>hirthanan@google.com</owner>
   <owner>chromeos-data-team@google.com</owner>
   <summary>
@@ -2482,6 +2498,17 @@ chromium-metrics-reviews@google.com.
     starts when we float a window and we record the histogram when the window is
     unfloated. The recording can also happen if a floated window is moved to an
     inactive desk, or the desk changes; we treat this as unfloated.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Float.FloatWindowMoveToAnotherDeskCounts" units="windows"
+    expires_after="2023-12-11">
+  <owner>nupurjain@google.com</owner>
+  <owner>shidi@chromium.org</owner>
+  <owner>sammiequon@chromium.org</owner>
+  <summary>
+    The counts of how many times floated windows moved to another desk per
+    session, which is from the time a user logs in to the time they log off.
   </summary>
 </histogram>
 
@@ -3312,6 +3339,25 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Ash.NotifierFramework.Nudge.TimeToAction.{TimeRange}"
+    enum="NudgeCatalogName" expires_after="2023-02-10">
+  <owner>kradtke@google.com</owner>
+  <owner>cros-status-area-eng@google.com</owner>
+  <summary>
+    Tracks the time from when a specific educational nudge is shown to when it's
+    interacted with. Starts measuring time when the nudge is shown and records
+    the Nudge catalog name in one of the time buckets available if the user
+    performs the expected action that the nudge is informing about. This metric
+    can be compared with `Ash.NotifierFramework.Nudge.ShownCount` to infer the
+    nudge action wasn't taken within that session.
+  </summary>
+  <token key="TimeRange">
+    <variant name="Within1h"/>
+    <variant name="Within1m"/>
+    <variant name="WithinSession"/>
+  </token>
+</histogram>
+
 <histogram name="Ash.NotifierFramework.Toast.Dismissed.{TimeRange}"
     enum="ToastCatalogName" expires_after="2023-02-10">
   <owner>kradtke@google.com</owner>
@@ -3419,7 +3465,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Ash.Overview.AnimationSmoothness.Close" units="%"
-    expires_after="2023-04-10">
+    expires_after="2023-06-11">
 <!-- Name completed by histogram_suffixes
      name="TabletOrClamshellMode" -->
 
@@ -4149,7 +4195,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Shelf.Menu.NumItemsEnabledUponSelection" units="Count"
-    expires_after="2023-04-09">
+    expires_after="2023-06-11">
   <owner>anasalazar@chromium.org</owner>
   <owner>mmourgos@google.com</owner>
   <summary>
@@ -4225,6 +4271,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Ash.Shelf.Palette.Assistant.DeprecateStylusFeaturesToastEvent"
     units="dp" expires_after="2023-04-23">
+  <obsolete>
+    Deprecated in M111.
+  </obsolete>
   <owner>angelaxiao@chromium.org</owner>
   <owner>assistive-eng@google.com</owner>
   <summary>
@@ -5584,7 +5633,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.WindowManager.Lock.Success" units="ms"
-    expires_after="2023-04-09">
+    expires_after="2023-06-11">
   <owner>antrim@chromium.org</owner>
   <owner>cros-lurs@google.com</owner>
   <summary>

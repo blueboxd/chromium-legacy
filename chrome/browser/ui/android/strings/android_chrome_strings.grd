@@ -1156,6 +1156,9 @@ Private state tokens improve privacy on the web and can’t be used to find out 
       <message name="IDS_PRIVACY_SANDBOX_M1_CONSENT_LEARN_MORE_LINK" translateable="false" desc="Privacy Sandbox dialog consent EEA: Non-interactable link out 'Learn more with Google's etc ect'">
         Esed purus vestibulum velit convalli
       </message>
+      <message name="IDS_PRIVACY_SANDBOX_M1_DIALOG_MORE_BUTTON" translateable="false" desc="Privacy Sandbox dialog more button: Clicking on it makes the dialog scrolling to the bottom to show all the content.">
+        More
+      </message>
 
       <!-- Privacy Sandbox v4 - Notice EEA. -->
       <message name="IDS_PRIVACY_SANDBOX_M1_NOTICE_EEA_TITLE" translateable="false" desc="Privacy Sandbox dialog notice EEA: title.">
@@ -1270,17 +1273,26 @@ Private state tokens improve privacy on the web and can’t be used to find out 
       <message name="IDS_AD_PRIVACY_PAGE_TOPICS_LINK_ROW_SUB_LABEL_ENABLED" translateable="false" desc="Description for topics preference when enabled.">
         Enabled Nulla eros tortor, placerat blandit dictum a, interdum id metus
       </message>
+      <message name="IDS_AD_PRIVACY_PAGE_TOPICS_LINK_ROW_SUB_LABEL_DISABLED" translateable="false" desc="Description for topics preference when enabled.">
+        Disabled Nulla eros tortor, placerat blandit dictum a, interdum id metus
+      </message>
       <message name="IDS_AD_PRIVACY_PAGE_FLEDGE_LINK_ROW_LABEL" translateable="false" desc="Title for the fledge preference.">
         Aenean erat leo
       </message>
       <message name="IDS_AD_PRIVACY_PAGE_FLEDGE_LINK_ROW_SUB_LABEL_ENABLED" translateable="false" desc="Description for the fledge preference when enabled.">
         Enabled Duis scelerisque a mi eget ultricies
       </message>
+      <message name="IDS_AD_PRIVACY_PAGE_FLEDGE_LINK_ROW_SUB_LABEL_DISABLED" translateable="false" desc="Description for the fledge preference when enabled.">
+        Disabled Duis scelerisque a mi eget ultricies
+      </message>
       <message name="IDS_AD_PRIVACY_PAGE_AD_MEASUREMENT_LINK_ROW_LABEL" translateable="false" desc="Title for the ad measurement preference.">
         Vestibulum augue erat
       </message>
       <message name="IDS_AD_PRIVACY_PAGE_AD_MEASUREMENT_LINK_ROW_SUB_LABEL_ENABLED" translateable="false" desc="Description for the ad measurement preference when enabled.">
         Enabled Vivamus id lacus et lacus porttitor vulputate. Sed semper egestas orci vel maximus.
+      </message>
+      <message name="IDS_AD_PRIVACY_PAGE_AD_MEASUREMENT_LINK_ROW_SUB_LABEL_DISABLED" translateable="false" desc="Description for the ad measurement preference when enabled.">
+        Disabled Vivamus id lacus et lacus porttitor vulputate. Sed semper egestas orci vel maximus.
       </message>
 
       <!-- Privacy Sandbox v4 - Topics Page -->
@@ -1358,6 +1370,9 @@ Private state tokens improve privacy on the web and can’t be used to find out 
       <!-- TODO(http://b/254412044): Format links.-->
       <message name="IDS_SETTINGS_FLEDGE_PAGE_FOOTER" translateable="false" desc="">
         Pellentesque sollicitudin purus sit amet felis fringilla blandit. Donec a eleifend ligula, <ph name="BEGIN_LINK_1">&lt;link1&gt;</ph>et fringilla nunc<ph name="END_LINK_1">&lt;/link1&gt;</ph>. Vivamus sit amet <ph name="BEGIN_LINK_2">&lt;link2&gt;</ph>cursus quam<ph name="END_LINK_2">&lt;/link2&gt;</ph>. Etiam ultricies rutrum orci, eget accumsan purus mattis in.
+      </message>
+      <message name="IDS_SETTINGS_FLEDGE_ALL_SITES_SUB_PAGE_TITLE" translateable="false" desc="">
+        Orci varius
       </message>
 
       <!-- Privacy Sandbox v4 - Ad Measurement Page -->
@@ -1575,16 +1590,16 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_PRIVACY_GUIDE_MSBB_ITEM_FOUR" desc="Fourth bullet point that describes the details of the MSBB toggle.">
         If you also share Chrome usage reports, those reports include the URLs you visit
       </message>
-      <message name="IDS_PRIVACY_GUIDE_SYNC_TOGGLE" desc="Title for the history sync toggle.">
+      <message name="IDS_PRIVACY_GUIDE_HISTORY_SYNC_TOGGLE" desc="Title for the history sync toggle.">
         History sync
       </message>
-      <message name="IDS_PRIVACY_GUIDE_SYNC_ITEM_ONE" desc="First bullet point that describes the details of the history sync toggle.">
+      <message name="IDS_PRIVACY_GUIDE_HISTORY_SYNC_ITEM_ONE" desc="First bullet point that describes the details of the history sync toggle.">
         You’ll have your history on all your synced devices so you can continue what you were doing
       </message>
-      <message name="IDS_PRIVACY_GUIDE_SYNC_ITEM_TWO" desc="Second bullet point that describes the details of the history sync toggle.">
+      <message name="IDS_PRIVACY_GUIDE_HISTORY_SYNC_ITEM_TWO" desc="Second bullet point that describes the details of the history sync toggle.">
         If Google is also your default search engine, you’ll see better, contextually relevant suggestions
       </message>
-      <message name="IDS_PRIVACY_GUIDE_SYNC_ITEM_THREE" desc="Third bullet point that describes the details of the history sync toggle.">
+      <message name="IDS_PRIVACY_GUIDE_HISTORY_SYNC_ITEM_THREE" desc="Third bullet point that describes the details of the history sync toggle.">
         The URLs you visit are saved to your Google Account
       </message>
       <message name="IDS_PRIVACY_GUIDE_COOKIES_INTRO" desc="Text introducing the cookies control.">
@@ -1971,13 +1986,13 @@ Your Google account may have other forms of browsing history like searches and a
       </message>
 
         <!-- Mixed content download -->
-        <message name="IDS_MIXED_CONTENT_DOWNLOAD_DIALOG_TITLE" desc="Title of the dialog for asking user to confirm a mixed content download">
+        <message name="IDS_INSECURE_DOWNLOAD_DIALOG_TITLE" desc="Title of the dialog for asking user to confirm an insecure download">
           File can’t be downloaded securely
         </message>
-        <message name="IDS_MIXED_CONTENT_DOWNLOAD_DIALOG_CONFIRM_TEXT" desc="Text label for the confirm button on the mixed content download dialog for user to confirm the download.">
+        <message name="IDS_INSECURE_DOWNLOAD_DIALOG_CONFIRM_TEXT" desc="Text label for the confirm button on the insecure download dialog for user to confirm the download.">
           Keep
         </message>
-        <message name="IDS_MIXED_CONTENT_DOWNLOAD_DIALOG_DISCARD_TEXT" desc="Text label for the cancel button on the mixed content download dialog for user to confirm the download.">
+        <message name="IDS_INSECURE_DOWNLOAD_DIALOG_DISCARD_TEXT" desc="Text label for the cancel button on the insecure download dialog for user to confirm the download.">
           Discard
         </message>
 
@@ -3546,7 +3561,7 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Restore tab group of <ph name="TAB_COUNT">%1$s<ex>5</ex></ph> tabs as a new background tab group.
       </message>
       <message name="IDS_WEB_FEED_AWARENESS" desc="Educating the user about the web feed.">
-        See sites you follow here
+        See content you follow here
       </message>
 
       <!-- Explore sites strings -->
@@ -4474,8 +4489,8 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_WEB_FEED_FOLLOW_SUCCESS_SNACKBAR_ACTION_GO_TO_FOLLOWING" desc="The snackbar action after a successful Web Feed follow request, that will take the user to the Following feed.">
         Go to Following
       </message>
-      <message name="IDS_WEB_FEED_FOLLOW_SUCCESS_SNACKBAR_ACTION_REFRESH" desc="The snackbar action after a successful Web Feed follow request, that will refresh the Following feed contents.">
-        Refresh to view
+      <message name="IDS_WEB_FEED_FOLLOW_SUCCESS_SNACKBAR_ACTION_REFRESH" desc="The snackbar action after a successful Web Feed follow request, that will refresh the Following feed contents. [CHAR_LIMIT=20]">
+        Refresh
       </message>
       <message name="IDS_WEB_FEED_FOLLOW_GENERIC_FAILURE_SNACKBAR_MESSAGE" desc="The generic snackbar message after an unsuccessful Web Feed follow request.">
         Can’t follow. Something went wrong.

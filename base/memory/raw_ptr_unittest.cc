@@ -36,6 +36,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 
 #if defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
 #include "base/allocator/partition_allocator/partition_tag_types.h"
@@ -43,6 +44,7 @@
 
 #if BUILDFLAG(USE_ASAN_BACKUP_REF_PTR)
 #include <sanitizer/asan_interface.h>
+#include "base/debug/asan_service.h"
 #endif
 
 using testing::AllOf;
@@ -56,7 +58,8 @@ static_assert(sizeof(raw_ptr<int>) == sizeof(int*),
 static_assert(sizeof(raw_ptr<std::string>) == sizeof(std::string*),
               "raw_ptr shouldn't add memory overhead");
 
-#if !BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
+#if !BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) && \
+    !BUILDFLAG(USE_ASAN_UNOWNED_PTR)
 // |is_trivially_copyable| assertion means that arrays/vectors of raw_ptr can
 // be copied by memcpy.
 static_assert(std::is_trivially_copyable<raw_ptr<void>>::value,
@@ -206,6 +209,19 @@ TEST_F(RawPtrTest, NullExtractNoDereference) {
   // No dereference hence shouldn't crash.
   int* raw = ptr;
   std::ignore = raw;
+  EXPECT_THAT((CountingRawPtrExpectations{.get_for_dereference_cnt = 0,
+                                          .get_for_extraction_cnt = 1,
+                                          .get_for_comparison_cnt = 0}),
+              CountingRawPtrHasCounts());
+}
+
+TEST_F(RawPtrTest, InvalidExtractNoDereference) {
+  // Some code uses invalid pointer values as indicators, so those values must
+  // be accepted by raw_ptr and passed through unchanged during extraction.
+  int* inv_ptr = reinterpret_cast<int*>(~static_cast<uintptr_t>(0));
+  CountingRawPtr<int> ptr = inv_ptr;
+  int* raw = ptr;
+  EXPECT_EQ(raw, inv_ptr);
   EXPECT_THAT((CountingRawPtrExpectations{.get_for_dereference_cnt = 0,
                                           .get_for_extraction_cnt = 1,
                                           .get_for_comparison_cnt = 0}),
@@ -1313,6 +1329,39 @@ class PmfTestDerived : public PmfTestBase {
   int MemFunc(float, double) { return 22; }
 };
 
+TEST_F(RawPtrTest, WorksWithOptional) {
+  int x = 0;
+  absl::optional<raw_ptr<int>> maybe_int;
+  EXPECT_FALSE(maybe_int.has_value());
+
+  maybe_int = nullptr;
+  ASSERT_TRUE(maybe_int.has_value());
+  EXPECT_EQ(nullptr, maybe_int.value());
+
+  maybe_int = &x;
+  ASSERT_TRUE(maybe_int.has_value());
+  EXPECT_EQ(&x, maybe_int.value());
+}
+
+TEST_F(RawPtrTest, WorksWithVariant) {
+  int x = 100;
+  absl::variant<int, raw_ptr<int>> vary;
+  ASSERT_EQ(0u, vary.index());
+  EXPECT_EQ(0, absl::get<int>(vary));
+
+  vary = x;
+  ASSERT_EQ(0u, vary.index());
+  EXPECT_EQ(100, absl::get<int>(vary));
+
+  vary = nullptr;
+  ASSERT_EQ(1u, vary.index());
+  EXPECT_EQ(nullptr, absl::get<raw_ptr<int>>(vary));
+
+  vary = &x;
+  ASSERT_EQ(1u, vary.index());
+  EXPECT_EQ(&x, absl::get<raw_ptr<int>>(vary));
+}
+
 }  // namespace
 
 namespace base {
@@ -1839,17 +1888,91 @@ TEST_F(BackupRefPtrTest, SpatialAlgoCompat) {
   ASSERT_EQ(
       requested_size,
       allocator_.root()->AllocationCapacityFromRequestedSize(requested_size));
+  size_t requested_elements = requested_size / sizeof(int);
 
   int* ptr =
       reinterpret_cast<int*>(allocator_.root()->Alloc(requested_size, ""));
-  raw_ptr<int> protected_ptr = ptr;
+  int* ptr_end = ptr + requested_elements;
+
+  RawPtrCountingImpl::ClearCounters();
+
+  CountingRawPtr<int> protected_ptr = ptr;
+  CountingRawPtr<int> protected_ptr_end = protected_ptr + requested_elements;
+
+#if defined(PA_USE_OOB_POISON)
+  EXPECT_DEATH_IF_SUPPORTED(*protected_ptr_end = 1, "");
+#endif
 
   int gen_val = 1;
-  std::generate(protected_ptr, protected_ptr + requested_size / sizeof(int),
-                [&gen_val]() {
-                  gen_val ^= gen_val + 1;
-                  return gen_val;
-                });
+  std::generate(protected_ptr, protected_ptr_end, [&gen_val]() {
+    gen_val ^= gen_val + 1;
+    return gen_val;
+  });
+
+  EXPECT_THAT((CountingRawPtrExpectations{
+                  .get_for_dereference_cnt = requested_elements,
+                  .get_for_extraction_cnt = 0,
+                  .get_for_comparison_cnt = (requested_elements + 1) * 2,
+              }),
+              CountingRawPtrHasCounts());
+
+  RawPtrCountingImpl::ClearCounters();
+
+  for (CountingRawPtr<int> protected_ptr_i = protected_ptr;
+       protected_ptr_i < protected_ptr_end; protected_ptr_i++) {
+    *protected_ptr_i ^= *protected_ptr_i + 1;
+  }
+
+  EXPECT_THAT((CountingRawPtrExpectations{
+                  .get_for_dereference_cnt = requested_elements * 2,
+                  .get_for_extraction_cnt = 0,
+                  .get_for_comparison_cnt = (requested_elements + 1) * 2,
+              }),
+              CountingRawPtrHasCounts());
+
+  RawPtrCountingImpl::ClearCounters();
+
+  for (CountingRawPtr<int> protected_ptr_i = protected_ptr;
+       protected_ptr_i < ptr_end; protected_ptr_i++) {
+    *protected_ptr_i ^= *protected_ptr_i + 1;
+  }
+
+  EXPECT_THAT((CountingRawPtrExpectations{
+                  .get_for_dereference_cnt = requested_elements * 2,
+                  .get_for_extraction_cnt = 0,
+                  .get_for_comparison_cnt = requested_elements + 1,
+              }),
+              CountingRawPtrHasCounts());
+
+  RawPtrCountingImpl::ClearCounters();
+
+  for (int* ptr_i = ptr; ptr_i < protected_ptr_end; ptr_i++) {
+    *ptr_i ^= *ptr_i + 1;
+  }
+
+  EXPECT_THAT((CountingRawPtrExpectations{
+                  .get_for_dereference_cnt = 0,
+                  .get_for_extraction_cnt = 0,
+                  .get_for_comparison_cnt = requested_elements + 1,
+              }),
+              CountingRawPtrHasCounts());
+
+  RawPtrCountingImpl::ClearCounters();
+
+  size_t iter_cnt = 0;
+  for (int *ptr_i = protected_ptr, *ptr_i_end = protected_ptr_end;
+       ptr_i < ptr_i_end; ptr_i++) {
+    *ptr_i ^= *ptr_i + 1;
+    iter_cnt++;
+  }
+  EXPECT_EQ(iter_cnt, requested_elements);
+
+  EXPECT_THAT((CountingRawPtrExpectations{
+                  .get_for_dereference_cnt = 0,
+                  .get_for_extraction_cnt = 2,
+                  .get_for_comparison_cnt = 0,
+              }),
+              CountingRawPtrHasCounts());
 
   allocator_.root()->Free(ptr);
 }
@@ -1867,6 +1990,14 @@ TEST_F(BackupRefPtrTest, Duplicate) {
   // The poison bit should be propagated to the duplicate such that the OOB
   // access is disallowed:
   EXPECT_DEATH_IF_SUPPORTED(*protected_ptr2 = ' ', "");
+
+  // Assignment from a poisoned pointer should be allowed.
+  raw_ptr<char> protected_ptr3;
+  protected_ptr3 = protected_ptr1;
+
+  // The poison bit should be propagated via the assignment such that the OOB
+  // access is disallowed:
+  EXPECT_DEATH_IF_SUPPORTED(*protected_ptr3 = ' ', "");
 
   allocator_.root()->Free(ptr);
 }
@@ -1914,6 +2045,8 @@ const char kAsanBrpMaybeProtected_ThreadPool[] =
 class AsanBackupRefPtrTest : public testing::Test {
  protected:
   void SetUp() override {
+    base::debug::AsanService::GetInstance()->Initialize();
+
     if (!RawPtrAsanService::GetInstance().IsEnabled()) {
       base::RawPtrAsanService::GetInstance().Configure(
           base::EnableDereferenceCheck(true), base::EnableExtractionCheck(true),

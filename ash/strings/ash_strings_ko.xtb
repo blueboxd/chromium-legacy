@@ -7,6 +7,7 @@
 <translation id="1024364763893396229"><ph name="NAME" /> 저장</translation>
 <translation id="1032891413405719768">스타일러스 배터리 부족</translation>
 <translation id="1036073649888683237">알림을 관리하려면 설정으로 이동하세요.</translation>
+<translation id="1036348656032585052">사용 중지</translation>
 <translation id="1036672894875463507">저는 Google 어시스턴트입니다. 언제든지 도움을 드릴 수 있습니다.
 다음과 같은 작업으로 어시스턴트 사용을 시작해 보세요.</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> 추가됨</translation>
@@ -100,6 +101,7 @@
 <translation id="1447641497144572814">화면 보호기 시작</translation>
 <translation id="1455242230282523554">언어 설정 표시</translation>
 <translation id="1460620680449458626">음소거되어 있습니다.</translation>
+<translation id="14648076227129703">카메라 액세스 권한이 있는 <ph name="APP1_NAME" />, <ph name="APP2_NAME" /> 앱을 포함한 모든 앱 및 웹사이트에서 카메라에 액세스할 수 있게 됩니다.</translation>
 <translation id="1467432559032391204">왼쪽</translation>
 <translation id="146902737843070955">관리자가 요청한 변경사항입니다.</translation>
 <translation id="147310119694673958">휴대전화 배터리 <ph name="BATTERY_PERCENTAGE" />%</translation>
@@ -159,6 +161,7 @@
 <translation id="1797271123677381264">비밀번호 찾기</translation>
 <translation id="181103072419391116">신호 강도 <ph name="SIGNAL_STRENGTH" />, 관리자가 관리함</translation>
 <translation id="1812997170047690955">화면에 표시된 내용 찾아보기</translation>
+<translation id="1816896987747843206">카메라 액세스 권한이 있는 모든 앱 및 웹사이트에서 카메라에 액세스할 수 있게 됩니다.</translation>
 <translation id="1823280932251546115">상태 표시줄, 시간 <ph name="TIME" />,
         <ph name="BATTERY" />
         <ph name="CHANNEL" />
@@ -172,10 +175,10 @@
 <translation id="1830308660060964064"><ph name="ITEM_TITLE" /> 고정 취소됨</translation>
 <translation id="1836215606488044471">어시스턴트(로드 중...)</translation>
 <translation id="1838895407229022812">야간 조명이 꺼졌습니다.</translation>
+<translation id="1854180393107901205">전송 중지</translation>
 <translation id="1862380676329487333">업데이트 및 로그아웃</translation>
 <translation id="1864454756846565995">USB-C 기기(후면 포트)</translation>
 <translation id="1869497990620230175">빠른 파일</translation>
-<translation id="1871703283152909317">두 액세스 모두 사용 설정</translation>
 <translation id="1879018240766558464">시크릿 창은 현재 지원되지 않습니다. 다른 앱은 저장됩니다.</translation>
 <translation id="1882814835921407042">모바일 네트워크 없음</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" />에 미러링</translation>
@@ -213,7 +216,6 @@
 <translation id="2064048859448024834">동영상 카메라 미리보기 켜짐</translation>
 <translation id="2067602449040652523">키보드 밝기</translation>
 <translation id="2078034614700056995">다음 데스크로 전환하려면 네 손가락을 사용해 오른쪽으로 스와이프하세요.</translation>
-<translation id="2079504693865562705">실행기에서 앱 숨기기</translation>
 <translation id="2079545284768500474">실행취소</translation>
 <translation id="2083190527011054446">편안한 밤 보내세요, <ph name="GIVEN_NAME" />님</translation>
 <translation id="2088116547584365419">게임</translation>
@@ -598,6 +600,7 @@
 <translation id="4316910396681052118">모든 앱</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4322742403972824594">Ctrl + Alt + 위쪽 화살표 단축키가 변경되었습니다. Home 키를 사용하려면 <ph name="LAUNCHER_KEY_NAME" /> 키 + 왼쪽 화살표 키를 누르세요.</translation>
+<translation id="4324840740119394760">카메라 액세스 권한이 있는 <ph name="APP_NAME" /> 앱을 포함한 모든 앱 및 웹사이트에서 카메라에 액세스할 수 있게 됩니다.</translation>
 <translation id="4333628967105022692">Lacros는 여러 사용자가 로그인된 상태에서 지원되지 않습니다.</translation>
 <translation id="4338109981321384717">돋보기</translation>
 <translation id="4351433414020964307">어시스턴트 로드 중...</translation>
@@ -664,13 +667,13 @@
 <ph name="QUERY" /></translation>
 <translation id="4659419629803378708">ChromeVox가 사용 설정됨</translation>
 <translation id="4665114317261903604">방해 금지 모드를 켜고 끕니다. <ph name="STATE_TEXT" /></translation>
-<translation id="4666082839192943839">모든 카메라를 항상 차단하려면 이 기기에서 카메라 액세스를 사용 중지하세요.</translation>
 <translation id="4666911709726371538">앱 더보기</translation>
 <translation id="4667099493359681081"><ph name="FILENAME" /> 파일을 다운로드하는 중입니다</translation>
 <translation id="468293128311738995">휴대전화 앱</translation>
 <translation id="4690510401873698237">실행기 하단에 표시</translation>
 <translation id="4696813013609194136">부모 코드로 기기 잠금 해제</translation>
 <translation id="4702647871202761252">개인정보 보호 화면이 꺼져 있습니다</translation>
+<translation id="4706121060329443414">다운로드가 나중에 시도됩니다. 일단 처리를 위해 음성 파일이 Google로 전송됩니다.</translation>
 <translation id="470644585772471629">색상 반전</translation>
 <translation id="4717575069099566988">사용 중인 USB-C 케이블은 USB4를 지원하지 않습니다. 기기 성능이 제한될 수 있습니다.</translation>
 <translation id="4730374152663651037">자주 사용하는 앱</translation>
@@ -696,7 +699,6 @@
 <translation id="485592688953820832">작업 없음(일시중지)</translation>
 <translation id="485634149294284819">키보드 선택 메뉴</translation>
 <translation id="4860284199500934869"><ph name="FILENAME" /> 파일을 다운로드하려면 네트워크 연결 상태를 확인하세요.</translation>
-<translation id="486056901304535126">다운로드가 나중에 시도됩니다. 다운로드가 완료될 때까지는 음성이 Google로 전송되어 처리됩니다.</translation>
 <translation id="4864369630010738180">로그인 중...</translation>
 <translation id="4864648187878336334">데스크 15</translation>
 <translation id="4868492592575313542">활성화됨</translation>
@@ -791,6 +793,7 @@
 <translation id="5356963482258194581">밝은 테마와 어두운 테마 간에 전환합니다. 바탕화면을 마우스 오른쪽 버튼으로 클릭하고 배경화면/스타일을 선택하세요.</translation>
 <translation id="536019650977002321">관리자가 오디오 캡처를 허용하지 않습니다. 자세한 내용은 관리자에게 문의하세요.</translation>
 <translation id="5363163447017455357"><ph name="DELIMITER" /> 이 탭으로 이동</translation>
+<translation id="5377367976106153749">카메라 액세스 권한을 부여하시겠습니까?</translation>
 <translation id="5379115545237091094">시도 횟수가 너무 많음</translation>
 <translation id="5391307769715781764">저장된 데스크를 대체하시겠습니까?</translation>
 <translation id="5393156353051693207">앱을 재정렬하려면 아무 곳이나 길게 터치합니다</translation>
@@ -922,7 +925,6 @@
 <translation id="6095008505822982596">말하는 속도</translation>
 <translation id="6099678161144790572">지난달에 수정됨</translation>
 <translation id="6103838137565245112">시스템</translation>
-<translation id="6107292179555508368">기기에서 마이크 및 카메라 액세스가 사용 중지되어 있습니다</translation>
 <translation id="6114505516289286752">음성 파일 <ph name="LANGUAGE" />개 다운로드됨</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />, <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042"><ph name="FILENAME" /> 다운로드 확인</translation>
@@ -949,7 +951,6 @@
 <translation id="6259254695169772643">스타일러스로 선택하세요.</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: 활성화 중...</translation>
 <translation id="6274202259872570803">스크린캐스트</translation>
-<translation id="6282694724099204652">액세스를 사용 설정하여 이 기기에서 마이크 및 카메라 사용 권한이 있는 앱과 웹페이지를 허용하세요.</translation>
 <translation id="6283712521836204486">방해 금지 모드가 사용 중지되어 있습니다.</translation>
 <translation id="6284232397434400372">해상도가 변경됨</translation>
 <translation id="6288235558961782912"><ph name="USER_EMAIL_ADDRESS" />은(는) 나중에 부모님의 허락을 받아 다시 추가할 수 있습니다.</translation>
@@ -1177,7 +1178,6 @@
 <translation id="7557816257942363084"><ph name="APP_NAME" />에서 마이크를 사용 중입니다.</translation>
 <translation id="7561982940498449837">메뉴 닫기</translation>
 <translation id="7564874036684306347">창을 다른 데스크톱으로 이동하면 예기치 못한 동작이 나타날 수 있습니다. 이후의 알림, 창, 대화상자가 데스크톱 간에 분할될 수 있습니다.</translation>
-<translation id="7567076708801803118">이 기기에서 카메라 액세스를 사용 중지하시겠습니까?</translation>
 <translation id="7569509451529460200">점자와 ChromeVox가 사용 설정되었습니다.</translation>
 <translation id="7573585051776738856">활성 창이 오른쪽에 고정되었습니다.</translation>
 <translation id="7579778809502851308">화면 캡처</translation>
@@ -1190,7 +1190,6 @@
 <translation id="761736749114493194">카메라 프레이밍을 전환합니다. <ph name="STATE_TEXT" /></translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />°F</translation>
 <translation id="7634648064048557203">카메라 미리보기가 오른쪽 하단으로 맞춰졌습니다</translation>
-<translation id="7641938616688887143">녹화</translation>
 <translation id="7642106959537987271">색상 반전 모드</translation>
 <translation id="7642647758716480637"><ph name="NETWORK_NAME" /> 설정 열기, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" />(소유자)</translation>
@@ -1213,7 +1212,6 @@
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{알림 1개}other{알림 #개}}</translation>
 <translation id="7724603315864178912">잘라내기</translation>
 <translation id="7742327441377685481">알림 없음</translation>
-<translation id="7745560842763881396">실행기에 앱 표시</translation>
 <translation id="7749443890790263709">최대 데스크 개수에 도달했습니다.</translation>
 <translation id="776344839111254542">업데이트 세부정보를 보려면 클릭하세요.</translation>
 <translation id="7768784765476638775">텍스트 읽어주기</translation>
@@ -1253,6 +1251,7 @@
 <translation id="79341161159229895">계정 관리자: <ph name="FIRST_PARENT_EMAIL" /> 및 <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="793716872548410480">클립보드를 보려면 <ph name="SHORTCUT_KEY_NAME" /> + V 키를 누르세요. 최근 복사한 5개 항목이 클립보드에 저장되어 있습니다.</translation>
 <translation id="7942349550061667556">빨간색</translation>
+<translation id="7963992254934562106">출처: <ph name="PHONE_NAME" /></translation>
 <translation id="7968693143708939792">폴더 선택...</translation>
 <translation id="7977927628060636163">모바일 네트워크 검색 중...</translation>
 <translation id="7982789257301363584">네트워크</translation>
@@ -1491,6 +1490,7 @@
 <translation id="954052413789300507"><ph name="FILENAME" /> 파일을 저장할 공간이 부족합니다. 기기 여유 공간을 확보하세요.</translation>
 <translation id="974545358917229949"><ph name="QUERY" /> 검색결과 <ph name="RESULT_COUNT" />개 표시 중</translation>
 <translation id="98515147261107953">가로 방향</translation>
+<translation id="989374776391122812">카메라 및 오디오 설정</translation>
 <translation id="990277280839877440"><ph name="WINDOW_TITILE" /> 창이 닫혔습니다.</translation>
 <translation id="994354411665877646"><ph name="NETWORK_NAME" />, <ph name="SUBTEXT" /></translation>
 <translation id="996204416024568215">최신 기능과 보안 개선 사항을 받습니다. 업데이트는 백그라운드에서 이루어집니다.</translation>

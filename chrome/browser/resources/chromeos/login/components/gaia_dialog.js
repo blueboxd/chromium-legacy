@@ -26,12 +26,12 @@ import './common_styles/oobe_common_styles.m.js';
 import './common_styles/oobe_dialog_host_styles.m.js';
 import './dialogs/oobe_content_dialog.js';
 
-import {sendWithPromise} from '//resources/js/cr.m.js';
+import {sendWithPromise} from '//resources/ash/common/cr.m.js';
 import {html, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Authenticator, AuthFlow} from '../../../gaia_auth_host/authenticator.js';
 
-import {OobeDialogHostBehavior} from './behaviors/oobe_dialog_host_behavior.m.js';
+import {OobeDialogHostBehavior} from './behaviors/oobe_dialog_host_behavior.js';
 import {OobeI18nBehavior, OobeI18nBehaviorInterface} from './behaviors/oobe_i18n_behavior.js';
 import {OobeTypes} from './oobe_types.js';
 
@@ -326,7 +326,7 @@ class GaiaDialog extends GaiaDialogBase {
         chrome.send(
             'metricsHandler:recordBooleanHistogram',
             [CHROMEOS_GAIA_PASSWORD_METRIC, false]);
-        chrome.send('passwordEntered');
+        chrome.send('login.GaiaSigninScreen.userActed', ['passwordEntered']);
       },
       'authCompleted': (e) => {
         // Only record the metric for Gaia flow without 3rd-party SAML IdP.

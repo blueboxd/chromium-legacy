@@ -435,7 +435,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.AccountChooserDialogOneAccount"
-    enum="AccountChooserDismissalReason" expires_after="2023-04-09">
+    enum="AccountChooserDismissalReason" expires_after="2023-06-11">
   <owner>vasilii@chromium.org</owner>
   <owner>kazinova@google.com</owner>
   <summary>
@@ -667,6 +667,21 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.AddCredentialFromSettings.UserAction"
+    enum="AddCredentialFromSettingsUserInteractions" expires_after="2023-06-04">
+  <obsolete>
+    Obsolete in M110 because imported passwords were counted as manually added:
+    https://crbug.com/1400263. Replaced with
+    PasswordManager.AddCredentialFromSettings.UserAction2 histogram.
+  </obsolete>
+  <owner>vidhanj@google.com</owner>
+  <owner>lizapopova@google.com</owner>
+  <summary>
+    Records the user actions performed when a new credential is added from
+    Settings. Only applicable to Desktop and iOS platforms.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.AddCredentialFromSettings.UserAction2"
     enum="AddCredentialFromSettingsUserInteractions" expires_after="2023-06-04">
   <owner>vidhanj@google.com</owner>
   <owner>lizapopova@google.com</owner>
@@ -1070,17 +1085,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="PasswordManager.BulkCheck.ScriptsCacheState"
-    enum="PasswordCheckScriptsCacheState" expires_after="2023-07-04">
-  <owner>brunobraga@google.com</owner>
-  <owner>jkeitel@google.com</owner>
-  <summary>
-    The state of the scripts cache for automatic password changed that is
-    encountered on opening the password check subpage on Desktop and the UI
-    reaction to it.
-  </summary>
-</histogram>
-
 <histogram name="PasswordManager.BulkCheck.Time" units="ms"
     expires_after="2023-05-07">
   <owner>vasilii@chromium.org</owner>
@@ -1200,6 +1204,34 @@ chromium-metrics-reviews@google.com.
     <variant name="FederatedCredential"/>
     <variant name="SavedPassword"/>
   </token>
+</histogram>
+
+<histogram
+    name="PasswordManager.CredentialManager.{ProfileType}.GetIntent.APIError"
+    enum="PasswordStoreAndroidBackendAPIError" expires_after="M114">
+  <owner>ioanap@chromium.org</owner>
+  <owner>maxan@google.com</owner>
+  <summary>
+    Records the API error code encountered while attempting to fetch the
+    Credential Manager launch intent from Google Play Services for the
+    {ProfileType}. This is recorded after the asynchronous call comes back with
+    an error.
+  </summary>
+  <token key="ProfileType" variants="ProfileType"/>
+</histogram>
+
+<histogram
+    name="PasswordManager.CredentialManager.{ProfileType}.GetIntent.APIError.ConnectionResultCode"
+    enum="PasswordStoreAndroidBackendConnectionResultCode" expires_after="M114">
+  <owner>ioanap@chromium.org</owner>
+  <owner>maxan@google.com</owner>
+  <summary>
+    Records the API error code encountered while attempting to fetch the
+    Credential Manager launch intent from Google Play Services for the
+    {ProfileType}. This is recorded after the asynchronous call comes back with
+    an error only if ConnectionResult was set on the returned error.
+  </summary>
+  <token key="ProfileType" variants="ProfileType"/>
 </histogram>
 
 <histogram
@@ -1659,7 +1691,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.Import.DesktopInteractions"
-    enum="PasswordsImportDesktopInteractions" expires_after="2023-04-09">
+    enum="PasswordsImportDesktopInteractions" expires_after="2023-06-11">
   <owner>eliaskh@chromium.org</owner>
   <owner>natiahlyi@google.com</owner>
   <summary>
@@ -1669,7 +1701,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.ImportDuration" units="ms"
-    expires_after="2023-04-09">
+    expires_after="2023-06-11">
   <owner>eliaskh@chromium.org</owner>
   <owner>natiahlyi@google.com</owner>
   <summary>
@@ -1704,7 +1736,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.ImportFileSize" units="bytes"
-    expires_after="2023-04-09">
+    expires_after="2023-06-11">
   <owner>eliaskh@chromium.org</owner>
   <owner>natiahlyi@google.com</owner>
   <summary>
@@ -1715,7 +1747,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.ImportResultsStatus"
-    enum="PasswordManagerImportResultsStatus" expires_after="2023-04-09">
+    enum="PasswordManagerImportResultsStatus" expires_after="2023-06-11">
   <owner>eliaskh@chromium.org</owner>
   <owner>natiahlyi@google.com</owner>
   <summary>
@@ -2283,43 +2315,6 @@ chromium-metrics-reviews@google.com.
 
     During M61/M62 this metric logged a &quot;1&quot; for every sync-reuse. It
     was fixed in M63 such that it logs actual Password Manager credential count.
-  </summary>
-</histogram>
-
-<histogram name="PasswordManager.PasswordScriptsFetcher.CacheState"
-    enum="PasswordScriptsFetcherCacheState" expires_after="2023-04-30">
-  <owner>kolos@chromium.org</owner>
-  <owner>battre@chromium.org</owner>
-  <summary>
-    PasswordScriptsFetcher's cache state when the fetcher is requested to return
-    script availability.
-  </summary>
-</histogram>
-
-<histogram
-    name="PasswordManager.PasswordScriptsFetcher.HttpResponseAndNetErrorCode"
-    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2023-04-30">
-  <owner>kolos@chromium.org</owner>
-  <owner>battre@chromium.org</owner>
-  <summary>
-    HTTP response code or network error code of fetching a list of available
-    password scripts.
-  </summary>
-</histogram>
-
-<histogram name="PasswordManager.PasswordScriptsFetcher.ParsingResult"
-    enum="PasswordScriptsFetcherParsingResult" expires_after="2023-04-30">
-  <owner>kolos@chromium.org</owner>
-  <owner>battre@chromium.org</owner>
-  <summary>Result of parsing of a list of available password scripts.</summary>
-</histogram>
-
-<histogram name="PasswordManager.PasswordScriptsFetcher.ResponseTime"
-    units="ms" expires_after="2023-05-07">
-  <owner>kolos@chromium.org</owner>
-  <owner>battre@chromium.org</owner>
-  <summary>
-    Response time for fetching a list of available password scripts.
   </summary>
 </histogram>
 
@@ -3002,7 +2997,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.ReusedPasswordType" enum="ReusedPasswordType"
-    expires_after="2023-04-09">
+    expires_after="2023-06-11">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -3053,38 +3048,6 @@ chromium-metrics-reviews@google.com.
     <variant name=".Sync"
         summary="when the primary account for the profile has Sync consent"/>
   </token>
-</histogram>
-
-<histogram
-    name="PasswordManager.SavedPasswordsCapabilitiesFetcher.AllOriginsResponseTime"
-    units="ms" expires_after="2023-04-16">
-  <owner>vizcay@google.com</owner>
-  <owner>battre@chromium.org</owner>
-  <summary>
-    Response time for fetching password change capabilities for all stored
-    passwords urls. It is also recorded if the fetch fails.
-  </summary>
-</histogram>
-
-<histogram name="PasswordManager.SavedPasswordsCapabilitiesFetcher.CacheState"
-    enum="PasswordScriptsFetcherCacheState" expires_after="2023-04-16">
-  <owner>vizcay@google.com</owner>
-  <owner>battre@chromium.org</owner>
-  <summary>
-    PasswordScriptsFetcher's cache state when the fetcher is asked to refresh
-    scripts if necessary.
-  </summary>
-</histogram>
-
-<histogram
-    name="PasswordManager.SavedPasswordsCapabilitiesFetcher.SingleOriginResponseTime"
-    units="ms" expires_after="2023-04-16">
-  <owner>vizcay@google.com</owner>
-  <owner>battre@chromium.org</owner>
-  <summary>
-    Response time for fetching password change capabilities for a single domain.
-    It is also recorded if the fetch fails.
-  </summary>
 </histogram>
 
 <histogram name="PasswordManager.SaveUIDismissalReasonAfterUnblacklisting"

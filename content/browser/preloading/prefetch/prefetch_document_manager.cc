@@ -81,7 +81,8 @@ void PrefetchDocumentManager::DidStartNavigation(
   // No-Vary-Search equivalence. If there is not then stop.
   auto prefetch_iter = all_prefetches_.find(navigation_handle->GetURL());
   if (prefetch_iter == all_prefetches_.end() || !prefetch_iter->second) {
-    if (!base::FeatureList::IsEnabled(
+    if (!no_vary_search_support_enabled_ ||
+        !base::FeatureList::IsEnabled(
             network::features::kPrefetchNoVarySearch)) {
       return;
     }
@@ -102,14 +103,9 @@ void PrefetchDocumentManager::DidStartNavigation(
   if (prefetch_iter->second->HasPrefetchBeenConsideredToServe())
     return;
 
-  serving_page_metrics_container->SetRequiredPrivatePrefetchProxy(
-      prefetch_iter->second->GetPrefetchType().IsProxyRequired());
-  serving_page_metrics_container->SetPrefetchHeaderLatency(
-      prefetch_iter->second->GetPrefetchHeaderLatency());
-  if (prefetch_iter->second->HasPrefetchStatus()) {
-    serving_page_metrics_container->SetPrefetchStatus(
-        prefetch_iter->second->GetPrefetchStatus());
-  }
+  prefetch_iter->second->SetServingPageMetrics(
+      serving_page_metrics_container->GetWeakPtr());
+  prefetch_iter->second->UpdateServingPageMetrics();
 
   // Inform |PrefetchService| of the navigation to the prefetch.
   // |navigation_handle->GetURL()| and |prefetched_iter->second->GetURL()|
@@ -231,6 +227,7 @@ bool PrefetchDocumentManager::IsPrefetchAttemptFailedOrDiscarded(
 
   switch (container->GetPrefetchStatus()) {
     case PrefetchStatus::kPrefetchSuccessful:
+    case PrefetchStatus::kPrefetchResponseUsed:
       return false;
     case PrefetchStatus::kPrefetchNotEligibleUserHasCookies:
     case PrefetchStatus::kPrefetchNotEligibleUserHasServiceWorker:
@@ -244,7 +241,6 @@ bool PrefetchDocumentManager::IsPrefetchAttemptFailedOrDiscarded(
     case PrefetchStatus::kPrefetchNotEligibleDataSaverEnabled:
     case PrefetchStatus::kPrefetchNotEligibleExistingProxy:
     case PrefetchStatus::kPrefetchUsedNoProbe:
-    case PrefetchStatus::kPrefetchUsedProbeSuccess:
     case PrefetchStatus::kPrefetchNotUsedProbeFailed:
     case PrefetchStatus::kPrefetchNotStarted:
     case PrefetchStatus::kPrefetchNotFinishedInTime:
@@ -269,6 +265,9 @@ bool PrefetchDocumentManager::IsPrefetchAttemptFailedOrDiscarded(
     case PrefetchStatus::kPrefetchIsStaleNSPNotStarted:
     case PrefetchStatus::kPrefetchNotUsedCookiesChanged:
     case PrefetchStatus::kPrefetchFailedRedirectsDisabled:
+    case PrefetchStatus::kPrefetchNotEligibleBrowserContextOffTheRecord:
+    case PrefetchStatus::kPrefetchHeldback:
+    case PrefetchStatus::kPrefetchAllowed:
       return true;
   }
 }
@@ -301,7 +300,8 @@ void PrefetchDocumentManager::OnEligibilityCheckComplete(bool is_eligible) {
 }
 
 void PrefetchDocumentManager::OnPrefetchedHeadReceived(const GURL& url) {
-  if (!base::FeatureList::IsEnabled(network::features::kPrefetchNoVarySearch)) {
+  if (!no_vary_search_support_enabled_ ||
+      !base::FeatureList::IsEnabled(network::features::kPrefetchNoVarySearch)) {
     return;
   }
   // Find the PrefetchContainer associated with |url|.
@@ -317,6 +317,10 @@ void PrefetchDocumentManager::OnPrefetchedHeadReceived(const GURL& url) {
 
 void PrefetchDocumentManager::OnPrefetchSuccessful() {
   referring_page_metrics_.prefetch_successful_count++;
+}
+
+void PrefetchDocumentManager::EnableNoVarySearchSupport() {
+  no_vary_search_support_enabled_ = true;
 }
 
 DOCUMENT_USER_DATA_KEY_IMPL(PrefetchDocumentManager);

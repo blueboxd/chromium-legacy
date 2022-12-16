@@ -12,7 +12,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gl/gl_surface_egl.h"
+#include "ui/gl/presenter.h"
 #include "ui/ozone/platform/wayland/common/wayland_overlay_config.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_surface_gpu.h"
 #include "ui/ozone/public/swap_completion_callback.h"
@@ -27,8 +27,7 @@ using BufferId = uint32_t;
 // and displaying happens directly through NativePixmap buffers. CC would call
 // into SurfaceFactoryOzone to allocate the buffers and then call
 // ScheduleOverlayPlane(..) to schedule the buffer for presentation.
-class GbmSurfacelessWayland : public gl::SurfacelessEGL,
-                              public WaylandSurfaceGpu {
+class GbmSurfacelessWayland : public gl::Presenter, public WaylandSurfaceGpu {
  public:
   GbmSurfacelessWayland(gl::GLDisplayEGL* display,
                         WaylandBufferManagerGpu* buffer_manager,
@@ -54,17 +53,17 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
                                 int width,
                                 int height,
                                 PresentationCallback callback,
-                                gl::FrameData data) override;
+                                gfx::FrameData data) override;
   void SwapBuffersAsync(SwapCompletionCallback completion_callback,
                         PresentationCallback presentation_callback,
-                        gl::FrameData data) override;
+                        gfx::FrameData data) override;
   void PostSubBufferAsync(int x,
                           int y,
                           int width,
                           int height,
                           SwapCompletionCallback completion_callback,
                           PresentationCallback presentation_callback,
-                          gl::FrameData data) override;
+                          gfx::FrameData data) override;
   EGLConfig GetConfig() override;
   void SetRelyOnImplicitSync() override;
   bool SupportsPlaneGpuFences() const override;
@@ -150,7 +149,7 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
 
     SwapCompletionCallback completion_callback;
     PresentationCallback presentation_callback;
-    gl::FrameData data;
+    gfx::FrameData data;
 
     // Says if scheduling succeeded.
     bool schedule_planes_succeeded = true;

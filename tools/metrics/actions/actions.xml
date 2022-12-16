@@ -6767,6 +6767,24 @@ should be able to be added at any place in this file.
   <description>The user has selected the Discover feed in the NTP.</description>
 </action>
 
+<action name="ContentSuggestions.Feed.SignIn.FeedSignInPromoUICancelTapped">
+  <owner>sczs@google.com</owner>
+  <owner>tinazwang@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <description>
+    The user has clickws the 'Cancel' button on the Feed sign-in promo UI.
+  </description>
+</action>
+
+<action name="ContentSuggestions.Feed.SignIn.FeedSignInPromoUIContinueTapped">
+  <owner>sczs@google.com</owner>
+  <owner>tinazwang@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <description>
+    The user has clickws the 'Continue' button on the Feed sign-in promo UI.
+  </description>
+</action>
+
 <action name="ContentSuggestions.Feed.WebFeed.Selected">
   <owner>adamta@google.com</owner>
   <owner>sczs@chromium.org</owner>
@@ -11374,6 +11392,16 @@ should be able to be added at any place in this file.
   <description>
     The number of times the user triggered the &quot;get-directions&quot;
     context after a long press on an address.
+  </description>
+</action>
+
+<action name="IOS.ExperienceKit.Maps.MenuDisplayed">
+  <owner>erahmaoui@google.com</owner>
+  <owner>djean@chromium.org</owner>
+  <description>
+    The number of times the user triggered the maps context menu after a long
+    press on an address, this includes all the menu contexts,
+    &quot;get-directions&quot;,&quot;view-location&quot;, and copy.
   </description>
 </action>
 
@@ -20739,6 +20767,12 @@ should be able to be added at any place in this file.
   <description>User exited the iOS tab grid (by any means).</description>
 </action>
 
+<action name="MobileTabGridMoveToExistingTab">
+  <owner>ewannpv@chromium.org</owner>
+  <owner>gambard@chromium.org</owner>
+  <description>User moves from a Tab to an existing other Tab.</description>
+</action>
+
 <action name="MobileTabGridOpenIncognitoTab">
   <owner>edchin@chromium.org</owner>
   <owner>marq@chromium.org</owner>
@@ -20946,6 +20980,15 @@ should be able to be added at any place in this file.
   <description>
     User in the iOS tab grid used the Undo control after closing all regular
     tabs.
+  </description>
+</action>
+
+<action name="MobileTabNewTab">
+  <owner>ewannpv@chromium.org</owner>
+  <owner>gambard@chromium.org</owner>
+  <description>
+    User opens a new Tab. This includes an opening from the Toolbar, the
+    Overflow Menu and the Tab Grid (incognito + regular).
   </description>
 </action>
 
@@ -21341,6 +21384,23 @@ should be able to be added at any place in this file.
   <owner>ajuma@chromium.org</owner>
   <description>
     Reported when Tracking Price Settings UI was dismissed. iOS only.
+  </description>
+</action>
+
+<action name="MobileTranslateSettingsBack">
+  <owner>fedegermi@google.com</owner>
+  <owner>sdefresne@chromium.org</owner>
+  <description>
+    Reported when user goes back from Translate Settings UI to root Settings
+    screen. iOS only.
+  </description>
+</action>
+
+<action name="MobileTranslateSettingsClose">
+  <owner>fedegermi@google.com</owner>
+  <owner>sdefresne@chromium.org</owner>
+  <description>
+    Reported when Translate Settings UI was dismissed. iOS only.
   </description>
 </action>
 
@@ -29707,6 +29767,23 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_Impression_FromNTPFeedBottomSigninPromo">
+  <owner>sczs@chromium.com</owner>
+  <owner>tinazwang@chromium.org</owner>
+  <description>
+    Recorded when showing sign-in promo card in the feed bottom.
+  </description>
+</action>
+
+<action name="Signin_Impression_FromNTPFeedCardMenuSigninPromo">
+  <owner>sczs@chromium.com</owner>
+  <owner>tinazwang@chromium.org</owner>
+  <description>
+    Recorded when showing sign-in promo UI triggered by feed card menu
+    personalization options.
+  </description>
+</action>
+
 <action name="Signin_Impression_FromNTPFeedTopPromo">
   <owner>mrefaat@google.com</owner>
   <owner>sczs@chromium.org</owner>
@@ -30335,12 +30412,37 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_Signin_FromNTPFeedBottomSigninPromo">
+  <owner>sczs@chromium.org</owner>
+  <owner>tinazwang@chromium.org</owner>
+  <description>
+    A sign-in flow is shown triggered by NTP feed bottom sign-in entry point.
+  </description>
+</action>
+
+<action name="Signin_Signin_FromNTPFeedCardMenuSigninPromo">
+  <owner>sczs@chromium.org</owner>
+  <owner>tinazwang@chromium.org</owner>
+  <description>
+    A sign-in flow is shown triggered by NTP feed card sign-in promo UI.
+  </description>
+</action>
+
 <action name="Signin_Signin_FromNTPFeedTopPromo">
   <owner>jlebel@chromium.org</owner>
   <owner>mrefaat@chromium.org</owner>
   <description>
     Recorded on sign in start from access point
     signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_TOP_PROMO.
+  </description>
+</action>
+
+<action name="Signin_Signin_FromNTPSignedOutIcon">
+  <owner>triploblastic@chromium.org</owner>
+  <owner>jlebel@chromium.org</owner>
+  <description>
+    Recorded on signin start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_NTP_SIGNED_OUT_ICON.
   </description>
 </action>
 

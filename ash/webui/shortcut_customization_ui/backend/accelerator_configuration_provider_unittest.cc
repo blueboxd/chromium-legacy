@@ -4,6 +4,7 @@
 
 #include "ash/webui/shortcut_customization_ui/backend/accelerator_configuration_provider.h"
 
+#include <map>
 #include <memory>
 #include <vector>
 
@@ -13,6 +14,7 @@
 #include "ash/public/cpp/accelerator_configuration.h"
 #include "ash/public/cpp/accelerators.h"
 #include "ash/public/cpp/accelerators_util.h"
+#include "ash/public/mojom/accelerator_info.mojom-shared.h"
 #include "ash/public/mojom/accelerator_keys.mojom.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -31,11 +33,17 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/ash/input_method_manager.h"
 #include "ui/base/ime/ash/mock_input_method_manager.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/devices/device_data_manager_test_api.h"
 #include "ui/events/devices/input_device.h"
+#include "ui/events/event_constants.h"
+#include "ui/events/keycodes/keyboard_codes_posix.h"
 
 namespace ash {
+using NonConfigurableActionToParts =
+    const std::map<NonConfigurableActions,
+                   const std::vector<mojom::TextAcceleratorPartPtr&>>;
 
 namespace {
 
@@ -93,10 +101,11 @@ bool CompareAccelerators(const ash::AcceleratorData& expected_data,
                                        expected_data.modifiers);
 
   const bool accelerator_equals =
-      expected_accelerator == actual_info->accelerator;
+      expected_accelerator ==
+      actual_info->layout_properties->get_default_accelerator()->accelerator;
   const bool key_display_equals =
-      KeycodeToKeyString(expected_accelerator.key_code()) ==
-      actual_info->key_display;
+      shortcut_ui::GetKeyDisplay(expected_accelerator.key_code()) ==
+      actual_info->layout_properties->get_default_accelerator()->key_display;
   return accelerator_equals && key_display_equals;
 }
 
@@ -138,28 +147,20 @@ void ValidateAcceleratorLayouts(
     // Iterate through `kAcceleratorLayouts` to find the matching action.
     bool found_match = false;
     for (const auto& expected_layout : kAcceleratorLayouts) {
-      if (expected_layout.action_id == actual->action) {
+      if (expected_layout.action_id == actual->action &&
+          expected_layout.source == actual->source) {
         EXPECT_EQ(expected_layout.category, actual->category);
         EXPECT_EQ(expected_layout.sub_category, actual->sub_category);
         EXPECT_EQ(expected_layout.layout_style, actual->style);
         EXPECT_EQ(expected_layout.source, actual->source);
+        EXPECT_EQ(
+            l10n_util::GetStringUTF16(expected_layout.description_string_id),
+            actual->description);
         found_match = true;
         break;
       }
     }
     EXPECT_TRUE(found_match);
-  }
-}
-
-void ValidateLayoutsHaveMatchingStrings(
-    const std::vector<ash::mojom::AcceleratorLayoutInfoPtr>&
-        actual_layout_infos) {
-  for (const auto& layout : actual_layout_infos) {
-    // kAcceleratorActionToStringIdMap should contain all actions in
-    // AcceleratorAction. Adding a new accelerator must add a new entry to this
-    // map.
-    EXPECT_TRUE(ash::kAcceleratorActionToStringIdMap.contains(layout->action))
-        << "Unknown accelerator action id: " << layout->action;
   }
 }
 
@@ -340,21 +341,6 @@ TEST_F(AcceleratorConfigurationProviderTest, ConnectedKeyboardsUpdated) {
   base::RunLoop().RunUntilIdle();
   // Adding a new keyboard should trigger the UpdatedAccelerators observer.
   EXPECT_EQ(1, observer.num_times_notified());
-}
-
-TEST_F(AcceleratorConfigurationProviderTest,
-       ValidateAllLayoutsHaveMatchingStrings) {
-  // Initialize with all default accelerators.
-  Shell::Get()->ash_accelerator_configuration()->Initialize();
-  base::RunLoop().RunUntilIdle();
-
-  // Get all default accelerator layout infos and verify that they correctly
-  // mapped the ash::kAcceleratorActionToStringIdMap. This makes sure the map
-  // won't be out of date.
-  provider_->GetAcceleratorLayoutInfos(base::BindLambdaForTesting(
-      [&](std::vector<mojom::AcceleratorLayoutInfoPtr> actual_layout_infos) {
-        ValidateLayoutsHaveMatchingStrings(actual_layout_infos);
-      }));
 }
 
 TEST_F(AcceleratorConfigurationProviderTest, ValidateAllAcceleratorLayouts) {
@@ -568,6 +554,37 @@ TEST_F(AcceleratorConfigurationProviderTest, InputMethodChanged) {
   input_method_manager_->NotifyInputMethodChanged();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, observer.num_times_notified());
+}
+
+TEST_F(AcceleratorConfigurationProviderTest, TestGetKeyDisplay) {
+  EXPECT_EQ(u"c", GetKeyDisplay(ui::VKEY_C));
+  EXPECT_EQ(u"MicrophoneMuteToggle",
+            GetKeyDisplay(ui::VKEY_MICROPHONE_MUTE_TOGGLE));
+  EXPECT_EQ(u"ToggleWifi", GetKeyDisplay(ui::VKEY_WLAN));
+  EXPECT_EQ(u"tab", GetKeyDisplay(ui::VKEY_TAB));
+  EXPECT_EQ(u"esc", GetKeyDisplay(ui::VKEY_ESCAPE));
+  EXPECT_EQ(u"backspace", GetKeyDisplay(ui::VKEY_BACK));
+  EXPECT_EQ(u"enter", GetKeyDisplay(ui::VKEY_RETURN));
+  EXPECT_EQ(u"space", GetKeyDisplay(ui::VKEY_SPACE));
+}
+
+TEST_F(AcceleratorConfigurationProviderTest, TextAcceleratorParsing) {
+  // TODO(michaelcheco): Update test and add more test cases once the
+  // string parsing algorithm is implemented.
+  auto parts = provider_->CreateTextAcceleratorParts();
+  std::vector<mojom::TextAcceleratorPartPtr> expected;
+  expected.push_back(mojom::TextAcceleratorPart::New(
+      u"ctrl", mojom::TextAcceleratorPartType::kModifier));
+  expected.push_back(mojom::TextAcceleratorPart::New(
+      u" + ", mojom::TextAcceleratorPartType::kPlainText));
+  expected.push_back(mojom::TextAcceleratorPart::New(
+      u"1 ", mojom::TextAcceleratorPartType::kKey));
+  expected.push_back(mojom::TextAcceleratorPart::New(
+      u"through", mojom::TextAcceleratorPartType::kPlainText));
+  expected.push_back(mojom::TextAcceleratorPart::New(
+      u"8", mojom::TextAcceleratorPartType::kKey));
+  EXPECT_EQ(parts->text_accelerator, expected);
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace shortcut_ui

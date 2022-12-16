@@ -39,10 +39,6 @@ BASE_DECLARE_FEATURE(kChromeTipsInMainMenuNewBadge);
 
 BASE_DECLARE_FEATURE(kChromeWhatsNewUI);
 
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-BASE_DECLARE_FEATURE(kChromeWhatsNewInMainMenuNewBadge);
-#endif
-
 #if !defined(ANDROID)
 BASE_DECLARE_FEATURE(kAccessCodeCastUI);
 #endif
@@ -81,8 +77,6 @@ BASE_DECLARE_FEATURE(kSidePanelImprovedClobbering);
 
 BASE_DECLARE_FEATURE(kSidePanelWebView);
 
-BASE_DECLARE_FEATURE(kSidePanelJourneys);
-extern const base::FeatureParam<bool> kSidePanelJourneysOpensFromOmnibox;
 BASE_DECLARE_FEATURE(kSidePanelJourneysQueryless);
 
 BASE_DECLARE_FEATURE(kSideSearch);

@@ -546,7 +546,7 @@ by a child template that "extends" this file.
             android:autoRemoveFromRecents="true">
         </activity>
         <activity android:name="org.chromium.chrome.browser.firstrun.LightweightFirstRunActivity"
-            android:theme="@style/Theme.BrowserUI.AlertDialog.NoActionBar"
+            android:theme="@style/Theme.BrowserUI.AlertDialog.NoActionBar.DayNight"
             android:launchMode="singleInstance"
             {{ self.first_run_activity_common() }}>
         </activity>
@@ -899,7 +899,7 @@ by a child template that "extends" this file.
 
         <receiver
         android:name="org.chromium.chrome.browser.quickactionsearchwidget.QuickActionSearchWidgetProvider$QuickActionSearchWidgetProviderDino"
-        android:label="@string/dino_widget_title"
+        android:label="@string/dino_widget_text"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -1058,8 +1058,6 @@ by a child template that "extends" this file.
         <service android:name="org.chromium.chrome.browser.crash.MinidumpUploadService"
             android:exported="false"/>
 
-        <service android:name="org.chromium.chrome.browser.omaha.OmahaClient"
-            android:exported="false"/>
         <service android:name="org.chromium.chrome.browser.incognito.IncognitoNotificationService"
             android:exported="false"/>
 
@@ -1236,13 +1234,6 @@ by a child template that "extends" this file.
       <!-- Samsung MultiWindow Support -->
       <meta-data android:name="com.samsung.android.sdk.multiwindow.enable"
           android:value="true" />
-
-      {% if min_sdk_version|int < 24 %}
-      <meta-data android:name="com.samsung.android.sdk.multiwindow.multiinstance.enable"
-          android:value="true" />
-      <meta-data android:name="com.samsung.android.sdk.multiwindow.multiinstance.launchmode"
-          android:value="singleTask" />
-      {% endif %}
 
       <meta-data android:name="com.samsung.android.sdk.multiwindow.penwindow.enable"
           android:value="true"/>

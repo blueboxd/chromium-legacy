@@ -18,13 +18,14 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {DropdownMenuOptionList} from '../../controls/settings_dropdown_menu.js';
+import {SettingsToggleButtonElement} from '../../controls/settings_toggle_button.js';
 import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
 import {PrefsMixin, PrefsMixinInterface} from '../../prefs/prefs_mixin.js';
-import {Route} from '../router.js';
 import {DeepLinkingBehavior, DeepLinkingBehaviorInterface} from '../deep_linking_behavior.js';
 import {LanguagesBrowserProxy, LanguagesBrowserProxyImpl} from '../os_languages_page/languages_browser_proxy.js';
 import {routes} from '../os_route.js';
-import {RouteOriginBehavior, RouteOriginBehaviorInterface} from '../route_origin_behavior.js';
+import {RouteOriginMixin, RouteOriginMixinInterface} from '../route_origin_mixin.js';
+import {Route, Router} from '../router.js';
 
 import {getTemplate} from './select_to_speak_subpage.html.js';
 import {SelectToSpeakSubpageBrowserProxy, SelectToSpeakSubpageBrowserProxyImpl} from './select_to_speak_subpage_browser_proxy.js';
@@ -75,16 +76,22 @@ interface HandlerVoice {
   languageCode?: string;
 }
 
+interface SettingsSelectToSpeakSubpageElement {
+  $: {
+    enhancedNetworkVoicesToggle: SettingsToggleButtonElement,
+  };
+}
+
 const SettingsSelectToSpeakSubpageElementBase =
     mixinBehaviors(
         [
           DeepLinkingBehavior,
-          RouteOriginBehavior,
         ],
-        PrefsMixin(WebUiListenerMixin(I18nMixin(PolymerElement)))) as {
+        RouteOriginMixin(
+            PrefsMixin(WebUiListenerMixin(I18nMixin(PolymerElement))))) as {
       new (): PolymerElement & I18nMixinInterface &
           WebUiListenerMixinInterface & PrefsMixinInterface &
-          DeepLinkingBehaviorInterface & RouteOriginBehaviorInterface,
+          RouteOriginMixinInterface & DeepLinkingBehaviorInterface,
     };
 
 class SettingsSelectToSpeakSubpageElement extends
@@ -100,6 +107,24 @@ class SettingsSelectToSpeakSubpageElement extends
   static get properties() {
     return {
       /**
+       * Whether a voice preview is currently speaking.
+       */
+      isPreviewing_: {
+        type: Boolean,
+        value: false,
+      },
+
+      voicePreviewText_: {
+        type: String,
+        value: '',
+      },
+
+      enhancedNetworkVoicePreviewText_: {
+        type: String,
+        value: '',
+      },
+
+      /**
        * The language sort dropdown state as a fake preference object (so we can
        * use <settings-dropdown-menu> without overriding with custom handlers)
        */
@@ -113,6 +138,17 @@ class SettingsSelectToSpeakSubpageElement extends
             type: chrome.settingsPrivate.PrefType.STRING,
             value: USE_DEVICE_LANGUAGE,
           };
+        },
+      },
+
+      /**
+       * Enhanced network voices pref, so that we can force disable when
+       * overridden by policy.
+       */
+      enhancedNetworkVoicesVirtualPref_: {
+        type: Object,
+        value() {
+          return {};
         },
       },
 
@@ -201,17 +237,27 @@ class SettingsSelectToSpeakSubpageElement extends
 
   static get observers() {
     return [
-      'onHighlightColorChanged_(prefs.settings.a11y.select_to_speak_highlight_color.value)',
+      'onHighlightColorChanged_(' +
+          'prefs.settings.a11y.select_to_speak_highlight_color.value)',
+      'onEnhancedNetworkVoicesPrefsChanged_(' +
+          'prefs.settings.a11y.' +
+          'enhanced_network_voices_in_select_to_speak_allowed.value,' +
+          'prefs.settings.a11y.select_to_speak_enhanced_network_voices.value)',
       'languageChanged_(languageFilterVirtualPref_.*)',
     ];
   }
 
   private route_: Route;
   private langBrowserProxy_: LanguagesBrowserProxy;
+  private enhancedNetworkVoicesVirtualPref_:
+      chrome.settingsPrivate.PrefObject<boolean>;
+  private isPreviewing_: boolean;
   private languageFilterVirtualPref_: chrome.settingsPrivate.PrefObject<string>;
   private languagesMenuOptions_: DropdownMenuOptionList;
   private localVoicesMenuOptions_: DropdownMenuOptionList;
   private networkVoicesMenuOptions_: DropdownMenuOptionList;
+  private voicePreviewText_: string;
+  private enhancedNetworkVoicePreviewText_: string;
   private appLocale_ = '';
   private selectToSpeakBrowserProxy_: SelectToSpeakSubpageBrowserProxy;
   private voices_: HandlerVoice[] = [];
@@ -223,26 +269,34 @@ class SettingsSelectToSpeakSubpageElement extends
         SelectToSpeakSubpageBrowserProxyImpl.getInstance();
     this.langBrowserProxy_ = LanguagesBrowserProxyImpl.getInstance();
 
-    /** RouteOriginBehavior override */
+    /** RouteOriginMixin override */
     this.route_ = routes.A11Y_SELECT_TO_SPEAK;
   }
 
   override ready() {
     super.ready();
 
+    // Populate the voice and enhanced network voice preview text inputs with a
+    // sample message. Users can change this to their own value later.
+    this.voicePreviewText_ = this.i18n('textToSpeechPreviewInput');
+    this.enhancedNetworkVoicePreviewText_ =
+        this.i18n('textToSpeechPreviewInput');
     this.addWebUiListener(
         'all-sts-voice-data-updated',
         (voices: HandlerVoice[]) => this.updateVoices_(voices));
     this.addWebUiListener(
         'app-locale-updated',
         (appLocale: string) => this.updateAppLocale_(appLocale));
+    this.addWebUiListener(
+        'tts-preview-state-changed',
+        (isSpeaking: boolean) => this.onTtsPreviewStateChanged_(isSpeaking));
     this.selectToSpeakBrowserProxy_.getAllTtsVoiceData();
     this.selectToSpeakBrowserProxy_.getAppLocale();
     this.selectToSpeakBrowserProxy_.refreshTtsVoices();
   }
 
   /**
-   * Note: Overrides RouteOriginBehavior implementation.
+   * Note: Overrides RouteOriginMixin implementation.
    */
   override currentRouteChanged(newRoute: Route, prevRoute?: Route) {
     super.currentRouteChanged(newRoute, prevRoute);
@@ -255,9 +309,95 @@ class SettingsSelectToSpeakSubpageElement extends
     this.attemptDeepLink();
   }
 
+  private onEnhancedNetworkVoicesPrefsChanged_(
+      allowed: boolean, enabled: boolean): void {
+    this.enhancedNetworkVoicesVirtualPref_ = {
+      key: '',
+      type: chrome.settingsPrivate.PrefType.BOOLEAN,
+      value: allowed && enabled,
+      ...(allowed ? {} : {
+        enforcement: chrome.settingsPrivate.Enforcement.ENFORCED,
+        controlledBy: chrome.settingsPrivate.ControlledBy.USER_POLICY,
+      }),
+    };
+  }
+
+  private onEnhancedNetworkVoicesToggleChanged_(): void {
+    this.setPrefValue(
+        'settings.a11y.select_to_speak_enhanced_network_voices',
+        this.$.enhancedNetworkVoicesToggle.checked);
+  }
+
   private onHighlightColorChanged_(color: string) {
     this.shadowRoot!.getElementById('lightHighlight')!.style.background = color;
     this.shadowRoot!.getElementById('darkHighlight')!.style.background = color;
+  }
+
+  /**
+   * Called when the TTS voice preview state changes between speaking and not
+   * speaking.
+   */
+  private onTtsPreviewStateChanged_(isSpeaking: boolean): void {
+    this.isPreviewing_ = isSpeaking;
+  }
+
+  /**
+   * Returns true if voices are loaded and preview is not currently speaking and
+   * there is text to preview.
+   */
+  private enablePreviewButton_(
+      voiceOptions: DropdownMenuOptionList, isPreviewing: boolean,
+      previewText: string): boolean {
+    const nonWhitespaceRe = /\S+/;
+    const hasPreviewText = nonWhitespaceRe.exec(previewText) !== null;
+    return voiceOptions.length > 0 && !isPreviewing && hasPreviewText;
+  }
+
+  /**
+   * Returns the voice name and extension matching the current primary voice
+   * pref. If the primary voice pref is set to the system voice, then return
+   * an empty name and extension, to tell the TTS handler to use the default
+   * system voice.
+   */
+  private getVoiceNameAndExtension_(): {name: string, extension: string} {
+    const name = this.getPref('settings.a11y.select_to_speak_voice_name').value;
+    if (name === SYSTEM_VOICE) {
+      return {
+        name: '',
+        extension: '',
+      };
+    }
+
+    const extension =
+        this.voices_.find(({voiceName}) => voiceName === name)!.extensionId;
+    return {name, extension};
+  }
+
+  /**
+   * Returns the voice name and extension matching the current enhanced network
+   * voice pref. The enhanced network voice pref has a consistent name used for
+   * its default voice (default-wavenet), which will automatically be sent as
+   * the voice name if chosen.
+   */
+  private getEnhancedNetworkVoiceNameAndExtension_():
+      {name: string, extension: string} {
+    const name =
+        this.getPref('settings.a11y.select_to_speak_enhanced_voice_name').value;
+    const extension =
+        this.voices_.find(({voiceName}) => voiceName === name)!.extensionId;
+    return {name, extension};
+  }
+
+  private onVoicePreviewClick_(): void {
+    this.selectToSpeakBrowserProxy_.previewTtsVoice(
+        this.voicePreviewText_,
+        JSON.stringify(this.getVoiceNameAndExtension_()));
+  }
+
+  private onEnhancedNetworkVoicePreviewClick_(): void {
+    this.selectToSpeakBrowserProxy_.previewTtsVoice(
+        this.enhancedNetworkVoicePreviewText_,
+        JSON.stringify(this.getEnhancedNetworkVoiceNameAndExtension_()));
   }
 
   private languageChanged_() {
@@ -481,6 +621,12 @@ class SettingsSelectToSpeakSubpageElement extends
     } else {
       map.set(lang, [voice]);
     }
+  }
+
+  private onTextToSpeechSettingsTap_(): void {
+    Router.getInstance().navigateTo(
+        routes.MANAGE_TTS_SETTINGS,
+        /* dynamicParams= */ undefined, /* removeSearch= */ true);
   }
 }
 

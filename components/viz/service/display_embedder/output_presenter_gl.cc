@@ -18,7 +18,6 @@
 #include "components/viz/service/display_embedder/skia_output_surface_dependency.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
-#include "gpu/ipc/common/gpu_surface_lookup.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -26,11 +25,7 @@
 #include "ui/gfx/overlay_plane_data.h"
 #include "ui/gfx/overlay_transform.h"
 #include "ui/gl/gl_fence.h"
-#include "ui/gl/gl_surface.h"
-
-#if BUILDFLAG(IS_ANDROID)
-#include "ui/gl/gl_surface_egl_surface_control.h"
-#endif
+#include "ui/gl/presenter.h"
 
 #if BUILDFLAG(IS_OZONE)
 #include "ui/base/ui_base_features.h"
@@ -126,68 +121,21 @@ const uint32_t OutputPresenterGL::kDefaultSharedImageUsage =
     gpu::SHARED_IMAGE_USAGE_DISPLAY_WRITE |
     gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT;
 
-// static
-std::unique_ptr<OutputPresenterGL> OutputPresenterGL::Create(
-    SkiaOutputSurfaceDependency* deps,
-    gpu::SharedImageFactory* factory,
-    gpu::SharedImageRepresentationFactory* representation_factory) {
-#if BUILDFLAG(IS_ANDROID)
-  if (deps->GetGpuFeatureInfo()
-          .status_values[gpu::GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] !=
-      gpu::kGpuFeatureStatusEnabled) {
-    return nullptr;
-  }
-
-  bool can_be_used_with_surface_control = false;
-  ANativeWindow* window =
-      gpu::GpuSurfaceLookup::GetInstance()->AcquireNativeWidget(
-          deps->GetSurfaceHandle(), &can_be_used_with_surface_control);
-  base::ScopedClosureRunner release_runner(base::BindOnce(
-      [](gfx::AcceleratedWidget widget) {
-        if (widget)
-          ANativeWindow_release(widget);
-      },
-      window));
-  if (!window || !can_be_used_with_surface_control)
-    return nullptr;
-  // TODO(https://crbug.com/1012401): don't depend on GL.
-  auto gl_surface = base::MakeRefCounted<gl::GLSurfaceEGLSurfaceControl>(
-      deps->GetSharedContextState()->display()->GetAs<gl::GLDisplayEGL>(),
-      window, base::SingleThreadTaskRunner::GetCurrentDefault());
-  if (!gl_surface->Initialize(gl::GLSurfaceFormat())) {
-    LOG(ERROR) << "Failed to initialize GLSurfaceEGLSurfaceControl.";
-    return nullptr;
-  }
-
-  if (!deps->GetSharedContextState()->MakeCurrent(gl_surface.get(),
-                                                  true /* needs_gl*/)) {
-    LOG(ERROR) << "MakeCurrent failed.";
-    return nullptr;
-  }
-
-  return std::make_unique<OutputPresenterGL>(std::move(gl_surface), deps,
-                                             factory, representation_factory,
-                                             kDefaultSharedImageUsage);
-#else
-  return nullptr;
-#endif
-}
-
 OutputPresenterGL::OutputPresenterGL(
-    scoped_refptr<gl::GLSurface> gl_surface,
+    scoped_refptr<gl::Presenter> presenter,
     SkiaOutputSurfaceDependency* deps,
     gpu::SharedImageFactory* factory,
     gpu::SharedImageRepresentationFactory* representation_factory,
     uint32_t shared_image_usage)
-    : gl_surface_(gl_surface),
+    : presenter_(presenter),
       dependency_(deps),
-      supports_async_swap_(gl_surface_->SupportsAsyncSwap()),
+      supports_async_swap_(presenter_->SupportsAsyncSwap()),
       shared_image_factory_(factory),
       shared_image_representation_factory_(representation_factory),
       shared_image_usage_(shared_image_usage) {
   // GL is origin is at bottom left normally, all Surfaceless implementations
   // are flipped.
-  DCHECK_EQ(gl_surface_->GetOrigin(), gfx::SurfaceOrigin::kTopLeft);
+  DCHECK_EQ(presenter_->GetOrigin(), gfx::SurfaceOrigin::kTopLeft);
 }
 
 OutputPresenterGL::~OutputPresenterGL() = default;
@@ -195,10 +143,10 @@ OutputPresenterGL::~OutputPresenterGL() = default;
 void OutputPresenterGL::InitializeCapabilities(
     OutputSurface::Capabilities* capabilities) {
   capabilities->android_surface_control_feature_enabled = true;
-  capabilities->supports_post_sub_buffer = gl_surface_->SupportsPostSubBuffer();
+  capabilities->supports_post_sub_buffer = presenter_->SupportsPostSubBuffer();
   capabilities->supports_commit_overlay_planes =
-      gl_surface_->SupportsCommitOverlayPlanes();
-  capabilities->supports_viewporter = gl_surface_->SupportsViewporter();
+      presenter_->SupportsCommitOverlayPlanes();
+  capabilities->supports_viewporter = presenter_->SupportsViewporter();
 
   // Set supports_surfaceless to enable overlays.
   capabilities->supports_surfaceless = true;
@@ -206,7 +154,7 @@ void OutputPresenterGL::InitializeCapabilities(
   capabilities->output_surface_origin = gfx::SurfaceOrigin::kTopLeft;
   // Set resize_based_on_root_surface to omit platform proposed size.
   capabilities->resize_based_on_root_surface =
-      gl_surface_->SupportsOverridePlatformSize();
+      presenter_->SupportsOverridePlatformSize();
 #if BUILDFLAG(IS_ANDROID)
   capabilities->supports_dynamic_frame_buffer_allocation = true;
 #endif
@@ -244,7 +192,7 @@ bool OutputPresenterGL::Reshape(
   image_format_ = SkColorTypeToResourceFormat(characterization.colorType());
   const bool has_alpha =
       !SkAlphaTypeIsOpaque(characterization.imageInfo().alphaType());
-  return gl_surface_->Resize(size, device_scale_factor, color_space, has_alpha);
+  return presenter_->Resize(size, device_scale_factor, color_space, has_alpha);
 }
 
 std::vector<std::unique_ptr<OutputPresenter::Image>>
@@ -285,14 +233,13 @@ std::unique_ptr<OutputPresenter::Image> OutputPresenterGL::AllocateSingleImage(
 void OutputPresenterGL::SwapBuffers(
     SwapCompletionCallback completion_callback,
     BufferPresentedCallback presentation_callback,
-    gl::FrameData data) {
+    gfx::FrameData data) {
   if (supports_async_swap_) {
-    gl_surface_->SwapBuffersAsync(std::move(completion_callback),
-                                  std::move(presentation_callback),
-                                  std::move(data));
+    presenter_->SwapBuffersAsync(std::move(completion_callback),
+                                 std::move(presentation_callback), data);
   } else {
-    auto result = gl_surface_->SwapBuffers(std::move(presentation_callback),
-                                           std::move(data));
+    auto result =
+        presenter_->SwapBuffers(std::move(presentation_callback), data);
     std::move(completion_callback).Run(gfx::SwapCompletionResult(result));
   }
 }
@@ -301,20 +248,19 @@ void OutputPresenterGL::PostSubBuffer(
     const gfx::Rect& rect,
     SwapCompletionCallback completion_callback,
     BufferPresentedCallback presentation_callback,
-    gl::FrameData data) {
+    gfx::FrameData data) {
 #if BUILDFLAG(IS_MAC)
-  gl_surface_->SetCALayerErrorCode(ca_layer_error_code_);
+  presenter_->SetCALayerErrorCode(ca_layer_error_code_);
 #endif
 
   if (supports_async_swap_) {
-    gl_surface_->PostSubBufferAsync(
+    presenter_->PostSubBufferAsync(
         rect.x(), rect.y(), rect.width(), rect.height(),
-        std::move(completion_callback), std::move(presentation_callback),
-        std::move(data));
+        std::move(completion_callback), std::move(presentation_callback), data);
   } else {
-    auto result = gl_surface_->PostSubBuffer(
+    auto result = presenter_->PostSubBuffer(
         rect.x(), rect.y(), rect.width(), rect.height(),
-        std::move(presentation_callback), std::move(data));
+        std::move(presentation_callback), data);
     std::move(completion_callback).Run(gfx::SwapCompletionResult(result));
   }
 }
@@ -327,8 +273,8 @@ void OutputPresenterGL::SchedulePrimaryPlane(
   auto* presenter_image = static_cast<PresenterImageGL*>(image);
   // If the submitted_image() is being scheduled, we don't new a new fence.
   gl::OverlayImage overlay_image = presenter_image->GetOverlayImage(
-      (is_submitted || !gl_surface_->SupportsPlaneGpuFences()) ? nullptr
-                                                               : &fence);
+      (is_submitted || !presenter_->SupportsPlaneGpuFences()) ? nullptr
+                                                              : &fence);
 
   // Output surface is also z-order 0.
   constexpr int kPlaneZOrder = 0;
@@ -336,7 +282,7 @@ void OutputPresenterGL::SchedulePrimaryPlane(
   // PostSubBuffer. As part of unifying the handling of the primary plane and
   // overlays, damage should be added to OutputSurfaceOverlayPlane and passed in
   // here.
-  gl_surface_->ScheduleOverlayPlane(
+  presenter_->ScheduleOverlayPlane(
       std::move(overlay_image), std::move(fence),
       gfx::OverlayPlaneData(
           kPlaneZOrder, plane.transform, plane.display_rect, plane.uv_rect,
@@ -350,14 +296,13 @@ void OutputPresenterGL::SchedulePrimaryPlane(
 void OutputPresenterGL::CommitOverlayPlanes(
     SwapCompletionCallback completion_callback,
     BufferPresentedCallback presentation_callback,
-    gl::FrameData data) {
+    gfx::FrameData data) {
   if (supports_async_swap_) {
-    gl_surface_->CommitOverlayPlanesAsync(std::move(completion_callback),
-                                          std::move(presentation_callback),
-                                          std::move(data));
+    presenter_->CommitOverlayPlanesAsync(
+        std::move(completion_callback), std::move(presentation_callback), data);
   } else {
-    auto result = gl_surface_->CommitOverlayPlanes(
-        std::move(presentation_callback), std::move(data));
+    auto result =
+        presenter_->CommitOverlayPlanes(std::move(presentation_callback), data);
     std::move(completion_callback).Run(gfx::SwapCompletionResult(result));
   }
 }
@@ -412,7 +357,7 @@ void OutputPresenterGL::ScheduleOverlayPlane(
       }
     }
 
-    gl_surface_->ScheduleOverlayPlane(
+    presenter_->ScheduleOverlayPlane(
         std::move(overlay_image), std::move(acquire_fence),
         gfx::OverlayPlaneData(
             overlay_plane_candidate.plane_z_order,
@@ -429,7 +374,7 @@ void OutputPresenterGL::ScheduleOverlayPlane(
             overlay_plane_candidate.clip_rect));
   }
 #elif BUILDFLAG(IS_APPLE)
-  gl_surface_->ScheduleCALayer(ui::CARendererLayerParams(
+  presenter_->ScheduleCALayer(ui::CARendererLayerParams(
       overlay_plane_candidate.shared_state->is_clipped,
       gfx::ToEnclosingRect(overlay_plane_candidate.shared_state->clip_rect),
       overlay_plane_candidate.shared_state->rounded_corner_bounds,

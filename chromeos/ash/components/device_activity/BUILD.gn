@@ -21,7 +21,7 @@ component("device_activity") {
     "//chromeos/ash/components/dbus/session_manager",
     "//chromeos/ash/components/dbus/system_clock:system_clock",
     "//chromeos/ash/components/network",
-    "//chromeos/system",
+    "//chromeos/ash/components/system",
     "//components/policy/core/common",
     "//components/prefs:prefs",
     "//components/version_info",
@@ -52,6 +52,8 @@ component("device_activity") {
     "fresnel_pref_names.h",
     "monthly_use_case_impl.cc",
     "monthly_use_case_impl.h",
+    "twenty_eight_day_active_use_case_impl.cc",
+    "twenty_eight_day_active_use_case_impl.h",
   ]
 }
 
@@ -65,6 +67,7 @@ source_set("unit_tests") {
     "device_activity_controller_unittest.cc",
     "first_active_use_case_impl_unittest.cc",
     "monthly_use_case_impl_unittest.cc",
+    "twenty_eight_day_active_use_case_impl_unittest.cc",
   ]
 
   deps = [
@@ -79,7 +82,7 @@ source_set("unit_tests") {
     "//chromeos/ash/components/dbus/system_clock:system_clock",
     "//chromeos/ash/components/network",
     "//chromeos/ash/components/network:test_support",
-    "//chromeos/system:system",
+    "//chromeos/ash/components/system",
     "//components/policy/core/common:test_support",
     "//components/prefs:test_support",
     "//components/version_info:channel",

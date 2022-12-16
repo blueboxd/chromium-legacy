@@ -272,10 +272,12 @@ DOMHighResTimeStamp Performance::timeOrigin() const {
 
 PerformanceEntryVector Performance::getEntries(ScriptState* script_state,
                                                bool include_frames) {
-  if (include_frames)
+  if (include_frames &&
+      RuntimeEnabledFeatures::CrossFramePerformanceTimelineEnabled()) {
     return GetEntriesWithChildFrames(script_state);
-  else
+  } else {
     return GetEntriesForCurrentFrame();
+  }
 }
 
 PerformanceEntryVector Performance::GetEntriesForCurrentFrame() {
@@ -333,10 +335,12 @@ PerformanceEntryVector Performance::getEntriesByType(
     ScriptState* script_state,
     const AtomicString& entry_type,
     bool include_frames) {
-  if (include_frames)
+  if (include_frames &&
+      RuntimeEnabledFeatures::CrossFramePerformanceTimelineEnabled()) {
     return GetEntriesWithChildFrames(script_state, entry_type);
-  else
+  } else {
     return GetEntriesByTypeForCurrentFrame(entry_type);
+  }
 }
 
 PerformanceEntryVector Performance::GetEntriesByTypeForCurrentFrame(
@@ -345,11 +349,12 @@ PerformanceEntryVector Performance::GetEntriesByTypeForCurrentFrame(
       PerformanceEntry::ToEntryTypeEnum(entry_type);
   if (!PerformanceEntry::IsValidTimelineEntryType(type)) {
     PerformanceEntryVector empty_entries;
-    String message = "Deprecated API for given entry type.";
-    GetExecutionContext()->AddConsoleMessage(
-        MakeGarbageCollected<ConsoleMessage>(
-            mojom::ConsoleMessageSource::kJavaScript,
-            mojom::ConsoleMessageLevel::kWarning, message));
+    if (ExecutionContext* execution_context = GetExecutionContext()) {
+      String message = "Deprecated API for given entry type.";
+      execution_context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+          mojom::ConsoleMessageSource::kJavaScript,
+          mojom::ConsoleMessageLevel::kWarning, message));
+    }
     return empty_entries;
   }
   return getEntriesByTypeInternal(type);
@@ -450,7 +455,8 @@ PerformanceEntryVector Performance::getEntriesByName(
   PerformanceEntryVector all_entries;
 
   // Get sorted entry list based on provided input.
-  if (include_frames) {
+  if (include_frames &&
+      RuntimeEnabledFeatures::CrossFramePerformanceTimelineEnabled()) {
     all_entries = GetEntriesWithChildFrames(script_state, entry_type);
   } else {
     if (entry_type.IsNull()) {
@@ -475,34 +481,53 @@ PerformanceEntryVector Performance::GetEntriesWithChildFrames(
   PerformanceEntryVector entries;
 
   LocalDOMWindow* window = LocalDOMWindow::From(script_state);
-  LocalFrame* parent_frame = window->GetFrame();
+  if (!window) {
+    return entries;
+  }
+  LocalFrame* root_frame = window->GetFrame();
+  if (!root_frame) {
+    return entries;
+  }
+  const SecurityOrigin* root_origin = window->GetSecurityOrigin();
 
   HeapDeque<Member<Frame>> queue;
-  queue.push_back(parent_frame);
+  queue.push_back(root_frame);
 
   while (!queue.empty()) {
     Frame* current_frame = queue.TakeFirst();
 
-    if (LocalFrame* local_frame = DynamicTo<LocalFrame>(current_frame);
-        local_frame && !local_frame->IsCrossOriginToNearestMainFrame()) {
+    if (LocalFrame* local_frame = DynamicTo<LocalFrame>(current_frame)) {
       // Get the Performance object from the current frame.
-      LocalDOMWindow* current_window = local_frame->GetDocument()->domWindow();
-      WindowPerformance* window_performance =
-          DOMWindowPerformance::performance(*current_window);
+      LocalDOMWindow* current_window = local_frame->DomWindow();
+      // As we verified that the frame this was called with is not detached when
+      // entring this loop, we can assume that all its children are also not
+      // detached, and hence have a window object.
+      DCHECK(current_window);
 
-      // Get the performance entries based on entry_type input.
-      PerformanceEntryVector current_entries;
-      if (entry_type.IsNull()) {
-        current_entries = window_performance->GetEntriesForCurrentFrame();
-      } else {
-        current_entries =
-            window_performance->GetEntriesByTypeForCurrentFrame(entry_type);
+      // Validate that the child frame's origin is the same as the root
+      // frame.
+      const SecurityOrigin* current_origin =
+          current_window->GetSecurityOrigin();
+      if (root_origin->IsSameOriginWith(current_origin)) {
+        WindowPerformance* window_performance =
+            DOMWindowPerformance::performance(*current_window);
+
+        // Get the performance entries based on entry_type input. Since the root
+        // frame can script the current frame, its okay to expose the current
+        // frame's performance entries to the root.
+        PerformanceEntryVector current_entries;
+        if (entry_type.IsNull()) {
+          current_entries = window_performance->GetEntriesForCurrentFrame();
+        } else {
+          current_entries =
+              window_performance->GetEntriesByTypeForCurrentFrame(entry_type);
+        }
+
+        entries.AppendVector(current_entries);
       }
-
-      entries.AppendVector(current_entries);
     }
 
-    // Add both Local and Remote Frames to the queue.
+    // Add both Local and Remote Frame children to the queue.
     for (Frame* child = current_frame->FirstChild(); child;
          child = child->NextSibling()) {
       queue.push_back(child);
@@ -652,7 +677,7 @@ void Performance::AddResourceTiming(mojom::blink::ResourceTimingInfoPtr info,
                                     ExecutionContext* context) {
   auto* entry = MakeGarbageCollected<PerformanceResourceTiming>(
       *info, time_origin_, cross_origin_isolated_capability_, initiator_type,
-      context);
+      context, DynamicTo<LocalDOMWindow>(context));
   NotifyObserversOfEntry(*entry);
   // https://w3c.github.io/resource-timing/#dfn-add-a-performanceresourcetiming-entry
   if (CanAddResourceTimingEntry() &&
@@ -794,7 +819,8 @@ void Performance::AddPaintTiming(PerformancePaintTiming::PaintType type,
                                  base::TimeTicks start_time) {
   PerformanceEntry* entry = MakeGarbageCollected<PerformancePaintTiming>(
       type, MonotonicTimeToDOMHighResTimeStamp(start_time),
-      PerformanceEntry::GetNavigationId(GetExecutionContext()));
+      PerformanceEntry::GetNavigationId(GetExecutionContext()),
+      DynamicTo<LocalDOMWindow>(GetExecutionContext()));
   DCHECK((type == PerformancePaintTiming::PaintType::kFirstPaint) ||
          (type == PerformancePaintTiming::PaintType::kFirstContentfulPaint));
   if (paint_entries_timing_.size() < kDefaultPaintEntriesBufferSize) {
@@ -828,7 +854,8 @@ void Performance::AddLongTaskTiming(base::TimeTicks start_time,
       static_cast<int>(MonotonicTimeToDOMHighResTimeStamp(end_time) -
                        dom_high_res_start_time),
       name, container_type, container_src, container_id, container_name,
-      PerformanceEntry::GetNavigationId(execution_context));
+      PerformanceEntry::GetNavigationId(execution_context),
+      DynamicTo<LocalDOMWindow>(execution_context));
   if (longtask_buffer_.size() < kDefaultLongTaskBufferSize) {
     InsertEntryIntoSortedBuffer(longtask_buffer_, *entry, kRecordSwaps);
   } else {
@@ -851,7 +878,8 @@ void Performance::AddBackForwardCacheRestoration(
       MonotonicTimeToDOMHighResTimeStamp(start_time),
       MonotonicTimeToDOMHighResTimeStamp(pageshow_start_time),
       MonotonicTimeToDOMHighResTimeStamp(pageshow_end_time),
-      PerformanceEntry::GetNavigationId(GetExecutionContext()));
+      PerformanceEntry::GetNavigationId(GetExecutionContext()),
+      DynamicTo<LocalDOMWindow>(GetExecutionContext()));
   if (back_forward_cache_restoration_buffer_.size() <
       back_forward_cache_restoration_buffer_size_limit_) {
     InsertEntryIntoSortedBuffer(back_forward_cache_restoration_buffer_, *entry,
@@ -1045,9 +1073,9 @@ PerformanceMeasure* Performance::MeasureWithDetail(
     const V8UnionDoubleOrString* end,
     const ScriptValue& detail,
     ExceptionState& exception_state) {
-  PerformanceMeasure* performance_measure =
-      GetUserTiming().Measure(script_state, measure_name, start, duration, end,
-                              detail, exception_state);
+  PerformanceMeasure* performance_measure = GetUserTiming().Measure(
+      script_state, measure_name, start, duration, end, detail, exception_state,
+      LocalDOMWindow::From(script_state));
   if (performance_measure)
     NotifyObserversOfEntry(*performance_measure);
   return performance_measure;

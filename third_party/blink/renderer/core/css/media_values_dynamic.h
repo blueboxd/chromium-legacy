@@ -55,12 +55,12 @@ class CORE_EXPORT MediaValuesDynamic : public MediaValues {
 
  protected:
   // CSSLengthResolver
-  float EmFontSize() const override;
-  float RemFontSize() const override;
-  float ExFontSize() const override;
-  float ChFontSize() const override;
-  float IcFontSize() const override;
-  float LineHeight() const override;
+  float EmFontSize(float zoom) const override;
+  float RemFontSize(float zoom) const override;
+  float ExFontSize(float zoom) const override;
+  float ChFontSize(float zoom) const override;
+  float IcFontSize(float zoom) const override;
+  float LineHeight(float zoom) const override;
   double ViewportWidth() const override;
   double ViewportHeight() const override;
   double SmallViewportWidth() const override;

@@ -7,6 +7,7 @@
 <translation id="1024364763893396229">შეინახეთ თქვენი <ph name="NAME" /></translation>
 <translation id="1032891413405719768">სტილუსის ბატარეა იცლება</translation>
 <translation id="1036073649888683237">შეტყობინებების სამართავად გადადით პარამეტრებზე</translation>
+<translation id="1036348656032585052">გამორთვა</translation>
 <translation id="1036672894875463507">მე ვარ თქვენი Google ასისტენტი და მთელი დღის განმავლობაში დაგეხმარებით!
 აი, რისი გაკეთება შეგიძლიათ დასაწყისისთვის.</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> დამატებულია</translation>
@@ -100,6 +101,7 @@
 <translation id="1447641497144572814">ეკრანმზოგი იწყება</translation>
 <translation id="1455242230282523554">ენის პარამეტრების ჩვენება</translation>
 <translation id="1460620680449458626">ხმა დადუმებულია.</translation>
+<translation id="14648076227129703"><ph name="APP1_NAME" />-ს, <ph name="APP2_NAME" />-ს, ასევე, ყველა აპსა და ვებსაიტს, რომლებსაც აქვს კამერის გამოყენების ნებართვა, მიენიჭება კამერაზე წვდომა</translation>
 <translation id="1467432559032391204">მარცხენა</translation>
 <translation id="146902737843070955">თქვენმა ადმინისტრატორმა მოითხოვა ეს ცვლილება</translation>
 <translation id="147310119694673958">ტელეფონის ბატარეა: <ph name="BATTERY_PERCENTAGE" />%</translation>
@@ -125,6 +127,7 @@
 <translation id="1611993646327628135">ჩართული</translation>
 <translation id="1620510694547887537">კამერა</translation>
 <translation id="1632985212731562677">გადამრთველით წვდომის გათიშვა შესაძლებელია აქ: პარამეტრები &gt; მარტივი წვდომა.</translation>
+<translation id="163517899691012366">შეტყობინებები დადუმებულია, როცა ჩართულია რეჟიმი „არ შემაწუხოთ“</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> მოწყობილობა</translation>
 <translation id="1639239467298939599">იტვირთება</translation>
 <translation id="1654477262762802994">ხმოვანი მოთხოვნის დაწყება</translation>
@@ -159,6 +162,7 @@
 <translation id="1797271123677381264">პაროლი დამავიწყდა</translation>
 <translation id="181103072419391116">სიგნალის სიძლიერე: <ph name="SIGNAL_STRENGTH" />, მართავს თქვენი ადმინისტრატორი</translation>
 <translation id="1812997170047690955">რა არის ჩემს ეკრანზე?</translation>
+<translation id="1816896987747843206">ყველა აპსა და ვებსაიტს, რომლებსაც აქვს კამერის გამოყენების ნებართვა, მიენიჭება კამერაზე წვდომა</translation>
 <translation id="1823280932251546115">სტატუსის პანელი, დრო <ph name="TIME" />,
         <ph name="BATTERY" />
         <ph name="CHANNEL" />
@@ -172,10 +176,10 @@
 <translation id="1830308660060964064"><ph name="ITEM_TITLE" /> აღარ არის ჩამაგრებული</translation>
 <translation id="1836215606488044471">ასისტენტი (იტვირთება...)</translation>
 <translation id="1838895407229022812">ღამის განათება გამორთულია.</translation>
+<translation id="1854180393107901205">ტრანსლირების შეწყვეტა</translation>
 <translation id="1862380676329487333">განახლება და გასვლა</translation>
 <translation id="1864454756846565995">USB-C მოწყობილობა (უკანა პორტი)</translation>
 <translation id="1869497990620230175">სწრაფი ფაილები</translation>
-<translation id="1871703283152909317">ორივე ტიპის წვდომის ჩართვა</translation>
 <translation id="1879018240766558464">ინკოგნიტო ფანჯრები ამჟამად მხარდაუჭერელია. სხვა აპები შეინახება.</translation>
 <translation id="1882814835921407042">მობილური ქსელი არ არის</translation>
 <translation id="1882897271359938046">გამოსახვა <ph name="DISPLAY_NAME" /></translation>
@@ -213,7 +217,6 @@
 <translation id="2064048859448024834">კამერის გადახედვა ჩართულია</translation>
 <translation id="2067602449040652523">კლავიატურის სიკაშკაშე</translation>
 <translation id="2078034614700056995">შემდეგ სამუშაო მაგიდაზე გადასართველად გადაფურცლეთ მარჯვნივ ოთხი თითით</translation>
-<translation id="2079504693865562705">თაროზე აპების დამალვა</translation>
 <translation id="2079545284768500474">მოქმედების გაუქმება</translation>
 <translation id="2083190527011054446">ღამე მშვიდობის, <ph name="GIVEN_NAME" />!</translation>
 <translation id="2088116547584365419">თამაშები</translation>
@@ -373,6 +376,7 @@
 <translation id="3047761520276763270">ცადეთ, თქვათ:</translation>
 <translation id="3051189971848907985">მიმდინარეობს პროფილის გადარქმევა. მოითმინეთ რამდენიმე წუთი.</translation>
 <translation id="3055162170959710888">ამ მოწყობილობას დღეს <ph name="USED_TIME" /> იყენებდით</translation>
+<translation id="3062298103034426069">მხარდაუჭერელია</translation>
 <translation id="3068711042108640621">თარო მდებარეობს მარცხენა ნაწილში</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">მენიუს გაშლა</translation>
@@ -407,6 +411,7 @@
 <translation id="3249513730522716925">ფანჯარა <ph name="WINDOW_TITLE" /> გადატანილია სამუშაო მაგიდიდან <ph name="ACTIVE_DESK" /> სამუშაო მაგიდაზე <ph name="TARGET_DESK" /></translation>
 <translation id="3252573918265662711">დაყენება</translation>
 <translation id="3255483164551725916">რისი გაკეთება შეგიძლია?</translation>
+<translation id="3260969790895726815">მეტყველება მუშავდება ადგილობრივად, ხოლო კარნახი მუშაობს ხაზგარეშე რეჟიმში. ამასთან, ზოგიერთი ხმოვანი ბრძანება არ იმუშავებს.</translation>
 <translation id="3269597722229482060">მარჯვენა დაწკაპუნება</translation>
 <translation id="3289544412142055976">Linux აპები ამჟამად მხარდაუჭერელია</translation>
 <translation id="3289674678944039601">იტენება ადაპტერის მეშვეობით</translation>
@@ -598,6 +603,7 @@
 <translation id="4316910396681052118">ყველა აპი</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4322742403972824594">კლავიატურის მალსახმობი „Ctrl + Alt + ზემოთ მიმართული ისარი“ შეიცვალა. Home კლავიშით სარგებლობისთვის დააჭირეთ კლავიშს <ph name="LAUNCHER_KEY_NAME" /> + მარცხნივ მიმართულ ისარს.</translation>
+<translation id="4324840740119394760"><ph name="APP_NAME" />-ს, ასევე, ყველა აპსა და ვებსაიტს, რომლებსაც აქვს კამერის გამოყენების ნებართვა, მიენიჭება კამერაზე წვდომა</translation>
 <translation id="4333628967105022692">Lacros მხარდაუჭერელია, როცა სისტემაში შესულია რამდენიმე მომხმარებელი.</translation>
 <translation id="4338109981321384717">გამადიდებელი შუშა</translation>
 <translation id="4351433414020964307">ასისტენტი იტვირთება...</translation>
@@ -664,13 +670,13 @@
 <ph name="QUERY" /></translation>
 <translation id="4659419629803378708">ChromeVox ჩართულია</translation>
 <translation id="4665114317261903604">„არ შემაწუხოთ“ რეჟიმის გადართვა. <ph name="STATE_TEXT" /></translation>
-<translation id="4666082839192943839">გამორთეთ კამერაზე წვდომა ამ მოწყობილობაზე, რომ ყველა კამერა ყოველთვის დაბლოკილი იყოს.</translation>
 <translation id="4666911709726371538">სხვა აპები</translation>
 <translation id="4667099493359681081">მიმდინარეობს „<ph name="FILENAME" />“-ის ჩამოტვირთვა</translation>
 <translation id="468293128311738995">აპები თქვენი ტელეფონიდან</translation>
 <translation id="4690510401873698237">თარო მდებარეობს ქვედა ნაწილში</translation>
 <translation id="4696813013609194136">განბლოკეთ მოწყობილობა მშობლის კოდით</translation>
 <translation id="4702647871202761252">კონფიდენციალურობის ეკრანი გამორთულია</translation>
+<translation id="4706121060329443414">ჩამოტვირთვას მოგვიანებთ შევეცდებით. ამჟამად მეტყველება გაეგზავნება Google-ს დასამუშავებლად.</translation>
 <translation id="470644585772471629">ფერთა ინვერსია</translation>
 <translation id="4717575069099566988">თქვენს USB-C კაბელს არ აქვს USB4-ის მხარდაჭერა. მოწყობილობის ეფექტურობა შეიძლება შეიზღუდოს.</translation>
 <translation id="4730374152663651037">ხშირად გამოყენებული</translation>
@@ -696,7 +702,6 @@
 <translation id="485592688953820832">ქმედების გარეშე (პაუზა)</translation>
 <translation id="485634149294284819">კლავიატურის მენიუში შესვლა</translation>
 <translation id="4860284199500934869">შეამოწმეთ კავშირი ქსელთან, <ph name="FILENAME" /> რომ ჩამოტვირთოთ</translation>
-<translation id="486056901304535126">ჩამოტვირთვას მოგვიანებით შევეცდებით. ჩამოტვირთვის დასრულებამდე მეტყველება გაეგზავნება Google-ს დასამუშავებლად.</translation>
 <translation id="4864369630010738180">მიმდინარეობს შესვლა…</translation>
 <translation id="4864648187878336334">სამუშაო მაგიდა 15</translation>
 <translation id="4868492592575313542">გააქტიურებულია</translation>
@@ -787,10 +792,13 @@
 <translation id="5331975486040154427">USB-C მოწყობილობა (მარცხენა უკანა პორტი)</translation>
 <translation id="533282197239610265">გადაცემის მოწყობილობების ჩვენება</translation>
 <translation id="5344128444027639014"><ph name="BATTERY_PERCENTAGE" />% (მარჯვენა)</translation>
+<translation id="5351427059191534258">გსურთ კამერაზე წვდომის გამორთვა?</translation>
 <translation id="5352250171825660495">მუქი თემა ჩართულია</translation>
 <translation id="5356963482258194581">გადაერთეთ მუქ და ღია თემებს შორის. მარჯვენა ღილაკით დააწკაპუნეთ დესკტოპზე, შემდეგ კი აირჩიეთ „ფონი და სტილი“.</translation>
 <translation id="536019650977002321">აუდიოს აღბეჭდვა არ არის ნებადართული თქვენი ადმინისტრატორის მიერ. დამატებითი ინფორმაციისთვის მიმართეთ თქვენს ადმინისტრატორს.</translation>
+<translation id="5361524080961918551"><ph name="LANGUAGE" /> მეტყველების ფაილები ნაწილობრივ ჩამოიტვირთა</translation>
 <translation id="5363163447017455357"><ph name="DELIMITER" /> ამ ჩანართზე გადასვლა</translation>
+<translation id="5377367976106153749">ჩაირთოს კამერაზე წვდომა?</translation>
 <translation id="5379115545237091094">დაფიქსირდა მეტისმეტად ბევრი მცდელობა</translation>
 <translation id="5391307769715781764">გსურთ, ჩაანაცვლოთ შენახული სამუშაო მაგიდა?</translation>
 <translation id="5393156353051693207">აპების გადასალაგებლად დააწკაპუნეთ ხანგრძლივად შეეხეთ ნებისმიერ ადგილს</translation>
@@ -898,6 +906,7 @@
 <translation id="5980301590375426705">სტუმრის რეჟიმიდან გამოსვლა</translation>
 <translation id="598407983968395253">შაბლონის გამოყენება</translation>
 <translation id="598882571027504733">განახლების ჩამოსატვირთად გადატვირთეთ თქვენი Chromebook და არ გამოართოთ კლავიატურა.</translation>
+<translation id="6002179289567220515">1 კამერის გამოსართავად ფიზიკური გადამრთველით ისარგებლეთ. წვდომის გამორთვა ყველა კამერისთვისაც შეგიძლიათ.</translation>
 <translation id="6012623610530968780">გვერდი <ph name="SELECTED_PAGE" /> / <ph name="TOTAL_PAGE_NUM" />-დან</translation>
 <translation id="6018164090099858612">მიმდინარეობს სარკის რეჟიმიდან გამოსვლა</translation>
 <translation id="602001110135236999">გადაადგილება მარცხნივ</translation>
@@ -922,7 +931,6 @@
 <translation id="6095008505822982596">მეტყველების ტემპი</translation>
 <translation id="6099678161144790572">თვის განმავლობაში რედაქტირებული</translation>
 <translation id="6103838137565245112">სისტემა</translation>
-<translation id="6107292179555508368">მიკროფონსა და კამერაზე წვდომა გამორთულია ამ მოწყობილობაზე</translation>
 <translation id="6114505516289286752"><ph name="LANGUAGE" /> მეტყველების ფაილები ჩამოიტვირთა</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042">დაადასტურეთ ჩამოტვირთვა <ph name="FILENAME" /></translation>
@@ -939,9 +947,11 @@
 <translation id="619279033188484792">ნახეთ თქვენი ტელეფონის ბოლოდროინდელი ფოტოები, მედიაფაილები და შეტყობინებები თქვენს <ph name="DEVICE_TYPE" />-ზე</translation>
 <translation id="619335566042889110">სრულად დატენა ახლავე</translation>
 <translation id="6193431488227440296">Dev</translation>
+<translation id="6200515304866777730">მხარდაუჭერელია აპის მიერ</translation>
 <translation id="6210042900243040400">დააკავშირეთ <ph name="NAME" />, რომლებიც ადრე შენახული იყო <ph name="EMAIL" />-ში</translation>
 <translation id="6220928844947387476">ახლა თქვენი თავის და ეკრანის ჩაწერა ერთდროულად შეგიძლიათ</translation>
 <translation id="622484624075952240">ქვემოთ</translation>
+<translation id="623116199192908855">შეასრულეთ ეკრანის ტრანსლირება თქვენი Chromebook-იდან</translation>
 <translation id="6231419273573514727">შესაძლოა, პერიფერიული მოწყობილობების წარმადობა შეზღუდული იყოს</translation>
 <translation id="6232891689835436217"><ph name="APP_NAME" /> ამჟამად იყენებს თქვენს კამერას და მიკროფონს</translation>
 <translation id="6237231532760393653">1X</translation>
@@ -949,7 +959,6 @@
 <translation id="6259254695169772643">ასარჩევად ისარგებლეთ სტილუსით</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: გააქტიურება…</translation>
 <translation id="6274202259872570803">სკრინკასტი</translation>
-<translation id="6282694724099204652">ჩართეთ წვდომა, რათა აპებსა და ვებსაიტებს, რომლებსაც შესაბამისი ნებართვა აქვს, შეეძლოს ამ მოწყობილობასთან დაკავშირებული მიკროფონ(ებ)ისა და კამერ(ებ)ის გამოყენება.</translation>
 <translation id="6283712521836204486">„არ შემაწუხოთ“ გამორთულია.</translation>
 <translation id="6284232397434400372">გარჩევადობა შეიცვალა</translation>
 <translation id="6288235558961782912"><ph name="USER_EMAIL_ADDRESS" /> მოგვიანებით მშობლის ნებართვით შეგიძლიათ დაამატოთ.</translation>
@@ -984,8 +993,10 @@
 <translation id="6491071886865974820"><ph name="MANAGER" /> ითხოვს, განაახლოთ თქვენი <ph name="DEVICE_TYPE" /> ბოლო ვადამდე</translation>
 <translation id="649452524636452238">სმარტ-ბარათის PIN-კოდი</translation>
 <translation id="6495400115277918834">გაეშვა რეჟიმი ეკრანი ეკრანში, ფოკუსირებისთვის გამოიყენეთ კლავიშთა კომბინაცია Alt+Shift+V</translation>
+<translation id="6497418457565568043">„არ შემაწუხო“ ჩართულია</translation>
 <translation id="6500896621837555595">განახლება</translation>
 <translation id="6501401484702599040">ეკრანის ტრანსლირება აქ: <ph name="RECEIVER_NAME" />…</translation>
+<translation id="6508923215158854599">დარწმუნდით, რომ თქვენი Chromebook და Chromecast მოწყობილობა დაკავშირებულია ერთსა და იმავე Wi-Fi ქსელთან.</translation>
 <translation id="6515727200518652613">კამერა დაიკარგა, ვცდილობთ ხელახლა დაკავშირებას.</translation>
 <translation id="6520517963145875092">აირჩიეთ აღსაბეჭდი ფანჯარა</translation>
 <translation id="652139407789908527">განახლებისას ეკრანი ჩვეულზე დიდი ხნის (ერთ წუთამდე) განმავლობაში იქნება მონოტონური. განახლების მიმდინარეობისას არ დააჭიროთ ელკვების ღილაკზე.</translation>
@@ -1177,7 +1188,6 @@
 <translation id="7557816257942363084"><ph name="APP_NAME" /> ამჟამად იყენებს თქვენს მიკროფონს</translation>
 <translation id="7561982940498449837">მენიუს დახურვა</translation>
 <translation id="7564874036684306347">ფანჯრების სხვა დესკტოპზე გადატანამ შეიძლება მოულოდნელი ქცევა გამოიწვიოს. შემდგომი შეტყობინებები, ფანჯრები და დიალოგები შეიძლება გაიყოს დესკტოპებს შორის.</translation>
-<translation id="7567076708801803118">გსურთ, გამორთოთ კამერაზე წვდომა ამ მოწყობილობაზე?</translation>
 <translation id="7569509451529460200">ბრაილის შრიფტი და ChromeVox ჩართულია</translation>
 <translation id="7573585051776738856">აქტიური ფანჯარა ჩამაგრებულია მარჯვნივ.</translation>
 <translation id="7579778809502851308">ეკრანის აღბეჭდვა</translation>
@@ -1190,7 +1200,6 @@
 <translation id="761736749114493194">კამერის კადრირების გადართვა. <ph name="STATE_TEXT" /></translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />°F</translation>
 <translation id="7634648064048557203">კამერა მიზიდულია ქვედა მარჯვენა კუთხეში</translation>
-<translation id="7641938616688887143">ჩაწერა</translation>
 <translation id="7642106959537987271">ფერთა ინვერსიის რეჟიმი</translation>
 <translation id="7642647758716480637"><ph name="NETWORK_NAME" />-ის პარამეტრების გახსნა, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (მფლობელი)</translation>
@@ -1213,7 +1222,6 @@
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 შეტყობინება}other{# შეტყობინება}}</translation>
 <translation id="7724603315864178912">ამოჭრა</translation>
 <translation id="7742327441377685481">შეტყობინებები არ არის</translation>
-<translation id="7745560842763881396">თაროზე აპების ჩვენება</translation>
 <translation id="7749443890790263709">მიღწეულია სამუშაო მაგიდების მაქსიმალური რაოდენობა.</translation>
 <translation id="776344839111254542">დააწკაპუნეთ განახლების დეტალების სანახავად</translation>
 <translation id="7768784765476638775">მონიშვნა წარმოსათქმელად</translation>
@@ -1253,6 +1261,7 @@
 <translation id="79341161159229895">ანგარიშს მართავენ <ph name="FIRST_PARENT_EMAIL" /> და <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="793716872548410480">გაცვლის ბუფერის სანახავად დააჭირეთ კლავიშთა კომბინაციას <ph name="SHORTCUT_KEY_NAME" /> + V. გაცვლის ბუფერში ინახება თქვენ მიერ დაკოპირებული ბოლო 5 ერთეული.</translation>
 <translation id="7942349550061667556">წითელი</translation>
+<translation id="7963992254934562106"><ph name="PHONE_NAME" />-დან</translation>
 <translation id="7968693143708939792">აირჩიეთ საქაღალდე...</translation>
 <translation id="7977927628060636163">მიმდინარეობს მობილური ქსელების ძიება…</translation>
 <translation id="7982789257301363584">ქსელი</translation>
@@ -1491,6 +1500,7 @@
 <translation id="954052413789300507"><ph name="FILENAME" /> ვერ ჩამოიტვირთება არასაკმარისი სივრცის გამო. გაათავისუფლეთ მეხსიერება.</translation>
 <translation id="974545358917229949">ნაჩვენებია <ph name="RESULT_COUNT" /> შედეგი მოთხოვნაზე: <ph name="QUERY" /></translation>
 <translation id="98515147261107953">პეიზაჟი</translation>
+<translation id="989374776391122812">კამერისა და აუდიოს მართვის საშუალებები</translation>
 <translation id="990277280839877440">ფანჯარა „<ph name="WINDOW_TITILE" />“ დაიხურა.</translation>
 <translation id="994354411665877646"><ph name="NETWORK_NAME" />, <ph name="SUBTEXT" /></translation>
 <translation id="996204416024568215">ისარგებლეთ უახლესი ფუნქციებითა და უსაფრთხოების გაუმჯობესებებით. განახლება ხორციელდება ფონურ რეჟიმში.</translation>

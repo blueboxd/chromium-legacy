@@ -6,15 +6,19 @@
 
 #include <set>
 
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/strings/strcat.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "base/time/time_delta_from_string.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/dips/dips_features.h"
+#include "chrome/browser/dips/dips_redirect_info.h"
 #include "chrome/browser/dips/dips_service_factory.h"
 #include "chrome/browser/dips/dips_utils.h"
 #include "chrome/browser/profiles/profile.h"
@@ -23,8 +27,13 @@
 #include "components/signin/public/base/persistent_repeating_timer.h"
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "components/site_engagement/core/mojom/site_engagement_details.mojom.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 
 namespace {
+
+// Controls whether UKM metrics are collected for DIPS.
+BASE_FEATURE(kDipsUkm, "DipsUkm", base::FEATURE_ENABLED_BY_DEFAULT);
 
 std::vector<std::string> GetEngagedSitesInBackground(
     base::Time now,
@@ -45,6 +54,36 @@ std::vector<std::string> GetEngagedSitesInBackground(
   }
 
   return std::vector(unique_sites.begin(), unique_sites.end());
+}
+
+RedirectCategory ClassifyRedirect(CookieAccessType access,
+                                  bool has_interaction) {
+  switch (access) {
+    case CookieAccessType::kUnknown:
+      return has_interaction ? RedirectCategory::kUnknownCookies_HasEngagement
+                             : RedirectCategory::kUnknownCookies_NoEngagement;
+    case CookieAccessType::kNone:
+      return has_interaction ? RedirectCategory::kNoCookies_HasEngagement
+                             : RedirectCategory::kNoCookies_NoEngagement;
+    case CookieAccessType::kRead:
+      return has_interaction ? RedirectCategory::kReadCookies_HasEngagement
+                             : RedirectCategory::kReadCookies_NoEngagement;
+    case CookieAccessType::kWrite:
+      return has_interaction ? RedirectCategory::kWriteCookies_HasEngagement
+                             : RedirectCategory::kWriteCookies_NoEngagement;
+    case CookieAccessType::kReadWrite:
+      return has_interaction ? RedirectCategory::kReadWriteCookies_HasEngagement
+                             : RedirectCategory::kReadWriteCookies_NoEngagement;
+  }
+}
+
+inline void UmaHistogramBounceCategory(RedirectCategory category,
+                                       DIPSCookieMode mode,
+                                       DIPSRedirectType type) {
+  const std::string histogram_name =
+      base::StrCat({"Privacy.DIPS.BounceCategory", GetHistogramPiece(type),
+                    GetHistogramSuffix(mode)});
+  base::UmaHistogramEnumeration(histogram_name, category);
 }
 
 }  // namespace
@@ -103,16 +142,17 @@ scoped_refptr<base::SequencedTaskRunner> DIPSService::CreateTaskRunner() {
        base::ThreadPolicy::PREFER_BACKGROUND});
 }
 
-bool DIPSService::ShouldBlockThirdPartyCookies() const {
-  return cookie_settings_->ShouldBlockThirdPartyCookies();
+DIPSCookieMode DIPSService::GetCookieMode() const {
+  return GetDIPSCookieMode(browser_context_->IsOffTheRecord(),
+                           cookie_settings_->ShouldBlockThirdPartyCookies());
 }
 
 void DIPSService::RemoveEvents(const base::Time& delete_begin,
                                const base::Time& delete_end,
-                               const UrlPredicate& predicate,
+                               network::mojom::ClearDataFilterPtr filter,
                                DIPSEventRemovalType type) {
   storage_.AsyncCall(&DIPSStorage::RemoveEvents)
-      .WithArgs(delete_begin, delete_end, predicate, type);
+      .WithArgs(delete_begin, delete_end, std::move(filter), type);
 }
 
 void DIPSService::InitializeStorageWithEngagedSites() {
@@ -132,4 +172,96 @@ void DIPSService::InitializeStorageWithEngagedSites() {
 void DIPSService::InitializeStorage(base::Time time,
                                     std::vector<std::string> sites) {
   storage_.AsyncCall(&DIPSStorage::Prepopulate).WithArgs(time, sites);
+}
+
+void DIPSService::HandleRedirectChain(
+    std::vector<DIPSRedirectInfoPtr> redirects,
+    DIPSRedirectChainInfoPtr chain) {
+  chain->cookie_mode = GetCookieMode();
+  // Copy the URL out before |redirects| is moved, to avoid use-after-move.
+  GURL url = redirects[0]->url;
+  storage_.AsyncCall(&DIPSStorage::Read)
+      .WithArgs(url)
+      .Then(base::BindOnce(&DIPSService::GotState, weak_factory_.GetWeakPtr(),
+                           std::move(redirects), std::move(chain), 0));
+}
+
+void DIPSService::GotState(std::vector<DIPSRedirectInfoPtr> redirects,
+                           DIPSRedirectChainInfoPtr chain,
+                           size_t index,
+                           const DIPSState url_state) {
+  DCHECK_LT(index, redirects.size());
+
+  DIPSRedirectInfo* redirect = redirects[index].get();
+  // If there's any user interaction recorded in the DIPS DB, that's engagement.
+  redirect->has_interaction =
+      url_state.user_interaction_times().last.has_value();
+  HandleRedirect(
+      *redirect, *chain,
+      base::BindRepeating(&DIPSService::RecordBounce, base::Unretained(this)));
+
+  if (index + 1 >= redirects.size()) {
+    // All redirects handled.
+    return;
+  }
+
+  // Copy the URL out before `redirects` is moved, to avoid use-after-move.
+  GURL url = redirects[index + 1]->url;
+  storage_.AsyncCall(&DIPSStorage::Read)
+      .WithArgs(url)
+      .Then(base::BindOnce(&DIPSService::GotState, weak_factory_.GetWeakPtr(),
+                           std::move(redirects), std::move(chain), index + 1));
+}
+
+void DIPSService::RecordBounce(bool stateful,
+                               const GURL& url,
+                               base::Time time) {
+  storage_
+      .AsyncCall(stateful ? &DIPSStorage::RecordStatefulBounce
+                          : &DIPSStorage::RecordStatelessBounce)
+      .WithArgs(url, time);
+}
+
+/*static*/
+void DIPSService::HandleRedirect(const DIPSRedirectInfo& redirect,
+                                 const DIPSRedirectChainInfo& chain,
+                                 RecordBounceCallback record_bounce) {
+  const std::string site = GetSiteForDIPS(redirect.url);
+  bool initial_site_same = (site == chain.initial_site);
+  bool final_site_same = (site == chain.final_site);
+  DCHECK_LE(0, redirect.index);
+  DCHECK_LT(redirect.index, chain.length);
+
+  if (base::FeatureList::IsEnabled(kDipsUkm)) {
+    ukm::builders::DIPS_Redirect(redirect.source_id)
+        .SetSiteEngagementLevel(redirect.has_interaction.value() ? 1 : 0)
+        .SetRedirectType(static_cast<int64_t>(redirect.redirect_type))
+        .SetCookieAccessType(static_cast<int64_t>(redirect.access_type))
+        .SetRedirectAndInitialSiteSame(initial_site_same)
+        .SetRedirectAndFinalSiteSame(final_site_same)
+        .SetInitialAndFinalSitesSame(chain.initial_and_final_sites_same)
+        .SetRedirectChainIndex(redirect.index)
+        .SetRedirectChainLength(chain.length)
+        .SetClientBounceDelay(
+            BucketizeBounceDelay(redirect.client_bounce_delay))
+        .SetHasStickyActivation(redirect.has_sticky_activation)
+        .Record(ukm::UkmRecorder::Get());
+  }
+
+  if (initial_site_same || final_site_same) {
+    // Don't record UMA metrics for same-site redirects.
+    return;
+  }
+
+  // Record this bounce in the DIPS database.
+  if (redirect.access_type != CookieAccessType::kUnknown) {
+    record_bounce.Run(
+        /*stateful=*/redirect.access_type > CookieAccessType::kRead,
+        redirect.url, redirect.time);
+  }
+
+  RedirectCategory category =
+      ClassifyRedirect(redirect.access_type, redirect.has_interaction.value());
+  UmaHistogramBounceCategory(category, chain.cookie_mode.value(),
+                             redirect.redirect_type);
 }

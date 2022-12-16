@@ -42,7 +42,7 @@
 #include "components/reporting/compression/compression_module.h"
 #include "components/reporting/encryption/encryption_module_interface.h"
 #include "components/reporting/proto/synced/record.pb.h"
-#include "components/reporting/resources/resource_interface.h"
+#include "components/reporting/resources/resource_manager.h"
 #include "components/reporting/storage/storage_configuration.h"
 #include "components/reporting/storage/storage_uploader_interface.h"
 #include "components/reporting/util/file.h"
@@ -575,13 +575,9 @@ Status StorageQueue::WriteHeaderAndBlock(
   DCHECK_CALLED_ON_VALID_SEQUENCE(storage_queue_sequence_checker_);
 
   // Test only: Simulate failure if requested
-  if (test_injected_failures_.count(
-          test::StorageQueueOperationKind::kWriteBlock) > 0 &&
-      test_injected_failures_[test::StorageQueueOperationKind::kWriteBlock]
-          .count(next_sequencing_id_)) {
-    return Status(error::INTERNAL,
-                  base::StrCat({"Simulated failure, seq=",
-                                base::NumberToString(next_sequencing_id_)}));
+  if (test_injection_handler_) {
+    RETURN_IF_ERROR(test_injection_handler_.Run(
+        test::StorageQueueOperationKind::kWriteBlock, next_sequencing_id_));
   }
 
   // Prepare header.
@@ -646,13 +642,9 @@ Status StorageQueue::WriteMetadata(base::StringPiece current_record_digest) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(storage_queue_sequence_checker_);
 
   // Test only: Simulate failure if requested
-  if (test_injected_failures_.count(
-          test::StorageQueueOperationKind::kWriteMetadata) > 0 &&
-      test_injected_failures_[test::StorageQueueOperationKind::kWriteMetadata]
-          .count(next_sequencing_id_)) {
-    return Status(error::INTERNAL,
-                  base::StrCat({"Simulated failure, seq=",
-                                base::NumberToString(next_sequencing_id_)}));
+  if (test_injection_handler_) {
+    RETURN_IF_ERROR(test_injection_handler_.Run(
+        test::StorageQueueOperationKind::kWriteMetadata, next_sequencing_id_));
   }
 
   // Synchronously write the metafile.
@@ -858,7 +850,6 @@ void StorageQueue::DeleteOutdatedMetadata(int64_t sequencing_id_to_keep) const {
       options_.directory(),
       /*recursive=*/false, base::FileEnumerator::FILES,
       base::StrCat({METADATA_NAME, FILE_PATH_LITERAL(".*")}));
-
   DeleteFilesWarnIfFailed(
       dir_enum,
       base::BindRepeating(
@@ -1229,15 +1220,9 @@ class StorageQueue::ReadContext : public TaskRunnerContext<Status> {
         storage_queue_->storage_queue_sequence_checker_);
 
     // Test only: simulate error, if requested.
-    if (storage_queue_->test_injected_failures_.count(
-            test::StorageQueueOperationKind::kReadBlock) > 0 &&
-        storage_queue_
-                ->test_injected_failures_
-                    [test::StorageQueueOperationKind::kReadBlock]
-                .count(sequencing_id) > 0) {
-      return Status(error::INTERNAL,
-                    base::StrCat({"Simulated failure, seq=",
-                                  base::NumberToString(sequencing_id)}));
+    if (storage_queue_->test_injection_handler_) {
+      RETURN_IF_ERROR(storage_queue_->test_injection_handler_.Run(
+          test::StorageQueueOperationKind::kReadBlock, sequencing_id));
     }
 
     // Read from the current file at the current offset.
@@ -1531,25 +1516,54 @@ class StorageQueue::WriteContext : public TaskRunnerContext<Status> {
     in_contexts_queue_ = storage_queue_->write_contexts_queue_.insert(
         storage_queue_->write_contexts_queue_.end(), this);
 
-    // Serialize and compress wrapped record on a thread pool.
-    base::ThreadPool::PostTask(
-        FROM_HERE, {base::TaskPriority::BEST_EFFORT},
-        base::BindOnce(&WriteContext::ProcessWrappedRecord,
-                       base::Unretained(this), std::move(wrapped_record)));
+    // Start processing wrapped record.
+    PrepareProcessWrappedRecord(std::move(wrapped_record));
   }
 
-  void ProcessWrappedRecord(WrappedRecord wrapped_record) {
-    // Serialize wrapped record into a string.
+  void PrepareProcessWrappedRecord(WrappedRecord wrapped_record) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(
+        storage_queue_->storage_queue_sequence_checker_);
+
+    // Reserve space. Pause processing, if necessary.
+    const size_t serialized_size = wrapped_record.ByteSizeLong();
     ScopedReservation scoped_reservation(
-        wrapped_record.ByteSizeLong(),
-        storage_queue_->options().memory_resource());
+        serialized_size, storage_queue_->options().memory_resource());
+    // Inject "memory unavailable" failure, if requested.
+    if (storage_queue_->test_injection_handler_ &&
+        !storage_queue_->test_injection_handler_
+             .Run(test::StorageQueueOperationKind::kWrappedRecordLowMemory,
+                  storage_queue_->next_sequencing_id_)
+             .ok()) {
+      scoped_reservation.Reduce(0);
+    }
     if (!scoped_reservation.reserved()) {
-      Schedule(&ReadContext::Response, base::Unretained(this),
+      if (remaining_attempts_ > 0u) {
+        // Attempt to wait for sufficient memory availability
+        // and retry.
+        --remaining_attempts_;
+        storage_queue_->options().memory_resource()->RegisterCallback(
+            serialized_size,
+            base::BindOnce(&WriteContext::PrepareProcessWrappedRecord,
+                           base::Unretained(this), std::move(wrapped_record)));
+        return;
+      }
+      // Max number of attempts exceeded, return error.
+      Schedule(&WriteContext::Response, base::Unretained(this),
                Status(error::RESOURCE_EXHAUSTED,
                       "Not enough memory for the write buffer"));
       return;
     }
 
+    // Memory reserved, serialize and compress wrapped record on a thread pool.
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::TaskPriority::BEST_EFFORT},
+        base::BindOnce(&WriteContext::ProcessWrappedRecord,
+                       base::Unretained(this), std::move(wrapped_record),
+                       std::move(scoped_reservation)));
+  }
+
+  void ProcessWrappedRecord(WrappedRecord wrapped_record,
+                            ScopedReservation scoped_reservation) {
     // UTC time of 2122-01-01T00:00:00Z since Unix epoch 1970-01-01T00:00:00Z in
     // microseconds
     static constexpr int64_t kTime2122 = 4'796'668'800'000'000;
@@ -1560,20 +1574,21 @@ class StorageQueue::WriteContext : public TaskRunnerContext<Status> {
         << "Unusually large timestamp (in milliseconds): "
         << wrapped_record.record().timestamp_us();
 
+    // Serialize wrapped record into a string.
     std::string buffer;
     if (!wrapped_record.SerializeToString(&buffer)) {
-      Schedule(&ReadContext::Response, base::Unretained(this),
+      Schedule(&WriteContext::Response, base::Unretained(this),
                Status(error::DATA_LOSS, "Cannot serialize record"));
       return;
     }
-    // Release wrapped record memory, so scoped reservation may act.
+    // Release wrapped record memory, so `scoped_reservation` may act.
     wrapped_record.Clear();
     CompressWrappedRecord(std::move(buffer), std::move(scoped_reservation));
   }
 
   void CompressWrappedRecord(std::string serialized_record,
                              ScopedReservation scoped_reservation) {
-    // Compress the string.
+    // Compress the string. If memory is insufficient, compression is skipped.
     storage_queue_->compression_module_->CompressRecord(
         std::move(serialized_record),
         storage_queue_->options().memory_resource(),
@@ -1592,18 +1607,20 @@ class StorageQueue::WriteContext : public TaskRunnerContext<Status> {
     // compression information.
     storage_queue_->encryption_module_->EncryptRecord(
         compressed_record_result,
-        base::BindOnce(&WriteContext::OnEncryptedRecordReady,
-                       base::Unretained(this),
-                       std::move(compression_information)));
+        base::BindPostTask(storage_queue_->sequenced_task_runner_,
+                           base::BindOnce(&WriteContext::OnEncryptedRecordReady,
+                                          base::Unretained(this),
+                                          std::move(compression_information))));
   }
 
   void OnEncryptedRecordReady(
       absl::optional<CompressionInformation> compression_information,
       StatusOr<EncryptedRecord> encrypted_record_result) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(
+        storage_queue_->storage_queue_sequence_checker_);
     if (!encrypted_record_result.ok()) {
       // Failed to serialize or encrypt.
-      Schedule(&ReadContext::Response, base::Unretained(this),
-               encrypted_record_result.status());
+      Response(encrypted_record_result.status());
       return;
     }
 
@@ -1613,24 +1630,54 @@ class StorageQueue::WriteContext : public TaskRunnerContext<Status> {
           compression_information.value();
     }
 
+    // Proceed and serialize record.
+    SerializeEncryptedRecord(std::move(compression_information),
+                             std::move(encrypted_record_result.ValueOrDie()));
+  }
+
+  void SerializeEncryptedRecord(
+      absl::optional<CompressionInformation> compression_information,
+      EncryptedRecord encrypted_record) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(
+        storage_queue_->storage_queue_sequence_checker_);
     // Serialize encrypted record.
+    const size_t serialized_size = encrypted_record.ByteSizeLong();
     ScopedReservation scoped_reservation(
-        encrypted_record_result.ValueOrDie().ByteSizeLong(),
-        storage_queue_->options().memory_resource());
+        serialized_size, storage_queue_->options().memory_resource());
+    // Inject "memory unavailable" failure, if requested.
+    if (storage_queue_->test_injection_handler_ &&
+        !storage_queue_->test_injection_handler_
+             .Run(test::StorageQueueOperationKind::kEncryptedRecordLowMemory,
+                  storage_queue_->next_sequencing_id_)
+             .ok()) {
+      scoped_reservation.Reduce(0);
+    }
     if (!scoped_reservation.reserved()) {
-      Schedule(&ReadContext::Response, base::Unretained(this),
+      if (remaining_attempts_ > 0u) {
+        // Attempt to wait for sufficient memory availability
+        // and retry.
+        --remaining_attempts_;
+        storage_queue_->options().memory_resource()->RegisterCallback(
+            serialized_size,
+            base::BindOnce(&WriteContext::SerializeEncryptedRecord,
+                           base::Unretained(this),
+                           std::move(compression_information),
+                           std::move(encrypted_record)));
+        return;
+      }
+      Schedule(&WriteContext::Response, base::Unretained(this),
                Status(error::RESOURCE_EXHAUSTED,
-                      "Not enough memory for the write buffer"));
+                      "Not enough memory for encrypted record"));
       return;
     }
     std::string buffer;
-    if (!encrypted_record_result.ValueOrDie().SerializeToString(&buffer)) {
-      Schedule(&ReadContext::Response, base::Unretained(this),
+    if (!encrypted_record.SerializeToString(&buffer)) {
+      Schedule(&WriteContext::Response, base::Unretained(this),
                Status(error::DATA_LOSS, "Cannot serialize EncryptedRecord"));
       return;
     }
     // Release encrypted record memory, so scoped reservation may act.
-    encrypted_record_result.ValueOrDie().Clear();
+    encrypted_record.Clear();
 
     // Write into storage on sequential task runner.
     Schedule(&WriteContext::WriteRecord, base::Unretained(this),
@@ -1794,6 +1841,10 @@ class StorageQueue::WriteContext : public TaskRunnerContext<Status> {
   // Write buffer. When filled in (after encryption), |WriteRecord| can be
   // executed. Empty until encryption is done.
   std::string buffer_;
+
+  // Atomic counter of insufficien memory retry attempts.
+  // Accessed in serialized methods only.
+  size_t remaining_attempts_ = 16u;
 };
 
 void StorageQueue::Write(Record record,
@@ -1802,7 +1853,12 @@ void StorageQueue::Write(Record record,
 }
 
 Status StorageQueue::ReserveNewRecordDiskSpace(const size_t total_size) {
-  if (!options_.disk_space_resource()->Reserve(total_size)) {
+  if ((test_injection_handler_ &&  // Test only: Simulate failure if requested
+       !test_injection_handler_
+            .Run(test::StorageQueueOperationKind::kWriteLowDiskSpace,
+                 next_sequencing_id_)
+            .ok()) ||
+      !options_.disk_space_resource()->Reserve(total_size)) {
     const uint64_t space_used = options_.disk_space_resource()->GetUsed();
     const uint64_t space_total = options_.disk_space_resource()->GetTotal();
     return Status(
@@ -2077,9 +2133,10 @@ void StorageQueue::RegisterCompletionCallback(base::OnceClosure callback) {
 }
 
 void StorageQueue::TestInjectErrorsForOperation(
-    const test::StorageQueueOperationKind operation_kind,
-    std::initializer_list<int64_t> sequencing_ids) {
-  test_injected_failures_[operation_kind] = sequencing_ids;
+    base::RepeatingCallback<
+        Status(test::StorageQueueOperationKind operation_kind, int64_t)>
+        handler) {
+  test_injection_handler_ = handler;
 }
 
 //
@@ -2089,9 +2146,10 @@ StatusOr<scoped_refptr<StorageQueue::SingleFile>>
 StorageQueue::SingleFile::Create(
     const base::FilePath& filename,
     int64_t size,
-    scoped_refptr<ResourceInterface> memory_resource,
-    scoped_refptr<ResourceInterface> disk_space_resource,
+    scoped_refptr<ResourceManager> memory_resource,
+    scoped_refptr<ResourceManager> disk_space_resource,
     scoped_refptr<RefCountedClosureList> completion_closure_list) {
+  // Reserve specified disk space for the file.
   if (!disk_space_resource->Reserve(size)) {
     LOG(WARNING) << "Disk space exceeded adding file "
                  << filename.MaybeAsASCII();
@@ -2100,6 +2158,7 @@ StorageQueue::SingleFile::Create(
         base::StrCat({"Not enough disk space available to include file=",
                       filename.MaybeAsASCII()}));
   }
+
   // Cannot use base::MakeRefCounted, since the constructor is private.
   return scoped_refptr<StorageQueue::SingleFile>(
       new SingleFile(filename, size, memory_resource, disk_space_resource,
@@ -2109,8 +2168,8 @@ StorageQueue::SingleFile::Create(
 StorageQueue::SingleFile::SingleFile(
     const base::FilePath& filename,
     int64_t size,
-    scoped_refptr<ResourceInterface> memory_resource,
-    scoped_refptr<ResourceInterface> disk_space_resource,
+    scoped_refptr<ResourceManager> memory_resource,
+    scoped_refptr<ResourceManager> disk_space_resource,
     scoped_refptr<RefCountedClosureList> completion_closure_list)
     : completion_closure_list_(completion_closure_list),
       filename_(filename),

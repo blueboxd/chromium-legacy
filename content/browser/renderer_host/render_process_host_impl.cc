@@ -14,7 +14,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/constants/ash_features.h"
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -66,6 +65,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "cc/base/switches.h"
+#include "components/attribution_reporting/os_support.mojom.h"
 #include "components/discardable_memory/public/mojom/discardable_shared_memory_manager.mojom.h"
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 #include "components/metrics/single_sample_metrics.h"
@@ -110,6 +110,7 @@
 #include "content/browser/push_messaging/push_messaging_manager.h"
 #include "content/browser/quota/quota_context.h"
 #include "content/browser/renderer_host/embedded_frame_sink_provider_impl.h"
+#include "content/browser/renderer_host/indexed_db_client_state_checker_factory.h"
 #include "content/browser/renderer_host/media/media_stream_track_metrics_host.h"
 #include "content/browser/renderer_host/p2p/socket_dispatcher_host.h"
 #include "content/browser/renderer_host/recently_destroyed_hosts.h"
@@ -194,13 +195,14 @@
 #include "third_party/blink/public/common/page/launching_process_state.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/common/switches.h"
-#include "third_party/blink/public/mojom/conversions/attribution_reporting.mojom.h"
 #include "third_party/blink/public/mojom/disk_allocator.mojom.h"
 #include "third_party/blink/public/mojom/plugins/plugin_registry.mojom.h"
 #include "third_party/blink/public/public_buildflags.h"
 #include "ui/accessibility/accessibility_switches.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/display_switches.h"
+#include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -1936,6 +1938,7 @@ void RenderProcessHostImpl::BindCacheStorage(
 
 void RenderProcessHostImpl::BindIndexedDB(
     const blink::StorageKey& storage_key,
+    const GlobalRenderFrameHostId& rfh_id,
     mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (storage_key.origin().opaque()) {
@@ -1945,8 +1948,12 @@ void RenderProcessHostImpl::BindIndexedDB(
     // freed, we expect the pipe on the client will be closed.
     return;
   }
+
   storage_partition_impl_->GetIndexedDBControl().BindIndexedDB(
-      storage_key, std::move(receiver));
+      storage_key,
+      IndexedDBClientStateCheckerFactory::InitializePendingAssociatedRemote(
+          rfh_id),
+      std::move(receiver));
 }
 
 void RenderProcessHostImpl::BindBucketManagerHost(
@@ -3251,8 +3258,8 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
     command_line->AppendSwitchASCII(blink::switches::kJavaScriptFlags,
                                     "--jitless");
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (base::FeatureList::IsEnabled(ash::features::kTouchTextEditingRedesign)) {
+#if BUILDFLAG(IS_CHROMEOS)
+  if (features::IsTouchTextEditingRedesignEnabled()) {
     command_line->AppendSwitchASCII(
         blink::switches::kTouchTextSelectionStrategy,
         blink::switches::kTouchTextSelectionStrategy_Direction);
@@ -3321,6 +3328,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableOriginTrialControlledBlinkFeatures,
     switches::kDisablePepper3DImageChromium,
     switches::kDisablePermissionsAPI,
+    switches::kDisablePPAPISharedImagesSwapChain,
     switches::kDisablePresentationAPI,
     switches::kDisableRTCSmoothnessAlgorithm,
     switches::kDisableScrollToTextFragment,
@@ -3329,6 +3337,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableSpeechAPI,
     switches::kDisableThreadedCompositing,
     switches::kDisableTouchDragDrop,
+    switches::kDisableUseMojoVideoDecoderForPepper,
     switches::kDisableV8IdleTasks,
     switches::kDisableVideoCaptureUseGpuMemoryBuffer,
     switches::kDisableWebGLImageChromium,
@@ -4936,7 +4945,7 @@ void RenderProcessHostImpl::UpdateProcessPriority() {
     has_recorded_media_stream_frame_depth_metric_ = true;
   }
 
-  ChildProcessLauncherPriority priority(
+  RenderProcessPriority priority(
       visible_clients_ > 0 || base::CommandLine::ForCurrentProcess()->HasSwitch(
                                   switches::kDisableRendererBackgrounding),
       media_stream_count_ > 0, foreground_service_worker_count_ > 0,
@@ -4953,7 +4962,7 @@ void RenderProcessHostImpl::UpdateProcessPriority() {
   // logic into this class, or rip out the existing logic entirely.
   if (priority_override_.has_value()) {
     bool foregrounded = priority_override_.value();
-    priority = ChildProcessLauncherPriority(
+    priority = RenderProcessPriority(
         foregrounded, /* is_visible */
         foregrounded, /* has_media_stream */
         foregrounded, /* has_foreground_service_worker */
@@ -4988,7 +4997,11 @@ void RenderProcessHostImpl::UpdateProcessPriority() {
   if (!run_renderer_in_process()) {
     DCHECK(child_process_launcher_.get());
     DCHECK(!child_process_launcher_->IsStarting());
-    child_process_launcher_->SetProcessPriority(priority_);
+#if BUILDFLAG(IS_ANDROID)
+    child_process_launcher_->SetRenderProcessPriority(priority_);
+#else
+    child_process_launcher_->SetProcessBackgrounded(priority_.is_background());
+#endif
   }
 
   // Notify the child process of the change in state.
@@ -5381,8 +5394,15 @@ void RenderProcessHostImpl::ProvideSwapFileForRenderer() {
 }
 
 void RenderProcessHostImpl::SetOsSupportForAttributionReporting(
-    blink::mojom::AttributionOsSupport os_support) {
+    attribution_reporting::mojom::OsSupport os_support) {
   GetRendererInterface()->SetOsSupportForAttributionReporting(os_support);
 }
+
+#if BUILDFLAG(IS_ANDROID)
+void RenderProcessHostImpl::NotifyMemoryPressureToRenderer(
+    base::MemoryPressureListener::MemoryPressureLevel level) {
+  child_process_->OnMemoryPressure(level);
+}
+#endif
 
 }  // namespace content

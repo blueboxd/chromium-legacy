@@ -176,6 +176,13 @@ BASE_FEATURE(kAutofillFillMerchantPromoCodeFields,
              "AutofillFillMerchantPromoCodeFields",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// When enabled, Autofill will offer saving a card to the users when the Chrome
+// detects a card number with the last 4 digits that matches an existing server
+// card but has a different expiration date.
+BASE_FEATURE(kAutofillOfferToSaveCardWithSameLastFour,
+             "AutofillOfferToSaveCardWithSameLastFour",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // When enabled, Autofill will attempt to find International Bank Account Number
 // (IBAN) fields when parsing forms.
 BASE_FEATURE(kAutofillParseIBANFields,
@@ -187,6 +194,12 @@ BASE_FEATURE(kAutofillParseIBANFields,
 BASE_FEATURE(kAutofillParseVcnCardOnFileStandaloneCvcFields,
              "AutofillParseVcnCardOnFileStandaloneCvcFields",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// When enabled, Expiration and Type titles will be removed from Chrome
+// payment settings page.
+BASE_FEATURE(kAutofillRemoveCardExpirationAndTypeTitles,
+             "AutofillRemoveCardExpirationAndTypeTitles",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, the Save Card infobar will be dismissed by a user initiated
 // navigation other than one caused by submitted form.

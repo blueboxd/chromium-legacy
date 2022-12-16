@@ -396,6 +396,8 @@ api::autotest_private::AppType GetAppType(apps::AppType type) {
       return api::autotest_private::AppType::APP_TYPE_REMOTE;
     case apps::AppType::kBorealis:
       return api::autotest_private::AppType::APP_TYPE_BOREALIS;
+    case apps::AppType::kBruschetta:
+      return api::autotest_private::AppType::APP_TYPE_BRUSCHETTA;
     case apps::AppType::kStandaloneBrowserExtension:
       return api::autotest_private::AppType::APP_TYPE_NONE;
     case apps::AppType::kStandaloneBrowserChromeApp:
@@ -1429,7 +1431,7 @@ AutotestPrivateLockScreenFunction::~AutotestPrivateLockScreenFunction() =
 ExtensionFunction::ResponseAction AutotestPrivateLockScreenFunction::Run() {
   DVLOG(1) << "AutotestPrivateLockScreenFunction";
 
-  chromeos::SessionManagerClient::Get()->RequestLockScreen();
+  ash::SessionManagerClient::Get()->RequestLockScreen();
   return RespondNow(NoArguments());
 }
 
@@ -2193,8 +2195,7 @@ AutotestPrivateGetCryptohomeRecoveryDataFunction::Run() {
   if (!context)
     return RespondNow(Error("WizardContext is not available"));
 
-  chromeos::UserContext* user_context =
-      context->extra_factors_auth_session.get();
+  ash::UserContext* user_context = context->extra_factors_auth_session.get();
   if (!user_context)
     return RespondNow(Error("UserContext is not available"));
 

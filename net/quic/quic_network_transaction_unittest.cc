@@ -690,11 +690,11 @@ class QuicNetworkTransactionTest
     // QUIC v1 and QUIC v2 are considered a match, because they have the same
     // ALPN token.
     if ((connection_info == HttpResponseInfo::CONNECTION_INFO_QUIC_RFC_V1 ||
-         connection_info == HttpResponseInfo::CONNECTION_INFO_QUIC_2_DRAFT_1) &&
+         connection_info == HttpResponseInfo::CONNECTION_INFO_QUIC_2_DRAFT_8) &&
         (response->connection_info ==
              HttpResponseInfo::CONNECTION_INFO_QUIC_RFC_V1 ||
          response->connection_info ==
-             HttpResponseInfo::CONNECTION_INFO_QUIC_2_DRAFT_1)) {
+             HttpResponseInfo::CONNECTION_INFO_QUIC_2_DRAFT_8)) {
       return;
     }
 
@@ -8761,7 +8761,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyAuth) {
             packet_num++, GetNthClientInitiatedBidirectionalStreamId(0), true,
             false,
             VersionUsesHttp3(version_.transport_version)
-                ? quic::QuicStream::kDefaultUrgency
+                ? quic::QuicStreamPriority::kDefaultUrgency
                 : ConvertRequestPriorityToQuicPriority(
                       HttpProxyConnectJob::kH2QuicTunnelPriority),
             client_maker.ConnectRequestHeaders("mail.example.org:443"), 0,
@@ -8814,7 +8814,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyAuth) {
             packet_num++, GetNthClientInitiatedBidirectionalStreamId(1), false,
             false,
             VersionUsesHttp3(version_.transport_version)
-                ? quic::QuicStream::kDefaultUrgency
+                ? quic::QuicStreamPriority::kDefaultUrgency
                 : ConvertRequestPriorityToQuicPriority(
                       HttpProxyConnectJob::kH2QuicTunnelPriority),
             std::move(headers), GetNthClientInitiatedBidirectionalStreamId(0),
@@ -9451,7 +9451,7 @@ TEST_P(QuicNetworkTransactionTest, NetworkIsolationTunnel) {
             packet_num++, GetNthClientInitiatedBidirectionalStreamId(0), true,
             false,
             VersionUsesHttp3(version_.transport_version)
-                ? quic::QuicStream::kDefaultUrgency
+                ? quic::QuicStreamPriority::kDefaultUrgency
                 : ConvertRequestPriorityToQuicPriority(
                       HttpProxyConnectJob::kH2QuicTunnelPriority),
             ConnectRequestHeaders("mail.example.org:443"), 0, nullptr));

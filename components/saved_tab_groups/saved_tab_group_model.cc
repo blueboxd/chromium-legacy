@@ -200,17 +200,38 @@ void SavedTabGroupModel::UpdatedVisualDataFromSync(
     observer.SavedTabGroupUpdatedFromSync(id);
 }
 
+SavedTabGroup* SavedTabGroupModel::GetGroupContainingTab(
+    const base::GUID& saved_tab_guid) {
+  for (auto& saved_group : saved_tab_groups_) {
+    if (saved_group.ContainsTab(saved_tab_guid))
+      return &saved_group;
+  }
+
+  return nullptr;
+}
+
+SavedTabGroup* SavedTabGroupModel::GetGroupContainingTab(
+    const base::Token& local_tab_id) {
+  for (auto& saved_group : saved_tab_groups_) {
+    if (saved_group.ContainsTab(local_tab_id))
+      return &saved_group;
+  }
+
+  return nullptr;
+}
+
 void SavedTabGroupModel::AddTabToGroup(const base::GUID& group_id,
                                        SavedTabGroupTab tab,
                                        int index) {
   if (!Contains(group_id))
     return;
 
+  const base::GUID tab_id = tab.saved_tab_guid();
   absl::optional<int> group_index = GetIndexOf(group_id);
   saved_tab_groups_[group_index.value()].AddTab(index, tab);
 
   for (auto& observer : observers_)
-    observer.SavedTabGroupUpdatedLocally(group_id);
+    observer.SavedTabGroupUpdatedLocally(group_id, tab_id);
 }
 
 void SavedTabGroupModel::RemoveTabFromGroup(const base::GUID& group_id,
@@ -232,7 +253,7 @@ void SavedTabGroupModel::RemoveTabFromGroup(const base::GUID& group_id,
   // TODO(dljames): Update to use SavedTabGroupRemoveLocally and update the API
   // to pass a group_id and an optional tab_id.
   for (auto& observer : observers_)
-    observer.SavedTabGroupUpdatedLocally(group_id);
+    observer.SavedTabGroupUpdatedLocally(group_id, tab_id);
 }
 
 void SavedTabGroupModel::ReplaceTabInGroupAt(const base::GUID& group_id,
@@ -241,11 +262,14 @@ void SavedTabGroupModel::ReplaceTabInGroupAt(const base::GUID& group_id,
   if (!Contains(group_id))
     return;
 
+  const base::GUID guid = new_tab.saved_tab_guid();
   absl::optional<int> index = GetIndexOf(group_id);
   saved_tab_groups_[index.value()].ReplaceTabAt(tab_id, new_tab);
 
-  for (auto& observer : observers_)
-    observer.SavedTabGroupUpdatedLocally(group_id);
+  for (auto& observer : observers_) {
+    observer.SavedTabGroupUpdatedLocally(group_id, tab_id);
+    observer.SavedTabGroupUpdatedLocally(group_id, guid);
+  }
 }
 
 void SavedTabGroupModel::MoveTabInGroupTo(const base::GUID& group_id,
@@ -258,7 +282,7 @@ void SavedTabGroupModel::MoveTabInGroupTo(const base::GUID& group_id,
   saved_tab_groups_[index.value()].MoveTab(tab_id, new_index);
 
   for (auto& observer : observers_)
-    observer.SavedTabGroupUpdatedLocally(group_id);
+    observer.SavedTabGroupUpdatedLocally(group_id, tab_id);
 }
 
 std::unique_ptr<sync_pb::SavedTabGroupSpecifics> SavedTabGroupModel::MergeGroup(
@@ -295,7 +319,7 @@ std::unique_ptr<sync_pb::SavedTabGroupSpecifics> SavedTabGroupModel::MergeTab(
   tab->MergeTab(std::move(sync_specific));
 
   for (auto& observer : observers_)
-    observer.SavedTabGroupUpdatedFromSync(tab->saved_group_guid());
+    observer.SavedTabGroupUpdatedFromSync(group_id, tab->saved_group_guid());
 
   return tab->ToSpecifics();
 }

@@ -52,6 +52,7 @@ import android.window.OnBackInvokedDispatcher;
 
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
@@ -322,6 +323,9 @@ public class WebViewBrowserActivity extends AppCompatActivity {
         } else if (manufacturer.equals("nokia")) {
             // https://crbug.com/1385924
             threadPolicyBuilder = threadPolicyBuilder.permitDiskReads();
+        } else if (manufacturer.equals("xiaomi")) {
+            // https://crbug.com/1401331
+            threadPolicyBuilder = threadPolicyBuilder.permitDiskReads();
         }
         StrictMode.setThreadPolicy(threadPolicyBuilder.build());
 
@@ -568,6 +572,7 @@ public class WebViewBrowserActivity extends AppCompatActivity {
 
     // WebKit permissions which can be granted because either they have no associated Android
     // permission or the associated Android permission has been granted
+    @RequiresApi(Build.VERSION_CODES.M)
     private boolean canGrant(String webkitPermission) {
         String androidPermission = sPermissions.get(webkitPermission);
         if (androidPermission.equals(NO_ANDROID_PERMISSION)) {

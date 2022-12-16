@@ -1112,7 +1112,7 @@
     ],
     "policy_pref_mapping_tests": [
       {
-        "required_preprocessor_macros": [
+        "required_buildflags": [
           "USE_CUPS"
         ],
         "policies": {
@@ -1221,6 +1221,41 @@
           "system_notifications.allowed": {
             "location": "user_profile",
             "value": false
+          }
+        }
+      }
+    ]
+  },
+  "UsbDetectorNotificationEnabled": {
+    "os": [
+      "chromeos_ash"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "ash.usb_detector_notification_enabled": {
+            "default_value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "UsbDetectorNotificationEnabled": false
+        },
+        "prefs": {
+          "ash.usb_detector_notification_enabled": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "UsbDetectorNotificationEnabled": true
+        },
+        "prefs": {
+          "ash.usb_detector_notification_enabled": {
+            "value": true
           }
         }
       }
@@ -8868,7 +8903,7 @@
         "policies": {},
         "prefs": {
           "saml.lock_screen_offline_signin_time_limit": {
-            "default_value": -2
+            "default_value": -1
           }
         }
       }
@@ -18744,6 +18779,56 @@
       }
     ]
   },
+  "LacrosSelection": {
+    "os": [
+      "chromeos_ash"
+    ],
+    "can_be_recommended": false,
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "lacros_selection": {
+            "location": "local_state",
+            "value": 1
+          }
+        }
+      },
+      {
+        "policies": {
+          "LacrosSelection": "user_choice"
+        },
+        "prefs": {
+          "lacros_selection": {
+            "location": "local_state",
+            "value": 0
+          }
+        }
+      },
+      {
+        "policies": {
+          "LacrosSelection": "rootfs"
+        },
+        "prefs": {
+          "lacros_selection": {
+            "location": "local_state",
+            "value": 1
+          }
+        }
+      },
+      {
+        "policies": {
+          "LacrosSelection": "stateful"
+        },
+        "prefs": {
+          "lacros_selection": {
+            "location": "local_state",
+            "value": 2
+          }
+        }
+      }
+    ]
+  },
   "LacrosDataBackwardMigrationMode": {
     "os": [
       "chromeos_ash"
@@ -20568,18 +20653,18 @@
         },
         "prefs": {
           "idle_timeout": {
-            "value": 10
+            "value": "600000000"
           }
         }
       },
       {
         "policies": {
-          "IdleTimeout": 1,
+          "IdleTimeout": 0,
           "IdleTimeoutActions": []
         },
         "prefs": {
           "idle_timeout": {
-            "value": 5
+            "value": "60000000"
           }
         }
       }
@@ -20763,7 +20848,7 @@
           ]
         },
         "prefs": {
-          "performance_tuning.tab_discarding.exceptions.managed": {
+          "performance_tuning.tab_discarding.exceptions_managed": {
             "value": [
               "example.com"
             ]
@@ -21265,6 +21350,114 @@
         "prefs": {
           "media_router.show_cast_sessions_started_by_other_devices.enabled": {
             "default_value": true
+          }
+        }
+      }
+    ]
+  },
+  "CloudAPAuthEnabled": {
+    "os": [ "win" ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "auth.cloud_ap_auth.enabled": {
+            "default_value": 0,
+            "location": "local_state"
+          }
+        }
+      },
+      {
+        "policies": { "CloudAPAuthEnabled": 0 },
+        "prefs": {
+          "auth.cloud_ap_auth.enabled": {
+            "value": 0,
+            "location": "local_state"
+          }
+        }
+      },
+      {
+        "policies": { "CloudAPAuthEnabled": 1 },
+        "prefs": {
+          "auth.cloud_ap_auth.enabled": {
+            "value": 1,
+            "location": "local_state"
+          }
+        }
+      }
+    ]
+  },
+  "UseMojoVideoDecoderForPepperAllowed": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "chromeos_ash",
+      "chromeos_lacros"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "policy.use_mojo_video_decoder_for_pepper_allowed": {
+            "location": "local_state",
+            "default_value": true
+          }
+        }
+      },
+      {
+        "policies": { "UseMojoVideoDecoderForPepperAllowed": true },
+        "prefs": {
+          "policy.use_mojo_video_decoder_for_pepper_allowed": {
+            "location": "local_state",
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": { "UseMojoVideoDecoderForPepperAllowed": false },
+        "prefs": {
+          "policy.use_mojo_video_decoder_for_pepper_allowed": {
+            "location": "local_state",
+            "value": false
+          }
+        }
+      }
+    ]
+  },
+  "PPAPISharedImagesSwapChainAllowed": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "chromeos_ash",
+      "chromeos_lacros"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "policy.ppapi_shared_images_swap_chain_allowed": {
+            "location": "local_state",
+            "default_value": true
+          }
+        }
+      },
+      {
+        "policies": { "PPAPISharedImagesSwapChainAllowed": true },
+        "prefs": {
+          "policy.ppapi_shared_images_swap_chain_allowed": {
+            "location": "local_state",
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": { "PPAPISharedImagesSwapChainAllowed": false },
+        "prefs": {
+          "policy.ppapi_shared_images_swap_chain_allowed": {
+            "location": "local_state",
+            "value": false
           }
         }
       }

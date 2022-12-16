@@ -138,11 +138,10 @@ export class Service implements ServiceInterface {
           populateError: true,
         },
         extraOptions);
-
     return chrome.developerPrivate.loadUnpacked(options)
         .then(loadError => {
           if (loadError) {
-            throw new Error(loadError.error);
+            throw loadError;
           }
           // The load was successful if there's no loadError.
           return true;
@@ -161,16 +160,13 @@ export class Service implements ServiceInterface {
     }
     chrome.metricsPrivate.recordUserAction('Extensions.RemoveExtensionClick');
     this.isDeleting_ = true;
-    chrome.management.uninstall(id, {showConfirmDialog: true})
-        .then(() => {
-          this.isDeleting_ = false;
-        })
-        .catch(
-            _ => {
-                // The "last error" was almost certainly the user canceling the
-                // dialog.
-                // Do nothing. We only check it so we don't get noisy logs.
-            });
+    chrome.management.uninstall(id, {showConfirmDialog: true}, () => {
+      // The "last error" was almost certainly the user canceling the dialog.
+      // Do nothing. We only check it so we don't get noisy logs.
+      /** @suppress {suspiciousCode} */
+      chrome.runtime.lastError;
+      this.isDeleting_ = false;
+    });
   }
 
   setItemEnabled(id: string, isEnabled: boolean) {

@@ -18,6 +18,7 @@
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
+#import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_app_interface.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
@@ -38,6 +39,7 @@
 #import "ios/chrome/test/earl_grey/web_http_server_chrome_test_case.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_interaction_manager_constants.h"
+#import "ios/testing/earl_grey/app_launch_configuration.h"
 #import "ios/testing/earl_grey/app_launch_manager.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/testing/earl_grey/matchers.h"
@@ -91,9 +93,9 @@ void SetParentalControlsCapabilityForIdentity(FakeSystemIdentity* identity) {
   // through the fake identity service.
   [SigninEarlGrey addFakeIdentity:identity];
 
-  NSDictionary* capabilities = @{
-    @(kIsSubjectToParentalControlsCapabilityName) : [NSNumber
-        numberWithInt:(int)ios::ChromeIdentityCapabilityResult::kTrue],
+  ios::CapabilitiesDict* capabilities = @{
+    @(kIsSubjectToParentalControlsCapabilityName) :
+        @(static_cast<int>(ios::ChromeIdentityCapabilityResult::kTrue))
   };
   [SigninEarlGrey setCapabilities:capabilities forIdentity:identity];
 }
@@ -167,6 +169,12 @@ void ExpectSyncConsentHistogram(
   GREYAssertNil(error, @"Failed to record show count histogram");
 }
 
+// Sets up the sign-in policy value dynamically at runtime.
+void SetSigninEnterprisePolicyValue(BrowserSigninMode signinMode) {
+  policy_test_utils::SetPolicy(static_cast<int>(signinMode),
+                               policy::key::kBrowserSignin);
+}
+
 }  // namespace
 
 // Sign-in interaction tests that work both with Unified Consent enabled or
@@ -179,6 +187,9 @@ void ExpectSyncConsentHistogram(
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   AppLaunchConfiguration config = [super appConfigurationForTestCase];
   config.features_enabled.push_back(signin::kEnableUnicornAccountSupport);
+  if ([self isRunningTest:@selector(testOpenSignInFromNTP)]) {
+    config.features_enabled.push_back(switches::kIdentityStatusConsistency);
+  }
   return config;
 }
 
@@ -319,15 +330,13 @@ void ExpectSyncConsentHistogram(
 
 // Tests signing in with one account, switching sync account to a second and
 // choosing to keep the browsing data separate during the switch.
-// Flaky, crbug.com/1279995.
-- (void)DISABLED_testSignInSwitchAccountsAndKeepDataSeparate {
+- (void)testSignInSwitchAccountsAndKeepDataSeparate {
   ChooseImportOrKeepDataSepareteDialog(SettingsImportDataKeepSeparateButton());
 }
 
 // Tests signing in with one account, switching sync account to a second and
 // choosing to import the browsing data during the switch.
-// Flaky, crbug.com/1279995.
-- (void)DISABLED_testSignInSwitchAccountsAndImportData {
+- (void)testSignInSwitchAccountsAndImportData {
   ChooseImportOrKeepDataSepareteDialog(SettingsImportDataImportButton());
 }
 
@@ -828,18 +837,15 @@ void ExpectSyncConsentHistogram(
   // Disable browser sign-in only after the "Sign in to Chrome" button is
   // visible.
   [ChromeEarlGreyUI openSettingsMenu];
-  [ChromeEarlGrey setIntegerValue:static_cast<int>(BrowserSigninMode::kDisabled)
-                forLocalStatePref:prefs::kBrowserSigninPolicy];
+
+  // Disable sign-in with policy.
+  SetSigninEnterprisePolicyValue(BrowserSigninMode::kDisabled);
 
   // Verify the sign-in view isn't showing.
   id<GREYMatcher> signin_matcher = StaticTextWithAccessibilityLabelId(
       IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SYNC_SUBTITLE);
   [[EarlGrey selectElementWithMatcher:signin_matcher]
       assertWithMatcher:grey_notVisible()];
-
-  // Prefs clean-up.
-  [ChromeEarlGrey setIntegerValue:static_cast<int>(BrowserSigninMode::kEnabled)
-                forLocalStatePref:prefs::kBrowserSigninPolicy];
 }
 
 // Tests that a signed-in user can open "Settings" screen from the NTP.
@@ -856,6 +862,21 @@ void ExpectSyncConsentHistogram(
   // Ensure the Settings menu is displayed.
   [[EarlGrey selectElementWithMatcher:SettingsCollectionView()]
       assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Tests that a signed-out user can open "Sign in" screen from the NTP.
+- (void)testOpenSignInFromNTP {
+  // Select the identity disc particle.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(GetNSString(
+                                          IDS_ACCNAME_PARTICLE_DISC))]
+      performAction:grey_tap()];
+
+  // Ensure the sign-in menu is displayed. The existence of the skip
+  // accessibility button on screen verifies that tha sign-in screen was
+  // shown.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kSkipSigninAccessibilityIdentifier)]
+      performAction:grey_tap()];
 }
 
 // Tests that opening the sign-in screen from the Settings and signing in works
@@ -1099,8 +1120,7 @@ void ExpectSyncConsentHistogram(
 }
 
 // Tests to sign-in with one user, and then turn on syncn with a second account.
-// Flaky, crbug.com/1279995.
-- (void)DISABLED_testSignInWithOneAccountStartSyncWithAnotherAccount {
+- (void)testSignInWithOneAccountStartSyncWithAnotherAccount {
   FakeSystemIdentity* fakeIdentity1 = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity1];
   FakeSystemIdentity* fakeIdentity2 = [FakeSystemIdentity fakeIdentity2];
@@ -1125,28 +1145,16 @@ void ExpectSyncConsentHistogram(
   [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity2];
 }
 
-// Tests that when the syncTypesListDisabled policy is enabled, the signin promo
-// description is updated and when opening the sign-in screen a policy warning
-// is displayed with a link that opens the policy management page.
-// Flaky, crbug.com/1279995.
-- (void)DISABLED_testSyncTypesDisabledPolicy {
+// Tests that when the syncTypesListDisabled policy is enabled, a policy warning
+// is displayed with a link to the policy management page.
+- (void)testSyncTypesDisabledPolicy {
   // Set policy.
   base::Value::List list;
   list.Append("tabs");
   policy_test_utils::SetPolicy(base::Value(std::move(list)),
                                policy::key::kSyncTypesListDisabled);
 
-  // Check that the promo description is updated.
   [ChromeEarlGreyUI openSettingsMenu];
-  [[EarlGrey
-      selectElementWithMatcher:
-          grey_allOf(
-              grey_accessibilityLabel(GetNSString(
-                  IDS_IOS_SIGN_IN_TO_CHROME_SETTING_SUBTITLE_SYNC_MANAGED)),
-              grey_sufficientlyVisible(), nil)]
-
-      assertWithMatcher:grey_sufficientlyVisible()];
-
   [ChromeEarlGreyUI tapSettingsMenuButton:PrimarySignInButton()];
   [ChromeEarlGreyUI waitForAppToIdle];
 

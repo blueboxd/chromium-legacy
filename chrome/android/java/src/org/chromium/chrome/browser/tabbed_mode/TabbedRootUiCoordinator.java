@@ -637,6 +637,11 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
         ScrimCoordinator.SystemUiScrimDelegate delegate =
                 new ScrimCoordinator.SystemUiScrimDelegate() {
                     @Override
+                    public void setScrimColor(int scrimColor) {
+                        mStatusBarColorController.setScrimColor(scrimColor);
+                    }
+
+                    @Override
                     public void setStatusBarScrimFraction(float scrimFraction) {
                         mStatusBarColorController.setStatusBarScrimFraction(scrimFraction);
                     }
@@ -924,10 +929,6 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
             // single PromoDialogCoordinator.
             boolean isShowingPromo =
                     LocaleManager.getInstance().hasShownSearchEnginePromoThisSession();
-            // Promo dialogs in multiwindow mode are broken on some devices:
-            // http://crbug.com/354696
-            boolean isLegacyMultiWindow =
-                    MultiWindowUtils.getInstance().isLegacyMultiWindow(mActivity);
             if (!isShowingPromo && !intentWithEffect && FirstRunStatus.getFirstRunFlowComplete()
                     && preferenceManager.readBoolean(
                             ChromePreferenceKeys.PROMOS_SKIPPED_ON_FIRST_START, false)
@@ -936,8 +937,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
                     // even though Chrome is about to enter VR, so we need to also check whether
                     // we're launching into VR.
                     && !VrModuleProvider.getIntentDelegate().isLaunchingIntoVr(
-                            mActivity, mActivity.getIntent())
-                    && !isLegacyMultiWindow) {
+                            mActivity, mActivity.getIntent())) {
                 isShowingPromo = maybeShowPromo();
             } else {
                 preferenceManager.writeBoolean(

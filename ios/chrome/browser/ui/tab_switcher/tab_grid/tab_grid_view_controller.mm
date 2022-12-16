@@ -48,9 +48,9 @@
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/layout_guide_names.h"
-#import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/util_swift.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -1494,10 +1494,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   [bottomToolbar setShareTabsButtonTarget:self
                                    action:@selector(shareSelectedTabs:)];
 
-  NamedGuide* guide =
-      [[NamedGuide alloc] initWithName:kTabGridBottomToolbarGuide];
-  [self.view addLayoutGuide:guide];
-  guide.constrainedView = bottomToolbar;
+  [self.layoutGuideCenter referenceView:bottomToolbar
+                              underName:kTabGridBottomToolbarGuide];
 }
 
 // Adds the foreground view and sets constraints.
@@ -2393,6 +2391,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   [self.topToolbar setNewTabButtonEnabled:NO];
   [self.topToolbar setSelectAllButtonEnabled:NO];
   [self.topToolbar setEditButtonEnabled:NO];
+  [self.topToolbar setSearchButtonEnabled:NO];
   [self.bottomToolbar setEditButtonEnabled:NO];
   [self.bottomToolbar setAddToButtonEnabled:NO];
   [self.bottomToolbar setShareTabsButtonEnabled:NO];
@@ -2405,6 +2404,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 - (void)gridViewControllerDragSessionDidEnd:
     (GridViewController*)gridViewController {
   self.dragSeesionInProgress = NO;
+
+  [self.topToolbar setSearchButtonEnabled:YES];
 
   // -configureDoneButtonBasedOnPage will enable the page control.
   [self configureDoneButtonBasedOnPage:self.currentPage];
@@ -2514,6 +2515,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 - (void)newTabButtonTapped:(id)sender {
+  base::RecordAction(base::UserMetricsAction("MobileTabNewTab"));
   [self openNewTabInPage:self.currentPage focusOmnibox:NO];
   // Record metrics for button taps
   switch (self.currentPage) {
@@ -2534,6 +2536,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 - (void)plusSignButtonTapped:(id)sender {
   switch (self.currentPage) {
     case TabGridPageIncognitoTabs:
+      base::RecordAction(base::UserMetricsAction("MobileTabNewTab"));
       [self.incognitoTabsDelegate addNewItem];
       if (self.currentState == ViewRevealState::Peeked) {
         base::RecordAction(
@@ -2544,6 +2547,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
       }
       break;
     case TabGridPageRegularTabs:
+      base::RecordAction(base::UserMetricsAction("MobileTabNewTab"));
       [self.regularTabsDelegate addNewItem];
       if (self.currentState == ViewRevealState::Peeked) {
         base::RecordAction(
@@ -2690,6 +2694,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     return @[
       UIKeyCommand.cr_openNewRegularTab,
       UIKeyCommand.cr_undo,
+      UIKeyCommand.cr_close,
       // TODO(crbug.com/1385469): Move it to the menu builder once we have the
       // strings.
       UIKeyCommand.cr_select2,
@@ -2781,6 +2786,11 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   base::RecordAction(base::UserMetricsAction("MobileKeyCommandUndo"));
   // This function is also responsible for handling undo.
   [self closeAllButtonTapped:nil];
+}
+
+- (void)keyCommand_close {
+  base::RecordAction(base::UserMetricsAction("MobileKeyCommandClose"));
+  [self doneButtonTapped:nil];
 }
 
 @end

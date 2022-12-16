@@ -20,6 +20,8 @@
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper.h"
 #import "ios/chrome/browser/autofill/autofill_tab_helper.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/commerce/price_notifications/price_notifications_tab_helper.h"
+#import "ios/chrome/browser/commerce/push_notification/push_notification_feature.h"
 #import "ios/chrome/browser/download/download_directory_util.h"
 #import "ios/chrome/browser/download/external_app_util.h"
 #import "ios/chrome/browser/download/pass_kit_tab_helper.h"
@@ -107,6 +109,7 @@
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_mediator.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
 #import "ios/chrome/browser/ui/lens/lens_coordinator.h"
+#import "ios/chrome/browser/ui/main/browser_interface_provider.h"
 #import "ios/chrome/browser/ui/main/default_browser_scene_agent.h"
 #import "ios/chrome/browser/ui/main/layout_guide_util.h"
 #import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
@@ -120,6 +123,7 @@
 #import "ios/chrome/browser/ui/passwords/password_suggestion_coordinator.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_coordinator.h"
 #import "ios/chrome/browser/ui/presenters/vertical_animation_container.h"
+#import "ios/chrome/browser/ui/price_notifications/price_notifications_iph_coordinator.h"
 #import "ios/chrome/browser/ui/price_notifications/price_notifications_view_coordinator.h"
 #import "ios/chrome/browser/ui/print/print_controller.h"
 #import "ios/chrome/browser/ui/promos_manager/promos_manager_coordinator.h"
@@ -319,6 +323,10 @@ enum class ToolbarKind {
 // Coordinator for the password suggestion UI presentation.
 @property(nonatomic, strong)
     PasswordSuggestionCoordinator* passwordSuggestionCoordinator;
+
+// Coordinator for the price notifications IPH feature.
+@property(nonatomic, strong)
+    PriceNotificationsIPHCoordinator* priceNotificationsIPHCoordinator;
 
 // Coordinator for the price notifications UI presentation.
 @property(nonatomic, strong)
@@ -984,6 +992,14 @@ enum class ToolbarKind {
   [self.infobarBannerOverlayContainerCoordinator start];
   self.viewController.infobarBannerOverlayContainerViewController =
       self.infobarBannerOverlayContainerCoordinator.viewController;
+
+  if (IsPriceNotificationsEnabled()) {
+    self.priceNotificationsIPHCoordinator =
+        [[PriceNotificationsIPHCoordinator alloc]
+            initWithBaseViewController:self.viewController
+                               browser:self.browser];
+    [self.priceNotificationsIPHCoordinator start];
+  }
 }
 
 // Stops child coordinators.
@@ -1093,6 +1109,9 @@ enum class ToolbarKind {
   [self.passwordSettingsCoordinator stop];
   self.passwordSettingsCoordinator.delegate = nil;
   self.passwordSettingsCoordinator = nil;
+
+  [self.priceNotificationsIPHCoordinator stop];
+  self.priceNotificationsIPHCoordinator = nil;
 }
 
 // Starts mediators owned by this coordinator.
@@ -1236,10 +1255,6 @@ enum class ToolbarKind {
 
 - (void)showBookmarksManager {
   [_bookmarkInteractionController presentBookmarks];
-}
-
-- (void)showReadingListIPH {
-  [_bubblePresenter presentReadingListBottomToolbarTipBubble];
 }
 
 - (void)showFollowWhileBrowsingIPH {
@@ -1620,9 +1635,14 @@ enum class ToolbarKind {
   if (base::FeatureList::IsEnabled(
           password_manager::features::kIOSPasswordUISplit)) {
     DCHECK(!self.passwordSettingsCoordinator);
+
+    // Use main browser to open the password settings.
+    SceneState* sceneState =
+        SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
     self.passwordSettingsCoordinator = [[PasswordSettingsCoordinator alloc]
         initWithBaseViewController:self.viewController
-                           browser:self.browser];
+                           browser:sceneState.interfaceProvider.mainInterface
+                                       .browser];
     self.passwordSettingsCoordinator.delegate = self;
     [self.passwordSettingsCoordinator start];
   } else {
@@ -1957,6 +1977,13 @@ enum class ToolbarKind {
     AnnotationsTabHelper::FromWebState(webState)->SetBaseViewController(
         self.viewController);
   }
+
+  PriceNotificationsTabHelper* priceNotificationsTabHelper =
+      PriceNotificationsTabHelper::FromWebState(webState);
+  if (priceNotificationsTabHelper) {
+    priceNotificationsTabHelper->SetPriceNotificationsIPHPresenter(
+        self.priceNotificationsIPHCoordinator);
+  }
 }
 
 // Uninstalls delegates for `webState`.
@@ -1992,6 +2019,12 @@ enum class ToolbarKind {
 
   if (AnnotationsTabHelper::FromWebState(webState)) {
     AnnotationsTabHelper::FromWebState(webState)->SetBaseViewController(nil);
+  }
+
+  PriceNotificationsTabHelper* priceNotificationsTabHelper =
+      PriceNotificationsTabHelper::FromWebState(webState);
+  if (priceNotificationsTabHelper) {
+    priceNotificationsTabHelper->SetPriceNotificationsIPHPresenter(nil);
   }
 }
 
@@ -2063,6 +2096,10 @@ enum class ToolbarKind {
 
 - (void)hidePriceNotifications {
   [self.priceNotificationsViewCoordiantor stop];
+}
+
+- (void)presentPriceNotificationsWhileBrowsingIPH {
+  [_bubblePresenter presentPriceNotificationsWhileBrowsingTipBubble];
 }
 
 #pragma mark - PolicyChangeCommands

@@ -977,7 +977,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     public void onStartWithNative() {
         assert mNativeInitialized : "onStartWithNative was called before native was initialized.";
         super.onStartWithNative();
-        UpdateMenuItemHelper.getInstance().onStart();
         ChromeActivitySessionTracker.getInstance().onStartWithNative();
         ChromeCachedFlags.getInstance().cacheNativeFlags();
         OfflineIndicatorController.initialize();
@@ -1677,8 +1676,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         // focus dependency is because doing it earlier can cause drawing bugs, e.g. crbug/673831.
         if (!mNativeInitialized || !hasWindowFocus()) return;
 
-        if (!DeviceFormFactor.isNonMultiDisplayContextOnTablet(this)
-                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        if (!DeviceFormFactor.isNonMultiDisplayContextOnTablet(this)) {
             changeBackgroundColorForResizing();
         } else {
             // Post the background update call as a separate task, as doing it synchronously
@@ -1686,13 +1684,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             // example problems.
             Handler handler = new Handler();
             handler.post(() -> {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    // The window background color is used as the resizing background color in
-                    // Android N+ multi-window mode. See crbug.com/602366.
-                    changeBackgroundColorForResizing();
-                } else {
-                    removeWindowBackground();
-                }
+                // The window background color is used as the resizing background color in
+                // Android N+ multi-window mode. See crbug.com/602366.
+                changeBackgroundColorForResizing();
             });
         }
         mRemoveWindowBackgroundDone = true;

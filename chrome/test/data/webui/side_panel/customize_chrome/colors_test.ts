@@ -9,11 +9,11 @@ import {Color, ColorsElement, DARK_DEFAULT_COLOR, LIGHT_DEFAULT_COLOR} from 'chr
 import {ChromeColor, CustomizeChromePageCallbackRouter, CustomizeChromePageHandlerRemote, CustomizeChromePageRemote, Theme} from 'chrome://customize-chrome-side-panel.top-chrome/customize_chrome.mojom-webui.js';
 import {CustomizeChromeApiProxy} from 'chrome://customize-chrome-side-panel.top-chrome/customize_chrome_api_proxy.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.js';
-import {assertDeepEquals, assertEquals} from 'chrome://webui-test/chai_assert.js';
+import {assertDeepEquals, assertEquals, assertGE, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 
-import {installMock} from './test_support.js';
+import {assertStyle, capture, createBackgroundImage, createTheme, installMock} from './test_support.js';
 
 suite('ColorsTest', () => {
   let colorsElement: ColorsElement;
@@ -42,11 +42,7 @@ suite('ColorsTest', () => {
   ] as Array<[boolean, Color]>)
       .forEach(([systemDarkMode, defaultColor]) => {
         test('renders default color', async () => {
-          const theme: Theme = {
-            backgroundImage: undefined,
-            systemDarkMode,
-            foregroundColor: undefined,
-          };
+          const theme: Theme = createTheme(systemDarkMode);
 
           callbackRouter.setTheme(theme);
           await callbackRouter.$.flushForTesting();
@@ -103,5 +99,136 @@ suite('ColorsTest', () => {
 
     assertEquals(1, handler.getCallCount('setForegroundColor'));
     assertEquals(2, handler.getArgs('setForegroundColor')[0].value);
+  });
+
+  test('opens color picker', () => {
+    const focus = capture(colorsElement.$.colorPicker, 'focus');
+    const click = capture(colorsElement.$.colorPicker, 'click');
+
+    colorsElement.$.customColor.click();
+
+    assertTrue(focus.received);
+    assertTrue(click.received);
+  });
+
+  test('sets custom color', () => {
+    colorsElement.$.colorPicker.value = '#ff0000';
+    colorsElement.$.colorPicker.dispatchEvent(new Event('change'));
+
+    const args = handler.getArgs('setForegroundColor');
+    assertGE(1, args.length);
+    assertEquals(0xffff0000, args.at(-1).value);
+  });
+
+  test('updates custom color for theme', async () => {
+    const colors = {
+      colors: [
+        {id: 1, name: 'foo', background: {value: 1}, foreground: {value: 2}},
+      ],
+    };
+    chromeColorsResolver.resolve(colors);
+
+    // Set a custom color theme.
+    const customColortheme = createTheme();
+    customColortheme.backgroundColor = {value: 0xffff0000};
+    customColortheme.foregroundColor = {value: 0xff00ff00};
+    customColortheme.colorPickerIconColor = {value: 0xff0000ff};
+    callbackRouter.setTheme(customColortheme);
+    await callbackRouter.$.flushForTesting();
+
+    // Custom color circle should be updated.
+    assertEquals(0xffff0000, colorsElement.$.customColor.backgroundColor.value);
+    assertEquals(0xff00ff00, colorsElement.$.customColor.foregroundColor.value);
+    assertStyle(
+        colorsElement.$.colorPickerIcon, 'background-color', 'rgb(0, 0, 255)');
+
+    // Set a theme that is not a custom color theme.
+    const otherTheme = createTheme();
+    otherTheme.backgroundColor = {value: 0xffffffff};
+    otherTheme.foregroundColor = undefined;  // Makes a default theme.
+    otherTheme.colorPickerIconColor = {value: 0xffffffff};
+    callbackRouter.setTheme(otherTheme);
+    await callbackRouter.$.flushForTesting();
+
+    // Custom color circle should be not be updated.
+    assertEquals(0xffff0000, colorsElement.$.customColor.backgroundColor.value);
+    assertEquals(0xff00ff00, colorsElement.$.customColor.foregroundColor.value);
+    assertStyle(
+        colorsElement.$.colorPickerIcon, 'background-color', 'rgb(0, 0, 255)');
+  });
+
+  test('checks selected color', async () => {
+    const colors = {
+      colors: [
+        {id: 1, name: 'foo', background: {value: 1}, foreground: {value: 2}},
+        {id: 2, name: 'bar', background: {value: 3}, foreground: {value: 4}},
+      ],
+    };
+    chromeColorsResolver.resolve(colors);
+    const theme = createTheme();
+
+    // Set default color.
+    theme.foregroundColor = undefined;
+    callbackRouter.setTheme(theme);
+    await callbackRouter.$.flushForTesting();
+
+    // Check default color selected.
+    let checkedColors = colorsElement.shadowRoot!.querySelectorAll('[checked]');
+    assertEquals(1, checkedColors.length);
+    assertEquals(colorsElement.$.defaultColor, checkedColors[0]);
+    let indexedColors =
+        colorsElement.shadowRoot!.querySelectorAll('[tabindex="0"]');
+    assertEquals(1, indexedColors.length);
+    assertEquals(colorsElement.$.defaultColor, indexedColors[0]);
+
+    // Set Chrome color.
+    theme.foregroundColor = {value: 2};
+    callbackRouter.setTheme(theme);
+    await callbackRouter.$.flushForTesting();
+
+    // Check Chrome color selected.
+    checkedColors = colorsElement.shadowRoot!.querySelectorAll('[checked]');
+    assertEquals(1, checkedColors.length);
+    assertEquals('chrome-color', checkedColors[0]!.className);
+    assertEquals(2, (checkedColors[0]! as ColorElement).foregroundColor.value);
+    indexedColors =
+        colorsElement.shadowRoot!.querySelectorAll('[tabindex="0"]');
+    assertEquals(1, indexedColors.length);
+    assertEquals('chrome-color', indexedColors[0]!.className);
+
+    // Set custom color.
+    theme.foregroundColor = {value: 5};
+    callbackRouter.setTheme(theme);
+    await callbackRouter.$.flushForTesting();
+
+    // Check custom color selected.
+    checkedColors = colorsElement.shadowRoot!.querySelectorAll('[checked]');
+    assertEquals(1, checkedColors.length);
+    assertEquals(colorsElement.$.customColor, checkedColors[0]);
+    indexedColors =
+        colorsElement.shadowRoot!.querySelectorAll('[tabindex="0"]');
+    assertEquals(1, indexedColors.length);
+    assertEquals(colorsElement.$.customColorContainer, indexedColors[0]);
+  });
+
+  [false, true].forEach((hasBackgroundImage) => {
+    test(
+        `background color visibility if theme has image ${hasBackgroundImage}`,
+        async () => {
+          const theme = createTheme();
+          if (hasBackgroundImage) {
+            theme.backgroundImage = createBackgroundImage('https://foo.com');
+          } else {
+            theme.backgroundImage = undefined;
+          }
+          callbackRouter.setTheme(theme);
+          await callbackRouter.$.flushForTesting();
+
+          const colors = colorsElement.shadowRoot!.querySelectorAll(
+              'customize-chrome-color');
+          for (const color of colors) {
+            assertEquals(hasBackgroundImage, color.backgroundColorHidden);
+          }
+        });
   });
 });

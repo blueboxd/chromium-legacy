@@ -171,7 +171,13 @@ enum class NotificationCatalogName {
   kEcheAppNetworkSetting = 156,
   kPrivacyHubMicAndCamera = 157,
   kArcVmDataMigration = 158,
-  kMaxValue = kArcVmDataMigration
+  kWebHid = 159,
+  kDoNotDisturb = 160,
+  kDictationAllDlcsDownloaded = 161,
+  kDictationNoDlcsDownloaded = 162,
+  kDicationOnlyPumpkinDownloaded = 163,
+  kDictationOnlySodaDownloaded = 164,
+  kMaxValue = kDictationOnlySodaDownloaded
 };
 
 // A living catalog that registers system nudges.
@@ -229,7 +235,7 @@ enum class ToastCatalogName {
   kDeskTemplateTooLarge = 33,
   kUndoCloseAll = 34,
   kEcheAppToast = 35,
-  kDeprecateAssistantStylus = 36,
+  // [Deprecated] kDeprecateAssistantStylus = 36,
   kEcheTrayCopyPasteNotImplemented = 37,
   kEcheTrayTabletModeNotSupported = 38,
   kNotificationCenterTrayNoNotifications = 39,

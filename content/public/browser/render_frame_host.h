@@ -108,6 +108,7 @@ namespace content {
 class BrowserContext;
 class DocumentRef;
 struct GlobalRenderFrameHostId;
+class RenderFrameHostObserver;
 class RenderProcessHost;
 class RenderViewHost;
 class RenderWidgetHost;
@@ -204,13 +205,6 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
                                      bool exclude_offscreen,
                                      size_t max_nodes,
                                      const base::TimeDelta& timeout) = 0;
-
-  using AXTreeDistillerCallback = base::OnceCallback<void(
-      const ui::AXTreeUpdate&,
-      const std::vector<ui::AXNodeID>& content_node_ids)>;
-  // Requests a one-time snapshot of the accessibility tree with distilled
-  // node IDs identified.
-  virtual void RequestDistilledAXTree(AXTreeDistillerCallback callback) = 0;
 
   // Returns the SiteInstance grouping all RenderFrameHosts that have script
   // access to this RenderFrameHost, and must therefore live in the same
@@ -1060,6 +1054,11 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // Whether the current document is loaded inside iframe credentialless.
   // Updated on every cross-document navigation.
   virtual bool IsCredentialless() const = 0;
+
+  // Add and remove observers for state changed events. Observers are
+  // responsible to remove themselves from observer list before they go away.
+  virtual void AddObserver(RenderFrameHostObserver* observer) = 0;
+  virtual void RemoveObserver(RenderFrameHostObserver* observer) = 0;
 
  private:
   // This interface should only be implemented inside content.

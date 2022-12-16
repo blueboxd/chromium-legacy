@@ -82,9 +82,10 @@ class CrosAudioConfigImplTest : public testing::Test {
     scoped_feature_list_.InitAndEnableFeature(features::kAudioSettingsPage);
     CrasAudioClient::InitializeFake();
     fake_cras_audio_client_ = FakeCrasAudioClient::Get();
-    audio_pref_handler_ = base::MakeRefCounted<AudioDevicesPrefHandlerStub>();
-    CrasAudioHandler::Initialize(mojo::NullRemote(), audio_pref_handler_);
+    CrasAudioHandler::InitializeForTesting();
     cras_audio_handler_ = CrasAudioHandler::Get();
+    audio_pref_handler_ = base::MakeRefCounted<AudioDevicesPrefHandlerStub>();
+    cras_audio_handler_->SetPrefHandlerForTesting(audio_pref_handler_);
     cros_audio_config_ = std::make_unique<CrosAudioConfigImpl>();
   }
 
@@ -326,6 +327,36 @@ TEST_F(CrosAudioConfigImplTest, GetOutputAudioDevices) {
             fake_observer->last_audio_system_properties_.value()
                 ->output_devices[0]
                 ->id);
+}
+
+TEST_F(CrosAudioConfigImplTest, GetInputAudioDevices) {
+  std::unique_ptr<FakeAudioSystemPropertiesObserver> fake_observer = Observe();
+  ASSERT_EQ(1u, fake_observer->num_properties_updated_calls_);
+
+  // Test default audio node list, which includes one input and one output node.
+  SetAudioNodes({kInternalSpeaker});
+
+  ASSERT_EQ(3u, fake_observer->num_properties_updated_calls_);
+  ASSERT_TRUE(fake_observer->last_audio_system_properties_.has_value());
+  EXPECT_EQ(0u, fake_observer->last_audio_system_properties_.value()
+                    ->input_devices.size());
+
+  InsertAudioNode(kMicJack);
+
+  ASSERT_EQ(4u, fake_observer->num_properties_updated_calls_);
+  ASSERT_TRUE(fake_observer->last_audio_system_properties_.has_value());
+  EXPECT_EQ(1u, fake_observer->last_audio_system_properties_.value()
+                    ->input_devices.size());
+  EXPECT_EQ(kMicJackId, fake_observer->last_audio_system_properties_.value()
+                            ->input_devices[0]
+                            ->id);
+
+  RemoveAudioNode(kMicJackId);
+
+  ASSERT_EQ(5u, fake_observer->num_properties_updated_calls_);
+  ASSERT_TRUE(fake_observer->last_audio_system_properties_.has_value());
+  EXPECT_EQ(0u, fake_observer->last_audio_system_properties_.value()
+                    ->input_devices.size());
 }
 
 }  // namespace ash::audio_config

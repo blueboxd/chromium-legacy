@@ -7,6 +7,8 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/trace_event/trace_event.h"
+#include "chrome/browser/ui/tabs/tab_style.h"
 #include "chrome/browser/ui/tabs/tab_types.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
@@ -19,8 +21,8 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/gfx/geometry/rect_conversions.h"
-#include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/layout_types.h"
+#include "ui/views/rect_based_targeting_utils.h"
 #include "ui/views/view.h"
 #include "ui/views/view_utils.h"
 
@@ -56,19 +58,19 @@ class PinnedTabContainerController final : public TabContainerController {
   }
 
   bool IsGroupCollapsed(const tab_groups::TabGroupId& group) const override {
-    NOTREACHED();
+    NOTREACHED();  // Pinned container can't have groups.
     return false;
   }
 
   absl::optional<int> GetFirstTabInGroup(
       const tab_groups::TabGroupId& group) const override {
-    NOTREACHED();
+    NOTREACHED();  // Pinned container can't have groups.
     return absl::nullopt;
   }
 
   gfx::Range ListTabsInGroup(
       const tab_groups::TabGroupId& group) const override {
-    NOTREACHED();
+    NOTREACHED();  // Pinned container can't have groups.
     return gfx::Range();
   }
 
@@ -228,17 +230,7 @@ CompoundTabContainer::CompoundTabContainer(
       hover_card_controller_(hover_card_controller),
       scroll_contents_view_(scroll_contents_view),
       bounds_animator_(this) {
-  const views::FlexSpecification tab_container_flex_spec =
-      views::FlexSpecification(views::LayoutOrientation::kHorizontal,
-                               views::MinimumFlexSizeRule::kScaleToMinimum,
-                               views::MaximumFlexSizeRule::kPreferred);
-  pinned_tab_container_->SetProperty(views::kFlexBehaviorKey,
-                                     tab_container_flex_spec);
-  unpinned_tab_container_->SetProperty(views::kFlexBehaviorKey,
-                                       tab_container_flex_spec);
-
-  SetLayoutManager(std::make_unique<views::FlexLayout>())
-      ->SetOrientation(views::LayoutOrientation::kHorizontal);
+  SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
 
   if (!gfx::Animation::ShouldRenderRichAnimation())
     bounds_animator_.SetAnimationDuration(base::TimeDelta());
@@ -248,15 +240,8 @@ CompoundTabContainer::~CompoundTabContainer() = default;
 
 void CompoundTabContainer::SetAvailableWidthCallback(
     base::RepeatingCallback<int()> available_width_callback) {
-  // The pinned container lays out independently of its available width because
-  // it doesn't have variable-width tabs. It doesn't matter what we give it here
-  // - it will call its callback but ultimately end up effectively ignoring the
-  // result deep in TabStripLayoutHelper (because all of its tabs are pinned).
-  pinned_tab_container_->SetAvailableWidthCallback(
-      base::BindRepeating([]() { return 0; }));
-  unpinned_tab_container_->SetAvailableWidthCallback(base::BindRepeating(
-      &CompoundTabContainer::GetAvailableWidthForUnpinnedTabContainer,
-      base::Unretained(this), available_width_callback));
+  // Store this ourselves, and let our child containers fall back to calling
+  // GetAvailableSize.
   available_width_callback_ = available_width_callback;
 }
 
@@ -346,6 +331,7 @@ void CompoundTabContainer::SetActiveTab(
 }
 
 std::unique_ptr<Tab> CompoundTabContainer::TransferTabOut(int model_index) {
+  // TODO(1395526): This only needs to be implemented in TabContainerImpl.
   NOTREACHED();
   return nullptr;
 }
@@ -353,9 +339,7 @@ std::unique_ptr<Tab> CompoundTabContainer::TransferTabOut(int model_index) {
 Tab* CompoundTabContainer::AddTabToViewModel(Tab* tab,
                                              int model_index,
                                              TabPinned pinned) {
-  // This method is implemented by TabContainerImpl for when it's a target for a
-  // pin or unpin animation. This would need to be implemented to nest
-  // CompoundTabContainers inside one another.
+  // TODO(1395526): This only needs to be implemented in TabContainerImpl.
   NOTREACHED();
   return nullptr;
 }
@@ -498,6 +482,9 @@ void CompoundTabContainer::UpdateHoverCard(
 
 void CompoundTabContainer::HandleLongTap(ui::GestureEvent* const event) {
   TabContainer* const tab_container = GetTabContainerAt(event->location());
+  if (!tab_container)
+    return;
+
   ConvertEventToTarget(tab_container, event);
   tab_container->HandleLongTap(event);
 }
@@ -514,11 +501,25 @@ bool CompoundTabContainer::IsRectInContentArea(const gfx::Rect& rect) {
           this, base::to_address(unpinned_tab_container_), gfx::RectF(rect))));
 }
 
+absl::optional<ZOrderableTabContainerElement>
+CompoundTabContainer::GetLeadingElementForZOrdering() const {
+  // TODO(1395526): This only needs to be implemented in TabContainerImpl.
+  NOTREACHED();
+  return absl::nullopt;
+}
+absl::optional<ZOrderableTabContainerElement>
+CompoundTabContainer::GetTrailingElementForZOrdering() const {
+  // TODO(1395526): This only needs to be implemented in TabContainerImpl.
+  NOTREACHED();
+  return absl::nullopt;
+}
+
 void CompoundTabContainer::OnTabSlotAnimationProgressed(TabSlotView* view) {
   GetTabContainerFor(view)->OnTabSlotAnimationProgressed(view);
 }
 
 void CompoundTabContainer::OnTabCloseAnimationCompleted(Tab* tab) {
+  // TODO(1395526): This only needs to be implemented in TabContainerImpl.
   NOTREACHED();
 }
 
@@ -631,15 +632,99 @@ gfx::Rect CompoundTabContainer::GetIdealBounds(
       unpinned_tab_container_->GetIdealBounds(group));
 }
 
+gfx::Size CompoundTabContainer::GetMinimumSize() const {
+  return GetCombinedSizeForTabContainerSizes(
+      pinned_tab_container_->GetMinimumSize(),
+      unpinned_tab_container_->GetMinimumSize());
+}
+
+views::SizeBounds CompoundTabContainer::GetAvailableSize(
+    const views::View* child) const {
+  if (child == base::to_address(pinned_tab_container_)) {
+    return views::SizeBounds(GetAvailableWidthForTabContainer(),
+                             views::SizeBound());
+  }
+
+  if (child == base::to_address(unpinned_tab_container_)) {
+    return views::SizeBounds(GetAvailableWidthForUnpinnedTabContainer(),
+                             views::SizeBound());
+  }
+
+  NOTREACHED();
+  return views::SizeBounds();
+}
+
+gfx::Size CompoundTabContainer::CalculatePreferredSize() const {
+  return GetCombinedSizeForTabContainerSizes(
+      pinned_tab_container_->GetPreferredSize(),
+      unpinned_tab_container_->GetPreferredSize());
+}
+
+views::View* CompoundTabContainer::GetTooltipHandlerForPoint(
+    const gfx::Point& point) {
+  TabContainer* const sub_container = GetTabContainerAt(point);
+  return sub_container ? sub_container->GetTooltipHandlerForPoint(
+                             ConvertPointToTarget(this, sub_container, point))
+                       : this;
+}
+
 void CompoundTabContainer::Layout() {
-  // TODO(now): What do we do if an animation is running?
-  views::View::Layout();
+  // Pinned container gets however much space it wants.
+  pinned_tab_container_->SetBoundsRect(
+      gfx::Rect(pinned_tab_container_->GetPreferredSize()));
+
+  // Unpinned container can have whatever is left over.
+  const int unpinned_container_leading_x =
+      std::max(0, pinned_tab_container_->width() - TabStyle::GetTabOverlap());
+  const int available_width = width() - unpinned_container_leading_x;
+
+  const gfx::Size pref_size = unpinned_tab_container_->GetPreferredSize();
+
+  unpinned_tab_container_->SetBounds(
+      unpinned_container_leading_x, 0,
+      std::min(available_width, pref_size.width()), pref_size.height());
 }
 
 void CompoundTabContainer::PaintChildren(const views::PaintInfo& paint_info) {
-  // TODO(crbug.com/1346023): paint in the right order depending on tab paint
-  // order.
-  views::View::PaintChildren(paint_info);
+  TRACE_EVENT1("views", "View::PaintChildren", "class", GetClassName());
+
+  // N.B. We override PaintChildren only to define paint order for our children.
+  // We do this instead of GetChildrenInZOrder for consistency with
+  // TabContainerImpl.
+
+  // Paint our containers first, ordered based on their overlapping elements.
+  // I.e., the last tab in `pinned_tab_container_` will overlap the first tab
+  // (or group header) in `unpinned_tab_container_`, and to paint them in the
+  // right order, we have to paint their containers in the same order.
+  // N.B. if either are nullopt, it doesn't matter what order we paint in
+  // because that whole container must be empty and therefore won't paint
+  // anything at all.
+  absl::optional<ZOrderableTabContainerElement> trailing_pinned_element =
+      pinned_tab_container_->GetTrailingElementForZOrdering();
+  absl::optional<ZOrderableTabContainerElement> leading_unpinned_element =
+      unpinned_tab_container_->GetLeadingElementForZOrdering();
+  if (trailing_pinned_element < leading_unpinned_element) {
+    pinned_tab_container_->Paint(paint_info);
+    unpinned_tab_container_->Paint(paint_info);
+  } else {
+    unpinned_tab_container_->Paint(paint_info);
+    pinned_tab_container_->Paint(paint_info);
+  }
+
+  // Then paint all tabs animating between pinned and unpinned, ordered based on
+  // their individual z-values.
+  std::vector<ZOrderableTabContainerElement> orderable_children;
+  for (views::View* const child : children()) {
+    if (!ZOrderableTabContainerElement::CanOrderView(child))
+      continue;
+    orderable_children.emplace_back(child);
+  }
+
+  // Sort in ascending order by z-value. Stable sort breaks ties by child index.
+  std::stable_sort(orderable_children.begin(), orderable_children.end());
+
+  for (const ZOrderableTabContainerElement& child : orderable_children)
+    child.view()->Paint(paint_info);
 }
 
 void CompoundTabContainer::ChildPreferredSizeChanged(views::View* child) {
@@ -648,27 +733,51 @@ void CompoundTabContainer::ChildPreferredSizeChanged(views::View* child) {
 
 BrowserRootView::DropIndex CompoundTabContainer::GetDropIndex(
     const ui::DropTargetEvent& event) {
+  // TODO(1346023): Implement text drag and drop.
   NOTREACHED();
   return BrowserRootView::DropIndex();
 }
 
 BrowserRootView::DropTarget* CompoundTabContainer::GetDropTarget(
     gfx::Point loc_in_local_coords) {
-  return GetTabContainerAt(loc_in_local_coords);
+  NOTREACHED();  // TODO(1346023): Implement text drag and drop.
+
+  // This might be a starting point for implementation though.
+  TabContainer* const tab_container = GetTabContainerAt(loc_in_local_coords);
+  return tab_container ? tab_container : this;
 }
 
 views::View* CompoundTabContainer::GetViewForDrop() {
+  // TODO(1346023): Implement text drag and drop.
   NOTREACHED();
   return nullptr;
 }
 
 void CompoundTabContainer::HandleDragUpdate(
     const absl::optional<BrowserRootView::DropIndex>& index) {
+  // TODO(1346023): Implement text drag and drop.
   NOTREACHED();
 }
 
 void CompoundTabContainer::HandleDragExited() {
+  // TODO(1346023): Implement text drag and drop.
   NOTREACHED();
+}
+
+views::View* CompoundTabContainer::TargetForRect(views::View* root,
+                                                 const gfx::Rect& rect) {
+  CHECK_EQ(root, this);
+
+  if (!views::UsePointBasedTargeting(rect))
+    return views::ViewTargeterDelegate::TargetForRect(root, rect);
+
+  const gfx::Point point(rect.CenterPoint());
+  TabContainer* const sub_container = GetTabContainerAt(point);
+  if (sub_container == nullptr)
+    return this;
+
+  return sub_container->GetEventHandlerForRect(ToEnclosingRect(
+      ConvertRectToTarget(this, sub_container, gfx::RectF(rect))));
 }
 
 void CompoundTabContainer::UpdateAnimationTarget(TabSlotView* tab_slot_view,
@@ -746,10 +855,6 @@ void CompoundTabContainer::TransferTabBetweenContainers(int from_model_index,
       AddChildView(from_container.TransferTabOut(from_container_index));
   tab->SetBoundsRect(ToEnclosingRect(initial_tab_bounds));
 
-  // Remove it from layout - `bounds_animator_` will be managing it.
-  static_cast<views::LayoutManagerBase*>(GetLayoutManager())
-      ->SetChildViewIgnoredByLayout(tab, true);
-
   // Let `to_container` update its layout data structures.
   to_container.AddTabToViewModel(
       tab, to_container_index,
@@ -787,30 +892,54 @@ raw_ref<TabContainer> CompoundTabContainer::GetTabContainerFor(
 
 TabContainer* CompoundTabContainer::GetTabContainerAt(
     gfx::Point point_in_local_coords) {
-  if (pinned_tab_container_->bounds().Contains(point_in_local_coords))
-    return base::to_address(pinned_tab_container_);
-  if (unpinned_tab_container_->bounds().Contains(point_in_local_coords))
+  const bool in_pinned =
+      pinned_tab_container_->bounds().Contains(point_in_local_coords);
+  const bool in_unpinned =
+      unpinned_tab_container_->bounds().Contains(point_in_local_coords);
+
+  if (in_pinned && in_unpinned) {
+    const int cutoff_x = (pinned_tab_container_->bounds().right() +
+                          unpinned_tab_container_->bounds().x()) /
+                         2;
+    if (point_in_local_coords.x() < cutoff_x)
+      return base::to_address(pinned_tab_container_);
     return base::to_address(unpinned_tab_container_);
-  NOTREACHED() << "point_in_local_coords " << point_in_local_coords.ToString()
-               << " is not in pinned at: "
-               << pinned_tab_container_->bounds().ToString()
-               << " or unpinned at: "
-               << unpinned_tab_container_->bounds().ToString();
+  }
+
+  if (in_pinned)
+    return base::to_address(pinned_tab_container_);
+  if (in_unpinned)
+    return base::to_address(unpinned_tab_container_);
+
+  // `point_in_local_coords` might be in neither sub container if our layout is
+  // (transiently) stale, e.g. during window creation.
   return nullptr;
 }
 
 int CompoundTabContainer::GetUnpinnedContainerIdealLeadingX() const {
   return NumPinnedTabs() > 0
              ? pinned_tab_container_->GetIdealBounds(NumPinnedTabs() - 1)
-                   .right()
+                       .right() -
+                   TabStyle::GetTabOverlap()
              : 0;
 }
 
-int CompoundTabContainer::GetAvailableWidthForUnpinnedTabContainer(
-    base::RepeatingCallback<int()> available_width_callback) {
+int CompoundTabContainer::GetAvailableWidthForUnpinnedTabContainer() const {
   // The unpinned container gets the width the pinned container doesn't want.
   return GetAvailableWidthForTabContainer() -
          GetUnpinnedContainerIdealLeadingX();
+}
+
+gfx::Size CompoundTabContainer::GetCombinedSizeForTabContainerSizes(
+    const gfx::Size pinned_size,
+    const gfx::Size unpinned_size) const {
+  gfx::Size largest_container = pinned_size;
+  largest_container.SetToMax(unpinned_size);
+
+  const int width_with_overlap =
+      pinned_size.width() + unpinned_size.width() - TabStyle::GetTabOverlap();
+  return gfx::Size(std::max(width_with_overlap, largest_container.width()),
+                   largest_container.height());
 }
 
 absl::optional<gfx::Rect> CompoundTabContainer::GetVisibleContentRect() {

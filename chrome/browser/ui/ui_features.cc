@@ -49,13 +49,6 @@ BASE_FEATURE(kChromeWhatsNewUI,
 #endif
 );
 
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-// Enables "new" badge for "Chrome What's New" in Main Chrome Menu | Help.
-BASE_FEATURE(kChromeWhatsNewInMainMenuNewBadge,
-             "ChromeWhatsNewInMainMenuNewBadge",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#endif
-
 #if !defined(ANDROID)
 // Enables "Access Code Cast" UI.
 BASE_FEATURE(kAccessCodeCastUI,
@@ -149,14 +142,6 @@ BASE_FEATURE(kSidePanelWebView,
              "SidePanelWebView",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kSidePanelJourneys,
-             "SidePanelJourneys",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-// If enabled, and the main flag is also enabled, the Journeys omnibox
-// entrypoints open Journeys in Side Panel rather than the History WebUI.
-const base::FeatureParam<bool> kSidePanelJourneysOpensFromOmnibox{
-    &kSidePanelJourneys, "SidePanelJourneysOpensFromOmnibox", false};
-
 BASE_FEATURE(kSidePanelJourneysQueryless,
              "SidePanelJourneysQueryless",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -170,7 +155,7 @@ const char kMinimumTabWidthFeatureParameterName[] = "minTabWidth";
 // Enables buttons when scrolling the tabstrip https://crbug.com/951078
 BASE_FEATURE(kTabScrollingButtonPosition,
              "TabScrollingButtonPosition",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 const char kTabScrollingButtonPositionParameterName[] = "buttonPosition";
 
 // Enables tab scrolling while dragging tabs in tabstrip

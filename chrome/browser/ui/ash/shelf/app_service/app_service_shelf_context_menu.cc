@@ -14,6 +14,7 @@
 #include "chrome/browser/apps/app_service/extension_apps_utils.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
 #include "chrome/browser/ash/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ash/app_list/extension_app_utils.h"
 #include "chrome/browser/ash/app_restore/full_restore_service.h"
 #include "chrome/browser/ash/borealis/borealis_window_manager.h"
 #include "chrome/browser/ash/crosapi/browser_manager.h"
@@ -30,7 +31,6 @@
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/extension_app_utils.h"
 #include "chrome/browser/ui/ash/shelf/arc_app_shelf_id.h"
 #include "chrome/browser/ui/ash/shelf/browser_shortcut_shelf_item_controller.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
@@ -39,7 +39,6 @@
 #include "chrome/browser/ui/webui/settings/ash/app_management/app_management_uma.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/app_constants/constants.h"
-#include "components/services/app_service/public/cpp/features.h"
 #include "content/public/browser/context_menu_params.h"
 #include "extensions/browser/extension_prefs.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -516,15 +515,8 @@ void AppServiceShelfContextMenu::SetLaunchType(int command_id) {
       apps::WindowMode user_window_mode =
           ConvertLaunchTypeCommandToWindowMode(command_id);
       if (user_window_mode != apps::WindowMode::kUnknown) {
-        if (base::FeatureList::IsEnabled(apps::kAppServiceWithoutMojom)) {
-          apps::AppServiceProxyFactory::GetForProfile(controller()->profile())
-              ->SetWindowMode(item().id.app_id, user_window_mode);
-        } else {
-          apps::AppServiceProxyFactory::GetForProfile(controller()->profile())
-              ->SetWindowMode(
-                  item().id.app_id,
-                  apps::ConvertWindowModeToMojomWindowMode(user_window_mode));
-        }
+        apps::AppServiceProxyFactory::GetForProfile(controller()->profile())
+            ->SetWindowMode(item().id.app_id, user_window_mode);
       }
       return;
     }
@@ -637,6 +629,8 @@ bool AppServiceShelfContextMenu::ShouldAddPinMenu() {
       NOTREACHED() << "Type " << (int)app_type_
                    << " should not appear in shelf.";
       return false;
+    case apps::AppType::kBruschetta:
+      return true;
   }
 }
 

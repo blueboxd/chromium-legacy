@@ -216,7 +216,7 @@ bool OverviewItem::Contains(const aura::Window* target) const {
   return transform_window_.Contains(target);
 }
 
-void OverviewItem::HideForDesksTemplatesGrid(bool animate) {
+void OverviewItem::HideForSavedDeskLibrary(bool animate) {
   // To hide the window, we will set its layer opacity to 0. This would normally
   // also hide the window from the mini view, which we don't want. By setting a
   // property on the window, we can force it to stay visible.
@@ -249,8 +249,8 @@ void OverviewItem::HideForDesksTemplatesGrid(bool animate) {
   HideCannotSnapWarning(animate);
 }
 
-void OverviewItem::RevertHideForDesksTemplatesGrid(bool animate) {
-  // This might run before `HideForDesksTemplatesGrid()`, thus cancel the
+void OverviewItem::RevertHideForSavedDeskLibrary(bool animate) {
+  // This might run before `HideForSavedDeskLibrary()`, thus cancel the
   // callback to prevent such case.
   hide_window_in_overview_callback_.Cancel();
 
@@ -287,7 +287,7 @@ void OverviewItem::OnMovingWindowToAnotherDesk() {
 }
 
 void OverviewItem::RestoreWindow(bool reset_transform,
-                                 bool was_desks_templates_grid_showing) {
+                                 bool was_saved_desk_library_showing) {
   // TODO(oshima): SplitViewController has its own logic to adjust the
   // target state in |SplitViewController::OnOverviewModeEnding|.
   // Unify the mechanism to control it and remove ifs.
@@ -303,7 +303,7 @@ void OverviewItem::RestoreWindow(bool reset_transform,
 
   overview_item_view_->OnOverviewItemWindowRestoring();
   transform_window_.RestoreWindow(reset_transform,
-                                  was_desks_templates_grid_showing);
+                                  was_saved_desk_library_showing);
 
   if (!transform_window_.IsMinimized())
     return;
@@ -329,6 +329,16 @@ void OverviewItem::EnsureVisible() {
 }
 
 void OverviewItem::Shutdown() {
+  // If `hide_windows` still manages the visibility of this overview item
+  // window, remove it from the list without showing.
+  ScopedOverviewHideWindows* hide_windows =
+      overview_session_->hide_windows_for_saved_desks_grid();
+  if (item_widget_ && hide_windows &&
+      hide_windows->HasWindow(item_widget_->GetNativeWindow())) {
+    hide_windows->RemoveWindow(item_widget_->GetNativeWindow(),
+                               /*show_window=*/false);
+  }
+
   item_widget_.reset();
   overview_item_view_ = nullptr;
 }
@@ -1161,8 +1171,8 @@ void OverviewItem::OnItemBoundsAnimationEnded() {
   if (!Shell::Get()->overview_controller()->InOverviewSession())
     return;
 
-  if (overview_session_->IsShowingDesksTemplatesGrid()) {
-    HideForDesksTemplatesGrid(false);
+  if (overview_session_->IsShowingSavedDeskLibrary()) {
+    HideForSavedDeskLibrary(false);
     return;
   }
 
@@ -1487,13 +1497,16 @@ void OverviewItem::ShowWindowInOverview() {
   if (hide_windows->HasWindow(GetWindow())) {
     const bool ignore_activations = overview_session_->ignore_activations();
     overview_session_->set_ignore_activations(true);
-    hide_windows->RemoveWindow(GetWindow());
+    hide_windows->RemoveWindow(GetWindow(), /*show_window=*/true);
     overview_session_->set_ignore_activations(ignore_activations);
   }
 
   // Show the overview item window.
-  if (item_widget_ && hide_windows->HasWindow(item_widget_->GetNativeWindow()))
-    hide_windows->RemoveWindow(item_widget_->GetNativeWindow());
+  if (item_widget_ &&
+      hide_windows->HasWindow(item_widget_->GetNativeWindow())) {
+    hide_windows->RemoveWindow(item_widget_->GetNativeWindow(),
+                               /*show_window=*/true);
+  }
 }
 
 }  // namespace ash

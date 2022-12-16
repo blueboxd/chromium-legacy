@@ -4375,7 +4375,8 @@ IFACEMETHODIMP AXPlatformNodeWin::get_offsetAtPoint(
     // We don't support when the IA2 coordinate type is parent relative, but
     // we have to return something rather than E_NOTIMPL or screen readers
     // will complain.
-    NOTIMPLEMENTED_LOG_ONCE() << "See http://crbug.com/1010726";
+    // See http://crbug.com/1010726
+    NOTIMPLEMENTED_LOG_ONCE();
     return S_FALSE;
   }
 
@@ -4582,7 +4583,7 @@ IFACEMETHODIMP AXPlatformNodeWin::setSelections(LONG nSelections,
 
   AXActionData action_data;
   action_data.action = ax::mojom::Action::kSetSelection;
-  action_data.target_tree_id = start_position->GetTreeID();
+  action_data.target_tree_id = start_position->tree_id();
   int start_offset = start_position->IsTextPosition()
                          ? start_position->text_offset()
                          : start_position->child_index();
@@ -5151,8 +5152,7 @@ HRESULT AXPlatformNodeWin::GetPropertyValueImpl(PROPERTYID property_id,
 
     case UIA_IsKeyboardFocusablePropertyId:
       result->vt = VT_BOOL;
-      result->boolVal =
-          ShouldNodeHaveFocusableState() ? VARIANT_TRUE : VARIANT_FALSE;
+      result->boolVal = IsFocusable() ? VARIANT_TRUE : VARIANT_FALSE;
       break;
 
     case UIA_IsOffscreenPropertyId:
@@ -6705,7 +6705,7 @@ int32_t AXPlatformNodeWin::ComputeIA2State() {
       // listbox widget inside an editor, which they currently do in order to
       // enable paste operations. Eventually this need should go away once IE11
       // support is no longer needed and Slides instead relies on paste events.
-      if (!HasState(ax::mojom::State::kFocusable) ||
+      if (!IsFocusable() ||
           GetBoolAttribute(ax::mojom::BoolAttribute::kNonAtomicTextFieldRoot))
         break;  // Not used with activedescendant, so preserve editable state.
       [[fallthrough]];  // Will clear editable state.
@@ -7321,7 +7321,7 @@ bool AXPlatformNodeWin::IsUIAControl() const {
     return true;
   }  // end of web-content only case.
 
-  return !(IsInvisibleOrIgnored() && !HasState(ax::mojom::State::kFocusable));
+  return IsFocusable();
 }
 
 absl::optional<LONG> AXPlatformNodeWin::ComputeUIALandmarkType() const {
@@ -7421,23 +7421,6 @@ bool AXPlatformNodeWin::IsPlatformCheckable() const {
   return AXPlatformNodeBase::IsPlatformCheckable();
 }
 
-bool AXPlatformNodeWin::ShouldNodeHaveFocusableState() const {
-  if (IsIframe(GetRole()))
-    return false;
-  if (IsPlatformDocument()) {
-    const AXPlatformNodeBase* parent = FromNativeViewAccessible(GetParent());
-    return !parent || parent->GetRole() != ax::mojom::Role::kPortal;
-  }
-
-  switch (GetRole()) {
-    case ax::mojom::Role::kListBoxOption:
-    case ax::mojom::Role::kMenuListOption:
-      return HasBoolAttribute(ax::mojom::BoolAttribute::kSelected);
-    default:
-      return HasState(ax::mojom::State::kFocusable);
-  }
-}
-
 int AXPlatformNodeWin::MSAAState() const {
   int msaa_state = 0;
 
@@ -7464,7 +7447,7 @@ int AXPlatformNodeWin::MSAAState() const {
   if (HasState(ax::mojom::State::kExpanded))
     msaa_state |= STATE_SYSTEM_EXPANDED;
 
-  if (ShouldNodeHaveFocusableState())
+  if (IsFocusable())
     msaa_state |= STATE_SYSTEM_FOCUSABLE;
 
   // Built-in autofill and autocomplete wil also set has popup.

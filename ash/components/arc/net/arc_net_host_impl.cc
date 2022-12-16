@@ -1251,6 +1251,13 @@ void ArcNetHostImpl::TranslatePasspointCredentialsToDictWithEapTranslated(
                   cred->metered);
   dict.SetStringKey(shill::kPasspointCredentialsAndroidPackageNameProperty,
                     cred->package_name);
+  if (cred->friendly_name.has_value()) {
+    dict.SetStringKey(shill::kPasspointCredentialsFriendlyNameProperty,
+                      cred->friendly_name.value());
+  }
+  dict.SetStringKey(
+      shill::kPasspointCredentialsExpirationTimeMillisecondsProperty,
+      base::NumberToString(cred->subscription_expiration_time_ms));
 
   std::move(callback).Run(std::move(dict));
 }
@@ -1464,6 +1471,18 @@ void ArcNetHostImpl::OnShuttingDown() {
   GetStateHandler()->RemoveObserver(this, FROM_HERE);
   GetNetworkConnectionHandler()->RemoveObserver(this);
   observing_network_state_ = false;
+}
+
+void ArcNetHostImpl::StartLohs(mojom::LohsConfigPtr config,
+                               StartLohsCallback callback) {
+  // TODO(b/257880335): Retrieve the actual LOHS status.
+  std::move(callback).Run(arc::mojom::LohsStatus::kErrorGeneric);
+  return;
+}
+
+void ArcNetHostImpl::StopLohs() {
+  // TODO(b/257880335): Implement the stop request.
+  return;
 }
 
 }  // namespace arc

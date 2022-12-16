@@ -245,7 +245,12 @@ void AuthenticatorRequestDialogModel::
     SetCurrentStep(*pending_step_);
     pending_step_.reset();
   } else if (mechanisms_.empty()) {
-    SetCurrentStep(Step::kErrorNoAvailableTransports);
+    if (base::FeatureList::IsEnabled(device::kWebAuthnNoPasskeysError) &&
+        transport_availability_.transport_list_did_include_internal) {
+      SetCurrentStep(Step::kErrorNoPasskeys);
+    } else {
+      SetCurrentStep(Step::kErrorNoAvailableTransports);
+    }
   } else if (mechanisms_.size() == 1) {
     mechanisms_[0].callback.Run();
   } else if (priority_mechanism_it != mechanisms_.end()) {
@@ -299,12 +304,7 @@ void AuthenticatorRequestDialogModel::
          current_step() == Step::kNotStarted);
 
 #if BUILDFLAG(IS_MAC)
-  // The BLE permission screen is only shown on macOS <= 12 because:
-  //    * System Preferences has been renamed to System Settings, so the
-  //      string on the button would need to be changed.
-  //    * Opening Preferences/Settings at the BLE permissions page is broken.
-  if (transport_availability()->ble_access_denied &&
-      base::mac::IsAtMostOS12()) {
+  if (transport_availability()->ble_access_denied) {
     // |step| is not saved because macOS asks the user to restart Chrome
     // after permission has been granted. So the user will end up retrying
     // the whole WebAuthn request in the new process.

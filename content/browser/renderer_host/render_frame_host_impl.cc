@@ -170,6 +170,7 @@
 #include "content/public/browser/document_service_internal.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/global_routing_id.h"
+#include "content/public/browser/render_frame_host_observer.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
@@ -273,6 +274,10 @@
 #include "content/browser/hid/hid_service.h"
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/serial/serial_service.h"
+#endif
+
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_FUCHSIA)
+#include "content/browser/smart_card/smart_card_service.h"
 #endif
 
 #if BUILDFLAG(IS_MAC)
@@ -1848,6 +1853,10 @@ void RenderFrameHostImpl::DidEnterBackForwardCacheInternal() {
 #if BUILDFLAG(IS_P2P_ENABLED)
   GetProcess()->PauseSocketManagerForRenderFrameHost(GetGlobalId());
 #endif  // BUILDFLAG(IS_P2P_ENABLED)
+
+  for (auto& observer : observers_) {
+    observer.DidEnterBackForwardCache();
+  }
 }
 
 // The frame as been restored from the BackForwardCache.
@@ -3445,20 +3454,10 @@ RenderFrameProxyHost* RenderFrameHostImpl::GetProxyToParent() {
 RenderFrameProxyHost* RenderFrameHostImpl::GetProxyToOuterDelegate() {
   // Only the main frame should be able to reach the outer WebContents.
   DCHECK(is_main_frame());
-  int outer_contents_frame_tree_node_id =
-      frame_tree_node_->frame_tree()
-          .delegate()
-          ->GetOuterDelegateFrameTreeNodeId();
-  FrameTreeNode* outer_contents_frame_tree_node =
-      FrameTreeNode::GloballyFindByID(outer_contents_frame_tree_node_id);
-  if (!outer_contents_frame_tree_node ||
-      !outer_contents_frame_tree_node->parent()) {
-    return nullptr;
-  }
-
-  return browsing_context_state_->GetRenderFrameProxyHost(
-      outer_contents_frame_tree_node->parent()->GetSiteInstance()->group(),
-      BrowsingContextState::ProxyAccessMode::kAllowOuterDelegate);
+  // `owner_` should not be null since we don't allow to update the parent on
+  // behalf of the inactive document.
+  CHECK(owner_);
+  return owner_->GetRenderFrameHostManager().GetProxyToOuterDelegate();
 }
 
 void RenderFrameHostImpl::DidChangeReferrerPolicy(
@@ -3589,6 +3588,14 @@ void RenderFrameHostImpl::SetCrossOriginOpenerPolicyReporter(
 
 bool RenderFrameHostImpl::IsCredentialless() const {
   return policy_container_host_->policies().is_credentialless;
+}
+
+void RenderFrameHostImpl::AddObserver(RenderFrameHostObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void RenderFrameHostImpl::RemoveObserver(RenderFrameHostObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void RenderFrameHostImpl::OnCreateChildFrame(
@@ -4323,6 +4330,9 @@ BackForwardCacheDisablingFeatureHandle::
   // |render_frame_host_| will be null, so this value is never used.
   feature_ = BackForwardCacheDisablingFeature::kDummy;
 }
+
+BackForwardCacheDisablingFeatureHandle::BackForwardCacheDisablingFeatureHandle(
+    BackForwardCacheDisablingFeatureHandle&& other) = default;
 
 BackForwardCacheDisablingFeatureHandle::BackForwardCacheDisablingFeatureHandle(
     RenderFrameHostImpl* render_frame_host,
@@ -5283,6 +5293,13 @@ void RenderFrameHostImpl::FocusPage() {
 void RenderFrameHostImpl::TakeFocus(bool reverse) {
   // TODO(crbug.com/1225366): Consider moving this to PageImpl.
   DCHECK(is_main_frame());
+
+  // Do not update the parent on behalf of the inactive document.
+  if (IsInactiveAndDisallowActivation(
+          DisallowActivationReasonId::kDispatchLoad)) {
+    return;
+  }
+
   // If we are representing an inner frame tree call advance on our outer
   // delegate's parent's RenderFrameHost.
   RenderFrameHostImpl* parent_or_outer_document =
@@ -6291,6 +6308,9 @@ bool RenderFrameHostImpl::IsInactiveAndDisallowActivation(uint64_t reason) {
     }
       return true;
     case LifecycleStateImpl::kPrerendering:
+      // Since the page in prerendering state is able to handle IndexedDB event,
+      // the prerendering should not be cancelled because of that.
+      DCHECK_NE(reason, DisallowActivationReasonId::kIndexedDBEvent);
       CancelPrerendering(
           PrerenderCancellationReason::BuildForDisallowActivationState(reason));
       return true;
@@ -6721,6 +6741,12 @@ void RenderFrameHostImpl::HadStickyUserActivationBeforeNavigationChanged(
 void RenderFrameHostImpl::ScrollRectToVisibleInParentFrame(
     const gfx::RectF& rect_to_scroll,
     blink::mojom::ScrollIntoViewParamsPtr params) {
+  // Do not update the parent on behalf of inactive RenderFrameHost.
+  if (IsInactiveAndDisallowActivation(
+          DisallowActivationReasonId::kDispatchLoad)) {
+    return;
+  }
+
   RenderFrameProxyHost* proxy = nullptr;
 
   if (IsFencedFrameRoot()) {
@@ -6751,8 +6777,9 @@ void RenderFrameHostImpl::BubbleLogicalScrollInParentFrame(
     ui::ScrollGranularity granularity) {
   // Do not update the parent on behalf of inactive RenderFrameHost.
   if (IsInactiveAndDisallowActivation(
-          DisallowActivationReasonId::kDispatchLoad))
+          DisallowActivationReasonId::kDispatchLoad)) {
     return;
+  }
 
   // TODO(bokan): This is overly trusting of the renderer. Ideally we'd check
   // that a keyboard event was recently sent. https://crbug.com/1123606. I&S
@@ -9544,17 +9571,6 @@ void RenderFrameHostImpl::RequestAXTreeSnapshot(
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void RenderFrameHostImpl::RequestDistilledAXTree(
-    AXTreeDistillerCallback callback) {
-  // TODO(https://crbug.com/859110): Remove once frame_ can no longer be null.
-  if (!IsRenderFrameLive())
-    return;
-
-  GetMojomFrameInRenderer()->SnapshotAndDistillAXTree(
-      base::BindOnce(&RenderFrameHostImpl::RequestDistilledAXTreeCallback,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-}
-
 void RenderFrameHostImpl::GetSavableResourceLinksFromRenderer() {
   if (!IsRenderFrameLive())
     return;
@@ -10113,17 +10129,6 @@ void RenderFrameHostImpl::RequestAXTreeSnapshotCallback(
   std::move(callback).Run(dst_snapshot);
 }
 
-void RenderFrameHostImpl::RequestDistilledAXTreeCallback(
-    AXTreeDistillerCallback callback,
-    const ui::AXTreeUpdate& snapshot,
-    const std::vector<ui::AXNodeID>& content_node_ids) {
-  // Since |snapshot| is const, we need to make a copy in order to modify the
-  // tree data.
-  ui::AXTreeUpdate dst_snapshot;
-  CopyAXTreeUpdate(snapshot, &dst_snapshot);
-  std::move(callback).Run(dst_snapshot, content_node_ids);
-}
-
 void RenderFrameHostImpl::CopyAXTreeUpdate(const ui::AXTreeUpdate& snapshot,
                                            ui::AXTreeUpdate* snapshot_copy) {
   snapshot_copy->root_id = snapshot.root_id;
@@ -10537,6 +10542,13 @@ void RenderFrameHostImpl::GetHidService(
 }
 #endif
 
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_FUCHSIA)
+void RenderFrameHostImpl::GetSmartCardService(
+    mojo::PendingReceiver<blink::mojom::SmartCardService> receiver) {
+  SmartCardService::Create(this, std::move(receiver));
+}
+#endif
+
 IdleManagerImpl* RenderFrameHostImpl::GetIdleManager() {
   return idle_manager_.get();
 }
@@ -10672,7 +10684,7 @@ void RenderFrameHostImpl::BindTrustTokenQueryAnswerer(
     return;
   }
 
-  // TODO(crbug.com/1145346): Document.hasPrivateStateToken is restricted to
+  // TODO(crbug.com/1145346): Document.hasPrivateToken is restricted to
   // secure contexts, so we could additionally add a check verifying that the
   // bind request "is coming from a secure context"---but there's currently no
   // direct way to perform such a check in the browser.
@@ -10751,7 +10763,8 @@ void RenderFrameHostImpl::CreateLockManager(
 
 void RenderFrameHostImpl::CreateIDBFactory(
     mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) {
-  GetProcess()->BindIndexedDB(storage_key(), std::move(receiver));
+  GetProcess()->BindIndexedDB(storage_key(), GetGlobalId(),
+                              std::move(receiver));
 }
 
 void RenderFrameHostImpl::CreateBucketManagerHost(
@@ -13748,6 +13761,12 @@ void RenderFrameHostImpl::SetLifecycleState(LifecycleStateImpl new_state) {
         }
       }
     }
+
+    if (lifecycle_state_ == LifecycleStateImpl::kInBackForwardCache) {
+      for (auto& observer : observers_) {
+        observer.DidRestoreFromBackForwardCache();
+      }
+    }
   }
 
   if (lifecycle_state() == LifecycleStateImpl::kInBackForwardCache)
@@ -13989,8 +14008,8 @@ void RenderFrameHostImpl::SetFrameTree(FrameTree& frame_tree) {
   DCHECK_EQ(&frame_tree_node_->frame_tree(), &frame_tree);
   frame_tree_ = &frame_tree;
   render_view_host()->SetFrameTree(frame_tree);
-  if (GetRenderWidgetHost()) {
-    GetRenderWidgetHost()->SetFrameTree(frame_tree);
+  if (owned_render_widget_host_) {
+    owned_render_widget_host_->SetFrameTree(frame_tree);
   }
 }
 
@@ -14121,6 +14140,11 @@ void RenderFrameHostImpl::GetSandboxedFileSystemForBucket(
       FileSystemAccessManagerImpl::BindingContext(
           storage_key(), GetLastCommittedURL(), GetGlobalId()),
       bucket.ToBucketLocator(), std::move(callback));
+}
+
+GlobalRenderFrameHostId RenderFrameHostImpl::GetAssociatedRenderFrameHostId()
+    const {
+  return GetGlobalId();
 }
 
 RenderFrameHostImpl::DocumentAssociatedData::DocumentAssociatedData(

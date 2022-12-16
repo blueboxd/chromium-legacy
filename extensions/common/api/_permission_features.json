@@ -548,8 +548,8 @@
       "location": "policy",
       "platforms": ["chromeos"],
       "allowlist": [
-        // https://crbug.com/1233881
-        "EC3DE21E048B67319893889529354DFBFA96FD23",   // Smart Card Connector
+        "EC3DE21E048B67319893889529354DFBFA96FD23",   // https://crbug.com/1233881
+        "A19608AC34215B127FF9D7C006D67F5C8ED8146D",   // https://crbug.com/1233881
         // https://crbug.com/1194693
         "6B748A5C005F21B7CBCF4170C2F883E435DEB511",   // CSSI Smart Card Middleware
         "075FF17D52ED6E3C2E5EC4D99F188E7A25AF47EA"    // Beta CSSI Smart Card Middleware
@@ -599,11 +599,6 @@
       "channel": "stable",
       "extension_types": ["hosted_app"],
       "allowlist": ["B44D08FD98F1523ED5837D78D0A606EA9D6206E5"]  // Web Store
-    },
-    {
-      "channel": "stable",
-      "extension_types": ["extension"],
-      "allowlist": ["DD87C93131FF8D3DE4E483DC1EB298D73C7223A6"]  // http://crbug.com/1328114
     },
     {
       "channel": "dev",

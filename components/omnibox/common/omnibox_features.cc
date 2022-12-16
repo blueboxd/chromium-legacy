@@ -195,6 +195,12 @@ BASE_FEATURE(kFocusTriggersSRPZeroSuggest,
              "OmniboxFocusTriggersSRPZeroSuggest",
              enabled_by_default_android_only);
 
+// If enabled, keeps all zero-prefix suggestions in the second column and does
+// not count them toward the overall zero-suggest limit.
+BASE_FEATURE(kKeepSecondaryZeroSuggest,
+             "KeepSecondaryZeroSuggest",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Revamps how local search history is extracted and processed for generating
 // zero-prefix and prefix suggestions.
 BASE_FEATURE(kLocalHistorySuggestRevamp,
@@ -224,6 +230,12 @@ BASE_FEATURE(kOmniboxOnClobberFocusTypeOnContent,
              "OmniboxOnClobberFocusTypeOnContent",
              enabled_by_default_desktop_only);
 
+// If enabled, zero prefix suggestions will be stored using an in-memory caching
+// service, instead of using the existing prefs-based cache.
+BASE_FEATURE(kZeroSuggestInMemoryCaching,
+             "ZeroSuggestInMemoryCaching",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables on-focus zero-prefix suggestions on the NTP for signed-out users.
 BASE_FEATURE(kZeroSuggestOnNTPForSignedOutUsers,
              "OmniboxTrendingZeroPrefixSuggestionsOnNTP",
@@ -243,12 +255,6 @@ BASE_FEATURE(kZeroSuggestPrefetchingOnSRP,
 // Web (i.e. non-NTP and non-SRP URLs).
 BASE_FEATURE(kZeroSuggestPrefetchingOnWeb,
              "ZeroSuggestPrefetchingOnWeb",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// If enabled, zero prefix suggestions will be stored using an in-memory caching
-// service, instead of using the existing prefs-based cache.
-BASE_FEATURE(kZeroSuggestInMemoryCaching,
-             "ZeroSuggestInMemoryCaching",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Features to provide head and tail non personalized search suggestion from
@@ -339,7 +345,7 @@ BASE_FEATURE(kDocumentProvider,
 // request should be served by the  ASO backend.
 BASE_FEATURE(kDocumentProviderAso,
              "OmniboxDocumentProviderAso",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Feature to determine if the HQP should double as a domain provider by
 // suggesting up to the provider limit for each of the user's highly visited
@@ -375,12 +381,6 @@ BASE_FEATURE(kMostVisitedTiles,
              "OmniboxMostVisitedTiles",
              enabled_by_default_android_only);
 
-// If enabled, computes spacing between MV tiles so that about 4.5 tiles are
-// shown on screen on narrow devices.
-BASE_FEATURE(kMostVisitedTilesDynamicSpacing,
-             "OmniboxMostVisitedTilesDynamicSpacing",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // If enabled, permits the title on the MostVisitedTiles to wrap around to
 // second line.
 BASE_FEATURE(kMostVisitedTilesTitleWrapAround,
@@ -410,47 +410,24 @@ BASE_FEATURE(kOmniboxDefaultBrowserPedal,
              "OmniboxDefaultBrowserPedal",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Feature used to update the left and bottom padding of the omnibox suggestion
-// header.
-BASE_FEATURE(kOmniboxHeaderPaddingUpdate,
-             "OmniboxHeaderPaddingUpdate",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Feature used to synchronize the toolbar's and status bar's color.
 BASE_FEATURE(kOmniboxMatchToolbarAndStatusBarColor,
              "OmniboxMatchToolbarAndStatusBarColor",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Feature used to remove the capitalization of the suggestion header text.
-BASE_FEATURE(kOmniboxRemoveSuggestionHeaderCapitalization,
-             "OmniboxRemoveSuggestionHeaderCapitalization",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Feature used to remove the chevron on the right side of suggestion list
-// header under omnibox.
-BASE_FEATURE(kOmniboxRemoveSuggestionHeaderChevron,
-             "OmniboxRemoveSuggestionHeaderChevron",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Feature used to add a recycled view pool on the most visited tile carousel.
 BASE_FEATURE(kOmniboxMostVisitedTilesAddRecycledViewPool,
              "OmniboxMostVisitedTilesAddRecycledViewPool",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Feature used to add fading effect to most visited tiles on tablet.
-BASE_FEATURE(kOmniboxMostVisitedTilesFadingOnTablet,
-             "OmniboxMostVisitedTilesFadingOnTablet",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Feature used to add most visited tiles to the suggestions when the user is on
-// a search result page that does not do search term replacement.
-BASE_FEATURE(kOmniboxMostVisitedTilesOnSrp,
-             "OmniboxMostVisitedTilesOnSrp",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // If enabled, forces omnibox suggestion rows to be uniformly sized.
 BASE_FEATURE(kUniformRowHeight,
              "OmniboxUniformRowHeight",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, shows the omnibox suggestions popup in WebUI.
+BASE_FEATURE(kWebUIOmniboxPopup,
+             "WebUIOmniboxPopup",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // When enabled, use Assistant for omnibox voice query recognition instead of
@@ -501,12 +478,6 @@ BASE_FEATURE(kReportAssistedQueryStats,
 // Search Results Page URL.
 BASE_FEATURE(kReportSearchboxStats,
              "OmniboxReportSearchboxStats",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// If enabled, retains all suggestions with headers to be presented entirely.
-// Disabling the feature trims the suggestions list to the predefined limit.
-BASE_FEATURE(kRetainSuggestionsWithHeaders,
-             "OmniboxRetainSuggestionsWithHeaders",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, logs Omnibox URL scoring signals to OmniboxEventProto in UMA.

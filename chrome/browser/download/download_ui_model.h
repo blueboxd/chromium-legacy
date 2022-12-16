@@ -273,9 +273,9 @@ class DownloadUIModel {
   // Implies IsDangerous() and MightBeMalicious().
   virtual bool IsMalicious() const;
 
-  // Is this download a mixed content download, but not something more severe?
+  // Is this download an insecure download, but not something more severe?
   // Implies IsDangerous() and !IsMalicious().
-  virtual bool IsMixedContent() const;
+  virtual bool IsInsecure() const;
 
   // Returns |true| if this download is expected to complete successfully and
   // thereafter be removed from the shelf.  Downloads that are opened
@@ -357,8 +357,8 @@ class DownloadUIModel {
 
   // Return the mixed content status determined during download target
   // determination.
-  virtual download::DownloadItem::MixedContentStatus GetMixedContentStatus()
-      const;
+  virtual download::DownloadItem::InsecureDownloadStatus
+  GetInsecureDownloadStatus() const;
 
   // Open the download using the platform handler for the download. The behavior
   // of this method will be different from DownloadItem::OpenDownload() if
@@ -535,6 +535,10 @@ class DownloadUIModel {
   virtual void DetermineAndSetShouldPreferOpeningInBrowser(
       const base::FilePath& target_path,
       bool is_filetype_handled_safely);
+
+  // Returns the accessible alert text that should be announced when the
+  // download is in progress.
+  virtual std::u16string GetInProgressAccessibleAlertText() const;
 
  protected:
   // Returns the MIME type of the download.

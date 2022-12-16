@@ -53,6 +53,7 @@
 #include "chrome/browser/ash/crosapi/field_trial_service_ash.h"
 #include "chrome/browser/ash/crosapi/file_manager_ash.h"
 #include "chrome/browser/ash/crosapi/file_system_provider_service_ash.h"
+#include "chrome/browser/ash/crosapi/firewall_hole_ash.h"
 #include "chrome/browser/ash/crosapi/force_installed_tracker_ash.h"
 #include "chrome/browser/ash/crosapi/fullscreen_controller_ash.h"
 #include "chrome/browser/ash/crosapi/geolocation_service_ash.h"
@@ -67,7 +68,9 @@
 #include "chrome/browser/ash/crosapi/login_screen_storage_ash.h"
 #include "chrome/browser/ash/crosapi/login_state_ash.h"
 #include "chrome/browser/ash/crosapi/message_center_ash.h"
+#include "chrome/browser/ash/crosapi/metrics_ash.h"
 #include "chrome/browser/ash/crosapi/metrics_reporting_ash.h"
+#include "chrome/browser/ash/crosapi/multi_capture_service_ash.h"
 #include "chrome/browser/ash/crosapi/native_theme_service_ash.h"
 #include "chrome/browser/ash/crosapi/network_change_ash.h"
 #include "chrome/browser/ash/crosapi/network_settings_service_ash.h"
@@ -119,10 +122,12 @@
 #include "chromeos/crosapi/mojom/drive_integration_service.mojom.h"
 #include "chromeos/crosapi/mojom/feedback.mojom.h"
 #include "chromeos/crosapi/mojom/file_manager.mojom.h"
+#include "chromeos/crosapi/mojom/firewall_hole.mojom.h"
 #include "chromeos/crosapi/mojom/image_writer.mojom.h"
 #include "chromeos/crosapi/mojom/keystore_service.mojom.h"
 #include "chromeos/crosapi/mojom/local_printer.mojom.h"
 #include "chromeos/crosapi/mojom/message_center.mojom.h"
+#include "chromeos/crosapi/mojom/multi_capture_service.mojom.h"
 #include "chromeos/crosapi/mojom/screen_manager.mojom.h"
 #include "chromeos/crosapi/mojom/select_file.mojom.h"
 #include "chromeos/crosapi/mojom/task_manager.mojom.h"
@@ -134,6 +139,7 @@
 #include "content/public/browser/device_service.h"
 #include "content/public/browser/media_session_service.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "printing/buildflags/buildflags.h"
 
 #if BUILDFLAG(USE_VAAPI) || BUILDFLAG(USE_V4L2_CODEC)
 #include "content/public/browser/stable_video_decoder_factory.h"
@@ -141,11 +147,9 @@
 #include "media/mojo/mojom/stable/stable_video_decoder.mojom.h"
 #endif  // BUILDFLAG(USE_VAAPI) || BUILDFLAG(USE_V4L2_CODEC)
 
-#if defined(USE_CUPS)
+#if BUILDFLAG(USE_CUPS)
 #include "chrome/browser/ash/crosapi/printing_metrics_ash.h"
-#else
-#include "chrome/browser/ash/crosapi/fake_printing_metrics_ash.h"
-#endif  // defined(USE_CUPS)
+#endif  // BUILDFLAG(USE_CUPS)
 
 namespace crosapi {
 namespace {
@@ -210,6 +214,7 @@ CrosapiAsh::CrosapiAsh(CrosapiDependencyRegistry* registry)
       file_manager_ash_(std::make_unique<FileManagerAsh>()),
       file_system_provider_service_ash_(
           std::make_unique<FileSystemProviderServiceAsh>()),
+      firewall_hole_service_ash_(std::make_unique<FirewallHoleServiceAsh>()),
       force_installed_tracker_ash_(
           std::make_unique<ForceInstalledTrackerAsh>()),
       fullscreen_controller_ash_(std::make_unique<FullscreenControllerAsh>()),
@@ -225,8 +230,10 @@ CrosapiAsh::CrosapiAsh(CrosapiDependencyRegistry* registry)
       login_screen_storage_ash_(std::make_unique<LoginScreenStorageAsh>()),
       login_state_ash_(std::make_unique<LoginStateAsh>()),
       message_center_ash_(std::make_unique<MessageCenterAsh>()),
+      metrics_ash_(std::make_unique<MetricsAsh>()),
       metrics_reporting_ash_(registry->CreateMetricsReportingAsh(
           g_browser_process->metrics_service())),
+      multi_capture_service_ash_(std::make_unique<MultiCaptureServiceAsh>()),
       native_theme_service_ash_(std::make_unique<NativeThemeServiceAsh>()),
       network_change_ash_(std::make_unique<NetworkChangeAsh>()),
       networking_attributes_ash_(std::make_unique<NetworkingAttributesAsh>()),
@@ -239,9 +246,9 @@ CrosapiAsh::CrosapiAsh(CrosapiDependencyRegistry* registry)
       prefs_ash_(
           std::make_unique<PrefsAsh>(g_browser_process->profile_manager(),
                                      g_browser_process->local_state())),
-#if defined(USE_CUPS)
+#if BUILDFLAG(USE_CUPS)
       printing_metrics_ash_(std::make_unique<PrintingMetricsAsh>()),
-#endif  // defined(USE_CUPS)
+#endif  // BUILDFLAG(USE_CUPS)
       probe_service_ash_(std::make_unique<ash::ProbeServiceAsh>()),
       remoting_ash_(std::make_unique<RemotingAsh>()),
       resource_manager_ash_(std::make_unique<ResourceManagerAsh>()),
@@ -502,6 +509,11 @@ void CrosapiAsh::BindFileSystemProviderService(
   file_system_provider_service_ash_->BindReceiver(std::move(receiver));
 }
 
+void CrosapiAsh::BindFirewallHoleService(
+    mojo::PendingReceiver<crosapi::mojom::FirewallHoleService> receiver) {
+  firewall_hole_service_ash_->BindReceiver(std::move(receiver));
+}
+
 void CrosapiAsh::BindForceInstalledTracker(
     mojo::PendingReceiver<crosapi::mojom::ForceInstalledTracker> receiver) {
   force_installed_tracker_ash_->BindReceiver(std::move(receiver));
@@ -615,9 +627,18 @@ void CrosapiAsh::BindMessageCenter(
   message_center_ash_->BindReceiver(std::move(receiver));
 }
 
+void CrosapiAsh::BindMetrics(mojo::PendingReceiver<mojom::Metrics> receiver) {
+  metrics_ash_->BindReceiver(std::move(receiver));
+}
+
 void CrosapiAsh::BindMetricsReporting(
     mojo::PendingReceiver<mojom::MetricsReporting> receiver) {
   metrics_reporting_ash_->BindReceiver(std::move(receiver));
+}
+
+void CrosapiAsh::BindMultiCaptureService(
+    mojo::PendingReceiver<mojom::MultiCaptureService> receiver) {
+  multi_capture_service_ash_->BindReceiver(std::move(receiver));
 }
 
 void CrosapiAsh::BindNativeThemeService(
@@ -666,9 +687,9 @@ void CrosapiAsh::BindPrefs(mojo::PendingReceiver<mojom::Prefs> receiver) {
 
 void CrosapiAsh::BindPrintingMetrics(
     mojo::PendingReceiver<mojom::PrintingMetrics> receiver) {
-#if defined(USE_CUPS)
+#if BUILDFLAG(USE_CUPS)
   printing_metrics_ash_->BindReceiver(std::move(receiver));
-#endif  // defined(USE_CUPS)
+#endif  // BUILDFLAG(USE_CUPS)
 }
 
 void CrosapiAsh::BindReceiver(

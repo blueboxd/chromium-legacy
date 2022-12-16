@@ -61,8 +61,6 @@ class WebrtcVideoStream : public VideoStream, public VideoChannelStateObserver {
   void SetEventTimestampsSource(scoped_refptr<InputEventTimestampsSource>
                                     event_timestamps_source) override;
   void Pause(bool pause) override;
-  void SetLosslessEncode(bool want_lossless) override;
-  void SetLosslessColor(bool want_lossless) override;
   void SetObserver(Observer* observer) override;
   void SelectSource(webrtc::ScreenId id) override;
   void SetComposeEnabled(bool enabled) override;
@@ -71,11 +69,7 @@ class WebrtcVideoStream : public VideoStream, public VideoChannelStateObserver {
   void SetMouseCursorPosition(const webrtc::DesktopVector& position) override;
 
   // VideoChannelStateObserver interface.
-  void OnKeyFrameRequested() override;
-  void OnTargetBitrateChanged(int bitrate_kbps) override;
   void OnTargetFramerateChanged(int framerate) override;
-  void OnFrameEncoded(WebrtcVideoEncoder::EncodeResult encode_result,
-                      const WebrtcVideoEncoder::EncodedFrame* frame) override;
   void OnEncodedFrameSent(
       webrtc::EncodedImageCallback::Result result,
       const WebrtcVideoEncoder::EncodedFrame& frame) override;

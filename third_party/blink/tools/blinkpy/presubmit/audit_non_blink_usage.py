@@ -710,6 +710,7 @@ _CONFIG = [
             'ui::IsTableRow',
             'ui::IsTableHeader',
             'ui::IsText',
+            'ui::IsTextField',
 
             # Blink uses UKM for logging e.g. always-on leak detection (crbug/757374)
             'ukm::.+',
@@ -1467,6 +1468,11 @@ _CONFIG = [
         # WTF::RefCounted should be used instead. base::RefCountedThreadSafe is
         # still needed for cross_thread_copier.h though.
         'allowed': ['base::RefCountedThreadSafe', '(?!base::RefCounted).+'],
+        # This is required to supplant less fine-grained inclass_disallows. We
+        # want to allow everything that the normal ones are allowing here, for
+        # the same reasons.
+        'inclass_allowed':
+        ['base::RefCountedThreadSafe::.+', '(?!base::RefCounted).+'],
         'disallowed': [
             # TODO(https://crbug.com/1267866): this warning is shown twice for
             # renderer/platform/ violations.
@@ -1754,6 +1760,14 @@ _CONFIG = [
         ],
         'allowed': [
             'base::NoDestructor',
+        ]
+    },
+    {
+        'paths': [
+            'third_party/blink/renderer/core/loader/frame_loader.cc',
+        ],
+        'allowed': [
+            'base::flat_map',
         ]
     },
     {

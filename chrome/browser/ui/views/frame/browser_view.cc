@@ -251,6 +251,7 @@
 #include "ui/views/views_features.h"
 #include "ui/views/widget/native_widget.h"
 #include "ui/views/widget/root_view.h"
+#include "ui/views/widget/sublevel_manager.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -1267,6 +1268,15 @@ float BrowserView::GetTopControlsSlideBehaviorShownRatio() const {
     return top_controls_slide_controller_->GetShownRatio();
 
   return 1.f;
+}
+
+views::Widget* BrowserView::GetWidgetForAnchoring() {
+#if BUILDFLAG(IS_MAC)
+  if (UsesImmersiveFullscreenMode()) {
+    return IsFullscreen() ? overlay_widget_.get() : GetWidget();
+  }
+#endif
+  return GetWidget();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3502,6 +3512,15 @@ views::View* BrowserView::CreateMacOverlayView() {
   overlay_widget_->Init(std::move(params));
   overlay_widget_->SetNativeWindowProperty(kBrowserViewKey, this);
 
+  // Disable sublevel widget layering because in fullscreen the NSWindow of
+  // `overlay_widget_` is reparented to a AppKit-owned NSWindow that does not
+  // have an associated Widget. This will cause issues in sublevel manager
+  // which operates at the Widget level.
+  if (overlay_widget_->GetSublevelManager()) {
+    overlay_widget_->parent()->GetSublevelManager()->UntrackChildWidget(
+        overlay_widget_);
+  }
+
   // Create a new TopContainerOverlayView. The tab strip, omnibox, bookmarks
   // etc. will be contained within this view. Right clicking on the blank space
   // that is not taken up by the child views should show the context menu. Set
@@ -3962,10 +3981,9 @@ void BrowserView::AddedToWidget() {
   // TODO(https://crbug.com/1036519): Remove BrowserViewLayout dependence on
   // Widget and move to the constructor.
   SetLayoutManager(std::make_unique<BrowserViewLayout>(
-      std::make_unique<BrowserViewLayoutDelegateImpl>(this),
-      GetWidget()->GetNativeView(), this, top_container_,
-      tab_strip_region_view_, tabstrip_, toolbar_, infobar_container_,
-      contents_container_, side_search_side_panel_,
+      std::make_unique<BrowserViewLayoutDelegateImpl>(this), this,
+      top_container_, tab_strip_region_view_, tabstrip_, toolbar_,
+      infobar_container_, contents_container_, side_search_side_panel_,
       left_aligned_side_panel_separator_, unified_side_panel_,
       right_aligned_side_panel_separator_, lens_side_panel_,
       immersive_mode_controller_.get(), contents_separator_));

@@ -54,8 +54,9 @@ public class ChromeTabbedActivityTestRule extends ChromeActivityTestRule<ChromeT
 
     public void resumeMainActivityFromLauncher() throws Exception {
         Assert.assertNotNull(getActivity());
-        Assert.assertEquals(
-                ApplicationStatus.getStateForActivity(getActivity()), ActivityState.STOPPED);
+        Assert.assertTrue(
+                ApplicationStatus.getStateForActivity(getActivity()) == ActivityState.STOPPED
+                || ApplicationStatus.getStateForActivity(getActivity()) == ActivityState.PAUSED);
 
         Intent launchIntent = getActivity().getPackageManager().getLaunchIntentForPackage(
                 getActivity().getPackageName());
@@ -86,7 +87,7 @@ public class ChromeTabbedActivityTestRule extends ChromeActivityTestRule<ChromeT
 
     /**
      * Starts the Main activity and open a blank page.
-     * This is faster and less flakyness-prone than starting on the NTP.
+     * This is faster and less flakiness-prone than starting on the NTP.
      */
     public void startMainActivityOnBlankPage() {
         startMainActivityWithURL("about:blank");

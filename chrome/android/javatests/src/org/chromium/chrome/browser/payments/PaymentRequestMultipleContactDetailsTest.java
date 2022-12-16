@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.payments;
 import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,7 +21,6 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.AppPresence;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.FactorySpeed;
-import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 import java.util.ArrayList;
@@ -32,41 +32,41 @@ import java.util.concurrent.TimeoutException;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-public class PaymentRequestMultipleContactDetailsTest implements MainActivityStartCallback {
+public class PaymentRequestMultipleContactDetailsTest {
     @Rule
     public PaymentRequestTestRule mPaymentRequestTestRule =
-            new PaymentRequestTestRule("payment_request_contact_details_test.html", this);
+            new PaymentRequestTestRule("payment_request_contact_details_test.html");
 
     private static final AutofillProfile[] AUTOFILL_PROFILES = {
             // 0 - Incomplete (no phone) profile.
-            new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
+            new AutofillProfile("" /* guid */, "https://www.example.test" /* origin */,
                     "" /* honorific prefix */, "Bart Simpson", "Acme Inc.", "123 Main",
                     "California", "Los Angeles", "", "90210", "", "US", "", "bart@simpson.com", ""),
 
             // 1 - Incomplete (no email) profile.
-            new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
+            new AutofillProfile("" /* guid */, "https://www.example.test" /* origin */,
                     "" /* honorific prefix */, "Homer Simpson", "Acme Inc.", "123 Main",
                     "California", "Los Angeles", "", "90210", "", "US", "555 123-4567", "", ""),
 
             // 2 - Complete profile.
-            new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
+            new AutofillProfile("" /* guid */, "https://www.example.test" /* origin */,
                     "" /* honorific prefix */, "Lisa Simpson", "Acme Inc.", "123 Main",
                     "California", "Los Angeles", "", "90210", "", "US", "555 123-4567",
                     "lisa@simpson.com", ""),
 
             // 3 - Complete profile.
-            new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
+            new AutofillProfile("" /* guid */, "https://www.example.test" /* origin */,
                     "" /* honorific prefix */, "Maggie Simpson", "Acme Inc.", "123 Main",
                     "California", "Los Angeles", "", "90210", "", "US", "555 123-4567",
                     "maggie@simpson.com", ""),
 
             // 4 - Incomplete (no phone and email) profile.
-            new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
+            new AutofillProfile("" /* guid */, "https://www.example.test" /* origin */,
                     "" /* honorific prefix */, "Marge Simpson", "Acme Inc.", "123 Main",
                     "California", "Los Angeles", "", "90210", "", "US", "", "", ""),
 
             // 5 - Incomplete (no name) profile.
-            new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
+            new AutofillProfile("" /* guid */, "https://www.example.test" /* origin */,
                     "" /* honorific prefix */, "", "Acme Inc.", "123 Main", "California",
                     "Los Angeles", "", "90210", "", "US", "555 123-4567", "marge@simpson.com", ""),
 
@@ -74,36 +74,36 @@ public class PaymentRequestMultipleContactDetailsTest implements MainActivitySta
             // The Lisa Simpson profile.
 
             // 6 - Same as original, but with no name.
-            new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
+            new AutofillProfile("" /* guid */, "https://www.example.test" /* origin */,
                     "" /* honorific prefix */, "" /* name */, "Acme Inc.", "123 Main", "California",
                     "Los Angeles", "", "90210", "", "US", "555 123-4567", "lisa@simpson.com", ""),
 
             // 7 - Same as original, but with no phone.
-            new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
+            new AutofillProfile("" /* guid */, "https://www.example.test" /* origin */,
                     "" /* honorific prefix */, "Lisa Simpson", "Acme Inc.", "123 Main",
                     "California", "Los Angeles", "", "90210", "", "US", "" /* phoneNumber */,
                     "lisa@simpson.com", ""),
 
             // 8 - Same as original, but with no email.
-            new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
+            new AutofillProfile("" /* guid */, "https://www.example.test" /* origin */,
                     "" /* honorific prefix */, "Lisa Simpson", "Acme Inc.", "123 Main",
                     "California", "Los Angeles", "", "90210", "", "US", "555 123-4567",
                     "" /* emailAddress */, ""),
 
             // 9 - Same as original, but with no phone and no email.
-            new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
+            new AutofillProfile("" /* guid */, "https://www.example.test" /* origin */,
                     "" /* honorific prefix */, "Lisa Simpson", "Acme Inc.", "123 Main",
                     "California", "Los Angeles", "", "90210", "", "US", "" /* phoneNumber */,
                     "" /* emailAddress */, ""),
 
             // 10 - Has an email address that is a superset of the original profile's email.
-            new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
+            new AutofillProfile("" /* guid */, "https://www.example.test" /* origin */,
                     "" /* honorific prefix */, "Lisa Simpson", "Acme Inc.", "123 Main",
                     "California", "Los Angeles", "", "90210", "", "US", "555 123-4567",
                     "fakelisa@simpson.com", ""),
 
             // 11 - Has the same name as the original but with no capitalization in the name.
-            new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
+            new AutofillProfile("" /* guid */, "https://www.example.test" /* origin */,
                     "" /* honorific prefix */, "lisa simpson", "Acme Inc.", "123 Main",
                     "California", "Los Angeles", "", "90210", "", "US", "555 123-4567",
                     "lisa@simpson.com", ""),
@@ -114,8 +114,8 @@ public class PaymentRequestMultipleContactDetailsTest implements MainActivitySta
     private int[] mCountsToSet;
     private int[] mDatesToSet;
 
-    @Override
-    public void onMainActivityStarted() throws TimeoutException {
+    @Before
+    public void setUp() throws TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
 
         // Add the profiles.
@@ -151,7 +151,7 @@ public class PaymentRequestMultipleContactDetailsTest implements MainActivitySta
         mCountsToSet = new int[] {20, 15, 10, 5, 1};
         mDatesToSet = new int[] {5000, 5000, 5000, 5000, 1};
 
-        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
+        mPaymentRequestTestRule.triggerUIAndWait("buy", mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickInContactInfoAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
         Assert.assertEquals(4, mPaymentRequestTestRule.getNumberOfContactDetailSuggestions());
@@ -179,7 +179,7 @@ public class PaymentRequestMultipleContactDetailsTest implements MainActivitySta
         mCountsToSet = new int[] {15, 10, 5, 1};
         mDatesToSet = new int[] {5000, 5000, 5000, 5000};
 
-        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
+        mPaymentRequestTestRule.triggerUIAndWait("buy", mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickInContactInfoAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
         Assert.assertEquals(4, mPaymentRequestTestRule.getNumberOfContactDetailSuggestions());
@@ -214,7 +214,7 @@ public class PaymentRequestMultipleContactDetailsTest implements MainActivitySta
         mCountsToSet = new int[] {1, 20, 15, 10, 5};
         mDatesToSet = new int[] {1000, 4000, 3000, 2000, 1000};
 
-        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
+        mPaymentRequestTestRule.triggerUIAndWait("buy", mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickInContactInfoAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
 
@@ -239,7 +239,7 @@ public class PaymentRequestMultipleContactDetailsTest implements MainActivitySta
         mCountsToSet = new int[] {15, 5};
         mDatesToSet = new int[] {5000, 2000};
 
-        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
+        mPaymentRequestTestRule.triggerUIAndWait("buy", mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickInContactInfoAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
         Assert.assertEquals(1, mPaymentRequestTestRule.getNumberOfContactDetailSuggestions());
@@ -263,7 +263,7 @@ public class PaymentRequestMultipleContactDetailsTest implements MainActivitySta
         mCountsToSet = new int[] {15, 25};
         mDatesToSet = new int[] {5000, 7000};
 
-        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
+        mPaymentRequestTestRule.triggerUIAndWait("buy", mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickInContactInfoAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
         Assert.assertEquals(2, mPaymentRequestTestRule.getNumberOfContactDetailSuggestions());

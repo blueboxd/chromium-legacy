@@ -72,6 +72,17 @@ enum class AccessCodeCastDialogOpenLocation {
   kMaxValue = kSystemTrayCastMenu
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class AccessCodeCastUiTabSwitcherUsage {
+  kTabSwitcherUiShownAndNotUsed = 0,
+  kTabSwitcherUiShownAndUsedToSwitchTabs = 1,
+
+  // NOTE: Do not reorder existing entries, and add entries only immediately
+  // above this line.
+  kMaxValue = kTabSwitcherUiShownAndUsedToSwitchTabs,
+};
+
 class AccessCodeCastMetrics {
  public:
   AccessCodeCastMetrics();
@@ -87,6 +98,9 @@ class AccessCodeCastMetrics {
   static const char kHistogramDialogLoadTime[];
   static const char kHistogramDialogOpenLocation[];
   static const char kHistogramRememberedDevicesCount[];
+  static const char kHistogramRouteDuration[];
+  static const char kHistogramUiTabSwitcherUsageType[];
+  static const char kHistogramUiTabSwitchingCount[];
 
   // Records metrics relating to starting a cast session (route). Mode is
   // media_router::MediaCastMode.
@@ -117,6 +131,21 @@ class AccessCodeCastMetrics {
   // Records the count of cast devices which are currently being remembered
   // being the AccessCodeCastSinkService.
   static void RecordRememberedDevicesCount(int count);
+
+  // Records the length of time that a route to an access code device lasts.
+  // The minimum length of time reported is one second, so any lower durations
+  // will be rounded up. Also, the largest time reported is 8 hours, and any
+  // longer times will be bucketed down.
+  static void RecordRouteDuration(base::TimeDelta duration);
+
+  // Records the count of tabs a user switches to during a tab mirroring
+  // session.
+  static void RecordTabSwitchesCountInTabSession(int count);
+
+  // Records the usage type of tab switcher UI, i.e. shown only and not used or
+  // shown and actually used to switch tabs.
+  static void RecordTabSwitcherUsageCase(
+      AccessCodeCastUiTabSwitcherUsage usage);
 };
 
 #endif  // COMPONENTS_ACCESS_CODE_CAST_COMMON_ACCESS_CODE_CAST_METRICS_H_

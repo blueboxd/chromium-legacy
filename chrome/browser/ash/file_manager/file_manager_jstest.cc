@@ -342,6 +342,10 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, XfSelect) {
   RunTestURL("widgets/xf_select_unittest.js");
 }
 
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, XfSplitter) {
+  RunTestURL("widgets/xf_splitter_unittest.js");
+}
+
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, NudgeContainer) {
   RunTestURL("containers/nudge_container_unittest.js");
 }
@@ -356,4 +360,8 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, XfTreeItem) {
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, XfIcon) {
   RunTestURL("widgets/xf_icon_unittest.js");
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, XfPathDisplay) {
+  RunTestURL("widgets/xf_path_display_unittest.js");
 }

@@ -51,10 +51,10 @@
 #include "chromeos/ash/components/dbus/update_engine/update_engine_client.h"
 #include "chromeos/ash/components/peripheral_notification/peripheral_notification_manager.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
+#include "chromeos/ash/components/system/devicemode.h"
+#include "chromeos/ash/components/system/statistics_provider.h"
 #include "chromeos/ash/components/timezone/timezone_resolver.h"
 #include "chromeos/components/disks/disks_prefs.h"
-#include "chromeos/system/devicemode.h"
-#include "chromeos/system/statistics_provider.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/feedback/content/content_tracing_manager.h"
 #include "components/language/core/browser/pref_names.h"
@@ -146,6 +146,10 @@ void Preferences::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(
       ::prefs::kLacrosLaunchSwitch,
       static_cast<int>(crosapi::browser_util::LacrosAvailability::kUserChoice));
+  registry->RegisterIntegerPref(
+      ::prefs::kLacrosSelection,
+      static_cast<int>(
+          crosapi::browser_util::LacrosSelectionPolicy::kUserChoice));
   registry->RegisterStringPref(::prefs::kLacrosDataBackwardMigrationMode, "");
   registry->RegisterBooleanPref(prefs::kDeviceSystemWideTracingEnabled, true);
   registry->RegisterBooleanPref(
@@ -547,6 +551,8 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       prefs::kFilesAppTrashEnabled, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+
+  registry->RegisterBooleanPref(prefs::kUsbDetectorNotificationEnabled, true);
 }
 
 void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {
@@ -1008,6 +1014,10 @@ void Preferences::ApplyPreferences(ApplyReason reason,
     if (user_is_active)
       UpdateAutoRepeatRate();
   }
+
+  if (reason == REASON_INITIALIZATION)
+    SetInputMethodList();
+
   if (reason != REASON_PREF_CHANGED ||
       pref_name == ::prefs::kLanguageAllowedInputMethods) {
     const std::vector<std::string> allowed_input_methods =
@@ -1037,9 +1047,6 @@ void Preferences::ApplyPreferences(ApplyReason reason,
     // values.
     locale_util::RemoveDisallowedLanguagesFromPreferred(prefs_);
   }
-
-  if (reason == REASON_INITIALIZATION)
-    SetInputMethodList();
 
   if (pref_name == ::prefs::kLanguagePreloadEngines &&
       reason == REASON_PREF_CHANGED) {
@@ -1145,6 +1152,7 @@ void Preferences::ApplyPreferences(ApplyReason reason,
       PeripheralNotificationManager::Get()->SetPcieTunnelingAllowedState(value);
     }
     PciguardClient::Get()->SendExternalPciDevicesPermissionState(value);
+    TypecdClient::Get()->SetPeripheralDataAccessPermissionState(value);
   }
 }
 

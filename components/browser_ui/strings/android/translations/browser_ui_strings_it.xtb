@@ -348,6 +348,7 @@
 <translation id="813082847718468539">Visualizza informazioni sul sito</translation>
 <translation id="8131740175452115882">Conferma</translation>
 <translation id="8154912474061769055">Le funzionalità su molti siti potrebbero non essere disponibili</translation>
+<translation id="8168435359814927499">Contenuti</translation>
 <translation id="8197286292360124385">Autorizzazione <ph name="PERMISSION_1" /> consentita</translation>
 <translation id="8200772114523450471">Riprendi</translation>
 <translation id="8206354486702514201">Questa impostazione è stata applicata dall'amministratore.</translation>
@@ -371,7 +372,7 @@
 <translation id="8447861592752582886">Revoca autorizzazione dispositivo</translation>
 <translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 cookie in uso}other{# cookie in uso}}</translation>
 <translation id="8487700953926739672">Disponibile offline</translation>
-<translation id="848952951823693243">Richiedi sempre sito per dispositivi mobili</translation>
+<translation id="848952951823693243">Richiedi sempre sito mobile</translation>
 <translation id="8499083585497694743">Riattiva microfono</translation>
 <translation id="851751545965956758">Impedisci ai siti di connettersi ai dispositivi</translation>
 <translation id="8525306231823319788">Schermo intero</translation>

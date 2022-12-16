@@ -16,6 +16,7 @@
 #include "components/omnibox/browser/match_compare.h"
 #include "components/omnibox/browser/search_suggestion_parser.h"
 #include "components/omnibox/browser/suggestion_group_util.h"
+#include "third_party/omnibox_proto/groups.pb.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_ANDROID)
@@ -201,9 +202,6 @@ class AutocompleteResult {
 
   void Swap(AutocompleteResult* other);
 
-  // operator=() by another name.
-  void CopyFrom(const AutocompleteResult& other);
-
 #if DCHECK_IS_ON()
   // Does a data integrity check on this result.
   void Validate() const;
@@ -257,6 +255,12 @@ class AutocompleteResult {
   omnibox::GroupSection GetSectionForSuggestionGroup(
       omnibox::GroupId suggestion_group_id) const;
 
+  // Returns the side type associated with `suggestion_group_id`.
+  // Returns omnibox::DEFAULT_PRIMARY if `suggestion_group_id` is not found in
+  // `suggestion_groups_map_`.
+  omnibox::GroupConfig_SideType GetSideTypeForSuggestionGroup(
+      omnibox::GroupId suggestion_group_id) const;
+
   // Updates |suggestion_groups_map_| with the suggestion groups information
   // from |suggeston_groups_map|. Followed by GroupAndDemoteMatchesInGroups()
   // which sorts the matches based on the order in which their groups should
@@ -284,6 +288,8 @@ class AutocompleteResult {
   FRIEND_TEST_ALL_PREFIXES(
       AutocompleteResultTest,
       GroupSuggestionsBySearchVsURLHonorsProtectedSuggestions);
+  friend class AutocompleteController;  // Friended to use `CopyFrom()`.
+  friend class AutocompleteProviderTest;
   friend class HistoryURLProviderTest;
 
   typedef std::map<AutocompleteProvider*, ACMatches> ProviderToMatches;
@@ -295,6 +301,10 @@ class AutocompleteResult {
 #else
   typedef ACMatches::iterator::difference_type matches_difference_type;
 #endif
+
+  // operator=() by another name.
+  // To be called in AutocompleteController and AutocompleteProviderTest only.
+  void CopyFrom(const AutocompleteResult& other);
 
   // Modifies |matches| such that any duplicate matches are coalesced into
   // representative "best" matches. The erased matches are moved into the

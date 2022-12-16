@@ -113,11 +113,46 @@ base::Value::List MakeAdsValue(
   return list;
 }
 
-base::Value::Dict stringDoubleMapToDict(
+base::Value::Dict StringDoubleMapToDict(
     const base::flat_map<std::string, double>& map) {
   base::Value::Dict dict;
   for (const auto& pair : map) {
     dict.Set(pair.first, pair.second);
+  }
+  return dict;
+}
+
+base::Value::List SellerCapabilitiesToList(
+    blink::InterestGroup::SellerCapabilitiesType capabilities) {
+  base::Value::List list;
+  for (blink::InterestGroup::SellerCapabilities capability : capabilities) {
+    if (capability ==
+        blink::InterestGroup::SellerCapabilities::kInterestGroupCounts) {
+      list.Append("interestGroupCounts");
+    } else if (capability ==
+               blink::InterestGroup::SellerCapabilities::kLatencyStats) {
+      list.Append("latencyStats");
+    } else {
+      ADD_FAILURE() << "Unknown seller capability "
+                    << static_cast<uint32_t>(capability);
+    }
+  }
+  return list;
+}
+
+base::Value::Dict SellerCapabilitiesToDict(
+    const absl::optional<
+        base::flat_map<url::Origin,
+                       blink::InterestGroup::SellerCapabilitiesType>>& map,
+    blink::InterestGroup::SellerCapabilitiesType all_sellers_capabilities) {
+  base::Value::Dict dict;
+  if (map) {
+    for (const auto& [origin, capabilities] : *map) {
+      dict.Set(origin.Serialize(), SellerCapabilitiesToList(capabilities));
+    }
+  }
+  if (!all_sellers_capabilities.Empty()) {
+    dict.Set("*", SellerCapabilitiesToList(all_sellers_capabilities));
   }
   return dict;
 }
@@ -585,11 +620,14 @@ class InterestGroupBrowserTest : public ContentBrowserTest {
     dict.Set("enableBiddingSignalsPrioritization",
              group.enable_bidding_signals_prioritization);
     if (group.priority_vector)
-      dict.Set("priorityVector", stringDoubleMapToDict(*group.priority_vector));
+      dict.Set("priorityVector", StringDoubleMapToDict(*group.priority_vector));
     if (group.priority_signals_overrides) {
       dict.Set("prioritySignalsOverrides",
-               stringDoubleMapToDict(*group.priority_signals_overrides));
+               StringDoubleMapToDict(*group.priority_signals_overrides));
     }
+    dict.Set("sellerCapabilities",
+             SellerCapabilitiesToDict(group.seller_capabilities,
+                                      group.all_sellers_capabilities));
     if (group.bidding_url)
       dict.Set("biddingLogicUrl", group.bidding_url->spec());
     if (group.bidding_wasm_helper_url)
@@ -840,8 +878,7 @@ class InterestGroupBrowserTest : public ContentBrowserTest {
             /*priority_signals_overrides=*/absl::nullopt,
             /*seller_capabilities=*/absl::nullopt,
             /*all_sellers_capabilities=*/
-            blink::InterestGroup::SellerCapabilitiesType(), execution_mode,
-            std::move(bidding_url),
+            {}, execution_mode, std::move(bidding_url),
             /*bidding_wasm_helper_url=*/absl::nullopt,
             /*daily_update_url=*/absl::nullopt,
             /*trusted_bidding_signals_url=*/absl::nullopt,
@@ -1202,16 +1239,45 @@ class InterestGroupBrowserTest : public ContentBrowserTest {
   std::unique_ptr<NetworkResponder> network_responder_;
 };
 
-// At the moment, InterestGroups use URN urls when fenced frames are enabled,
-// and normal URLs when not. This means they require ads be loaded in fenced
-// frames when Chrome is running with the option enabled.
-class InterestGroupFencedFrameBrowserTest : public InterestGroupBrowserTest {
+// At the moment, InterestGroups use either:
+//   a. Web-exposed `FencedFrameConfig` objects or URN urls, when fenced frames
+//      are enabled
+//   b. Normal URLs when fenced frames are not enabled
+// This means they require ads be loaded in fenced frames when Chrome is running
+// with the option enabled. This fixture is parameterized over whether the test
+// should call `navigator.runAdAuction()` with a request to have the promise
+// resolve to a JS `FencedFrameConfig` object or a URN.
+class InterestGroupFencedFrameBrowserTest
+    : public InterestGroupBrowserTest,
+      public ::testing::WithParamInterface<bool> {
  public:
   InterestGroupFencedFrameBrowserTest() {
-    feature_list_.InitWithFeaturesAndParameters(
-        {{blink::features::kFencedFrames, {}},
-         {features::kPrivacySandboxAdsAPIsOverride, {}}},
-        {/* disabled_features */});
+    if (ResolveAuctionsToConfig()) {
+      feature_list_.InitWithFeaturesAndParameters(
+          {{blink::features::kFencedFrames, {}},
+           {features::kPrivacySandboxAdsAPIsOverride, {}},
+           // This feature allows `runAdAuction()`'s promise to resolve to a
+           // `FencedFrameConfig` object upon developer request.
+           {blink::features::kFencedFramesAPIChanges, {}}},
+          {/* disabled_features */});
+    } else {
+      feature_list_.InitWithFeaturesAndParameters(
+          {{blink::features::kFencedFrames, {}},
+           {features::kPrivacySandboxAdsAPIsOverride, {}}},
+          {/* disabled_features */});
+    }
+  }
+
+  bool ResolveAuctionsToConfig() const { return GetParam(); }
+
+  // Provides meaningful param names instead of /0 and /1.
+  static std::string DescribeParams(
+      const ::testing::TestParamInfo<ParamType>& info) {
+    if (info.param) {
+      return "ResolveAuctionsToConfig";
+    } else {
+      return "ResolveAuctionsToURN";
+    }
   }
 
   ~InterestGroupFencedFrameBrowserTest() override = default;
@@ -1230,28 +1296,70 @@ class InterestGroupFencedFrameBrowserTest : public InterestGroupBrowserTest {
       absl::optional<ToRenderFrameHost> execution_target = absl::nullopt) {
     if (!execution_target)
       execution_target = shell();
-    content::EvalJsResult urn_url_string =
-        RunAuctionAndWait(auction_config_json, execution_target);
-    ASSERT_TRUE(urn_url_string.value.is_string())
-        << "Expected string, but got " << urn_url_string.value;
 
-    GURL urn_url(urn_url_string.ExtractString());
-    ASSERT_TRUE(urn_url.is_valid())
-        << "URL is not valid: " << urn_url_string.ExtractString();
-    EXPECT_EQ(url::kUrnScheme, urn_url.scheme_piece());
+    // There are two paths, depending on the parameter for this test, that we
+    // take for running an ad auction and navigating a fenced frame element to
+    // its result, `runAdAuction()` resolves to a:
+    //   1. FencedFrameConfig object
+    //   2. URN
+    // For (1), we:
+    //   1. Run the ad auction, specifically requesting that the returned
+    //      promise resolve to a config object that we immediately navigate to
+    //   2. Wait for the navigation to finish
+    // For (2), we:
+    //   1. Run the ad auction
+    //   2. Asynchronously later, navigate the fenced frame to the resulting URN
+    //   3. Wait for the navigation to finish
+    // The only real difference is that for (1) above, the auction and
+    // navigation happen separately.
+    if (ResolveAuctionsToConfig()) {
+      TestFrameNavigationObserver observer(
+          GetFencedFrameRenderFrameHost(*execution_target));
+      content::EvalJsResult eval_result =
+          EvalJs(execution_target ? *execution_target : shell(),
+                 base::StringPrintf(
+                     R"(
+(async function() {
+  try {
+    const auction_config = %s;
+    auction_config.resolveToConfig = true;
 
-    NavigateFencedFrameAndWait(urn_url, expected_ad_url, *execution_target);
+    const fenced_frame_config = await navigator.runAdAuction(auction_config);
+    if (!(fenced_frame_config instanceof FencedFrameConfig)) {
+      throw new Error('runAdAuction() did not return a FencedFrameConfig');
+    }
+
+    document.querySelector('fencedframe').config = fenced_frame_config;
+  } catch (e) {
+    return e.toString();
+  }
+})())",
+                     auction_config_json.c_str()));
+
+      ASSERT_TRUE(eval_result.value.is_none())
+          << "Expected string, but got " << eval_result.value;
+      WaitForFencedFrameNavigation(expected_ad_url, *execution_target,
+                                   observer);
+    } else {
+      content::EvalJsResult urn_url_string =
+          RunAuctionAndWait(auction_config_json, execution_target);
+      ASSERT_TRUE(urn_url_string.value.is_string())
+          << "Expected string, but got " << urn_url_string.value;
+
+      GURL urn_url(urn_url_string.ExtractString());
+      ASSERT_TRUE(urn_url.is_valid())
+          << "URL is not valid: " << urn_url_string.ExtractString();
+      EXPECT_EQ(url::kUrnScheme, urn_url.scheme_piece());
+
+      NavigateFencedFrameAndWait(urn_url, expected_ad_url, *execution_target);
+    }
   }
 
-  // Navigates the only fenced frame in `execution_target` to `url` and waits
-  // for the navigation to complete, expecting the frame to navigate to
-  // `expected_url`. Also checks that the URL is actually requested from the
-  // test server if `expected_url` is an HTTPS URL.
+  // Navigates the only fenced frame in `execution_target` to `url` and invokes
+  // `WaitForFencedFrameNavigation()`.
   void NavigateFencedFrameAndWait(const GURL& url,
                                   const GURL& expected_url,
                                   const ToRenderFrameHost& execution_target) {
-    // Use to wait for navigation completion in the ShadowDOM case only.
-    // Harmlessly created but not used in the MPArch case.
     TestFrameNavigationObserver observer(
         GetFencedFrameRenderFrameHost(execution_target));
 
@@ -1259,6 +1367,17 @@ class InterestGroupFencedFrameBrowserTest : public InterestGroupBrowserTest {
         execution_target,
         JsReplace("document.querySelector('fencedframe').src = $1;", url)));
 
+    WaitForFencedFrameNavigation(expected_url, execution_target, observer);
+  }
+
+  // Waits for a fenced frame navigation to complete in `execution_target`,
+  // expecting the frame to navigate to `expected_url`. Also checks that the URL
+  // is actually requested from the test server if `expected_url` is an HTTPS
+  // URL. `observer` must be set up before the navigation-initiating code is
+  // run. We wait on it in this method.
+  void WaitForFencedFrameNavigation(const GURL& expected_url,
+                                    const ToRenderFrameHost& execution_target,
+                                    TestFrameNavigationObserver& observer) {
     // If the URL is HTTPS, wait for the URL to be requested, to make sure the
     // fenced frame actually made the request and, in the MPArch case, to make
     // sure the load actually started. On regression, this is likely to hang.
@@ -1551,7 +1670,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(),
+          {},
           /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/GURL("https://bid.a.test"),
@@ -1582,7 +1701,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(),
+          {},
           /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/absl::nullopt,
@@ -1614,7 +1733,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/absl::nullopt,
           /*bidding_wasm_helper_url=*/absl::nullopt,
@@ -1664,7 +1783,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/absl::nullopt,
           /*bidding_wasm_helper_url=*/absl::nullopt,
@@ -2500,6 +2619,52 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
+                       JoinInterestGroupValidSellerCapabilities) {
+  GURL url = https_server_->GetURL("a.test", "/echo");
+  auto origin = url::Origin::Create(url);
+  std::string origin_string = origin.Serialize();
+  ASSERT_TRUE(NavigateToURL(shell(), url));
+
+  EXPECT_EQ(
+      kSuccess,
+      JoinInterestGroupAndVerify(blink::InterestGroup(
+          /*expiry=*/base::Time(),
+          /*owner=*/origin,
+          /*name=*/"cars",
+          /*priority=*/0.0, /*enable_bidding_signals_prioritization=*/false,
+          /*priority_vector=*/absl::nullopt,
+          /*priority_signals_overrides=*/absl::nullopt,
+          /*seller_capabilities=*/
+          {{{url::Origin::Create(GURL("https://example.test")),
+             blink::InterestGroup::SellerCapabilities::kInterestGroupCounts}}},
+          /*all_sellers_capabilities=*/
+          blink::InterestGroup::SellerCapabilities::
+              kLatencyStats, /*execution_mode=*/
+          blink::InterestGroup::ExecutionMode::kCompatibilityMode,
+          /*bidding_url=*/absl::nullopt,
+          /*bidding_wasm_helper_url=*/absl::nullopt,
+          /*daily_update_url=*/absl::nullopt,
+          /*trusted_bidding_signals_url=*/absl::nullopt,
+          /*trusted_bidding_signals_keys=*/absl::nullopt,
+          /*user_bidding_signals=*/absl::nullopt,
+          /*ads=*/absl::nullopt,
+          /*ad_components=*/absl::nullopt)));
+
+  WaitForAccessObserved({});
+
+  std::vector<StorageInterestGroup> groups = GetInterestGroupsForOwner(origin);
+  ASSERT_EQ(groups.size(), 1u);
+  const blink::InterestGroup& group = groups[0].interest_group;
+  EXPECT_EQ(group.all_sellers_capabilities,
+            blink::InterestGroup::SellerCapabilities::kLatencyStats);
+  ASSERT_TRUE(group.seller_capabilities);
+  ASSERT_EQ(group.seller_capabilities->size(), 1u);
+  EXPECT_EQ(group.seller_capabilities->at(
+                url::Origin::Create(GURL("https://example.test"))),
+            blink::InterestGroup::SellerCapabilities::kInterestGroupCounts);
+}
+
+IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
                        JoinInterestGroupInvalidBiddingLogicUrl) {
   GURL url = https_server_->GetURL("a.test", "/echo");
   std::string origin_string = url::Origin::Create(url).Serialize();
@@ -2919,6 +3084,34 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
+                       RunAdAuctionRejectPromiseAuctionSignals) {
+  ASSERT_TRUE(NavigateToURL(shell(), https_server_->GetURL("a.test", "/echo")));
+
+  EXPECT_EQ("Promise argument rejected or resolved to invalid value.",
+            RunAuctionAndWait(R"({
+      seller: 'https://test.com',
+      decisionLogicUrl: 'https://test.com',
+      auctionSignals: new Promise((resolve, reject) => { setTimeout(
+          () => { reject('boo'); }, 10) })
+  })"));
+  WaitForAccessObserved({});
+}
+
+IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
+                       RunAdAuctionResolvePromiseInvalidAuctionSignals) {
+  ASSERT_TRUE(NavigateToURL(shell(), https_server_->GetURL("a.test", "/echo")));
+
+  EXPECT_EQ("Promise argument rejected or resolved to invalid value.",
+            RunAuctionAndWait(R"({
+      seller: 'https://test.com',
+      decisionLogicUrl: 'https://test.com',
+      auctionSignals: new Promise((resolve, reject) => { setTimeout(
+          () => { resolve(function() {}); }, 10) })
+  })"));
+  WaitForAccessObserved({});
+}
+
+IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
                        RunAdAuctionInvalidSellerSignals) {
   ASSERT_TRUE(NavigateToURL(shell(), https_server_->GetURL("a.test", "/echo")));
 
@@ -2930,6 +3123,34 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       seller: 'https://test.com',
       decisionLogicUrl: 'https://test.com',
       sellerSignals: function() {}
+  })"));
+  WaitForAccessObserved({});
+}
+
+IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
+                       RunAdAuctionRejectPromiseSellerSignals) {
+  ASSERT_TRUE(NavigateToURL(shell(), https_server_->GetURL("a.test", "/echo")));
+
+  EXPECT_EQ("Promise argument rejected or resolved to invalid value.",
+            RunAuctionAndWait(R"({
+      seller: 'https://test.com',
+      decisionLogicUrl: 'https://test.com',
+      sellerSignals: new Promise((resolve, reject) => { setTimeout(
+          () => { reject('boo'); }, 10) })
+  })"));
+  WaitForAccessObserved({});
+}
+
+IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
+                       RunAdAuctionResolvePromiseInvalidSellerSignals) {
+  ASSERT_TRUE(NavigateToURL(shell(), https_server_->GetURL("a.test", "/echo")));
+
+  EXPECT_EQ("Promise argument rejected or resolved to invalid value.",
+            RunAuctionAndWait(R"({
+      seller: 'https://test.com',
+      decisionLogicUrl: 'https://test.com',
+      sellerSignals: new Promise((resolve, reject) => { setTimeout(
+          () => { resolve(function() {}); }, 10) })
   })"));
   WaitForAccessObserved({});
 }
@@ -3557,7 +3778,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
           https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
@@ -3645,7 +3866,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
           https_server_->GetURL(test_url.host(),
@@ -3708,7 +3929,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionWithWinner) {
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
           https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
@@ -3907,7 +4128,7 @@ IN_PROC_BROWSER_TEST_F(
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
           https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
@@ -3958,7 +4179,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionCancel) {
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
           https_server_->GetURL("a.test", "/hung"),
@@ -4012,7 +4233,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionCancelLate) {
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
           https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
@@ -4074,7 +4295,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionCancelBefore) {
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
           https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
@@ -4129,7 +4350,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionWithBidderWasm) {
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
           https_server_->GetURL("a.test",
@@ -4175,7 +4396,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
           https_server_->GetURL(
@@ -4199,7 +4420,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
           https_server_->GetURL(
@@ -4223,7 +4444,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
           https_server_->GetURL(
@@ -4332,7 +4553,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
           https_server_->GetURL(
@@ -4355,7 +4576,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
           https_server_->GetURL("a.test",
@@ -4413,7 +4634,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
 // but runs with fenced frames enabled and expects to receive a URN URL to be
 // used. After the auction, loads the URL in a fenced frame, and expects the
 // correct URL is loaded.
-IN_PROC_BROWSER_TEST_F(InterestGroupFencedFrameBrowserTest,
+IN_PROC_BROWSER_TEST_P(InterestGroupFencedFrameBrowserTest,
                        RunAdAuctionWithWinner) {
   URLLoaderMonitor url_loader_monitor;
 
@@ -4435,7 +4656,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupFencedFrameBrowserTest,
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
           https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
@@ -4558,7 +4779,7 @@ perBuyerSignals: {$1: {even: 'more', x: 4.5}}
                 ->trusted_params->isolation_info.network_isolation_key());
 }
 
-IN_PROC_BROWSER_TEST_F(InterestGroupFencedFrameBrowserTest,
+IN_PROC_BROWSER_TEST_P(InterestGroupFencedFrameBrowserTest,
                        RunAdAuctionWithWinnerReplacedURN) {
   URLLoaderMonitor url_loader_monitor;
 
@@ -4582,7 +4803,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupFencedFrameBrowserTest,
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
           https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
@@ -4626,7 +4847,7 @@ perBuyerSignals: {$1: {even: 'more', x: 4.5}}
 // succeed and are then loaded in separate fenced frames. Both auctions try to
 // leave the interest group, but only the one whose ad matches the joining
 // origin should succeed.
-IN_PROC_BROWSER_TEST_F(InterestGroupFencedFrameBrowserTest,
+IN_PROC_BROWSER_TEST_P(InterestGroupFencedFrameBrowserTest,
                        RunTwoAdAuctionWithWinnerLeaveGroup) {
   URLLoaderMonitor url_loader_monitor;
 
@@ -4785,7 +5006,7 @@ perBuyerSignals: {$1: {even: 'more', x: 4.5}}
 // from a nested iframe.
 //
 // TODO(crbug.com/1320438): Re-enable the test.
-IN_PROC_BROWSER_TEST_F(InterestGroupFencedFrameBrowserTest,
+IN_PROC_BROWSER_TEST_P(InterestGroupFencedFrameBrowserTest,
                        RunAdAuctionWithWinnerNestedLeaveGroup) {
   URLLoaderMonitor url_loader_monitor;
 
@@ -4816,7 +5037,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupFencedFrameBrowserTest,
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
           https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
@@ -4859,7 +5080,7 @@ perBuyerSignals: {$1: {even: 'more', x: 4.5}}
 
 // Creates a Fenced Frame and then tries to use the leaveAdInterestGroup API.
 // Leaving the interest group should silently fail.
-IN_PROC_BROWSER_TEST_F(InterestGroupFencedFrameBrowserTest,
+IN_PROC_BROWSER_TEST_P(InterestGroupFencedFrameBrowserTest,
                        LeaveAdInterestGroupNoAuction) {
   URLLoaderMonitor url_loader_monitor;
 
@@ -4881,7 +5102,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupFencedFrameBrowserTest,
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
           https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
@@ -4908,7 +5129,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupFencedFrameBrowserTest,
 
 // Use different origins for publisher, bidder, and seller, and make sure
 // everything works as expected.
-IN_PROC_BROWSER_TEST_F(InterestGroupFencedFrameBrowserTest, CrossOrigin) {
+IN_PROC_BROWSER_TEST_P(InterestGroupFencedFrameBrowserTest, CrossOrigin) {
   const char kPublisher[] = "a.test";
   const char kBidder[] = "b.test";
   const char kSeller[] = "c.test";
@@ -4934,7 +5155,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupFencedFrameBrowserTest, CrossOrigin) {
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
           https_server_->GetURL(kBidder, "/interest_group/bidding_logic.js"),
@@ -5041,7 +5262,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
           https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
@@ -5103,7 +5324,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, TopFrameHostname) {
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
           https_server_->GetURL(
@@ -5175,7 +5396,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, TopFrameHostname) {
 
 // Test running auctions in cross-site iframes, and loading the winner into a
 // nested fenced frame.
-IN_PROC_BROWSER_TEST_F(InterestGroupFencedFrameBrowserTest, Iframe) {
+IN_PROC_BROWSER_TEST_P(InterestGroupFencedFrameBrowserTest, Iframe) {
   // Use different hostnames for each participant.
   const char kTopFrameHost[] = "a.test";
   const char kBidderHost[] = "b.test";
@@ -5256,7 +5477,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
           https_server_->GetURL(
@@ -5280,7 +5501,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
           https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
@@ -5304,7 +5525,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
           https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
@@ -5326,7 +5547,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
           https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
@@ -5379,7 +5600,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionAllGroupsLimited) {
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
           https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
@@ -5401,7 +5622,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionAllGroupsLimited) {
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(),
+          {},
           /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
@@ -5426,7 +5647,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionAllGroupsLimited) {
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(),
+          {},
           /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
@@ -5484,7 +5705,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionOneGroupLimited) {
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(),
+          {},
           /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
@@ -5509,7 +5730,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionOneGroupLimited) {
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(),
+          {},
           /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
@@ -5534,7 +5755,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionOneGroupLimited) {
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(),
+          {},
           /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
@@ -5559,7 +5780,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionOneGroupLimited) {
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(),
+          {},
           /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
@@ -5582,7 +5803,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionOneGroupLimited) {
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(),
+          {},
           /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
@@ -5607,7 +5828,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionOneGroupLimited) {
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(),
+          {},
           /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
@@ -5674,7 +5895,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(),
+          {},
           /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
@@ -5699,7 +5920,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(),
+          {},
           /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
@@ -5724,7 +5945,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(),
+          {},
           /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
@@ -5749,7 +5970,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(),
+          {},
           /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
@@ -5772,7 +5993,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(),
+          {},
           /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
@@ -5797,7 +6018,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(),
+          {},
           /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
@@ -5868,7 +6089,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
             /*priority_signals_overrides=*/absl::nullopt,
             /*seller_capabilities=*/absl::nullopt,
             /*all_sellers_capabilities=*/
-            blink::InterestGroup::SellerCapabilitiesType(),
+            {},
             /*execution_mode=*/
             blink::InterestGroup::ExecutionMode::kCompatibilityMode,
             /*bidding_url=*/
@@ -5944,7 +6165,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionMultipleAuctions) {
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
           https_server_->GetURL(
@@ -5973,7 +6194,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionMultipleAuctions) {
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
           https_server_->GetURL("b.test", "/interest_group/bidding_logic.js"),
@@ -6128,7 +6349,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, ReportingMultipleAuctions) {
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
           https_server_->GetURL(
@@ -6157,7 +6378,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, ReportingMultipleAuctions) {
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
           https_server_->GetURL(
@@ -6216,7 +6437,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, ReportingMultipleAuctions) {
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
           https_server_->GetURL(
@@ -6406,7 +6627,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionWithInvalidAdUrl) {
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
           https_server_->GetURL(
@@ -6434,7 +6655,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionWithInvalidAdUrl) {
 
 // Test that when there are no ad components, an array of ad components is still
 // available, and they're all mapped to about:blank.
-IN_PROC_BROWSER_TEST_F(InterestGroupFencedFrameBrowserTest, NoAdComponents) {
+IN_PROC_BROWSER_TEST_P(InterestGroupFencedFrameBrowserTest, NoAdComponents) {
   GURL test_url =
       https_server_->GetURL("a.test", "/fenced_frames/opaque_ads.html");
   ASSERT_TRUE(NavigateToURL(shell(), test_url));
@@ -6491,7 +6712,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupFencedFrameBrowserTest, NoAdComponents) {
 // Test with an ad component. Run an auction with an ad component, load the ad
 // in a fenced frame, and the ad component in a nested fenced frame. Fully
 // exercise navigator.adAuctionComponents() on the main ad's fenced frame.
-IN_PROC_BROWSER_TEST_F(InterestGroupFencedFrameBrowserTest, AdComponents) {
+IN_PROC_BROWSER_TEST_P(InterestGroupFencedFrameBrowserTest, AdComponents) {
   GURL ad_component_url = https_server_->GetURL(
       "d.test", "/set-header?Supports-Loading-Mode: fenced-frame");
   ASSERT_NO_FATAL_FAILURE(RunBasicAuctionWithAdComponents(ad_component_url));
@@ -6525,7 +6746,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupFencedFrameBrowserTest, AdComponents) {
 // * The fenced frame the ad component is loaded in, though it will have a list
 //   of URNs that map to about:blank.
 // * The ad fenced frame itself, after a renderer-initiated navigation.
-IN_PROC_BROWSER_TEST_F(InterestGroupFencedFrameBrowserTest,
+IN_PROC_BROWSER_TEST_P(InterestGroupFencedFrameBrowserTest,
                        AdComponentsNotLeaked) {
   GURL ad_component_url =
       https_server_->GetURL("d.test", "/fenced_frames/opaque_ads.html");
@@ -6588,7 +6809,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupFencedFrameBrowserTest,
 
 // Test with an ad component that tries to leave the group. Verify that leaving
 // the group from within an ad component has no effect
-IN_PROC_BROWSER_TEST_F(InterestGroupFencedFrameBrowserTest, AdComponentsLeave) {
+IN_PROC_BROWSER_TEST_P(InterestGroupFencedFrameBrowserTest, AdComponentsLeave) {
   url::Origin test_origin =
       url::Origin::Create(https_server_->GetURL("a.test", "/"));
   GURL ad_component_url = https_server_->GetURL(
@@ -6613,7 +6834,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupFencedFrameBrowserTest, AdComponentsLeave) {
 // Test navigating multiple fenced frames to the same render URL from a single
 // auction, when the winning bid included ad components. All fenced frames
 // navigated to the URL should get ad component URLs from the winning bid.
-IN_PROC_BROWSER_TEST_F(InterestGroupFencedFrameBrowserTest,
+IN_PROC_BROWSER_TEST_P(InterestGroupFencedFrameBrowserTest,
                        AdComponentsMainAdLoadedInMultipleFrames) {
   GURL ad_component_url = https_server_->GetURL(
       "d.test", "/set-header?Supports-Loading-Mode: fenced-frame");
@@ -6680,7 +6901,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupFencedFrameBrowserTest,
 
 // Test with multiple ad components. Also checks that ad component metadata is
 // passed in correctly.
-IN_PROC_BROWSER_TEST_F(InterestGroupFencedFrameBrowserTest,
+IN_PROC_BROWSER_TEST_P(InterestGroupFencedFrameBrowserTest,
                        MultipleAdComponents) {
   // Note that the extra "&1" and the like are added to make the URLs unique.
   // They have no impact on the returned result, since they aren't a
@@ -6792,7 +7013,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
           https_server_->GetURL("a.test",
@@ -7037,7 +7258,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, ValidateWorkletParameters) {
           /*priority_signals_overrides=*/{{{"foo", 1}}},
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
           https_server_->GetURL(
@@ -7158,7 +7379,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
           /*priority_signals_overrides=*/{{{"foo", 1}}},
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
           https_server_->GetURL(
@@ -7283,7 +7504,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
           /*priority_signals_overrides=*/{{{"FOO", 1}}},
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
           https_server_->GetURL(
@@ -7448,7 +7669,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
           https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
@@ -7633,6 +7854,313 @@ function validateAuctionConfig(auctionConfig) {
   EXPECT_EQ(GURL("https://example.com/render"), observer.mapped_url());
 }
 
+// Test for auctionSignals and sellerSignals being passed to runAdAuction
+// as promises.
+IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, PromiseSignals) {
+  // These scripts are generated by this test.
+  constexpr char kBiddingLogicPath[] =
+      "/interest_group/test_generated_bidding_argument_validator.js";
+  constexpr char kDecisionLogicPath[] =
+      "/interest_group/test_generated_decision_argument_validator.js";
+  const GURL test_url = https_server_->GetURL("a.test", "/echo");
+  ASSERT_TRUE(NavigateToURL(shell(), test_url));
+  url::Origin test_origin = url::Origin::Create(test_url);
+
+  // In the below JavaScript, if fields are incorrectly passed in as a string
+  // ("2") instead of a number (2), JSON.stringify() will wrap it in another
+  // layer of quotes, causing the test to fail.
+
+  constexpr char kBiddingLogicScript[] = R"(
+function generateBid(
+    interestGroup, auctionSignals, perBuyerSignals, trustedBiddingSignals,
+    unusedBrowserSignals) {
+  validateAuctionSignals(auctionSignals);
+  const ad = interestGroup.ads[0];
+  return {'ad': ad, 'bid': 1, 'render': ad.renderUrl};
+}
+
+function validateAuctionSignals(auctionSignals) {
+  const auctionSignalsJSON = JSON.stringify(auctionSignals);
+  if (auctionSignalsJSON !== '3')
+    throw 'Wrong auctionSignals ' + auctionSignalsJSON;
+}
+
+)";
+
+  constexpr char kDecisionLogicScript[] = R"(
+function scoreAd(
+    adMetadata, bid, auctionConfig, unusedTrustedScoringSignals,
+    unusedBrowserSignals) {
+  validateAuctionConfig(auctionConfig);
+  return bid;
+}
+
+function validateAuctionConfig(auctionConfig) {
+  const auctionSignalsJSON = JSON.stringify(auctionConfig.auctionSignals);
+  if (auctionSignalsJSON !== '3')
+    throw 'Wrong auctionSignals ' + auctionConfig.auctionSignalsJSON;
+  const sellerSignalsJSON = JSON.stringify(auctionConfig.sellerSignals);
+  if (sellerSignalsJSON !== '4')
+    throw 'Wrong sellerSignals ' + auctionConfig.sellerSignalsJSON;
+}
+)";
+
+  network_responder_->RegisterNetworkResponse(
+      kBiddingLogicPath, kBiddingLogicScript, "application/javascript");
+  network_responder_->RegisterNetworkResponse(
+      kDecisionLogicPath, kDecisionLogicScript, "application/javascript");
+
+  EXPECT_EQ(
+      "done",
+      EvalJs(shell(), JsReplace(
+                          R"(
+(async function() {
+  try {
+    await navigator.joinAdInterestGroup(
+        {
+          name: 'cars',
+          owner: $1,
+          biddingLogicUrl: $2,
+          ads: [{renderUrl:"https://example.com/render", metadata:2}],
+        },
+        /*joinDurationSec=*/100);
+  } catch (e) {
+    return e.toString();
+  }
+  return 'done';
+})())",
+                          test_origin,
+                          https_server_->GetURL("a.test", kBiddingLogicPath))));
+
+  TestFencedFrameURLMappingResultObserver observer;
+  ConvertFencedFrameURNToURL(
+      GURL(EvalJs(shell(),
+                  JsReplace(
+                      R"(
+(async function() {
+  return await navigator.runAdAuction({
+    seller: $1,
+    decisionLogicUrl: $2,
+    interestGroupBuyers: [$1],
+    auctionSignals: new Promise((resolve, reject) => {
+      setTimeout(
+          () => { resolve(3); }, 1)
+    }),
+    sellerSignals: new Promise((resolve, reject) => {
+      setTimeout(
+          () => { resolve(4); }, 1)
+    }),
+    perBuyerSignals: {$1: 5}
+  });
+})())",
+                      test_origin,
+                      https_server_->GetURL("a.test", kDecisionLogicPath)))
+               .ExtractString()),
+      &observer);
+
+  EXPECT_EQ(GURL("https://example.com/render"), observer.mapped_url());
+}
+
+// Test for abort before promises resolved.
+IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, PromiseAborted) {
+  // These scripts are generated by this test.
+  constexpr char kBiddingLogicPath[] =
+      "/interest_group/test_generated_bidding_argument_validator.js";
+  constexpr char kDecisionLogicPath[] =
+      "/interest_group/test_generated_decision_argument_validator.js";
+  const GURL test_url = https_server_->GetURL("a.test", "/echo");
+  ASSERT_TRUE(NavigateToURL(shell(), test_url));
+  url::Origin test_origin = url::Origin::Create(test_url);
+
+  constexpr char kBiddingLogicScript[] = R"(
+function generateBid(
+    interestGroup, auctionSignals, perBuyerSignals, trustedBiddingSignals,
+    unusedBrowserSignals) {
+  validateAuctionSignals(auctionSignals);
+  const ad = interestGroup.ads[0];
+  return {'ad': ad, 'bid': 1, 'render': ad.renderUrl};
+}
+
+function validateAuctionSignals(auctionSignals) {
+  const auctionSignalsJSON = JSON.stringify(auctionSignals);
+  if (auctionSignalsJSON !== '3')
+    throw 'Wrong auctionSignals ' + auctionSignalsJSON;
+}
+
+)";
+
+  constexpr char kDecisionLogicScript[] = R"(
+function scoreAd(
+    adMetadata, bid, auctionConfig, unusedTrustedScoringSignals,
+    unusedBrowserSignals) {
+  validateAuctionConfig(auctionConfig);
+  return bid;
+}
+
+function validateAuctionConfig(auctionConfig) {
+  const auctionSignalsJSON = JSON.stringify(auctionConfig.auctionSignals);
+  if (auctionSignalsJSON !== '3')
+    throw 'Wrong auctionSignals ' + auctionConfig.auctionSignalsJSON;
+  const sellerSignalsJSON = JSON.stringify(auctionConfig.sellerSignals);
+  if (sellerSignalsJSON !== '4')
+    throw 'Wrong sellerSignals ' + auctionConfig.sellerSignalsJSON;
+}
+)";
+
+  network_responder_->RegisterNetworkResponse(
+      kBiddingLogicPath, kBiddingLogicScript, "application/javascript");
+  network_responder_->RegisterNetworkResponse(
+      kDecisionLogicPath, kDecisionLogicScript, "application/javascript");
+
+  EXPECT_EQ(
+      "done",
+      EvalJs(shell(), JsReplace(
+                          R"(
+(async function() {
+  try {
+    await navigator.joinAdInterestGroup(
+        {
+          name: 'cars',
+          owner: $1,
+          biddingLogicUrl: $2,
+          ads: [{renderUrl:"https://example.com/render", metadata:2}],
+        },
+        /*joinDurationSec=*/100);
+  } catch (e) {
+    return e.toString();
+  }
+  return 'done';
+})())",
+                          test_origin,
+                          https_server_->GetURL("a.test", kBiddingLogicPath))));
+
+  std::string script = JsReplace(
+      R"(
+        (async function() {
+          let controller = new AbortController();
+          let adPromise =  navigator.runAdAuction({
+            seller: $1,
+            decisionLogicUrl: $2,
+            interestGroupBuyers: [$1],
+            auctionSignals: new Promise((resolve, reject) => {
+              setTimeout(
+                  () => { resolve(3); }, 1)
+            }),
+            sellerSignals: new Promise((resolve, reject) => {
+              setTimeout(
+                  () => { resolve(4); }, 1)
+            }),
+            perBuyerSignals: {$1: 5},
+            signal: controller.signal
+          });
+          controller.abort('manual cancel');
+          return await adPromise;
+        })())",
+      test_origin, https_server_->GetURL("a.test", kDecisionLogicPath));
+  EXPECT_EQ("a JavaScript error: \"manual cancel\"\n",
+            EvalJs(shell(), script).error);
+}
+
+// Test for auctionSignals and sellerSignals being passed to runAdAuction
+// as promises... which resolve to nothing.
+IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, PromiseSignalsNothing) {
+  // These scripts are generated by this test.
+  constexpr char kBiddingLogicPath[] =
+      "/interest_group/test_generated_bidding_argument_validator.js";
+  constexpr char kDecisionLogicPath[] =
+      "/interest_group/test_generated_decision_argument_validator.js";
+  const GURL test_url = https_server_->GetURL("a.test", "/echo");
+  ASSERT_TRUE(NavigateToURL(shell(), test_url));
+  url::Origin test_origin = url::Origin::Create(test_url);
+
+  constexpr char kBiddingLogicScript[] = R"(
+function generateBid(
+    interestGroup, auctionSignals, perBuyerSignals, trustedBiddingSignals,
+    unusedBrowserSignals) {
+  validateAuctionSignals(auctionSignals);
+  const ad = interestGroup.ads[0];
+  return {'ad': ad, 'bid': 1, 'render': ad.renderUrl};
+}
+
+function validateAuctionSignals(auctionSignals) {
+  if (auctionSignals !== null)
+    throw 'auctionSignals in generateBid not null!';
+}
+
+)";
+
+  constexpr char kDecisionLogicScript[] = R"(
+function scoreAd(
+    adMetadata, bid, auctionConfig, unusedTrustedScoringSignals,
+    unusedBrowserSignals) {
+  validateAuctionConfig(auctionConfig);
+  return bid;
+}
+
+function validateAuctionConfig(auctionConfig) {
+  if ('auctionSignals' in auctionConfig)
+    throw 'Have auctionSignals in scoreAd auctionConfig!';
+  if ('sellerSignals' in auctionConfig)
+    throw 'Have sellerSignals in scoreAd auctionConfig!';
+}
+)";
+
+  network_responder_->RegisterNetworkResponse(
+      kBiddingLogicPath, kBiddingLogicScript, "application/javascript");
+  network_responder_->RegisterNetworkResponse(
+      kDecisionLogicPath, kDecisionLogicScript, "application/javascript");
+
+  EXPECT_EQ(
+      "done",
+      EvalJs(shell(), JsReplace(
+                          R"(
+(async function() {
+  try {
+    await navigator.joinAdInterestGroup(
+        {
+          name: 'cars',
+          owner: $1,
+          biddingLogicUrl: $2,
+          ads: [{renderUrl:"https://example.com/render", metadata:2}],
+        },
+        /*joinDurationSec=*/100);
+  } catch (e) {
+    return e.toString();
+  }
+  return 'done';
+})())",
+                          test_origin,
+                          https_server_->GetURL("a.test", kBiddingLogicPath))));
+
+  TestFencedFrameURLMappingResultObserver observer;
+  ConvertFencedFrameURNToURL(
+      GURL(EvalJs(shell(),
+                  JsReplace(
+                      R"(
+(async function() {
+  return await navigator.runAdAuction({
+    seller: $1,
+    decisionLogicUrl: $2,
+    interestGroupBuyers: [$1],
+    auctionSignals: new Promise((resolve, reject) => {
+      setTimeout(
+          () => { resolve(); }, 1)
+    }),
+    sellerSignals: new Promise((resolve, reject) => {
+      setTimeout(
+          () => { resolve(undefined); }, 1)
+    }),
+    perBuyerSignals: {$1: 5}
+  });
+})())",
+                      test_origin,
+                      https_server_->GetURL("a.test", kDecisionLogicPath)))
+               .ExtractString()),
+      &observer);
+
+  EXPECT_EQ(GURL("https://example.com/render"), observer.mapped_url());
+}
+
 // Make sure that qutting with a live auction doesn't crash.
 IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, QuitWithRunningAuction) {
   URLLoaderMonitor url_loader_monitor;
@@ -7654,7 +8182,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, QuitWithRunningAuction) {
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/hanging_url,
           /*bidding_wasm_helper_url=*/absl::nullopt,
@@ -7717,7 +8245,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, Update) {
           /*priority_signals_overrides=*/{{{"two", 2}}},
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
           https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
@@ -7792,7 +8320,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
           https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
@@ -7976,7 +8504,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
           https_server_->GetURL(kBidder, "/interest_group/bidding_logic.js"),
@@ -8047,7 +8575,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
           https_server_->GetURL(kBidder, "/interest_group/bidding_logic.js"),
@@ -8078,7 +8606,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
           https_server_->GetURL(kBidder2, "/interest_group/bidding_logic.js"),
@@ -8387,7 +8915,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupPrivateNetworkBrowserTest,
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(),
+          {},
           /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode, bidder_url,
           /*bidding_wasm_helper_url=*/absl::nullopt,
@@ -8502,7 +9030,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupPrivateNetworkBrowserTest,
             /*priority_signals_overrides=*/absl::nullopt,
             /*seller_capabilities=*/absl::nullopt,
             /*all_sellers_capabilities=*/
-            blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+            {}, /*execution_mode=*/
             blink::InterestGroup::ExecutionMode::kCompatibilityMode,
             initial_bidding_url,
             /*bidding_wasm_helper_url=*/absl::nullopt, update_url,
@@ -8640,7 +9168,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupPrivateNetworkBrowserTest,
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           initial_bidding_url_a,
           /*bidding_wasm_helper_url=*/absl::nullopt, update_url_a,
@@ -8674,7 +9202,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupPrivateNetworkBrowserTest,
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           initial_bidding_url_b,
           /*bidding_wasm_helper_url=*/absl::nullopt, update_url_b,
@@ -8702,7 +9230,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupPrivateNetworkBrowserTest,
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+          {}, /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           initial_bidding_url_c,
           /*bidding_wasm_helper_url=*/absl::nullopt, update_url_c,
@@ -8823,7 +9351,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupPrivateNetworkBrowserTest,
             /*priority_signals_overrides=*/absl::nullopt,
             /*seller_capabilities=*/absl::nullopt,
             /*all_sellers_capabilities=*/
-            blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+            {}, /*execution_mode=*/
             blink::InterestGroup::ExecutionMode::kCompatibilityMode,
             /*bidding_url=*/
             https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
@@ -8849,7 +9377,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupPrivateNetworkBrowserTest,
             /*priority_signals_overrides=*/absl::nullopt,
             /*seller_capabilities=*/absl::nullopt,
             /*all_sellers_capabilities=*/
-            blink::InterestGroup::SellerCapabilitiesType(), /*execution_mode=*/
+            {}, /*execution_mode=*/
             blink::InterestGroup::ExecutionMode::kCompatibilityMode,
             /*bidding_url=*/
             https_server_->GetURL("b.test", "/interest_group/bidding_logic.js"),
@@ -9536,7 +10064,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, ExecutionModeGroupByOrigin) {
                     /*priority_signals_overrides=*/absl::nullopt,
                     /*seller_capabilities=*/absl::nullopt,
                     /*all_sellers_capabilities=*/
-                    blink::InterestGroup::SellerCapabilitiesType(),
+                    {},
                     /*execution_mode=*/
                     execution_mode,
                     /*bidding_url=*/
@@ -9572,7 +10100,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, ExecutionModeGroupByOrigin) {
 // Runs auction like Just like
 // InterestGroupFencedFrameBrowserTest.RunAdAuctionWithWinner but also registers
 // an ad beacon that is sent by the render URL.
-IN_PROC_BROWSER_TEST_F(InterestGroupFencedFrameBrowserTest,
+IN_PROC_BROWSER_TEST_P(InterestGroupFencedFrameBrowserTest,
                        RunAdAuctionWithWinnerRegisterAdBeaconBuyer) {
   URLLoaderMonitor url_loader_monitor;
 
@@ -9594,7 +10122,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupFencedFrameBrowserTest,
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(),
+          {},
           /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
@@ -9626,6 +10154,11 @@ interestGroupBuyers: [$1],
   ASSERT_TRUE(request);
   EXPECT_EQ(net::HttpRequestHeaders::kPostMethod, request->method);
 }
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         InterestGroupFencedFrameBrowserTest,
+                         ::testing::Values(false, true),
+                         &InterestGroupFencedFrameBrowserTest::DescribeParams);
 
 class InterestGroupAuctionLimitBrowserTest : public InterestGroupBrowserTest {
  public:
@@ -9678,7 +10211,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupAuctionLimitBrowserTest,
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(),
+          {},
           /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
@@ -9765,7 +10298,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupAuctionLimitBrowserTest,
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(),
+          {},
           /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
@@ -9859,7 +10392,7 @@ IN_PROC_BROWSER_TEST_F(
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(),
+          {},
           /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/
@@ -9884,7 +10417,7 @@ IN_PROC_BROWSER_TEST_F(
           /*priority_signals_overrides=*/absl::nullopt,
           /*seller_capabilities=*/absl::nullopt,
           /*all_sellers_capabilities=*/
-          blink::InterestGroup::SellerCapabilitiesType(),
+          {},
           /*execution_mode=*/
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/

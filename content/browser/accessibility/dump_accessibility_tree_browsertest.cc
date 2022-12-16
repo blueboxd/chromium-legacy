@@ -556,9 +556,8 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunAomTest(FILE_PATH_LITERAL("aom-modal-dialog.html"));
 }
 
-// TODO(crbug.com/983709): Flaky.
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       DISABLED_AccessibilityAriaActivedescendant) {
+                       AccessibilityAriaActivedescendant) {
   RunAriaTest(FILE_PATH_LITERAL("aria-activedescendant.html"));
 }
 
@@ -673,17 +672,8 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunAriaTest(FILE_PATH_LITERAL("aria-combobox-uneditable.html"));
 }
 
-#if BUILDFLAG(IS_ANDROID)
-// TODO(crbug.com/986673): test is flaky on android.
-#define MAYBE_AccessibilityAriaOnePointOneCombobox \
-  DISABLED_AccessibilityAriaOnePointOneCombobox
-#else
-#define MAYBE_AccessibilityAriaOnePointOneCombobox \
-  AccessibilityAriaOnePointOneCombobox
-#endif
-
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       MAYBE_AccessibilityAriaOnePointOneCombobox) {
+                       AccessibilityAriaOnePointOneCombobox) {
   RunAriaTest(FILE_PATH_LITERAL("aria1.1-combobox.html"));
 }
 
@@ -2273,6 +2263,16 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityInputDate) {
   RunHtmlTest(FILE_PATH_LITERAL("input-date.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityInputDateDisabled) {
+  RunHtmlTest(FILE_PATH_LITERAL("input-date-disabled.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityInputColorDisabled) {
+  RunHtmlTest(FILE_PATH_LITERAL("input-color-disabled.html"));
+}
+
 // TODO: date and time controls drop their children, including the popup button,
 // on Android.
 // TODO(https://crbug.com/1378498): Flaky on every platform.
@@ -2401,6 +2401,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityInsertBefore) {
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        AccessibilityScrollableOverflow) {
   RunHtmlTest(FILE_PATH_LITERAL("scrollable-overflow.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityReentrantAddChildren) {
+  RunRegressionTest(FILE_PATH_LITERAL("reentrant-add-children.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,

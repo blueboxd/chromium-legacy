@@ -42,6 +42,7 @@ import "chromeos/crosapi/mojom/feedback.mojom";
 import "chromeos/crosapi/mojom/field_trial.mojom";
 import "chromeos/crosapi/mojom/file_manager.mojom";
 import "chromeos/crosapi/mojom/file_system_provider.mojom";
+import "chromeos/crosapi/mojom/firewall_hole.mojom";
 import "chromeos/crosapi/mojom/force_installed_tracker.mojom";
 import "chromeos/crosapi/mojom/fullscreen_controller.mojom";
 import "chromeos/crosapi/mojom/geolocation.mojom";
@@ -59,7 +60,9 @@ import "chromeos/crosapi/mojom/login_state.mojom";
 import "chromeos/crosapi/mojom/policy_namespace.mojom";
 import "chromeos/crosapi/mojom/policy_service.mojom";
 import "chromeos/crosapi/mojom/message_center.mojom";
+import "chromeos/crosapi/mojom/metrics.mojom";
 import "chromeos/crosapi/mojom/metrics_reporting.mojom";
+import "chromeos/crosapi/mojom/multi_capture_service.mojom";
 import "chromeos/crosapi/mojom/native_theme.mojom";
 import "chromeos/crosapi/mojom/network_change.mojom";
 import "chromeos/crosapi/mojom/networking_attributes.mojom";
@@ -131,8 +134,8 @@ struct BrowserInfo {
 // please note the milestone when you added it, to help us reason about
 // compatibility between the client applications and older ash-chrome binaries.
 //
-// Next version: 99
-// Next method id: 103
+// Next version: 103
+// Next method id: 107
 [Stable, Uuid="8b79c34f-2bf8-4499-979a-b17cac522c1e",
  RenamedFrom="crosapi.mojom.AshChromeService"]
 interface Crosapi {
@@ -315,6 +318,11 @@ interface Crosapi {
   [MinVersion=72] BindExtensionInfoPrivate@75(
       pending_receiver<ExtensionInfoPrivate> receiver);
 
+  // FirewallHoleService is a service that allows users to open ports in the
+  // ChromeOS system firewall from Lacros. Implemented in Ash.
+  [MinVersion=101] BindFirewallHoleService@105(
+      pending_receiver<FirewallHoleService> receiver);
+
   // NetworkingPrivate is a service that allows users to modify
   // network settings in Lacros. Implemented in Ash.
   [MinVersion=80] BindNetworkingPrivate@83(
@@ -421,10 +429,21 @@ interface Crosapi {
   [MinVersion=33]
   BindNativeThemeService@38(pending_receiver<NativeThemeService> receiver);
 
+  // Binds the Metrics interface for fetching metadata needed by the
+  // metrics subsystem.
+  // Added in M110.
+  [MinVersion=102]
+  BindMetrics@106(pending_receiver<Metrics> receiver);
+
   // Binds the MetricsReporting interface for metrics reporting consent.
   // Added in M89.
   [MinVersion=8]
   BindMetricsReporting@13(pending_receiver<MetricsReporting> receiver);
+
+  // Binds the MultiCaptureService interface that handles multi capture related
+  // usage indicators and notifications.
+  [MinVersion=100]
+  BindMultiCaptureService@104(pending_receiver<MultiCaptureService> receiver);
 
   // Binds the NetworkChange interface for getting network change notification.
   [MinVersion=88]
@@ -915,8 +934,8 @@ enum OpenUrlFrom {
 // parameters here. If a new parameter is added and its value is only known
 // after the user has logged in, please update BrowserPostLoginParams as well.
 //
-// Next version: 56
-// Next id: 56
+// Next version: 57
+// Next id: 57
 [Stable, RenamedFrom="crosapi.mojom.LacrosInitParams"]
 struct BrowserInitParams {
   // This is ash-chrome's version of the Crosapi interface. This is used by
@@ -1271,6 +1290,12 @@ struct BrowserInitParams {
   [MinVersion=55]
   bool enable_partial_split@55;
 
+  // Tells lacros-chrome if videoconference UI features are enabled. Used to
+  // guard the creation of `VideoConferenceManagerClient`. This client
+  // provides information about videoconference apps to the
+  // VideoConferenceManager in ash.
+  [MinVersion=56]
+  bool vc_controls_ui_enabled@56;
 };
 
 // BrowserPostLoginParams is the subset of parameters in BrowserInitParams

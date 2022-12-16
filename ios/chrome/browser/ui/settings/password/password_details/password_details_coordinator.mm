@@ -11,13 +11,16 @@
 #import "components/password_manager/core/browser/ui/affiliated_group.h"
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #import "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/credential_provider_promo/features.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/commands/credential_provider_promo_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
+#import "ios/chrome/browser/ui/settings/password/password_details/password_details.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_consumer.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_handler.h"
@@ -38,6 +41,9 @@
 
   // Manager responsible for password check feature.
   IOSChromePasswordCheckManager* _manager;
+
+  // The handler used for CredentialProviderPromoCommands.
+  id<CredentialProviderPromoCommands> _credentialProviderPromoHandler;
 }
 
 // Main view controller for this coordinator.
@@ -81,6 +87,10 @@
     _credential = credential;
     _manager = manager;
     _reauthenticationModule = reauthModule;
+    if (IsCredentialProviderExtensionPromoEnabled()) {
+      _credentialProviderPromoHandler = HandlerForProtocol(
+          browser->GetCommandDispatcher(), CredentialProviderPromoCommands);
+    }
   }
   return self;
 }
@@ -103,6 +113,10 @@
     _affiliatedGroup = affiliatedGroup;
     _manager = manager;
     _reauthenticationModule = reauthModule;
+    if (IsCredentialProviderExtensionPromoEnabled()) {
+      _credentialProviderPromoHandler = HandlerForProtocol(
+          browser->GetCommandDispatcher(), CredentialProviderPromoCommands);
+    }
   }
   return self;
 }
@@ -186,40 +200,12 @@
   [self.alertCoordinator start];
 }
 
+// TODO(crbug.com/1359392): Remove this when flag is cleaned up.
 - (void)showPasswordDeleteDialogWithOrigin:(NSString*)origin
                        compromisedPassword:(BOOL)compromisedPassword {
-  NSString* message;
-
-  if (origin.length > 0) {
-    int stringID = compromisedPassword
-                       ? IDS_IOS_DELETE_COMPROMISED_PASSWORD_DESCRIPTION
-                       : IDS_IOS_DELETE_PASSWORD_DESCRIPTION;
-    message =
-        l10n_util::GetNSStringF(stringID, base::SysNSStringToUTF16(origin));
-  }
-  self.actionSheetCoordinator = [[ActionSheetCoordinator alloc]
-      initWithBaseViewController:self.viewController
-                         browser:self.browser
-                           title:nil
-                         message:message
-                   barButtonItem:self.viewController.deleteButton];
-
-  __weak __typeof(self) weakSelf = self;
-
-  [self.actionSheetCoordinator
-      addItemWithTitle:l10n_util::GetNSString(IDS_IOS_CONFIRM_PASSWORD_DELETION)
-                action:^{
-                  [weakSelf passwordDeletionConfirmedForCompromised:
-                                compromisedPassword];
-                }
-                 style:UIAlertActionStyleDestructive];
-
-  [self.actionSheetCoordinator
-      addItemWithTitle:l10n_util::GetNSString(IDS_IOS_CANCEL_PASSWORD_DELETION)
-                action:nil
-                 style:UIAlertActionStyleCancel];
-
-  [self.actionSheetCoordinator start];
+  [self showPasswordDeleteDialogWithOrigin:origin
+                       compromisedPassword:compromisedPassword
+                                  forIndex:0];
 }
 
 - (void)showPasswordEditDialogWithOrigin:(NSString*)origin {
@@ -250,17 +236,87 @@
   [self.actionSheetCoordinator start];
 }
 
+- (void)showPasswordDeleteDialogWithPasswordDetails:(PasswordDetails*)password {
+  auto it = std::find_if(
+      self.mediator.credentials.begin(), self.mediator.credentials.end(),
+      [password](password_manager::CredentialUIEntry credential) {
+        return
+            [password.signonRealm
+                isEqualToString:[NSString stringWithUTF8String:
+                                              credential.GetFirstSignonRealm()
+                                                  .c_str()]] &&
+            [password.username isEqualToString:base::SysUTF16ToNSString(
+                                                   credential.username)] &&
+            [password.password
+                isEqualToString:base::SysUTF16ToNSString(credential.password)];
+      });
+  if (it != self.mediator.credentials.end()) {
+    int index = it - self.mediator.credentials.begin();
+    DCHECK((unsigned long)index < self.mediator.credentials.size());
+    [self showPasswordDeleteDialogWithOrigin:password.origin
+                         compromisedPassword:password.isCompromised
+                                    forIndex:index];
+  }
+}
+
 - (void)showPasswordDetailsInEditModeWithoutAuthentication {
   [self.viewController showEditViewWithoutAuthentication];
 }
 
+- (void)onPasswordCopiedByUser {
+  if (IsCredentialProviderExtensionPromoEnabled()) {
+    DCHECK(_credentialProviderPromoHandler);
+    [_credentialProviderPromoHandler
+        showCredentialProviderPromoWithTrigger:CredentialProviderPromoTrigger::
+                                                   PasswordCopied];
+  }
+}
+
 #pragma mark - Private
 
+- (void)showPasswordDeleteDialogWithOrigin:(NSString*)origin
+                       compromisedPassword:(BOOL)compromisedPassword
+                                  forIndex:(int)index {
+  NSString* message;
+
+  if (origin.length > 0) {
+    int stringID = compromisedPassword
+                       ? IDS_IOS_DELETE_COMPROMISED_PASSWORD_DESCRIPTION
+                       : IDS_IOS_DELETE_PASSWORD_DESCRIPTION;
+    message =
+        l10n_util::GetNSStringF(stringID, base::SysNSStringToUTF16(origin));
+  }
+  self.actionSheetCoordinator = [[ActionSheetCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                         browser:self.browser
+                           title:nil
+                         message:message
+                   barButtonItem:self.viewController.deleteButton];
+
+  __weak __typeof(self) weakSelf = self;
+
+  [self.actionSheetCoordinator
+      addItemWithTitle:l10n_util::GetNSString(IDS_IOS_CONFIRM_PASSWORD_DELETION)
+                action:^{
+                  [weakSelf passwordDeletionConfirmedForCompromised:
+                                compromisedPassword
+                                                           forIndex:index];
+                }
+                 style:UIAlertActionStyleDestructive];
+
+  [self.actionSheetCoordinator
+      addItemWithTitle:l10n_util::GetNSString(IDS_IOS_CANCEL_PASSWORD_DELETION)
+                action:nil
+                 style:UIAlertActionStyleCancel];
+
+  [self.actionSheetCoordinator start];
+}
+
 // Notifies delegate about password deletion and records metric if needed.
-- (void)passwordDeletionConfirmedForCompromised:(BOOL)compromised {
-  // TODO(crbug.com/1358988): Fix logic here.
+- (void)passwordDeletionConfirmedForCompromised:(BOOL)compromised
+                                       forIndex:(int)index {
   [self.delegate passwordDetailsCoordinator:self
-                           deleteCredential:self.mediator.credentials[0]];
+                           deleteCredential:self.mediator.credentials[index]];
   if (compromised) {
     base::UmaHistogramEnumeration(
         "PasswordManager.BulkCheck.UserAction",

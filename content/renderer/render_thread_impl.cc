@@ -910,7 +910,7 @@ void RenderThreadImpl::InitializeRenderer(
     const std::string& reduced_user_agent,
     const blink::UserAgentMetadata& user_agent_metadata,
     const std::vector<std::string>& cors_exempt_header_list,
-    blink::mojom::AttributionOsSupport attribution_os_support) {
+    attribution_reporting::mojom::OsSupport attribution_os_support) {
   DCHECK(user_agent_.IsNull());
   DCHECK(reduced_user_agent_.IsNull());
   DCHECK(full_user_agent_.IsNull());
@@ -1661,6 +1661,9 @@ RenderThreadImpl::GetMediaSequencedTaskRunner() {
 #if BUILDFLAG(IS_FUCHSIA)
     // Start IO thread on Fuchsia to make that thread usable for FIDL.
     base::Thread::Options options(base::MessagePumpType::IO, 0);
+    // TODO(crbug.com/1400772): Use kCompositing to address media latency on
+    // Fuchsia until alignment on new media thread types is achieved.
+    options.thread_type = base::ThreadType::kCompositing;
 #else
     base::Thread::Options options;
 #endif
@@ -1826,13 +1829,13 @@ gfx::ColorSpace RenderThreadImpl::GetRenderingColorSpace() {
   return rendering_color_space_;
 }
 
-blink::mojom::AttributionOsSupport
+attribution_reporting::mojom::OsSupport
 RenderThreadImpl::GetOsSupportForAttributionReporting() {
   return attribution_os_support_;
 }
 
 void RenderThreadImpl::SetOsSupportForAttributionReporting(
-    blink::mojom::AttributionOsSupport attribution_os_support) {
+    attribution_reporting::mojom::OsSupport attribution_os_support) {
   attribution_os_support_ = attribution_os_support;
 }
 

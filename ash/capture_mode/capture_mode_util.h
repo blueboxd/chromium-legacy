@@ -26,7 +26,9 @@ class Transform;
 }  // namespace gfx
 
 namespace ui {
+class ColorProvider;
 class Layer;
+class LocatedEvent;
 }  // namespace ui
 
 namespace views {
@@ -108,6 +110,9 @@ std::unique_ptr<views::View> CreateBannerView();
 // notification.
 std::unique_ptr<views::View> CreatePlayIconView();
 
+// Returns the local center point of the given `layer`.
+gfx::Point GetLocalCenterPoint(ui::Layer* layer);
+
 // Returns a transform that scales the given `layer` by the given `scale` factor
 // in both X and Y around its local center point.
 gfx::Transform GetScaleTransformAboutCenter(ui::Layer* layer, float scale);
@@ -188,6 +193,14 @@ ASH_EXPORT std::string GetScreenCaptureNotificationIdForPath(
 // camera and microphone capture mode indicators according to the given values.
 void MaybeUpdateCameraPrivacyIndicator(bool camera_on);
 void MaybeUpdateMicrophonePrivacyIndicator(bool mic_on);
+
+ui::ColorProvider* GetColorProviderForNativeTheme();
+
+// Returns true if the given located `event` is targeted on a window that is a
+// descendant of the given `widget`. Note that `widget` can be provided as null
+// if it no longer exists, in this case this function returns false.
+bool IsEventTargetedOnWidget(const ui::LocatedEvent& event,
+                             views::Widget* widget);
 
 }  // namespace capture_mode_util
 

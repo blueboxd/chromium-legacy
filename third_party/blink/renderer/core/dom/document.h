@@ -264,6 +264,7 @@ enum NodeListInvalidationType : int {
   kInvalidateForFormControls,
   kInvalidateOnHRefAttrChange,
   kInvalidateOnAnyAttrChange,
+  kInvalidateOnPopoverInvokerAttrChange,
 };
 const int kNumNodeListInvalidationTypes = kInvalidateOnAnyAttrChange + 1;
 
@@ -544,6 +545,7 @@ class CORE_EXPORT Document : public ContainerNode,
   HTMLCollection* WindowNamedItems(const AtomicString& name);
   DocumentNameCollection* DocumentNamedItems(const AtomicString& name);
   HTMLCollection* DocumentAllNamedItems(const AtomicString& name);
+  HTMLCollection* PopoverInvokers();
 
   // The unassociated listed elements are listed elements that are not
   // associated to a <form> element.
@@ -711,10 +713,6 @@ class CORE_EXPORT Document : public ContainerNode,
   };
   void UpdateStyleAndLayoutForNode(const Node*, DocumentUpdateReason);
   void UpdateStyleAndLayoutForRange(const Range*, DocumentUpdateReason);
-  void IncLayoutCallsCounter() { ++layout_calls_counter_; }
-  void IncLayoutCallsCounterNG() { ++layout_calls_counter_ng_; }
-  void IncLayoutBlockCounter() { ++layout_blocks_counter_; }
-  void IncLayoutBlockCounterNG() { ++layout_blocks_counter_ng_; }
 
   scoped_refptr<const ComputedStyle> StyleForPage(uint32_t page_index);
 
@@ -1206,15 +1204,16 @@ class CORE_EXPORT Document : public ContainerNode,
   // https://wicg.github.io/scroll-to-text-fragment/#feature-detectability
   FragmentDirective& fragmentDirective() const;
 
-  // Sends a query via Mojo to ask whether the user has any private state
+  // Sends a query via Mojo to ask whether the user has any private
   // tokens. This can reject on permissions errors (e.g. associating |issuer|
   // with the top-level origin would exceed the top-level origin's limit on the
   // number of associated issuers) or on other internal errors (e.g. the network
   // service is unavailable).
-  ScriptPromise hasPrivateStateToken(ScriptState* script_state,
-                                     const String& issuer,
-                                     ExceptionState&);
-  // Being renamed to hasPrivateStateToken, will remove after all users have
+  ScriptPromise hasPrivateToken(ScriptState* script_state,
+                                const String& issuer,
+                                const String& type,
+                                ExceptionState&);
+  // Being renamed to hasPrivateToken, will remove after all users have
   // changed to new name.
   ScriptPromise hasTrustToken(ScriptState* script_state,
                               const String& issuer,
@@ -1227,6 +1226,7 @@ class CORE_EXPORT Document : public ContainerNode,
   // is unavailable).
   ScriptPromise hasRedemptionRecord(ScriptState* script_state,
                                     const String& issuer,
+                                    const String& type,
                                     ExceptionState&);
 
   void ariaNotify(const String announcement, const AriaNotificationOptions*);
@@ -2132,7 +2132,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void DisplayNoneChangedForFrame();
 
   // Handles a connection error to |trust_token_query_answerer_| by rejecting
-  // all pending promises created by |hasPrivateStateToken| and
+  // all pending promises created by |hasPrivateToken| and
   // |hasRedemptionRecord|.
   void TrustTokenQueryAnswererConnectionError();
 
@@ -2507,20 +2507,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // The number of canvas elements on the document
   int num_canvases_ = 0;
-
-  // The number of LayoutObject::UpdateLayout() calls for both of the legacy
-  // layout and LayoutNG.
-  uint32_t layout_calls_counter_ = 0;
-
-  // The number of LayoutObject::UpdateLayout() calls for LayoutNG.
-  uint32_t layout_calls_counter_ng_ = 0;
-
-  // The number of LayoutBlock instances for both of the legacy layout
-  // and LayoutNG.
-  uint32_t layout_blocks_counter_ = 0;
-
-  // The number of LayoutNGMixin<LayoutBlock> instances
-  uint32_t layout_blocks_counter_ng_ = 0;
 
   bool deferred_compositor_commit_is_allowed_ = false;
 

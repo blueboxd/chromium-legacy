@@ -29,6 +29,7 @@
 
 namespace views {
 class ImageView;
+class Label;
 }
 
 namespace ash {
@@ -47,13 +48,6 @@ class ASH_EXPORT NetworkListViewControllerImpl
   NetworkListViewControllerImpl& operator=(
       const NetworkListViewControllerImpl&) = delete;
   ~NetworkListViewControllerImpl() override;
-
-  void SetDefaultNetworkForTesting(
-      chromeos::network_config::mojom::NetworkStatePropertiesPtr
-          default_network);
-
-  void SetManagedNetworkPropertiesForTesting(
-      chromeos::network_config::mojom::ManagedPropertiesPtr managed_properties);
 
  protected:
   TrayNetworkStateModel* model() { return model_; }
@@ -177,16 +171,6 @@ class ASH_EXPORT NetworkListViewControllerImpl
   // already exists, it will be replaced.
   void SetConnectionWarningIcon(TriView* parent, bool use_managed_icon);
 
-  const chromeos::network_config::mojom::NetworkStateProperties*
-  GetDefaultNetwork();
-
-  // Fetches the managed properties for the network identified by `guid`
-  // asynchronously and calls `callback` with the result. The `guid` belongs
-  // either to the default network or to the connected VPN.
-  void GetManagedProperties(const std::string& guid,
-                            chromeos::network_config::mojom::CrosNetworkConfig::
-                                GetManagedPropertiesCallback callback);
-
   // Called when the managed properties for the network identified by `guid` are
   // fetched.
   void OnGetManagedPropertiesResult(
@@ -218,6 +202,8 @@ class ASH_EXPORT NetworkListViewControllerImpl
   // is monitored by the admin, via policy, it displays the managed icon,
   // otherwise the system icon.
   views::ImageView* connection_warning_icon_ = nullptr;
+  // Owned by `connection_warning_`.
+  views::Label* connection_warning_label_ = nullptr;
 
   NetworkListWifiHeaderView* wifi_header_view_ = nullptr;
   views::Separator* wifi_separator_view_ = nullptr;
@@ -239,11 +225,6 @@ class ASH_EXPORT NetworkListViewControllerImpl
   // managed icon.
   absl::optional<bool> is_proxy_managed_;
   absl::optional<bool> is_vpn_managed_;
-
-  chromeos::network_config::mojom::ManagedPropertiesPtr
-      managed_network_properties_for_testing_ = nullptr;
-  chromeos::network_config::mojom::NetworkStatePropertiesPtr
-      default_network_for_testing_ = nullptr;
 
   NetworkDetailedNetworkView* network_detailed_network_view_;
   NetworkIdToViewMap network_id_to_view_map_;

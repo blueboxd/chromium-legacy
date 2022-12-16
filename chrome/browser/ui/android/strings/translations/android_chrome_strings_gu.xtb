@@ -12,7 +12,6 @@
 <translation id="1062628064301375934">વેબને વધુ ખાનગી બનાવવામાં અમારી સહાય કરો</translation>
 <translation id="107147699690128016">જો તમે ફાઇલનું એક્સ્ટેંશન બદલશો, તો તે કોઈ અલગ ઍપ્લિકેશનમાં ખુલી શકે છે અને તમારા ડિવાઇસ માટે નુકસાનકારક હોવાનું સંભવિત હોય શકે.</translation>
 <translation id="1089606299949659462">રિવ્યૂ પૂર્ણ થયો!</translation>
-<translation id="1091604859693995976">જોવા માટે રિફ્રેશ કરો</translation>
 <translation id="1095761715416917775">ખાતરી કરો કે તમે તમારો સિંક કરેલો ડેટા ગમે ત્યારે ઍક્સેસ કરી શકો છો</translation>
 <translation id="1100066534610197918">ગ્રૂપમાં નવા ટૅબમાં ખોલો</translation>
 <translation id="1103142993930332957">Chromeને બહેતર બનાવવામાં સહાય કરશો?</translation>
@@ -761,6 +760,7 @@
 <translation id="510275257476243843">1 કલાક બાકી</translation>
 <translation id="5115811374190515607"><ph name="PRODUCT_NAME" /> પર</translation>
 <translation id="5118713593561876160">રુચિઓ</translation>
+<translation id="5122378528687922675">જો તમને સહાયની કોઈ જરૂર હોય, તો માતાપિતા (<ph name="PARENT_NAME_1" /> કે <ph name="PARENT_NAME_2" />)ને પૂછો</translation>
 <translation id="5123685120097942451">છૂપા મોડમાંની ટૅબ</translation>
 <translation id="5126510351761255129">તમારું કાર્ડ ચકાસો</translation>
 <translation id="5132942445612118989">બધા ડિવાઇસ પર તમારા પાસવર્ડ, ઇતિહાસ અને વધુ સિંક કરો</translation>
@@ -1106,7 +1106,6 @@
 <translation id="6903907808598579934">સમન્વયન ચાલુ કરો</translation>
 <translation id="6908998565271542516">કોઈ વેબસાઇટને પૂરી ઊંચાઈ સુધી ખોલવાની મંજૂરી આપવાનો અથવા ન આપવાનો વિકલ્પ</translation>
 <translation id="6909589135458168665">પહેલેથી લોડ કરેલા પેજ</translation>
-<translation id="692924882724759447">તમે ફૉલો કરો છો તે સાઇટ અહીં જુઓ</translation>
 <translation id="6942665639005891494">સેટિંગ મેનૂ વિકલ્પનો ઉપયોગ કરીને ડિફૉલ્ટ ડાઉનલોડ સ્થાનને કોઈપણ સમયે બદલો</translation>
 <translation id="694267552845942083">તમે હાલમાં તમારા સિંક સેટિંગને કસ્ટમાઇઝ કરી રહ્યાં છો. સિંક ચાલુ કરવાનું પૂર્ણ કરવા માટે, સ્ક્રીનની નીચેની બાજુએ કન્ફર્મ કરો બટન પર ટૅપ કરો. ઉપર નૅવિગેટ કરો</translation>
 <translation id="6945221475159498467">પસંદ કરો</translation>
@@ -1148,6 +1147,7 @@
 <translation id="7177466738963138057">તમે આને થોડા સમય પછી સેટિંગમાં જઈને બદલી શકો છો</translation>
 <translation id="7177873915659574692">QR કોડ બનાવી શકતાં નથી. URL <ph name="CHARACTER_LIMIT" />થી વધુ અક્ષરો ધરાવે છે.</translation>
 <translation id="7177959540995930968">તમે Chrome સેટિંગમાં આ સુવિધાઓ વિશે વધુ જાણી શકો છો.</translation>
+<translation id="7180611975245234373">રિફ્રેશ કરો</translation>
 <translation id="718226107353899806">તમે <ph name="MAX_NUM_REACTIONS" /> જેટલી પ્રતિક્રિયા ઉમેરી શકો છો</translation>
 <translation id="7183693674623539380">ટૅબનું ગ્રૂપ - <ph name="TITLE_OF_GROUP" /></translation>
 <translation id="7187993566681480880">તમને Chrome પર સલામત રાખે છે અને જ્યારે તમે સાઇન ઇન થયા હો, ત્યારે Googleની અન્ય ઍપમાં તમારી સુરક્ષા બહેતર બનાવવામાં ઉપયોગમાં લેવાઈ શકે છે.</translation>
@@ -1331,6 +1331,7 @@
 <translation id="8084285576995584326">તમારા Google એકાઉન્ટનો ડેટા નિયંત્રિત કરો</translation>
 <translation id="808747664143081553">ડિવાઇસ સાથે કનેક્ટ કરેલો છે</translation>
 <translation id="8088176524274673045">નજીકના લોકો સાથે શેર કરવા માટે, તેમને આ QR કોડ સ્કૅન કરવા દો</translation>
+<translation id="8090732854597034573">જો તમને સહાયની કોઈ જરૂર હોય, તો માતાપિતાને પૂછો</translation>
 <translation id="8100969750121413114">Chromeને તમારું પોતાનું બનાવવા માટે, સાઇન ઇન કરો</translation>
 <translation id="8103578431304235997">છૂપું ટૅબ</translation>
 <translation id="8105613260829665809">આગળ વધીને, તમે <ph name="BEGIN_TOS_LINK" />સેવાની શરતો<ph name="END_TOS_LINK" /> સાથે સંમત થાઓ છો.\nઍપને બહેતર બનાવવામાં સહાય કરવા માટે, Chrome વપરાશ અને ક્રૅશ થવા સંબંધિત ડેટા Googleને મોકલે છે. <ph name="BEGIN_UMA_LINK" />મેનેજ કરો<ph name="END_UMA_LINK" /></translation>
@@ -1339,6 +1340,7 @@
 <translation id="8109613176066109935">તમારા બધા ડિવાઇસ પર તમારા બુકમાર્ક મેળવવા માટે, સિંક કરવાનું ચાલુ કરો</translation>
 <translation id="8110024788458304985">Chromeની સુવિધાઓ અને કાર્યપ્રદર્શનને સુધારવામાં સહાય કરો</translation>
 <translation id="8110087112193408731">શું તમારી Chromeની પ્રવૃત્તિ ડિજિટલ લાઇફસ્ટાઇલમાં બતાવીએ?</translation>
+<translation id="8118117428362942925">જો તમને સહાયની કોઈ જરૂર હોય, તો માતાપિતા (<ph name="PARENT_NAME" />)ને પૂછો</translation>
 <translation id="8127542551745560481">હોમપેજમાં ફેરફાર કરો</translation>
 <translation id="8130309322784422030">તમારી સ્ટોર કરેલી સાઇન ઇનની માહિતી જૂની હોઈ શકે છે</translation>
 <translation id="813082847718468539">સ્થાન માહિતી જુઓ</translation>

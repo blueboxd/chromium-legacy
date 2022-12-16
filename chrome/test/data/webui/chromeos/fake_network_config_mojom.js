@@ -8,7 +8,7 @@
 
 import {OncMojo} from 'chrome://resources/ash/common/network/onc_mojo.js';
 import {PromiseResolver} from 'chrome://resources/ash/common/promise_resolver.js';
-import {assert, assertNotReached} from 'chrome://resources/js/assert.js';
+import {assert, assertNotReached} from 'chrome://resources/ash/common/assert.js';
 import {AlwaysOnVpnMode, AlwaysOnVpnProperties, ApnProperties, CellularSimState, ConfigProperties, CrosNetworkConfigObserverRemote, DeviceStateProperties, FilterType, GlobalPolicy, InhibitReason, ManagedProperties, NetworkCertificate, NetworkFilter, NetworkStateProperties, NO_LIMIT, StartConnectResult, UInt32Value, VpnProvider} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-webui.js';
 import {ConnectionStateType, DeviceStateType, NetworkType} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/network_types.mojom-webui.js';
 import {Time} from 'chrome://resources/mojo/mojo/public/mojom/base/time.mojom-webui.js';
@@ -773,12 +773,13 @@ export class FakeNetworkConfig {
    * @param {!ApnProperties} apn
    */
   createCustomApn(guid, apn) {
-    const managedProp = this.managedProperties_.get(guid);
+    const properties = this.managedProperties_.get(guid);
+    assert(properties);
     apn.id = `${this.apnIdCounter_++}`;
-    if (!managedProp.typeProperties.cellular.customApnList) {
-      managedProp.typeProperties.cellular.customApnList = [];
+    if (!properties.typeProperties.cellular.customApnList) {
+      properties.typeProperties.cellular.customApnList = [];
     }
-    managedProp.typeProperties.cellular.customApnList.push(apn);
+    properties.typeProperties.cellular.customApnList.unshift(apn);
     this.methodCalled('createCustomApn');
   }
 

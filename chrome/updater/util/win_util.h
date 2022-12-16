@@ -44,13 +44,6 @@ struct std::hash<IID> {
 
 namespace updater {
 
-struct LocalAllocTraits {
-  static HLOCAL InvalidValue() { return nullptr; }
-  static void Free(HLOCAL mem) { ::LocalFree(mem); }
-};
-
-using ScopedLocalAlloc = base::ScopedGeneric<HLOCAL, LocalAllocTraits>;
-
 // Helper for methods which perform system operations which may fail. The
 // failure reason is returned as an HRESULT.
 // TODO(crbug.com/1369769): Remove the following warning once resolved in
@@ -348,25 +341,11 @@ bool StopGoogleUpdateProcesses(UpdaterScope scope);
 // Quotes `input` if necessary so that it will be interpreted as a single
 // command-line parameter according to the rules for ::CommandLineToArgvW.
 //
-// ::CommandLineToArgvW has a special interpretation of backslash characters
-// when they are followed by a quotation mark character ("). This interpretation
-// assumes that any preceding argument is a valid file system path, or else it
-// may behave unpredictably.
+// Follows the encoding and quoting rules of `CommandLineToArgvW`/C++ `main`.
+// https://learn.microsoft.com/en-us/search/?terms=CommandLineToArgvW and
+// http://msdn.microsoft.com/en-us/library/17w5ykft.aspx.
 //
-// This special interpretation controls the "in quotes" mode tracked by the
-// parser. When this mode is off, whitespace terminates the current argument.
-// When on, whitespace is added to the argument like all other characters.
-
-// * 2n backslashes followed by a quotation mark produce n backslashes followed
-// by begin/end quote. This does not become part of the parsed argument, but
-// toggles the "in quotes" mode.
-// * (2n) + 1 backslashes followed by a quotation mark again produce n
-// backslashes followed by a quotation mark literal ("). This does not toggle
-// the "in quotes" mode.
-// * n backslashes not followed by a quotation mark simply produce n
-// backslashes.
-//
-// See examples in the `WinUtil.QuoteForCommandLineToArgvW` unit test.
+// See examples in the `WinUtil.QuoteForCommandLineToArgvW*` unit tests.
 std::wstring QuoteForCommandLineToArgvW(const std::wstring& input);
 
 }  // namespace updater

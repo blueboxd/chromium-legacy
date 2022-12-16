@@ -15,9 +15,9 @@
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/supervised_user/supervised_user_error_page/supervised_user_error_page.h"
 #include "chrome/browser/supervised_user/supervised_users.h"
 #include "components/safe_search_api/url_checker.h"
+#include "components/supervised_user/core/browser/supervised_user_error_page.h"
 
 class GURL;
 class SupervisedUserDenylist;
@@ -155,6 +155,11 @@ class SupervisedUserURLFilter {
   // This method is public for testing.
   static bool HostMatchesPattern(const std::string& canonical_host,
                                  const std::string& pattern);
+
+  // Returns the string equivalent of a Web Filter type. This is a user-visible
+  // string included in the user feedback log.
+  static std::string WebFilterTypeToDisplayString(
+      WebFilterType web_filter_type);
 
   // Returns the filtering behavior for a given URL, based on the default
   // behavior and whether it is on a site list.

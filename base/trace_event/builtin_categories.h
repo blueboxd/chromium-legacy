@@ -126,6 +126,7 @@
   X("offline_pages")                                                     \
   X("omnibox")                                                           \
   X("oobe")                                                              \
+  X("openscreen")                                                        \
   X("ozone")                                                             \
   X("partition_alloc")                                                   \
   X("passwords")                                                         \
@@ -179,6 +180,7 @@
   X("wakeup.flow")                                                       \
   X("wayland")                                                           \
   X("webaudio")                                                          \
+  X("webengine.fidl")                                                    \
   X("weblayer")                                                          \
   X("WebCore")                                                           \
   X("webrtc")                                                            \

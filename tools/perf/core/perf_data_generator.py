@@ -262,6 +262,25 @@ FYI_BUILDERS = {
             'pool': 'chrome.tests',
         },
     },
+    'fuchsia-perf-nuc-fyi': {
+        'tests': [{
+            'isolate':
+            'performance_web_engine_test_suite',
+            'extra_args':
+            ['--output-format=histograms', '--experimental-tbmv3-metrics'] +
+            bot_platforms.FUCHSIA_EXEC_ARGS['nuc'],
+            'type':
+            TEST_TYPES.TELEMETRY,
+        }],
+        'platform':
+        'fuchsia-chrome',
+        'dimension': {
+            'cpu': None,
+            'device_type': 'Intel NUC Kit NUC7i5DNHE',
+            'os': 'Fuchsia',
+            'pool': 'chrome.tests',
+        },
+    },
     'fuchsia-perf-sherlock-fyi': {
         'tests': [{
             'isolate':
@@ -296,6 +315,25 @@ FYI_BUILDERS = {
         'dimension': {
             'cpu': None,
             'device_type': 'Astro',
+            'os': 'Fuchsia',
+            'pool': 'chrome.tests',
+        },
+    },
+    'fuchsia-perf-nsn': {
+        'tests': [{
+            'isolate':
+            'performance_web_engine_test_suite',
+            'extra_args':
+            ['--output-format=histograms', '--experimental-tbmv3-metrics'] +
+            bot_platforms.FUCHSIA_EXEC_ARGS['nelson'],
+            'type':
+            TEST_TYPES.TELEMETRY,
+        }],
+        'platform':
+        'fuchsia-wes',
+        'dimension': {
+            'cpu': None,
+            'device_type': 'Nelson',
             'os': 'Fuchsia',
             'pool': 'chrome.tests',
         },
@@ -377,7 +415,8 @@ FYI_BUILDERS = {
         ],
     },
     'fuchsia-builder-perf-x64': {
-        'additional_compile_targets': ['chrome_pkg', 'base_perftests'],
+        'additional_compile_targets':
+        ['chrome_pkg', 'base_perftests', 'sync_performance_tests'],
     },
 }
 
@@ -904,8 +943,7 @@ BUILDERS = {
         'dimension': {
             'pool': 'chrome.tests.perf',
             'os': 'Android',
-            'device_type': 'wembley',
-            'device_os': 'MASTER',
+            'device_type': 'wembley_2GB',
             'device_os_flavor': 'google',
         },
     },
@@ -1167,7 +1205,7 @@ BUILDERS = {
             'cpu': 'arm',
             'mac_model': 'Macmini9,1',
             'os': 'Mac',
-            'pool': 'chrome.tests.perf',
+            'pool': 'chrome.tests.perf-pgo',
         },
     },
     'linux-perf': {
@@ -1523,6 +1561,11 @@ GTEST_BENCHMARKS = {
         'skyostil@chromium.org, gab@chromium.org', 'Internals>SequenceManager',
         ('https://chromium.googlesource.com/chromium/src/+/HEAD/base/' +
          'README.md#performance-testing')),
+    'sync_performance_tests':
+    BenchmarkMetadata(
+        'mastiz@chromium.org', 'Services>Sync',
+        'https://chromium.googlesource.com/chromium/src/+/HEAD/components/sync/README.md'
+    ),
     'tracing_perftests':
     BenchmarkMetadata('eseckler@chromium.org, oysteine@chromium.org',
                       'Speed>Tracing'),

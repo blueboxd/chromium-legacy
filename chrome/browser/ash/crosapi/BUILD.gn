@@ -123,6 +123,8 @@ source_set("crosapi") {
     "file_system_provider_service_ash.h",
     "files_app_launcher.cc",
     "files_app_launcher.h",
+    "firewall_hole_ash.cc",
+    "firewall_hole_ash.h",
     "force_installed_tracker_ash.cc",
     "force_installed_tracker_ash.h",
     "fullscreen_controller_ash.cc",
@@ -159,12 +161,16 @@ source_set("crosapi") {
     "login_state_ash.h",
     "message_center_ash.cc",
     "message_center_ash.h",
+    "metrics_ash.cc",
+    "metrics_ash.h",
     "metrics_reporting_ash.cc",
     "metrics_reporting_ash.h",
     "migration_progress_tracker.cc",
     "migration_progress_tracker.h",
     "move_migrator.cc",
     "move_migrator.h",
+    "multi_capture_service_ash.cc",
+    "multi_capture_service_ash.h",
     "native_theme_service_ash.cc",
     "native_theme_service_ash.h",
     "network_change_ash.cc",
@@ -243,8 +249,6 @@ source_set("crosapi") {
       "printing_metrics_ash.cc",
       "printing_metrics_ash.h",
     ]
-  } else {
-    sources += [ "fake_printing_metrics_ash.h" ]
   }
 
   deps = [
@@ -292,6 +296,7 @@ source_set("crosapi") {
     "//chromeos/ash/components/login/login_state",
     "//chromeos/ash/components/network",
     "//chromeos/ash/components/settings",
+    "//chromeos/ash/components/system",
     "//chromeos/ash/components/tpm",
     "//chromeos/components/cdm_factory_daemon:cdm_factory_daemon_browser",
     "//chromeos/components/certificate_provider:certificate_provider",
@@ -307,7 +312,6 @@ source_set("crosapi") {
     "//chromeos/services/network_config/public/cpp",
     "//chromeos/startup",
     "//chromeos/startup:constants",
-    "//chromeos/system",
     "//chromeos/ui/wm:wm",
     "//chromeos/version",
     "//components/arc",
@@ -464,11 +468,11 @@ source_set("unit_tests") {
     "//chromeos/ash/components/dbus/shill",
     "//chromeos/ash/components/dbus/upstart",
     "//chromeos/ash/components/login/login_state",
+    "//chromeos/ash/components/system",
     "//chromeos/crosapi/cpp:cpp",
     "//chromeos/crosapi/cpp:crosapi_constants",
     "//chromeos/printing",
     "//chromeos/startup:constants",
-    "//chromeos/system",
     "//components/component_updater:test_support",
     "//components/session_manager/core",
     "//printing/backend",

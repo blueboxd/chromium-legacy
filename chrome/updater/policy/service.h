@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
+#include "base/time/time.h"
 #include "chrome/updater/external_constants.h"
 #include "chrome/updater/policy/manager.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -23,6 +24,7 @@ class PolicyFetcher;
 
 // This class contains the aggregate status of a policy value. It determines
 // whether a conflict exists when multiple policy providers set the same policy.
+// Instances are logically true if an effective policy is set.
 template <typename T>
 class PolicyStatus {
  public:
@@ -57,6 +59,16 @@ class PolicyStatus {
     return conflict_policy_;
   }
 
+  explicit operator bool() const { return effective_policy_.has_value(); }
+  // Convenience method to extract the effective policy's value.
+  const T& policy() {
+    DCHECK(effective_policy_);
+    return effective_policy_->policy;
+  }
+  const T& policy_or(const T& fallback) {
+    return effective_policy_ ? policy() : fallback;
+  }
+
  private:
   absl::optional<Entry> effective_policy_;
   absl::optional<Entry> conflict_policy_;
@@ -84,42 +96,26 @@ class PolicyService : public base::RefCountedThreadSafe<PolicyService> {
 
   std::string source() const;
 
-  bool GetLastCheckPeriodMinutes(PolicyStatus<int>* policy_status,
-                                 int* minutes) const;
-  bool GetUpdatesSuppressedTimes(
-      PolicyStatus<UpdatesSuppressedTimes>* policy_status,
-      UpdatesSuppressedTimes* suppressed_times) const;
-  bool GetDownloadPreferenceGroupPolicy(
-      PolicyStatus<std::string>* policy_status,
-      std::string* download_preference) const;
-  bool GetPackageCacheSizeLimitMBytes(PolicyStatus<int>* policy_status,
-                                      int* cache_size_limit) const;
-  bool GetPackageCacheExpirationTimeDays(PolicyStatus<int>* policy_status,
-                                         int* cache_life_limit) const;
-  bool GetEffectivePolicyForAppInstalls(const std::string& app_id,
-                                        PolicyStatus<int>* policy_status,
-                                        int* install_policy) const;
-  bool GetEffectivePolicyForAppUpdates(const std::string& app_id,
-                                       PolicyStatus<int>* policy_status,
-                                       int* update_policy) const;
-  bool GetTargetChannel(const std::string& app_id,
-                        PolicyStatus<std::string>* policy_status,
-                        std::string* channel) const;
-  bool GetTargetVersionPrefix(const std::string& app_id,
-                              PolicyStatus<std::string>* policy_status,
-                              std::string* target_version_prefix) const;
-  bool IsRollbackToTargetVersionAllowed(const std::string& app_id,
-                                        PolicyStatus<bool>* policy_status,
-                                        bool* rollback_allowed) const;
-  bool GetProxyMode(PolicyStatus<std::string>* policy_status,
-                    std::string* proxy_mode) const;
-  bool GetProxyPacUrl(PolicyStatus<std::string>* policy_status,
-                      std::string* proxy_pac_url) const;
-  bool GetProxyServer(PolicyStatus<std::string>* policy_status,
-                      std::string* proxy_server) const;
-  bool GetForceInstallApps(
-      PolicyStatus<std::vector<std::string>>* policy_status,
-      std::vector<std::string>* force_install_apps) const;
+  PolicyStatus<base::TimeDelta> GetLastCheckPeriod() const;
+  PolicyStatus<UpdatesSuppressedTimes> GetUpdatesSuppressedTimes() const;
+  PolicyStatus<std::string> GetDownloadPreferenceGroupPolicy() const;
+  PolicyStatus<int> GetPackageCacheSizeLimitMBytes() const;
+  PolicyStatus<int> GetPackageCacheExpirationTimeDays() const;
+  PolicyStatus<int> GetPolicyForAppInstalls(const std::string& app_id) const;
+  PolicyStatus<int> GetPolicyForAppUpdates(const std::string& app_id) const;
+  PolicyStatus<std::string> GetTargetChannel(const std::string& app_id) const;
+  PolicyStatus<std::string> GetTargetVersionPrefix(
+      const std::string& app_id) const;
+  PolicyStatus<bool> IsRollbackToTargetVersionAllowed(
+      const std::string& app_id) const;
+  PolicyStatus<std::string> GetProxyMode() const;
+  PolicyStatus<std::string> GetProxyPacUrl() const;
+  PolicyStatus<std::string> GetProxyServer() const;
+  PolicyStatus<std::vector<std::string>> GetForceInstallApps() const;
+
+  // DEPRECATED: Prefer |GetLastCheckPeriod|. This function should only be used
+  // in legacy interfaces where a PolicyStatus<int> is required.
+  PolicyStatus<int> DeprecatedGetLastCheckPeriodMinutes() const;
 
  protected:
   virtual ~PolicyService();
@@ -148,22 +144,18 @@ class PolicyService : public base::RefCountedThreadSafe<PolicyService> {
   // Helper function to query the policy from the managed policy providers and
   // determines the policy status.
   template <typename T>
-  bool QueryPolicy(
-      const base::RepeatingCallback<bool(const PolicyManagerInterface*, T*)>&
-          policy_query_callback,
-      PolicyStatus<T>* policy_status,
-      T* value) const;
+  PolicyStatus<T> QueryPolicy(
+      const base::RepeatingCallback<absl::optional<T>(
+          const PolicyManagerInterface*)>& policy_query_callback) const;
 
   // Helper function to query app policy from the managed policy providers and
   // determines the policy status.
   template <typename T>
-  bool QueryAppPolicy(
-      const base::RepeatingCallback<bool(const PolicyManagerInterface*,
-                                         const std::string& app_id,
-                                         T*)>& policy_query_callback,
-      const std::string& app_id,
-      PolicyStatus<T>* policy_status,
-      T* value) const;
+  PolicyStatus<T> QueryAppPolicy(
+      const base::RepeatingCallback<
+          absl::optional<T>(const PolicyManagerInterface*,
+                            const std::string& app_id)>& policy_query_callback,
+      const std::string& app_id) const;
 };
 
 // Decouples the proxy configuration from `PolicyService`.

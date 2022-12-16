@@ -3673,6 +3673,11 @@ Try tapping the mic to ask me anything.
         <message name="IDS_SHORTCUT_CUSTOMIZATION_SUBCATEGORY_GENERAL" desc="Subcategory named 'General' shown within main shortcuts section" translateable="false">General</message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_SUBCATEGORY_SYSTEM_APPS" desc="Subcategory named 'System Apps' shown within main shortcuts section" translateable="false">System Apps</message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_SUBCATEGORY_SYSTEM_CONTROLS" desc="Subcategory named 'System Controls' shown within main shortcuts section" translateable="false">System Controls</message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_KEY_SPACE" desc="Lowercase name of the keyboard key 'Space'" translateable="false">space</message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_KEY_TAB" desc="Lowercase name of the keyboard key 'Tab'" translateable="false">tab</message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_KEY_ESCAPE" desc="Lowercase name of the keyboard key 'Escape', abbreviated if possible" translateable="false">esc</message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_KEY_RETURN" desc="Lowercase name of the keyboard key 'Enter'" translateable="false">enter</message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_KEY_BACKSPACE" desc="Lowercase name of the keyboard key 'Backspace'" translateable="false">backspace</message>
         <!-- End of Shortcut Customization -->
 
         <!-- APN -->
@@ -3684,6 +3689,9 @@ Try tapping the mic to ask me anything.
         </message>
         <message name="IDS_SETTINGS_APN_DESCRIPTION_NO_LINK" desc="Text describing APN settings menu without a link to more detailed information.">
           Manage network APN settings. APNs establish a connection between a cellular network and the internet.
+        </message>
+        <message name="IDS_SETTINGS_CUSTOM_APN_LIMIT_REACHED" desc="Title shown when custom APNs limit is reached">
+          Remove an APN to add a new APN
         </message>
         <message name="IDS_SETTINGS_APN_DESCRIPTION_WITH_LEARN_MORE_LINK" desc="Text describing APN settings menu with a link to more detailed information.">
           Manage network APN settings. APNs establish a connection between a cellular network and the internet. <ph name="BEGIN_LINK">&lt;a href="#" &gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph>
@@ -3748,11 +3756,17 @@ Try tapping the mic to ask me anything.
         <message name="IDS_SETTINGS_APN_DIALOG_APN_TYPE_DEFAULT_CHECKBOX" desc="Label for checkbox that specifies that the default APN type will be used">
           Default
         </message>
-        <message name="IDS_SETTINGS_APN_DIALOG_APN_TYPE_ATTACH_CHECKBOX" desc="Label for checkbox that specifies that the attach APN  type will be used">
+        <message name="IDS_SETTINGS_APN_DIALOG_APN_TYPE_ATTACH_CHECKBOX" desc="Label for checkbox that specifies that the attach APN type will be used">
           Attach
+        </message>
+        <message name="IDS_SETTINGS_APN_DIALOG_DEFAULT_APN_REQUIRED" desc="Error message that is shown whenever a default APN type is required">
+        A default APN is required
         </message>
         <message name="IDS_SETTINGS_APN_AUTO_DETECTED" desc="Statement that the APN is automatically detected">
           Automatically detected
+        </message>
+        <message name="IDS_SETTINGS_APN_WARNING_PROMPT_FOR_DISABLE_REMOVE" desc="Warning Prompt describing why the APN can't be disabled or removed.">
+          Can't disable or remove this APN. Make sure enabled attached APNs are disabled or removed.
         </message>
         <!-- End of APN -->
       </if>

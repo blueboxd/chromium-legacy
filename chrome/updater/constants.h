@@ -363,11 +363,23 @@ inline constexpr int kErrorFailedToCopyBinary = 36;
 // Failed to delete a socket file
 inline constexpr int kErrorFailedToDeleteSocket = 37;
 
+// Failed to create a hard link to the launcher.
+inline constexpr int kErrorFailedToLinkLauncher = 38;
+
+// Failed to rename the old launcher to the new one during activation.
+inline constexpr int kErrorFailedToRenameLauncher = 39;
+
 inline constexpr int kErrorTagParsing = 50;
 
 // Metainstaller errors.
 inline constexpr int kErrorCreatingTempDir = 60;
 inline constexpr int kErrorUnpackingResource = 61;
+
+// Launcher errors.
+constexpr int kErrorGettingUpdaterPath = 71;
+constexpr int kErrorStattingPath = 72;
+constexpr int kErrorLaunchingProcess = 73;
+constexpr int kErrorPathOwnershipMismatch = 74;
 
 // Policy Management constants.
 // The maximum value allowed for policy AutoUpdateCheckPeriodMinutes.
@@ -406,8 +418,8 @@ inline constexpr int kUninstallPingReasonUserNotAnOwner = 1;
 // The file downloaded to a temporary location could not be moved.
 inline constexpr int kErrorFailedToMoveDownloadedFile = 5;
 
-inline constexpr double kInitialDelay = 60;
-inline constexpr int kServerKeepAliveSeconds = 10;
+inline constexpr base::TimeDelta kInitialDelay = base::Minutes(1);
+inline constexpr base::TimeDelta kServerKeepAliveTime = base::Seconds(10);
 
 // The maximum number of server starts before the updater uninstalls itself
 // while waiting for the first app registration.

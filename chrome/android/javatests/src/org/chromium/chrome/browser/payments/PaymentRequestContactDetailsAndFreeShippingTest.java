@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.payments;
 import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,7 +21,6 @@ import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.payments.Event;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
@@ -33,21 +33,21 @@ import java.util.concurrent.TimeoutException;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-public class PaymentRequestContactDetailsAndFreeShippingTest implements MainActivityStartCallback {
+public class PaymentRequestContactDetailsAndFreeShippingTest {
     @Rule
     public PaymentRequestTestRule mPaymentRequestTestRule = new PaymentRequestTestRule(
-            "payment_request_contact_details_and_free_shipping_test.html", this);
+            "payment_request_contact_details_and_free_shipping_test.html");
 
-    @Override
-    public void onMainActivityStarted() throws TimeoutException {
+    @Before
+    public void setUp() throws TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
         // The user has a shipping address with a valid email address and a valid phone number on
         // disk.
         String billingAddressId = helper.setProfile(
-                new AutofillProfile("", "https://example.com", true, "" /* honorific prefix */,
+                new AutofillProfile("", "https://example.test", true, "" /* honorific prefix */,
                         "Jon Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "",
                         "US", "555-555-5555", "jon.doe@google.com", "en-US"));
-        helper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
+        helper.setCreditCard(new CreditCard("", "https://example.test", true, true, "Jon Doe",
                 "4111111111111111", "1111", "12", "2050", "visa", R.drawable.visa_card,
                 billingAddressId, "" /* serverId */));
     }
@@ -61,7 +61,7 @@ public class PaymentRequestContactDetailsAndFreeShippingTest implements MainActi
     @DisabledTest(message = "crbug.com/1182234")
     @Feature({"Payments"})
     public void testPay() throws TimeoutException {
-        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
+        mPaymentRequestTestRule.triggerUIAndWait("buy", mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
         mPaymentRequestTestRule.setTextInCardUnmaskDialogAndWait(
@@ -85,7 +85,7 @@ public class PaymentRequestContactDetailsAndFreeShippingTest implements MainActi
     @DisabledTest(message = "https://crbug.com/1182589")
     public void testPaymentRequestEventsMetric() throws TimeoutException {
         // Start and complete the Payment Request.
-        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
+        mPaymentRequestTestRule.triggerUIAndWait("buy", mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
         mPaymentRequestTestRule.setTextInCardUnmaskDialogAndWait(

@@ -21,11 +21,11 @@ import '../../components/dialogs/oobe_adaptive_dialog.js';
 import '../../components/dialogs/oobe_loading_dialog.js';
 import '../../components/throbber_notice.js';
 
-import {assert} from '//resources/js/assert.js';
+import {assert} from '//resources/ash/common/assert.js';
 import {afterNextRender, html, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {AuthFlow, AuthMode, SUPPORTED_PARAMS} from '../../../../gaia_auth_host/authenticator.js';
-import {LoginScreenBehavior, LoginScreenBehaviorInterface} from '../../components/behaviors/login_screen_behavior.m.js';
+import {LoginScreenBehavior, LoginScreenBehaviorInterface} from '../../components/behaviors/login_screen_behavior.js';
 import {MultiStepBehavior, MultiStepBehaviorInterface} from '../../components/behaviors/multi_step_behavior.m.js';
 import {OobeI18nBehavior, OobeI18nBehaviorInterface} from '../../components/behaviors/oobe_i18n_behavior.js';
 import {OOBE_UI_STATE} from '../../components/display_manager_types.js';
@@ -611,7 +611,7 @@ class GaiaSigninElement extends GaiaSigninElementBase {
     this.authenticatorParams_ = params;
 
     this.loadAuthenticator_(params.doSamlRedirect);
-    chrome.send('authExtensionLoaded');
+    this.userActed('gaiaLoaded');
   }
 
   /**
@@ -765,7 +765,7 @@ class GaiaSigninElement extends GaiaSigninElementBase {
    * @private
    */
   samlApiUsed_(isThirdPartyIdP) {
-    chrome.send('usingSAMLAPI', [isThirdPartyIdP]);
+    this.userActed(['usingSAMLAPI', isThirdPartyIdP]);
   }
 
   /**
@@ -787,7 +787,8 @@ class GaiaSigninElement extends GaiaSigninElementBase {
       this.email_ = credentials.email;
       chrome.send('launchSAMLPublicSession', [credentials.email]);
     } else {
-      chrome.send('completeAuthentication', [
+      this.userActed([
+        'completeAuthentication',
         credentials.gaiaId,
         credentials.email,
         credentials.password,
@@ -912,7 +913,7 @@ class GaiaSigninElement extends GaiaSigninElementBase {
    * @private
    */
   onIdentifierEntered_(data) {
-    chrome.send('identifierEntered', [data.accountIdentifier]);
+    this.userActed(['identifierEntered', data.accountIdentifier]);
   }
 
   /**

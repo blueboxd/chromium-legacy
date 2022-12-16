@@ -46,6 +46,8 @@ using ::chromeos::settings::mojom::kDeviceSectionPath;
 using ::chromeos::settings::mojom::kDisplaySubpagePath;
 using ::chromeos::settings::mojom::kExternalStorageSubpagePath;
 using ::chromeos::settings::mojom::kKeyboardSubpagePath;
+using ::chromeos::settings::mojom::kPerDeviceKeyboardSubpagePath;
+using ::chromeos::settings::mojom::kPerDeviceMouseSubpagePath;
 using ::chromeos::settings::mojom::kPointersSubpagePath;
 using ::chromeos::settings::mojom::kPowerSubpagePath;
 using ::chromeos::settings::mojom::kStorageSubpagePath;
@@ -998,6 +1000,21 @@ void DeviceSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   };
   RegisterNestedSettingBulk(mojom::Subpage::kPointers, kPointersSettings,
                             generator);
+
+  if (base::FeatureList::IsEnabled(ash::features::kInputDeviceSettingsSplit)) {
+    // Per-device Keyboard.
+    generator->RegisterTopLevelSubpage(IDS_SETTINGS_PER_DEVICE_KEYBOARD_TITLE,
+                                       mojom::Subpage::kPerDeviceKeyboard,
+                                       mojom::SearchResultIcon::kKeyboard,
+                                       mojom::SearchResultDefaultRank::kMedium,
+                                       mojom::kPerDeviceKeyboardSubpagePath);
+    // Per-device Mouse.
+    generator->RegisterTopLevelSubpage(IDS_SETTINGS_MOUSE_TITLE,
+                                       mojom::Subpage::kPerDeviceMouse,
+                                       mojom::SearchResultIcon::kMouse,
+                                       mojom::SearchResultDefaultRank::kMedium,
+                                       mojom::kPerDeviceMouseSubpagePath);
+  }
 
   // Keyboard.
   generator->RegisterTopLevelSubpage(

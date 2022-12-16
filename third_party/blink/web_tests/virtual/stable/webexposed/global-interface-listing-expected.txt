@@ -147,7 +147,9 @@ interface AudioBufferSourceNode : AudioScheduledSourceNode
 interface AudioContext : BaseAudioContext
     attribute @@toStringTag
     getter baseLatency
+    getter onsinkchange
     getter outputLatency
+    getter sinkId
     method close
     method constructor
     method createMediaElementSource
@@ -155,7 +157,9 @@ interface AudioContext : BaseAudioContext
     method createMediaStreamSource
     method getOutputTimestamp
     method resume
+    method setSinkId
     method suspend
+    setter onsinkchange
 interface AudioData
     attribute @@toStringTag
     getter duration
@@ -268,6 +272,10 @@ interface AudioScheduledSourceNode : AudioNode
     method start
     method stop
     setter onended
+interface AudioSinkInfo
+    attribute @@toStringTag
+    getter type
+    method constructor
 interface AudioWorklet : Worklet
     attribute @@toStringTag
     method constructor
@@ -2311,6 +2319,7 @@ interface FileSystemHandle
     method constructor
     method isSameEntry
     method queryPermission
+    method remove
     method requestPermission
 interface FileSystemWritableFileStream : WritableStream
     attribute @@toStringTag
@@ -3200,6 +3209,7 @@ interface HTMLIFrameElement : HTMLElement
     getter allowPaymentRequest
     getter contentDocument
     getter contentWindow
+    getter credentialless
     getter csp
     getter featurePolicy
     getter frameBorder
@@ -3221,6 +3231,7 @@ interface HTMLIFrameElement : HTMLElement
     setter allow
     setter allowFullscreen
     setter allowPaymentRequest
+    setter credentialless
     setter csp
     setter frameBorder
     setter height
@@ -10709,6 +10720,7 @@ namespace CSS
     getter clientInformation
     getter closed
     getter cookieStore
+    getter credentialless
     getter crossOriginIsolated
     getter crypto
     getter customElements

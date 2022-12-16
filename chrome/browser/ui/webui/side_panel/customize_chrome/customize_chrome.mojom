@@ -11,6 +11,8 @@ import "url/mojom/url.mojom";
 struct BackgroundImage {
   // URL to the background image. Can point to untrusted content.
   url.mojom.Url url;
+  // Whether the image is a local resource.
+  bool is_uploaded_image;
   // Title of the background image.
   string title;
 };
@@ -21,8 +23,12 @@ struct Theme {
   BackgroundImage? background_image;
   // Whether the OS is in dark mode.
   bool system_dark_mode;
-  // The current theme color. If not set, we use the default theme.
+  // The current theme background color.
+  skia.mojom.SkColor background_color;
+  // The current theme foreground color. If not set, we use the default theme.
   skia.mojom.SkColor? foreground_color;
+  // The color of the color picker icon.
+  skia.mojom.SkColor color_picker_icon_color;
 };
 
 struct ChromeColor {
@@ -74,6 +80,15 @@ interface CustomizeChromePageHandler {
 
   // Sets Chrome's theme according to |foreground_color|.
   SetForegroundColor(skia.mojom.SkColor foreground_color);
+
+  // Sets theme to default classic chrome.
+  SetClassicChromeDefaultTheme();
+
+  // Choose custom background from local file system.
+  ChooseLocalCustomBackground() => (bool success);
+
+  // Open Chrome Web Store in a new tab.
+  OpenChromeWebStore();
 };
 
 // WebUI-side handler for requests from the browser.

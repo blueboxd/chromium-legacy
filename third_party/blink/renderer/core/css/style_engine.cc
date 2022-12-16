@@ -2310,7 +2310,7 @@ void StyleEngine::ApplyUserRuleSetChanges(
     }
 
     if (changed_rule_flags & kFontFeatureValuesRules) {
-      font_feature_values_rule_map_.clear();
+      font_feature_values_storage_map_.clear();
       AddFontFeatureValuesRulesFromSheets(new_style_sheets);
       MarkFontsNeedUpdate();
     }
@@ -2439,7 +2439,7 @@ void StyleEngine::ApplyRuleSetChanges(
     // TODO(https://crbug.com/1382722): Support @font-feature-values in shadow
     // trees and support scoping correctly.
     if (tree_scope.RootNode().IsDocumentNode()) {
-      font_feature_values_rule_map_.clear();
+      font_feature_values_storage_map_.clear();
       AddFontFeatureValuesRulesFromSheets(active_user_style_sheets_);
       AddFontFeatureValuesRulesFromSheets(new_style_sheets);
     }
@@ -2704,7 +2704,11 @@ void StyleEngine::AddFontFeatureValuesRules(const RuleSet& rule_set) {
       font_feature_values_rules = rule_set.FontFeatureValuesRules();
   for (auto& rule : font_feature_values_rules) {
     for (auto& font_family : rule->GetFamilies()) {
-      font_feature_values_rule_map_.Set(String(font_family).FoldCase(), rule);
+      auto add_result = font_feature_values_storage_map_.insert(
+          String(font_family).FoldCase(), rule->Storage());
+      if (!add_result.is_new_entry) {
+        add_result.stored_value->value.FuseUpdate(rule->Storage());
+      }
     }
   }
 }
@@ -2761,16 +2765,17 @@ StyleRuleFontPaletteValues* StyleEngine::FontPaletteValuesForNameAndFamily(
   return it->value.Get();
 }
 
-StyleRuleFontFeatureValues* StyleEngine::FontFeatureValuesForFamily(
+const FontFeatureValuesStorage* StyleEngine::FontFeatureValuesForFamily(
     AtomicString font_family) {
-  if (font_feature_values_rule_map_.empty() || font_family.empty())
+  if (font_feature_values_storage_map_.empty() || font_family.empty())
     return nullptr;
 
-  auto it = font_feature_values_rule_map_.find(String(font_family).FoldCase());
-  if (it == font_feature_values_rule_map_.end())
+  auto it =
+      font_feature_values_storage_map_.find(String(font_family).FoldCase());
+  if (it == font_feature_values_storage_map_.end())
     return nullptr;
 
-  return it->value.Get();
+  return &(it->value);
 }
 
 DocumentStyleEnvironmentVariables& StyleEngine::EnsureEnvironmentVariables() {
@@ -3440,6 +3445,24 @@ void StyleEngine::SetOwnerColorScheme(mojom::blink::ColorScheme color_scheme) {
   UpdateColorSchemeBackground(true);
 }
 
+mojom::blink::PreferredColorScheme StyleEngine::ResolveColorSchemeForEmbedding(
+    const ComputedStyle* embedder_style) const {
+  const bool embedder_color_scheme_is_normal =
+      !embedder_style || embedder_style->ColorScheme().empty();
+  // ...if 'color-scheme' is 'normal' and there's no 'color-scheme' meta tag,
+  // the propagated scheme is the preferred color-scheme of the embedder
+  // document.
+  if (embedder_color_scheme_is_normal &&
+      GetPageColorSchemes() ==
+          static_cast<ColorSchemeFlags>(ColorSchemeFlag::kNormal)) {
+    return GetPreferredColorScheme();
+  }
+  return embedder_style && embedder_style->UsedColorScheme() ==
+                               mojom::blink::ColorScheme::kDark
+             ? mojom::blink::PreferredColorScheme::kDark
+             : mojom::blink::PreferredColorScheme::kLight;
+}
+
 void StyleEngine::UpdateForcedBackgroundColor() {
   forced_background_color_ = LayoutTheme::GetTheme().SystemColor(
       CSSValueID::kCanvas, mojom::blink::ColorScheme::kLight);
@@ -3550,7 +3573,6 @@ void StyleEngine::Trace(Visitor* visitor) const {
   visitor->Trace(active_user_style_sheets_);
   visitor->Trace(keyframes_rule_map_);
   visitor->Trace(font_palette_values_rule_map_);
-  visitor->Trace(font_feature_values_rule_map_);
   visitor->Trace(user_counter_style_map_);
   visitor->Trace(user_cascade_layer_map_);
   visitor->Trace(inspector_style_sheet_);

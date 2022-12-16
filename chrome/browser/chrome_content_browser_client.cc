@@ -86,6 +86,7 @@
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/net/system_network_context_manager.h"
+#include "chrome/browser/optimization_guide/chrome_browser_main_extra_parts_optimization_guide.h"
 #include "chrome/browser/payments/payment_request_display_manager_factory.h"
 #include "chrome/browser/performance_manager/public/chrome_browser_main_extra_parts_performance_manager.h"
 #include "chrome/browser/performance_manager/public/chrome_content_browser_client_performance_manager_part.h"
@@ -335,6 +336,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/switches.h"
 #include "ui/native_theme/native_theme.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -347,6 +349,7 @@
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/chrome_browser_main_win.h"
+#include "chrome/browser/enterprise/platform_auth/platform_auth_navigation_throttle.h"
 #include "chrome/browser/lifetime/application_lifetime_desktop.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/services/util_win/public/mojom/util_win.mojom.h"
@@ -1451,8 +1454,7 @@ void HandleExpandedPaths(
              ChromeContentBrowserClient::IsClipboardPasteContentAllowedCallback
                  callback,
              const enterprise_connectors::ContentAnalysisDelegate::Data& data,
-             const enterprise_connectors::ContentAnalysisDelegate::Result&
-                 result) {
+             enterprise_connectors::ContentAnalysisDelegate::Result& result) {
             absl::optional<std::string> final_data;
             auto blocked = fsd->IndexesToBlock(result.paths_results);
             if (blocked.size() != paths.size()) {
@@ -1462,6 +1464,9 @@ void HandleExpandedPaths(
               for (size_t i = 0; i < paths.size(); ++i) {
                 if (blocked.count(i) == 0) {
                   string_paths.push_back(paths[i].AsUTF8Unsafe());
+                  DCHECK(result.paths_results[i]);
+                } else {
+                  result.paths_results[i] = false;
                 }
               }
               final_data = base::JoinString(string_paths, "\n");
@@ -1484,8 +1489,7 @@ void HandleStringData(
           [](ChromeContentBrowserClient::IsClipboardPasteContentAllowedCallback
                  callback,
              const enterprise_connectors::ContentAnalysisDelegate::Data& data,
-             const enterprise_connectors::ContentAnalysisDelegate::Result&
-                 result) {
+             enterprise_connectors::ContentAnalysisDelegate::Result& result) {
             std::move(callback).Run(
                 result.text_results[0]
                     ? absl::optional<std::string>(data.text[0])
@@ -1538,6 +1542,10 @@ void ChromeContentBrowserClient::RegisterLocalStatePrefs(
       prefs::kThrottleNonVisibleCrossOriginIframesAllowed, true);
   registry->RegisterBooleanPref(prefs::kNewBaseUrlInheritanceBehaviorAllowed,
                                 true);
+  registry->RegisterBooleanPref(
+      policy::policy_prefs::kUseMojoVideoDecoderForPepperAllowed, true);
+  registry->RegisterBooleanPref(
+      policy::policy_prefs::kPPAPISharedImagesSwapChainAllowed, true);
 }
 
 // static
@@ -1732,6 +1740,9 @@ ChromeContentBrowserClient::CreateBrowserMainParts(bool is_integration_test) {
 
   main_parts->AddParts(
       std::make_unique<ChromeBrowserMainExtraPartsSegmentationPlatform>());
+
+  main_parts->AddParts(
+      std::make_unique<ChromeBrowserMainExtraPartsOptimizationGuide>());
 
   return main_parts;
 }
@@ -2930,6 +2941,21 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
                                     switches::kChangeStackGuardOnForkEnabled);
   }
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+  if (process_type != switches::kZygoteProcess) {
+    DCHECK(g_browser_process);
+    PrefService* local_state = g_browser_process->local_state();
+    DCHECK(local_state);
+    if (!local_state->GetBoolean(
+            policy::policy_prefs::kUseMojoVideoDecoderForPepperAllowed)) {
+      command_line->AppendSwitch(
+          ::switches::kDisableUseMojoVideoDecoderForPepper);
+    }
+    if (!local_state->GetBoolean(
+            policy::policy_prefs::kPPAPISharedImagesSwapChainAllowed)) {
+      command_line->AppendSwitch(
+          ::switches::kDisablePPAPISharedImagesSwapChain);
+    }
+  }
 }
 
 std::string
@@ -3245,6 +3271,11 @@ bool ChromeContentBrowserClient::IsInterestGroupAPIAllowed(
         render_frame_host, api_origin, !allowed);
   }
 
+  content_settings::PageSpecificContentSettings::BrowsingDataAccessed(
+      render_frame_host,
+      content::InterestGroupManager::InterestGroupDataKey{api_origin,
+                                                          top_frame_origin},
+      BrowsingDataModel::StorageType::kInterestGroup, !allowed);
   return allowed;
 }
 
@@ -3286,18 +3317,21 @@ bool ChromeContentBrowserClient::IsAttributionReportingOperationAllowed(
 }
 
 bool ChromeContentBrowserClient::IsSharedStorageAllowed(
+    content::BrowserContext* browser_context,
     content::RenderFrameHost* rfh,
     const url::Origin& top_frame_origin,
     const url::Origin& accessing_origin) {
-  Profile* profile = Profile::FromBrowserContext(rfh->GetBrowserContext());
+  Profile* profile = Profile::FromBrowserContext(browser_context);
   auto* privacy_sandbox_settings =
       PrivacySandboxSettingsFactory::GetForProfile(profile);
   DCHECK(privacy_sandbox_settings);
   bool allowed = privacy_sandbox_settings->IsSharedStorageAllowed(
       top_frame_origin, accessing_origin);
-  content_settings::PageSpecificContentSettings::BrowsingDataAccessed(
-      rfh, blink::StorageKey(accessing_origin),
-      BrowsingDataModel::StorageType::kSharedStorage, !allowed);
+  if (rfh) {
+    content_settings::PageSpecificContentSettings::BrowsingDataAccessed(
+        rfh, blink::StorageKey(accessing_origin),
+        BrowsingDataModel::StorageType::kSharedStorage, !allowed);
+  }
   return allowed;
 }
 
@@ -5046,6 +5080,17 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
                          MaybeCreateNavigationThrottle(handle),
                      &throttles);
   }
+
+#if BUILDFLAG(IS_WIN)
+  // Don't perform platform authentication in incognito and guest profiles.
+  if (profile && !profile->IsOffTheRecord()) {
+    MaybeAddThrottle(
+        enterprise_auth::PlatformAuthNavigationThrottle::MaybeCreateThrottleFor(
+            handle),
+        &throttles);
+  }
+#endif  // BUILDFLAG(IS_WIN)
+
   return throttles;
 }
 
@@ -5095,15 +5140,15 @@ void ChromeContentBrowserClient::UpdateDevToolsBackgroundServiceExpiration(
   auto* pref_service = profile->GetPrefs();
   DCHECK(pref_service);
 
-  DictionaryPrefUpdate pref_update(
+  ScopedDictPrefUpdate pref_update(
       pref_service, prefs::kDevToolsBackgroundServicesExpirationDict);
-  base::Value* exp_dict = pref_update.Get();
+  base::Value::Dict& exp_dict = pref_update.Get();
 
   // Convert |expiration_time| to minutes since that is the most granular
   // option that returns an int. base::Value does not accept int64.
   int expiration_time_minutes =
       expiration_time.ToDeltaSinceWindowsEpoch().InMinutes();
-  exp_dict->SetIntKey(base::NumberToString(service), expiration_time_minutes);
+  exp_dict.Set(base::NumberToString(service), expiration_time_minutes);
 }
 
 base::flat_map<int, base::Time>
@@ -6724,6 +6769,7 @@ bool ChromeContentBrowserClient::ArePersistentMediaDeviceIDsAllowed(
              Profile::FromBrowserContext(browser_context))
       ->IsFullCookieAccessAllowed(
           url, site_for_cookies, top_frame_origin,
+          net::CookieSettingOverrides(),
           content_settings::CookieSettings::QueryReason::kSiteStorage);
 }
 
@@ -7134,7 +7180,8 @@ bool ChromeContentBrowserClient::ShouldPreconnect(
   // at the start of navigation as part of the preloading holdback, so ignore
   // the Finch setting here.
   return prefetch::IsSomePreloadingEnabledIgnoringFinch(
-      *Profile::FromBrowserContext(browser_context)->GetPrefs());
+             *Profile::FromBrowserContext(browser_context)->GetPrefs()) ==
+         content::PreloadingEligibility::kEligible;
 }
 
 bool ChromeContentBrowserClient::ShouldPreconnectNavigation(

@@ -3180,15 +3180,7 @@ TEST_P(WaylandWindowTest, DestroysCreatesPopupsOnHideShow) {
   });
 }
 
-// TODO(crbug.com/1393155): Flaky on Linux TSAN.
-// TODO(crbug.com/1396725): Failing on Linux MSAN.
-#if BUILDFLAG(IS_LINUX) && \
-    (defined(THREAD_SANITIZER) || defined(MEMORY_SANITIZER))
-#define MAYBE_ReattachesBackgroundOnShow DISABLED_ReattachesBackgroundOnShow
-#else
-#define MAYBE_ReattachesBackgroundOnShow ReattachesBackgroundOnShow
-#endif
-TEST_P(WaylandWindowTest, MAYBE_ReattachesBackgroundOnShow) {
+TEST_P(WaylandWindowTest, ReattachesBackgroundOnShow) {
   EXPECT_TRUE(connection_->buffer_manager_host());
 
   auto interface_ptr = connection_->buffer_manager_host()->BindInterface();
@@ -3229,8 +3221,12 @@ TEST_P(WaylandWindowTest, MAYBE_ReattachesBackgroundOnShow) {
   background.z_order = INT32_MIN;
   background.buffer_id = buffer_id1;
   overlays.push_back(std::move(background));
-  buffer_manager_gpu_->CommitOverlays(window->GetWidget(), 1u, gl::FrameData(),
+  buffer_manager_gpu_->CommitOverlays(window->GetWidget(), 1u, gfx::FrameData(),
                                       std::move(overlays));
+
+  // Let mojo messages from gpu to host go through.
+  base::RunLoop().RunUntilIdle();
+
   PostToServerAndWait([surface_id](wl::TestWaylandServerThread* server) {
     auto* mock_surface = server->GetObject<wl::MockSurface>(surface_id);
     mock_surface->SendFrameCallback();
@@ -3267,8 +3263,11 @@ TEST_P(WaylandWindowTest, MAYBE_ReattachesBackgroundOnShow) {
   primary.z_order = 0;
   primary.buffer_id = buffer_id2;
   overlays.push_back(std::move(primary));
-  buffer_manager_gpu_->CommitOverlays(window->GetWidget(), 2u, gl::FrameData(),
+  buffer_manager_gpu_->CommitOverlays(window->GetWidget(), 2u, gfx::FrameData(),
                                       std::move(overlays));
+
+  // Let mojo messages from gpu to host go through.
+  base::RunLoop().RunUntilIdle();
 
   PostToServerAndWait([surface_id](wl::TestWaylandServerThread* server) {
     auto* mock_surface = server->GetObject<wl::MockSurface>(surface_id);

@@ -976,13 +976,6 @@ void TabStrip::RemoveObserver(TabStripObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void TabStrip::FrameColorsChanged() {
-  for (int i = 0; i < GetTabCount(); ++i)
-    tab_at(i)->FrameColorsChanged();
-  UpdateContrastRatioValues();
-  SchedulePaint();
-}
-
 void TabStrip::SetBackgroundOffset(int background_offset) {
   if (background_offset == background_offset_)
     return;
@@ -1218,18 +1211,23 @@ void TabStrip::SetSelection(const ui::ListSelectionModel& new_selection) {
     if (old_active_tab)
       old_active_tab->ActiveStateChanged();
 
-    if (new_active_tab->group().has_value()) {
-      const tab_groups::TabGroupId new_group = new_active_tab->group().value();
-      // If the tab that is about to be activated is in a collapsed group,
-      // automatically expand the group.
-      if (IsGroupCollapsed(new_group))
-        ToggleTabGroupCollapsedState(
-            new_group, ToggleTabGroupCollapsedStateOrigin::kImplicitAction);
-    }
     new_active_tab->ActiveStateChanged();
 
     tab_container_->SetActiveTab(selected_tabs_.active(),
                                  new_selection.active());
+  }
+
+  for (int selection : new_selection.selected_indices()) {
+    Tab* const selected_tab = tab_at(selection);
+    if (selected_tab->group().has_value()) {
+      const tab_groups::TabGroupId new_group = selected_tab->group().value();
+      // If the tab that is about to be selected is in a collapsed group,
+      // automatically expand the group.
+      if (IsGroupCollapsed(new_group)) {
+        ToggleTabGroupCollapsedState(
+            new_group, ToggleTabGroupCollapsedStateOrigin::kImplicitAction);
+      }
+    }
   }
 
   // Use STLSetDifference to get the indices of elements newly selected
@@ -2169,10 +2167,16 @@ void TabStrip::OnMouseExited(const ui::MouseEvent& event) {
 
 void TabStrip::AddedToWidget() {
   GetWidget()->AddObserver(this);
+  paint_as_active_subscription_ =
+      GetWidget()->RegisterPaintAsActiveChangedCallback(base::BindRepeating(
+          &TabStrip::UpdateContrastRatioValues, base::Unretained(this)));
+  // Set the initial state correctly.
+  UpdateContrastRatioValues();
 }
 
 void TabStrip::RemovedFromWidget() {
   GetWidget()->RemoveObserver(this);
+  paint_as_active_subscription_ = {};
 }
 
 void TabStrip::OnGestureEvent(ui::GestureEvent* event) {

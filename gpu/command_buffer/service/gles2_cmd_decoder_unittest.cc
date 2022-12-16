@@ -21,7 +21,6 @@
 #include "gpu/command_buffer/service/mocks.h"
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/test_helper.h"
-#include "gpu/command_buffer/service/validating_abstract_texture_impl.h"
 #include "gpu/config/gpu_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_image_stub.h"
@@ -30,6 +29,10 @@
 #include "ui/gl/gl_surface_stub.h"
 #include "ui/gl/gpu_timing_fake.h"
 #include "ui/gl/scoped_make_current.h"
+
+#if !BUILDFLAG(IS_ANDROID)
+#include "gpu/command_buffer/service/validating_abstract_texture_impl.h"
+#endif
 
 #if !defined(GL_DEPTH24_STENCIL8)
 #define GL_DEPTH24_STENCIL8 0x88F0
@@ -254,6 +257,7 @@ TEST_P(GLES2DecoderTest, IsTexture) {
   EXPECT_FALSE(DoIsTexture(client_texture_id_));
 }
 
+#if !BUILDFLAG(IS_ANDROID)
 TEST_P(GLES2DecoderTest, TestImageBindingForDecoderManagement) {
   const GLuint service_id = 123;
   EXPECT_CALL(*gl_, GenTextures(1, _))
@@ -349,18 +353,6 @@ TEST_P(GLES2DecoderTest, CreateAbstractTexture) {
 
   EXPECT_EQ(texture->SafeToRenderFrom(), false);
   EXPECT_EQ(abstract_texture->GetImageForTesting(), nullptr);
-
-#if BUILDFLAG(IS_ANDROID)
-  // Attach a stream image, and verify that the image changes and the service_id
-  // matches the one we provide.
-  scoped_refptr<gl::GLImage> stream_image(new gl::GLImageStub);
-  const GLuint surface_texture_service_id = service_id + 1;
-  abstract_texture->BindStreamTextureImage(stream_image.get(),
-                                           surface_texture_service_id);
-  EXPECT_EQ(texture->SafeToRenderFrom(), true);
-  EXPECT_EQ(texture->GetLevelImage(target, 0), stream_image.get());
-  EXPECT_EQ(abstract_texture->service_id(), surface_texture_service_id);
-#endif
 
   // Deleting |abstract_texture| should delete the platform texture as well,
   // since we haven't make a copy of the TextureRef.  Also make sure that the
@@ -478,6 +470,7 @@ TEST_P(GLES2DecoderTest, TestAbstractTextureSetClearedWorks) {
   EXPECT_CALL(*gl_, DeleteTextures(1, _)).Times(1).RetiresOnSaturation();
   abstract_texture.reset();
 }
+#endif
 
 TEST_P(GLES3DecoderTest, GetInternalformativValidArgsSamples) {
   const GLint kNumSampleCounts = 8;

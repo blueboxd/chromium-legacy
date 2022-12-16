@@ -109,15 +109,6 @@ BASE_FEATURE(kAutofillConsiderPlaceholderForParsing,
              "AutofillConsiderPlaceholderForParsing",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Chrome needs to map country names ("Italy"/"Italien") to country codes
-// ("IT"). If enabled, the lookup considers all locales that are registered
-// for a country. This helps in case a Chrome fails to determine the language
-// of a website.
-// TODO(crbug.com/1360502): Cleanup when launched.
-BASE_FEATURE(kAutofillCountryFromLocalName,
-             "AutofillCountryFromLocalName",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // If enabled, three address profiles are created for testing.
 BASE_FEATURE(kAutofillCreateDataForTest,
              "AutofillCreateDataForTest",
@@ -486,6 +477,13 @@ BASE_FEATURE(kAutofillSilentProfileUpdateForInsufficientImport,
 // TODO(crbug.com/1211834): The experiment seems dead; remove?
 BASE_FEATURE(kAutofillSkipComparingInferredLabels,
              "AutofillSkipComparingInferredLabels",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables support for artificial placeholders, implemented by placing text on
+// top of the input field using CSS.
+// TODO(crbug.com/1396374): Remove when launched.
+BASE_FEATURE(kAutofillSupportPoorMansPlaceholder,
+             "AutofillSupportPoorMansPlaceholder",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls whether Autofill should search prefixes of all words/tokens when

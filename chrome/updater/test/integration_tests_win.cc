@@ -381,9 +381,10 @@ base::Process LaunchOfflineInstallProcess(bool is_legacy_install,
       return base::ASCIIToWide(base::StrCat({"/", switch_name}));
     };
     std::vector<std::wstring> install_cmd_args = {
-        base::StrCat({L"\"", exe_path.value(), L"\""}),
+        QuoteForCommandLineToArgvW(exe_path.value()),
 
         build_legacy_switch(updater::kEnableLoggingSwitch),
+
         // This switch and its value must be connected by '=' because logging
         // switch does not support legacy format.
         base::StrCat({build_legacy_switch(updater::kLoggingModuleSwitch), L"=",
@@ -400,7 +401,7 @@ base::Process LaunchOfflineInstallProcess(bool is_legacy_install,
         L"{E85204C6-6F2F-40BF-9E6C-4952208BB977}",
 
         build_legacy_switch(updater::kOfflineDirSwitch),
-        base::StrCat({L"\"", offline_dir.value(), L"\""}),
+        QuoteForCommandLineToArgvW(offline_dir.value()),
 
         is_silent_install ? build_legacy_switch(updater::kSilentSwitch) : L"",
     };
@@ -634,7 +635,7 @@ void EnterTestMode(const GURL& url) {
   ASSERT_TRUE(ExternalConstantsBuilder()
                   .SetUpdateURL(std::vector<std::string>{url.spec()})
                   .SetUseCUP(false)
-                  .SetInitialDelay(0.1)
+                  .SetInitialDelay(base::Milliseconds(100))
                   .SetCrxVerifierFormat(crx_file::VerifierFormat::CRX3)
                   .SetOverinstallTimeout(base::Seconds(11))
                   .Modify());
@@ -1408,6 +1409,27 @@ void RunUninstallCmdLine(UpdaterScope scope) {
   EXPECT_TRUE(process.WaitForExitWithTimeout(TestTimeouts::action_timeout(),
                                              &exit_code));
   EXPECT_EQ(0, exit_code);
+}
+
+void RunHandoff(UpdaterScope scope, const std::string& app_id) {
+  const absl::optional<base::FilePath> installed_executable_path =
+      GetInstalledExecutablePath(scope);
+  ASSERT_TRUE(installed_executable_path);
+  ASSERT_TRUE(base::PathExists(*installed_executable_path));
+
+  base::ScopedAllowBaseSyncPrimitivesForTesting allow_wait_process;
+  const std::wstring command_line(base::StrCat(
+      {QuoteForCommandLineToArgvW(installed_executable_path->value()),
+       L" /handoff \"appguid=", base::ASCIIToWide(app_id), L"&needsadmin=",
+       IsSystemInstall(scope) ? L"Prefers" : L"False", L"\" /silent"}));
+  VLOG(0) << " RunHandoff: " << command_line;
+  const base::Process process = base::LaunchProcess(command_line, {});
+  ASSERT_TRUE(process.IsValid());
+
+  int exit_code = 0;
+  ASSERT_TRUE(process.WaitForExitWithTimeout(TestTimeouts::action_max_timeout(),
+                                             &exit_code));
+  ASSERT_EQ(exit_code, 0);
 }
 
 void SetupFakeLegacyUpdaterData(UpdaterScope scope) {

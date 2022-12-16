@@ -1132,6 +1132,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Enterprise.Dlp.Errors.DaemonInit"
+    enum="EnterpriseDlpPolicyCrOSDaemonInitError" expires_after="2023-06-01">
+  <owner>accorsi@google.com</owner>
+  <owner>chromeos-dlp@google.com</owner>
+  <summary>
+    Recorded when an error occurs while performing initialization operations in
+    the Data Leak Prevention daemon.
+  </summary>
+</histogram>
+
 <histogram name="Enterprise.Dlp.Errors.Fanotify"
     enum="EnterpriseDlpPolicyCrOSFanotifyError" expires_after="2023-06-01">
   <owner>accorsi@google.com</owner>
@@ -1173,6 +1183,15 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.Dlp.FanotifyDeleteEventSupport" enum="Boolean"
+    expires_after="2023-06-01">
+  <owner>accorsi@google.com</owner>
+  <owner>chromeos-dlp@google.com</owner>
+  <summary>
+    Record whether the kernel supports fanotify mark filesystem.
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.Dlp.FanotifyMarkFilesystemSupport" enum="Boolean"
     expires_after="2023-06-01">
   <owner>accorsi@google.com</owner>
   <owner>chromeos-dlp@google.com</owner>
@@ -1701,14 +1720,14 @@ chromium-metrics-reviews@google.com.
   <owner>cros-oac@google.com</owner>
   <summary>
     Events related to Chrome OS enterprise enrollment recovery. Note that this
-    only covers cases in which prior to recovery, the &quot;private owner&quot;
-    of the device had UMA stats enabled.
+    only covers cases in which prior to recovery, UMA stats are enabled by
+    policy.
   </summary>
 </histogram>
 
 <histogram name="Enterprise.EnrollmentRollbackAttestation"
     enum="EnterpriseEnrollmentType" expires_after="2023-11-30">
-  <owner>crisguerrero@google.com</owner>
+  <owner>crisguerrero@chromium.org</owner>
   <owner>mpolzer@google.com</owner>
   <owner>chromeos-commercial-remote-management@google.com</owner>
   <summary>
@@ -1721,7 +1740,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Enterprise.EnrollmentRollbackManualFallback"
     enum="EnterpriseEnrollmentType" expires_after="2023-11-30">
-  <owner>crisguerrero@google.com</owner>
+  <owner>crisguerrero@chromium.org</owner>
   <owner>mpolzer@google.com</owner>
   <owner>chromeos-commercial-remote-management@google.com</owner>
   <summary>
@@ -2131,7 +2150,7 @@ chromium-metrics-reviews@google.com.
   <owner>domfc@chromium.org</owner>
   <summary>
     Records whether a browser unenrollment was completed succcessfully by
-    writing an invalid DM token to storage or not.
+    writing an invalid DMToken to storage or not.
   </summary>
 </histogram>
 
@@ -2185,6 +2204,42 @@ chromium-metrics-reviews@google.com.
   <summary>Result of the OpenNetworkConfiguration policy validation.</summary>
 </histogram>
 
+<histogram name="Enterprise.PlatformAuth.GetAuthData.Count" units="count"
+    expires_after="2023-10-31">
+  <owner>igorruvinov@chromium.org</owner>
+  <owner>zmin@chromium.org</owner>
+  <summary>
+    The number of proof-of-possession cookies retrieved from the platform to
+    authenticate the user to their IdP/STS. Recorded once per successful fetch.
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.PlatformAuth.GetAuthData.FailureHresult"
+    enum="Hresult" expires_after="2023-10-31">
+  <owner>igorruvinov@chromium.org</owner>
+  <owner>zmin@chromium.org</owner>
+  <summary>
+    The HRESULT returned by either CoCreateInstance or GetCookieInfoForUri when
+    trying to fetch proof-of-possession cookies from the platform to
+    authenticate the user to their IdP/STS.
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.PlatformAuth.GetAuthData.{Result}Time" units="ms"
+    expires_after="2023-10-31">
+  <owner>igorruvinov@chromium.org</owner>
+  <owner>zmin@chromium.org</owner>
+  <summary>
+    The elapsed time for a fetch of proof-of-possession cookies from the
+    platform to authenticate the user to their IdP/STS to {Result}. Recorded
+    once per fetch.
+  </summary>
+  <token key="Result">
+    <variant name="Failure" summary="fail"/>
+    <variant name="Success" summary="succeed"/>
+  </token>
+</histogram>
+
 <histogram name="Enterprise.Policies" enum="EnterprisePolicies"
     expires_after="2023-05-07">
   <owner>mnissler@chromium.org</owner>
@@ -2220,7 +2275,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.Policies.{PolicyLevel}" enum="EnterprisePolicies"
-    expires_after="2023-03-01">
+    expires_after="2023-12-01">
   <owner>zmin@chromium.org</owner>
   <owner>qiutanw@google.com</owner>
   <summary>
@@ -2589,7 +2644,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Enterprise.UserPolicyChromeOS.ReregistrationResult"
     enum="EnterpriseUserPolicyChromeOSReregistrationResult"
-    expires_after="2023-04-09">
+    expires_after="2023-06-11">
   <owner>hendrich@chromium.org</owner>
   <owner>rbock@google.com</owner>
   <owner>chromeos-commercial-remote-management@google.com</owner>
@@ -2733,7 +2788,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="EnterpriseCheck.InvalidPoliciesDetected"
-    units="disabled policies" expires_after="2023-02-19">
+    units="disabled policies" expires_after="2023-12-01">
   <owner>pastarmovj@chromium.org</owner>
   <owner>zmin@chomium.org</owner>
   <summary>
@@ -2744,7 +2799,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="EnterpriseCheck.IsDomainJoined" enum="BooleanEnabled"
-    expires_after="2023-04-30">
+    expires_after="2023-12-01">
   <owner>pastarmovj@chromium.org</owner>
   <owner>rogerta@chromium.org</owner>
   <owner>zmin@chromium.org</owner>
@@ -2755,7 +2810,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="EnterpriseCheck.IsEnterpriseUser" enum="BooleanEnabled"
-    expires_after="2023-04-30">
+    expires_after="2023-12-01">
   <owner>pastarmovj@chromium.org</owner>
   <owner>rogerta@chromium.org</owner>
   <owner>zmin@chromium.org</owner>
@@ -2778,7 +2833,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="EnterpriseCheck.IsJoinedToAzureAD" enum="BooleanEnabled"
-    expires_after="2023-04-16">
+    expires_after="2023-12-01">
   <owner>igorruvinov@chromium.org</owner>
   <owner>ydago@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
@@ -2840,7 +2895,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="EnterpriseCheck.Mac.IsCurrentUserDomainUser" enum="Boolean"
-    expires_after="2022-12-31">
+    expires_after="2023-12-31">
   <owner>pastarmovj@chromium.org</owner>
   <owner>zmin@chromium.org</owner>
   <summary>
@@ -2850,7 +2905,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="EnterpriseCheck.Mac.IsDeviceDomainJoined" enum="Boolean"
-    expires_after="2022-12-31">
+    expires_after="2023-12-31">
   <owner>pastarmovj@chromium.org</owner>
   <owner>zmin@chromium.org</owner>
   <summary>
@@ -2860,7 +2915,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="EnterpriseCheck.Mac.IsDeviceMDMEnrolledNew"
-    enum="EnterpriseMacMDMStatusNew" expires_after="2022-12-31">
+    enum="EnterpriseMacMDMStatusNew" expires_after="2023-12-31">
   <owner>pastarmovj@chromium.org</owner>
   <owner>zmin@chromium.org</owner>
   <summary>
@@ -2871,7 +2926,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="EnterpriseCheck.Mac.IsDeviceMDMEnrolledOld"
-    enum="EnterpriseMacMDMStatusOld" expires_after="2022-12-31">
+    enum="EnterpriseMacMDMStatusOld" expires_after="2023-12-31">
   <owner>pastarmovj@chromium.org</owner>
   <owner>zmin@chromium.org</owner>
   <summary>

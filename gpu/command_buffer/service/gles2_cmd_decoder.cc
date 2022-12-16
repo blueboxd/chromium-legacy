@@ -81,7 +81,6 @@
 #include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/command_buffer/service/transform_feedback_manager.h"
-#include "gpu/command_buffer/service/validating_abstract_texture_impl.h"
 #include "gpu/command_buffer/service/vertex_array_manager.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 #include "gpu/config/gpu_finch_features.h"
@@ -115,6 +114,14 @@
 #include "ui/gl/gpu_timing.h"
 #include "ui/gl/init/create_gr_gl_interface.h"
 #include "ui/gl/scoped_make_current.h"
+
+#if !BUILDFLAG(IS_ANDROID)
+#include "gpu/command_buffer/service/validating_abstract_texture_impl.h"
+#endif
+
+#if BUILDFLAG(IS_OZONE)
+#include "gpu/command_buffer/service/image_factory_native_pixmap.h"
+#endif
 
 #if BUILDFLAG(IS_MAC)
 #include <IOSurface/IOSurface.h>
@@ -640,11 +647,12 @@ class GLES2DecoderImpl : public GLES2Decoder,
                          public ErrorStateClient,
                          public ui::GpuSwitchingObserver {
  public:
-  GLES2DecoderImpl(DecoderClient* client,
-                   CommandBufferServiceBase* command_buffer_service,
-                   Outputter* outputter,
-                   ContextGroup* group,
-                   ImageFactory* image_factory_for_nacl_swapchain);
+  GLES2DecoderImpl(
+      DecoderClient* client,
+      CommandBufferServiceBase* command_buffer_service,
+      Outputter* outputter,
+      ContextGroup* group,
+      std::unique_ptr<ImageFactory> image_factory_for_nacl_swapchain);
 
   GLES2DecoderImpl(const GLES2DecoderImpl&) = delete;
   GLES2DecoderImpl& operator=(const GLES2DecoderImpl&) = delete;
@@ -762,6 +770,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
 
   ErrorState* GetErrorState() override;
   const ContextState* GetContextState() override { return &state_; }
+#if !BUILDFLAG(IS_ANDROID)
   std::unique_ptr<AbstractTexture> CreateAbstractTexture(GLenum target,
                                                          GLenum internal_format,
                                                          GLsizei width,
@@ -770,6 +779,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
                                                          GLint border,
                                                          GLenum format,
                                                          GLenum type) override;
+#endif
 
   scoped_refptr<ShaderTranslatorInterface> GetTranslator(GLenum type) override;
   scoped_refptr<ShaderTranslatorInterface> GetOrCreateTranslator(GLenum type);
@@ -1229,7 +1239,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
   void AttachImageToTextureWithDecoderBinding(uint32_t client_texture_id,
                                               uint32_t texture_target,
                                               gl::GLImage* image) override;
-#else
+#elif !BUILDFLAG(IS_ANDROID)
   void AttachImageToTextureWithClientBinding(uint32_t client_texture_id,
                                              uint32_t texture_target,
                                              gl::GLImage* image) override;
@@ -2492,7 +2502,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
   unsigned int RequiredTextureTypeForAnonymousImage();
 
   ImageFactory* image_factory_for_nacl_swapchain() {
-    return image_factory_for_nacl_swapchain_;
+    return image_factory_for_nacl_swapchain_.get();
   }
 
   // Helper method to call glClear workaround.
@@ -2529,8 +2539,10 @@ class GLES2DecoderImpl : public GLES2Decoder,
   void UnbindTexture(TextureRef* texture_ref,
                      bool supports_separate_framebuffer_binds);
 
+#if !BUILDFLAG(IS_ANDROID)
   void OnAbstractTextureDestroyed(ValidatingAbstractTextureImpl* texture,
                                   scoped_refptr<TextureRef> texture_ref);
+#endif
 
   void ReadBackBuffersIntoShadowCopies(
       base::flat_set<scoped_refptr<Buffer>> buffers_to_shadow_copy);
@@ -2805,14 +2817,16 @@ class GLES2DecoderImpl : public GLES2Decoder,
 
   SamplerState default_sampler_state_;
 
+#if !BUILDFLAG(IS_ANDROID)
   // All currently outstanding AbstractTextures that we've created.
   std::set<ValidatingAbstractTextureImpl*> abstract_textures_;
 
   // Set of texture refs that are pending destruction, at some point in the
   // future when our context is current.
   std::set<scoped_refptr<TextureRef>> texture_refs_pending_destruction_;
+#endif
 
-  const raw_ptr<ImageFactory> image_factory_for_nacl_swapchain_;
+  const std::unique_ptr<ImageFactory> image_factory_for_nacl_swapchain_;
 
   base::WeakPtrFactory<GLES2DecoderImpl> weak_ptr_factory_{this};
 };
@@ -3434,14 +3448,34 @@ GLES2Decoder* GLES2Decoder::Create(
     DecoderClient* client,
     CommandBufferServiceBase* command_buffer_service,
     Outputter* outputter,
+    ContextGroup* group) {
+  if (group->use_passthrough_cmd_decoder()) {
+    return new GLES2DecoderPassthroughImpl(client, command_buffer_service,
+                                           outputter, group);
+  }
+
+  std::unique_ptr<ImageFactory> image_factory_for_nacl_swapchain;
+#if BUILDFLAG(IS_OZONE)
+  image_factory_for_nacl_swapchain =
+      std::make_unique<ImageFactoryNativePixmap>();
+#endif
+
+  return new GLES2DecoderImpl(client, command_buffer_service, outputter, group,
+                              std::move(image_factory_for_nacl_swapchain));
+}
+
+GLES2Decoder* GLES2Decoder::CreateForTesting(
+    DecoderClient* client,
+    CommandBufferServiceBase* command_buffer_service,
+    Outputter* outputter,
     ContextGroup* group,
-    ImageFactory* image_factory_for_nacl_swapchain) {
+    std::unique_ptr<ImageFactory> image_factory_for_nacl_swapchain) {
   if (group->use_passthrough_cmd_decoder()) {
     return new GLES2DecoderPassthroughImpl(client, command_buffer_service,
                                            outputter, group);
   }
   return new GLES2DecoderImpl(client, command_buffer_service, outputter, group,
-                              image_factory_for_nacl_swapchain);
+                              std::move(image_factory_for_nacl_swapchain));
 }
 
 GLES2DecoderImpl::GLES2DecoderImpl(
@@ -3449,7 +3483,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(
     CommandBufferServiceBase* command_buffer_service,
     Outputter* outputter,
     ContextGroup* group,
-    ImageFactory* image_factory_for_nacl_swapchain)
+    std::unique_ptr<ImageFactory> image_factory_for_nacl_swapchain)
     : GLES2Decoder(client, command_buffer_service, outputter),
       group_(group),
       logger_(&debug_marker_manager_,
@@ -3516,7 +3550,8 @@ GLES2DecoderImpl::GLES2DecoderImpl(
       validation_fbo_multisample_(0),
       validation_fbo_(0),
       texture_manager_service_id_generation_(0),
-      image_factory_for_nacl_swapchain_(image_factory_for_nacl_swapchain) {
+      image_factory_for_nacl_swapchain_(
+          std::move(image_factory_for_nacl_swapchain)) {
   DCHECK(client);
   DCHECK(group);
 }
@@ -4844,9 +4879,11 @@ bool GLES2DecoderImpl::MakeCurrent() {
   // Rebind textures if the service ids may have changed.
   RestoreAllExternalTextureBindingsIfNeeded();
 
+#if !BUILDFLAG(IS_ANDROID)
   // Since we have a context now, take the opportunity to drop any TextureRefs
   // that are pending destruction.
   texture_refs_pending_destruction_.clear();
+#endif
 
   return true;
 }
@@ -5300,6 +5337,7 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   if (surface_)
     surface_->PrepareToDestroy(have_context);
 
+#if !BUILDFLAG(IS_ANDROID)
   // Destroy any textures that are pending destruction.
   if (!have_context) {
     for (auto iter : texture_refs_pending_destruction_)
@@ -5311,6 +5349,7 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   for (auto* iter : abstract_textures_)
     iter->OnDecoderWillDestroy(have_context);
   abstract_textures_.clear();
+#endif
 
   if (external_default_framebuffer_) {
     external_default_framebuffer_->Destroy(have_context);
@@ -16678,11 +16717,11 @@ void GLES2DecoderImpl::DoSwapBuffers(uint64_t swap_id, GLbitfield flags) {
     surface_->SwapBuffersAsync(
         base::BindOnce(&GLES2DecoderImpl::FinishAsyncSwapBuffers,
                        weak_ptr_factory_.GetWeakPtr(), swap_id),
-        base::DoNothing(), gl::FrameData());
+        base::DoNothing(), gfx::FrameData());
   } else {
     client()->OnSwapBuffers(swap_id, flags);
     FinishSwapBuffers(
-        surface_->SwapBuffers(base::DoNothing(), gl::FrameData()));
+        surface_->SwapBuffers(base::DoNothing(), gfx::FrameData()));
   }
 
   // This may be a slow command.  Exit command processing to allow for
@@ -17240,9 +17279,13 @@ void GLES2DecoderImpl::ProcessDescheduleUntilFinished() {
 }
 
 bool GLES2DecoderImpl::HasMoreIdleWork() const {
-  return !pending_readpixel_fences_.empty() ||
-         gpu_tracer_->HasTracesToProcess() ||
-         !texture_refs_pending_destruction_.empty();
+  bool has_more_idle_work =
+      !pending_readpixel_fences_.empty() || gpu_tracer_->HasTracesToProcess();
+#if !BUILDFLAG(IS_ANDROID)
+  has_more_idle_work =
+      has_more_idle_work || !texture_refs_pending_destruction_.empty();
+#endif
+  return has_more_idle_work;
 }
 
 void GLES2DecoderImpl::PerformIdleWork() {
@@ -18575,7 +18618,7 @@ void GLES2DecoderImpl::AttachImageToTextureWithDecoderBinding(
   BindImageInternal(client_texture_id, texture_target, image,
                     /*can_bind_to_sampler=*/false);
 }
-#else
+#elif !BUILDFLAG(IS_ANDROID)
 void GLES2DecoderImpl::AttachImageToTextureWithClientBinding(
     uint32_t client_texture_id,
     uint32_t texture_target,
@@ -19427,6 +19470,7 @@ void GLES2DecoderImpl::DoWindowRectanglesEXT(GLenum mode,
   state_.UpdateWindowRectangles();
 }
 
+#if !BUILDFLAG(IS_ANDROID)
 std::unique_ptr<AbstractTexture> GLES2DecoderImpl::CreateAbstractTexture(
     GLenum target,
     GLenum internal_format,
@@ -19474,6 +19518,7 @@ void GLES2DecoderImpl::OnAbstractTextureDestroyed(
   else
     texture_refs_pending_destruction_.insert(std::move(texture_ref));
 }
+#endif
 
 void GLES2DecoderImpl::DoSetReadbackBufferShadowAllocationINTERNAL(
     GLuint buffer_id,

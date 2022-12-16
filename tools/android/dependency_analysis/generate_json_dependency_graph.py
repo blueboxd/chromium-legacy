@@ -13,14 +13,14 @@ import pathlib
 import subprocess
 import sys
 
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, Optional, Tuple, Union
 
 import class_dependency
 import package_dependency
 import serialization
 import target_dependency
 
-_SRC_PATH = pathlib.Path(__file__).parents[3].resolve()
+_SRC_PATH = pathlib.Path(__file__).resolve().parents[3]
 sys.path.append(str(_SRC_PATH / 'build/android'))
 from pylib import constants
 
@@ -39,6 +39,20 @@ _IGNORED_JAR_PATHS = [
 
 def _relsrc(path: Union[str, pathlib.Path], src_path: pathlib.Path):
     return pathlib.Path(path).relative_to(src_path)
+
+
+def _is_relative_to(path: pathlib.Path, other_path: pathlib.Path):
+    """This replicates pathlib.Path.is_relative_to.
+
+    Since bots still run python3.8, they do not have access to is_relative_to,
+    which was introduced in python3.9.
+    """
+    try:
+        path.relative_to(other_path)
+        return True
+    except ValueError:
+        # This error is expected when path is not a subpath of other_path.
+        return False
 
 
 def class_is_interesting(name: str, prefixes: Tuple[str]):
@@ -127,7 +141,7 @@ def _calculate_cache_path(filepath: pathlib.Path, src_path: pathlib.Path,
       Returns: /cr/src/out/Debug/jdeps_cache/b/c/file.jdeps_cache
     """
     filepath = filepath.resolve(strict=True)
-    if filepath.is_relative_to(build_output_dir):
+    if _is_relative_to(filepath, build_output_dir):
         return filepath.with_suffix('.jdeps_cache')
     assert src_path in filepath.parents, f'Jar file not under src: {filepath}'
     jdeps_cache_dir = build_output_dir / 'jdeps_cache'
@@ -317,6 +331,11 @@ def main():
     arg_parser.add_argument('--all',
                             action='store_true',
                             help='Build and parse all known javac jars.')
+    arg_parser.add_argument('--skip-rebuild',
+                            action='store_true',
+                            help='Skip rebuilding, useful on bots where '
+                            'compile is a separate step right before running '
+                            'this script.')
     arg_parser.add_argument('-d',
                             '--checkout-dir',
                             default=_SRC_PATH,
@@ -368,18 +387,24 @@ def main():
         target_jars: JarTargetDict = parse_original_targets_and_jars(
             gn_desc_output, args.build_output_dir, cr_position)
 
-    # Always re-compile jars to have the most up-to-date jar files. This is
-    # especially important when running this script locally and testing out
-    # build changes that affect the dependency graph.
-    rel_jar_paths = [
-        p.relative_to(args.build_output_dir) for p in target_jars.values()
-    ]
-    logging.info(f'Re-building {len(rel_jar_paths)} jars for up-to-date deps. '
-                 'This may take a while the first time through. Use -v to see '
-                 'ninja progress.')
-    subprocess.run(['autoninja', '-C', args.build_output_dir] + rel_jar_paths,
-                   capture_output=not args.verbose,
-                   check=True)
+    if args.skip_rebuild:
+        logging.info(f'Skipping rebuilding jars.')
+    else:
+        # Always re-compile jars to have the most up-to-date jar files. This is
+        # especially important when running this script locally and testing out
+        # build changes that affect the dependency graph.
+        rel_jar_paths = [
+            p.relative_to(args.build_output_dir) for p in target_jars.values()
+        ]
+        logging.info(
+            f'Re-building {len(rel_jar_paths)} jars for up-to-date deps. '
+            'This may take a while the first time through. Use -v to see '
+            'ninja progress.')
+        subprocess.run([
+            subprocess_utils.resolve_autoninja(), '-C', args.build_output_dir
+        ] + rel_jar_paths,
+                       capture_output=not args.verbose,
+                       check=True)
 
     logging.info('Running jdeps...')
     # jdeps already has some parallelism

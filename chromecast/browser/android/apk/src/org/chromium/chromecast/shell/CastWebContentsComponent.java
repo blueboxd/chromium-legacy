@@ -10,14 +10,17 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.os.PatternMatcher;
 
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
 import org.chromium.chromecast.base.Controller;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.display.DisplayAndroidManager;
 
 /**
  * A layer of indirection between CastContentWindowAndroid and CastWebContents(Activity|Service).
@@ -100,9 +103,11 @@ public class CastWebContentsComponent {
             boolean isRemoteControlMode, boolean turnOnScreen) {
         Intent intent = CastWebContentsIntentUtils.requestStartCastActivity(context, webContents,
                 enableTouch, isRemoteControlMode, turnOnScreen, mKeepScreenOn, mSessionId);
-        if (DEBUG) Log.d(TAG, "start activity by intent: " + intent);
+        int displayId = DisplayAndroidManager.getDefaultDisplayForContext(context).getDisplayId();
+        if (DEBUG) Log.d(TAG, "start activity by intent: " + intent + " on display: " + displayId);
         sResumeIntent.set(intent);
-        context.startActivity(intent);
+        Bundle bundle = ApiCompatibilityUtils.createLaunchDisplayIdActivityOptions(displayId);
+        context.startActivity(intent, bundle);
     }
 
     private void sendStopWebContentEvent() {
@@ -154,6 +159,7 @@ public class CastWebContentsComponent {
     private Delegate mDelegate;
     private boolean mStarted;
     private boolean mEnableTouchInput;
+    private boolean mMediaPlaying;
     private final boolean mIsRemoteControlMode;
     private final boolean mTurnOnScreen;
     private final boolean mKeepScreenOn;
@@ -185,6 +191,7 @@ public class CastWebContentsComponent {
             filter.addDataPath(instanceUri.getPath(), PatternMatcher.PATTERN_LITERAL);
             filter.addAction(CastWebContentsIntentUtils.ACTION_ACTIVITY_STOPPED);
             filter.addAction(CastWebContentsIntentUtils.ACTION_ON_VISIBILITY_CHANGE);
+            filter.addAction(CastWebContentsIntentUtils.ACTION_REQUEST_MEDIA_PLAYING_STATUS);
             return new LocalBroadcastReceiverScope(filter, this ::onReceiveIntent);
         });
     }
@@ -203,6 +210,12 @@ public class CastWebContentsComponent {
             if (mSurfaceEventHandler != null) {
                 mSurfaceEventHandler.onVisibilityChange(visibilityType);
             }
+        } else if (CastWebContentsIntentUtils.isIntentOfRequestMediaPlayingStatus(intent)) {
+            if (DEBUG) {
+                Log.d(TAG, "onReceive ACTION_REQUEST_MEDIA_PLAYING_STATUS instance=" + mSessionId);
+            }
+            // Just broadcast current value.
+            setMediaPlaying(mMediaPlaying);
         }
     }
 
@@ -261,7 +274,8 @@ public class CastWebContentsComponent {
 
     public void setMediaPlaying(boolean mediaPlaying) {
         if (DEBUG) Log.d(TAG, "setMediaPlaying: " + mediaPlaying);
-        sendIntentSync(CastWebContentsIntentUtils.mediaPlaying(mSessionId, mediaPlaying));
+        mMediaPlaying = mediaPlaying;
+        sendIntentSync(CastWebContentsIntentUtils.mediaPlaying(mSessionId, mMediaPlaying));
     }
 
     public static void onComponentClosed(String sessionId) {

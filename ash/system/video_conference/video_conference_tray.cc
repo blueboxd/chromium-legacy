@@ -17,11 +17,12 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/tray/tray_utils.h"
-#include "ash/system/video_conference/video_conference_bubble.h"
+#include "ash/system/video_conference/bubble/bubble_view.h"
 #include "ash/system/video_conference/video_conference_tray_controller.h"
 #include "base/functional/bind.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/color/color_id.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -52,17 +53,6 @@ class ToggleBubbleButton : public IconButton {
 
   // IconButton:
   void PaintButtonContents(gfx::Canvas* canvas) override {
-    // Only draw the background when the button is toggled.
-    if (toggled()) {
-      const gfx::Rect rect(GetContentsBounds());
-      cc::PaintFlags flags;
-      flags.setAntiAlias(true);
-      flags.setColor(GetBackgroundColor());
-      flags.setStyle(cc::PaintFlags::kFill_Style);
-      canvas->DrawCircle(gfx::PointF(rect.CenterPoint()), rect.width() / 2,
-                         flags);
-    }
-
     // Rotate the canvas to rotate the expand indicator according to toggle
     // state and shelf alignment. Note that when shelf alignment changes,
     // TrayBackgroundView::UpdateLayout() will be triggered and this button will
@@ -92,8 +82,8 @@ VideoConferenceTrayButton::VideoConferenceTrayButton(
                  accessible_name_id,
                  /*is_togglable=*/true,
                  /*has_border=*/true) {
-  // TODO(b/261620616): Update this color according to spec.
-  SetBackgroundToggledColorId(kColorAshControlBackgroundColorAlert);
+  SetBackgroundToggledColorId(cros_tokens::kCrosSysSystemNegativeContainer);
+  SetIconToggledColorId(cros_tokens::kCrosSysSystemOnNegativeContainer);
 
   SetToggledVectorIcon(*toggled_icon);
 }
@@ -142,20 +132,27 @@ void VideoConferenceTrayButton::PaintButtonContents(gfx::Canvas* canvas) {
 VideoConferenceTray::VideoConferenceTray(Shelf* shelf)
     : TrayBackgroundView(shelf,
                          TrayBackgroundViewCatalogName::kVideoConferenceTray) {
+  SetVisiblePreferred(false);
+
   tray_container()->SetSpacingBetweenChildren(kTrayButtonsSpacing);
 
   audio_icon_ = tray_container()->AddChildView(
       std::make_unique<VideoConferenceTrayButton>(
           base::BindRepeating(&VideoConferenceTray::OnAudioButtonClicked,
                               weak_ptr_factory_.GetWeakPtr()),
-          &kPrivacyIndicatorsMicrophoneIcon, &kPrivacyIndicatorsMicrophoneIcon,
+          &kPrivacyIndicatorsMicrophoneIcon,
+          &kVideoConferenceMicrophoneMutedIcon,
           IDS_PRIVACY_NOTIFICATION_TITLE_MIC));
+  audio_icon_->SetVisible(false);
+
   camera_icon_ = tray_container()->AddChildView(
       std::make_unique<VideoConferenceTrayButton>(
           base::BindRepeating(&VideoConferenceTray::OnCameraButtonClicked,
                               weak_ptr_factory_.GetWeakPtr()),
           &kPrivacyIndicatorsCameraIcon, &kVideoConferenceCameraMutedIcon,
           IDS_PRIVACY_NOTIFICATION_TITLE_CAMERA));
+  camera_icon_->SetVisible(false);
+
   screen_share_icon_ = tray_container()->AddChildView(
       std::make_unique<VideoConferenceTrayButton>(
           base::BindRepeating(&VideoConferenceTray::OnScreenShareButtonClicked,
@@ -163,6 +160,8 @@ VideoConferenceTray::VideoConferenceTray(Shelf* shelf)
           &kPrivacyIndicatorsScreenShareIcon,
           &kPrivacyIndicatorsScreenShareIcon,
           IDS_ASH_STATUS_TRAY_SCREEN_SHARE_TITLE));
+  screen_share_icon_->SetVisible(false);
+
   toggle_bubble_button_ =
       tray_container()->AddChildView(std::make_unique<ToggleBubbleButton>(
           this, base::BindRepeating(&VideoConferenceTray::ToggleBubble,
@@ -192,8 +191,10 @@ views::Widget* VideoConferenceTray::GetBubbleWidget() const {
 }
 
 std::u16string VideoConferenceTray::GetAccessibleNameForTray() {
-  // TODO(b/253646076): Finish this function.
-  return std::u16string();
+  // TODO(b/253646076): The following is a temporary fix to pass
+  // https://crrev.com/c/4109611 browsertests and still needs to be replaced
+  // with the proper name.
+  return u"Placeholder";
 }
 
 void VideoConferenceTray::HideBubbleWithView(
@@ -210,8 +211,22 @@ void VideoConferenceTray::HandleLocaleChange() {
   // TODO(b/253646076): Finish this function.
 }
 
-void VideoConferenceTray::UpdateAfterLoginStatusChange() {
-  SetVisiblePreferred(true);
+void VideoConferenceTray::OnHasMediaAppStateChange(bool has_media_app) {
+  SetVisiblePreferred(has_media_app);
+}
+
+void VideoConferenceTray::OnCameraPermissionStateChange(bool has_permission) {
+  camera_icon_->SetVisible(has_permission);
+}
+
+void VideoConferenceTray::OnMicrophonePermissionStateChange(
+    bool has_permission) {
+  audio_icon_->SetVisible(has_permission);
+}
+
+void VideoConferenceTray::OnScreenSharingStateChange(bool is_capturing_screen) {
+  screen_share_icon_->SetVisible(is_capturing_screen);
+  screen_share_icon_->SetShowPrivacyIndicator(/*show=*/is_capturing_screen);
 }
 
 void VideoConferenceTray::OnCameraCapturingStateChange(bool is_capturing) {
@@ -252,7 +267,8 @@ void VideoConferenceTray::ToggleBubble(const ui::Event& event) {
   init_params.translucent = true;
 
   // Create top-level bubble.
-  auto bubble_view = std::make_unique<VideoConferenceBubbleView>(init_params);
+  auto bubble_view = std::make_unique<video_conference::BubbleView>(
+      init_params, VideoConferenceTrayController::Get());
   bubble_ = std::make_unique<TrayBubbleWrapper>(this);
   bubble_->ShowBubble(std::move(bubble_view));
 
@@ -261,12 +277,14 @@ void VideoConferenceTray::ToggleBubble(const ui::Event& event) {
 }
 
 void VideoConferenceTray::OnCameraButtonClicked(const ui::Event& event) {
-  VideoConferenceTrayController::Get()->SetCameraSoftwareMuted(
-      /*mute_camera=*/!camera_icon_->toggled());
+  VideoConferenceTrayController::Get()->SetCameraMuted(
+      /*muted=*/!camera_icon_->toggled());
 }
 
 void VideoConferenceTray::OnAudioButtonClicked(const ui::Event& event) {
   // TODO(b/253275993): Implement the callback for `audio_icon_`.
+  VideoConferenceTrayController::Get()->SetMicrophoneMuted(
+      /*muted=*/!audio_icon_->toggled());
 }
 
 void VideoConferenceTray::OnScreenShareButtonClicked(const ui::Event& event) {

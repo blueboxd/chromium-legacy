@@ -45,9 +45,6 @@ class ChromeBrowserState;
 // Presents a bubble associated with the Discover feed header's menu button.
 - (void)presentDiscoverFeedHeaderTipBubble;
 
-// Shows a relevant Reading List help bubble, if applicable.
-- (void)presentReadingListBottomToolbarTipBubble;
-
 // Shows a relevant Follow help bubble while browsing a site, if applicable.
 - (void)presentFollowWhileBrowsingTipBubble;
 
@@ -57,6 +54,10 @@ class ChromeBrowserState;
 
 // Presents a help bubble for What's New, if applicable.
 - (void)presentWhatsNewBottomToolbarBubble;
+
+// Presents a help bubble to inform the user that they can track the price of
+// the item on the current website.
+- (void)presentPriceNotificationsWhileBrowsingTipBubble;
 
 @end
 

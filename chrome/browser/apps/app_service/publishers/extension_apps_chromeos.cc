@@ -33,6 +33,7 @@
 #include "chrome/browser/apps/app_service/metrics/app_service_metrics.h"
 #include "chrome/browser/apps/app_service/publishers/extension_apps_util.h"
 #include "chrome/browser/ash/app_list/arc/arc_app_utils.h"
+#include "chrome/browser/ash/app_list/extension_app_utils.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/child_accounts/time_limits/app_time_limit_interface.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
@@ -52,7 +53,6 @@
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/policy/system_features_disable_list_policy_handler.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/extension_app_utils.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
 #include "chrome/browser/ui/ash/session_controller_client_impl.h"
@@ -183,13 +183,11 @@ void ExtensionAppsChromeOs::Initialize() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 void ExtensionAppsChromeOs::GetCompressedIconData(
     const std::string& app_id,
-    apps::IconType icon_type,
     int32_t size_in_dip,
     ui::ResourceScaleFactor scale_factor,
     LoadIconCallback callback) {
-  apps::GetChromeAppCompressedIconData(profile(), app_id, icon_type,
-                                       size_in_dip, scale_factor,
-                                       std::move(callback));
+  apps::GetChromeAppCompressedIconData(profile(), app_id, size_in_dip,
+                                       scale_factor, std::move(callback));
 }
 #endif
 
@@ -352,11 +350,6 @@ void ExtensionAppsChromeOs::PauseApp(const std::string& app_id) {
   if (paused_apps_.MaybeAddApp(app_id)) {
     SetIconEffect(app_id);
   }
-
-  constexpr bool kPaused = true;
-  PublisherBase::Publish(
-      paused_apps_.GetAppWithPauseStatus(mojom_app_type(), app_id, kPaused),
-      subscribers());
   AppPublisher::Publish(paused_apps_.CreateAppWithPauseStatus(
       app_type(), app_id, /*paused=*/true));
 
@@ -375,10 +368,6 @@ void ExtensionAppsChromeOs::UnpauseApp(const std::string& app_id) {
     SetIconEffect(app_id);
   }
 
-  constexpr bool kPaused = false;
-  PublisherBase::Publish(
-      paused_apps_.GetAppWithPauseStatus(mojom_app_type(), app_id, kPaused),
-      subscribers());
   AppPublisher::Publish(paused_apps_.CreateAppWithPauseStatus(
       app_type(), app_id, /*paused=*/false));
 
@@ -588,9 +577,6 @@ void ExtensionAppsChromeOs::OnNotificationClosed(
   app_notifications_.RemoveNotification(notification_id);
 
   for (const auto& app_id : app_ids) {
-    PublisherBase::Publish(
-        app_notifications_.GetAppWithHasBadgeStatus(mojom_app_type(), app_id),
-        subscribers());
     AppPublisher::Publish(
         app_notifications_.CreateAppWithHasBadgeStatus(app_type(), app_id));
   }
@@ -610,9 +596,6 @@ bool ExtensionAppsChromeOs::MaybeAddNotification(
   }
 
   app_notifications_.AddNotification(app_id, notification_id);
-  PublisherBase::Publish(
-      app_notifications_.GetAppWithHasBadgeStatus(mojom_app_type(), app_id),
-      subscribers());
   AppPublisher::Publish(
       app_notifications_.CreateAppWithHasBadgeStatus(app_type(), app_id));
   return true;

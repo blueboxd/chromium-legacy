@@ -37,9 +37,12 @@ class MODULES_EXPORT MLOperator final : public ScriptWrappable {
     kMaxPool2d,
     kRelu,
     kReshape,
-    kResample,
-    kSoftmax
+    kResample2d,
+    kSoftmax,
+    kSigmoid
   };
+
+  static String OperatorKindToString(MLOperator::OperatorKind kind);
 
   // It is safe for a caller, usually a MLGraphBuidler operation build method,
   // that passes the reference of the options dictionary argument received from

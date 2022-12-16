@@ -10,13 +10,13 @@
 
 import 'chrome://resources/ash/common/cellular_setup/cellular_setup_icons.html.js';
 import 'chrome://resources/ash/common/network/sim_lock_dialogs.js';
-import 'chrome://resources/ash/common/network/apn_detail_dialog.js';
 import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 import 'chrome://resources/cr_elements/icons.html.js';
 import 'chrome://resources/cr_elements/policy/cr_policy_indicator.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+import 'chrome://resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
 import '../../prefs/prefs.js';
 import '../os_settings_page/os_settings_animated_pages.js';
 import '../os_settings_page/os_settings_subpage.js';
@@ -31,32 +31,51 @@ import './network_summary.js';
 import './esim_rename_dialog.js';
 import './esim_remove_profile_dialog.js';
 
+import {assert, assertNotReached} from 'chrome://resources/ash/common/assert.js';
 import {CellularSetupPageName} from 'chrome://resources/ash/common/cellular_setup/cellular_types.js';
 import {getNumESimProfiles} from 'chrome://resources/ash/common/cellular_setup/esim_manager_utils.js';
-import {getHotspotConfig} from 'chrome://resources/ash/common/hotspot/cros_hotspot_config.js';
 import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/ash/common/i18n_behavior.js';
-import {ApnDetailDialog} from 'chrome://resources/ash/common/network/apn_detail_dialog.js';
-import {ApnDetailDialogMode, ApnEventData, hasActiveCellularNetwork, isConnectedToNonCellularNetwork} from 'chrome://resources/ash/common/network/cellular_utils.js';
+import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
+import {hasActiveCellularNetwork, isConnectedToNonCellularNetwork} from 'chrome://resources/ash/common/network/cellular_utils.js';
 import {MojoInterfaceProvider, MojoInterfaceProviderImpl} from 'chrome://resources/ash/common/network/mojo_interface_provider.js';
 import {NetworkListenerBehavior, NetworkListenerBehaviorInterface} from 'chrome://resources/ash/common/network/network_listener_behavior.js';
 import {OncMojo} from 'chrome://resources/ash/common/network/onc_mojo.js';
 import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/ash/common/web_ui_listener_behavior.js';
-import {assert, assertNotReached} from 'chrome://resources/js/assert.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {CrosHotspotConfigInterface, CrosHotspotConfigObserverInterface, CrosHotspotConfigObserverReceiver, HotspotInfo, HotspotState} from 'chrome://resources/mojo/chromeos/ash/services/hotspot_config/public/mojom/cros_hotspot_config.mojom-webui.js';
-import {ApnProperties, CrosNetworkConfigRemote, GlobalPolicy, NetworkStateProperties, StartConnectResult, VpnProvider} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-webui.js';
+import {CrosNetworkConfigRemote, GlobalPolicy, NetworkStateProperties, StartConnectResult, VpnProvider} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-webui.js';
 import {DeviceStateType, NetworkType} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/network_types.mojom-webui.js';
 import {afterNextRender, html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
-import {Route, Router} from '../router.js';
 import {DeepLinkingBehavior, DeepLinkingBehaviorInterface} from '../deep_linking_behavior.js';
 import {recordSettingChange} from '../metrics_recorder.js';
 import {routes} from '../os_route.js';
 import {RouteObserverBehavior, RouteObserverBehaviorInterface} from '../route_observer_behavior.js';
+import {Route, Router} from '../router.js';
 
+import {ApnSubpageElement} from './apn_subpage';
 import {InternetConfigElement} from './internet_config.js';
 import {InternetPageBrowserProxy, InternetPageBrowserProxyImpl} from './internet_page_browser_proxy.js';
+
+// TODO(crbug/1315757) The following type definitions are only needed for
+// Closure compiler and can be removed when this file is converted to TS.
+/**
+ * @constructor
+ * @extends {HTMLElement}
+ */
+function NetworkSummaryItemElement() {}
+/** @return {?CrToggleElement} */
+NetworkSummaryItemElement.prototype.getDeviceEnabledToggle = function() {};
+
+/**
+ * @constructor
+ * @extends {HTMLElement}
+ */
+function NetworkSummaryElement() {}
+/**
+ * @param {?NetworkType} networkType
+ * @return {?NetworkSummaryItemElement}
+ */
+NetworkSummaryElement.prototype.getNetworkRow = function(networkType) {};
 
 /** @type {number} */
 const ESIM_PROFILE_LIMIT = 5;
@@ -198,12 +217,6 @@ class SettingsInternetPageElement extends SettingsInternetPageElementBase {
         },
       },
 
-      /** @private */
-      shouldShowApnDetailDialog_: {
-        type: Boolean,
-        value: false,
-      },
-
       /**
        * Page name, if defined, indicating that the next deviceStates update
        * should call attemptShowCellularSetupDialog_().
@@ -312,6 +325,13 @@ class SettingsInternetPageElement extends SettingsInternetPageElementBase {
               loadTimeData.getBoolean('isHotspotEnabled');
         },
       },
+
+      /**
+       * Whether the 'Add custom APN' button is disabled.
+       */
+      isCreateCustomApnButtonDisabled_: {
+        type: Boolean,
+      },
     };
   }
 
@@ -331,13 +351,6 @@ class SettingsInternetPageElement extends SettingsInternetPageElementBase {
     /** @private {!CrosNetworkConfigRemote} */
     this.networkConfig_ =
         MojoInterfaceProviderImpl.getInstance().getMojoServiceRemote();
-
-    if (this.isHotspotFeatureEnabled_) {
-      /** @private {?HotspotInfo} */
-      this.hotspotInfo_ = null;
-      /** @private {!CrosHotspotConfigInterface} */
-      this.crosHotspotConfig_ = getHotspotConfig();
-    }
   }
 
   ready() {
@@ -410,16 +423,6 @@ class SettingsInternetPageElement extends SettingsInternetPageElementBase {
     });
   }
 
-  /**
-   * @private
-   */
-  getHotspotInfo_() {
-    this.crosHotspotConfig_.getHotspotInfo().then(response => {
-      /** @private {!HotspotInfo} */
-      this.hotspotInfo_ = response.hotspotInfo;
-    });
-  }
-
   /** @override */
   connectedCallback() {
     super.connectedCallback();
@@ -427,9 +430,6 @@ class SettingsInternetPageElement extends SettingsInternetPageElementBase {
     this.onPoliciesApplied(/*userhash=*/ '');
     this.onVpnProvidersChanged();
     this.onNetworkStateListChanged();
-    if (this.isHotspotFeatureEnabled_) {
-      this.getHotspotInfo_();
-    }
   }
 
   /**
@@ -447,11 +447,15 @@ class SettingsInternetPageElement extends SettingsInternetPageElementBase {
     }
 
     afterNextRender(this, () => {
-      const networkRow = this.shadowRoot.querySelector('network-summary')
+      const networkRow = /** @type {NetworkSummaryElement} */ (
+                             this.shadowRoot.querySelector('network-summary'))
                              .getNetworkRow(networkType);
-      if (networkRow && networkRow.getDeviceEnabledToggle()) {
-        this.showDeepLinkElement(networkRow.getDeviceEnabledToggle());
-        return;
+      if (networkRow) {
+        const toggleEl = networkRow.getDeviceEnabledToggle();
+        if (toggleEl) {
+          this.showDeepLinkElement(toggleEl);
+          return;
+        }
       }
       console.warn(`Element with deep link id ${settingId} not focusable.`);
     });
@@ -527,8 +531,10 @@ class SettingsInternetPageElement extends SettingsInternetPageElementBase {
         element = subPage.shadowRoot.querySelector('#networkList');
       }
     } else if (this.detailType_ !== undefined) {
-      const rowForDetailType = this.shadowRoot.querySelector('network-summary')
-                                   .getNetworkRow(this.detailType_);
+      const rowForDetailType =
+          /** @type {NetworkSummaryElement} */ (
+              this.shadowRoot.querySelector('network-summary'))
+              .getNetworkRow(this.detailType_);
 
       // Note: It is possible that the row is no longer present in the DOM
       // (e.g., when a Cellular dongle is unplugged or when Instant Tethering
@@ -717,34 +723,6 @@ class SettingsInternetPageElement extends SettingsInternetPageElementBase {
   /** @private */
   onInternetConfigClose_() {
     this.showInternetConfig_ = false;
-  }
-
-  /**
-   * @param {!string} guid
-   * @param {!ApnDetailDialogMode} mode
-   * @param {ApnProperties|undefined} apn
-   * @private
-   */
-  showApnDetailDialog_(guid, mode, apn) {
-    if (!this.isApnRevampEnabled_) {
-      return;
-    }
-    this.shouldShowApnDetailDialog_ = true;
-    // Added to ensure dom-if stamping.
-    afterNextRender(this, () => {
-      const apnDetailDialog = /** @type {ApnDetailDialog} */ (
-          this.shadowRoot.querySelector('#apnDetailDialog'));
-      assert(!!apnDetailDialog);
-
-      apnDetailDialog.guid = guid;
-      apnDetailDialog.mode = mode;
-      apnDetailDialog.apnProperties = apn;
-    });
-  }
-
-  /** @private */
-  onApnDetailDialogClose_() {
-    this.shouldShowApnDetailDialog_ = false;
   }
 
   /**
@@ -1085,35 +1063,13 @@ class SettingsInternetPageElement extends SettingsInternetPageElementBase {
    * @private
    */
   onCreateCustomApnClicked_() {
-    if (this.shouldShowApnDetailDialog_) {
+    if (this.isCreateCustomApnButtonDisabled_) {
       return;
     }
-    const guid = Router.getInstance().getQueryParameters().get('guid');
-    assert(!!guid);
-    this.showApnDetailDialog_(
-        guid, ApnDetailDialogMode.CREATE,
-        undefined /* apn */);
-  }
-
-  /**
-   *
-   * @param {!Event} event
-   */
-  onShowApnDetailDialog_(event) {
-    event.stopPropagation();
-    if (this.shouldShowApnDetailDialog_) {
-      return;
-    }
-    const eventData = /** @type {!ApnEventData} */ (event.detail);
-    this.showApnDetailDialog_(eventData.guid, eventData.mode, eventData.apn);
-  }
-
-  /**
-   * Used in browser_tests for verifying the hotspotInfo.
-   * @return {?HotspotInfo}
-   */
-  getHotspotInfoForTesting() {
-    return this.hotspotInfo_;
+    const apnSubpage = /** @type {ApnSubpageElement} */ (
+        this.shadowRoot.querySelector('#apnSubpage'));
+    assert(!!apnSubpage);
+    apnSubpage.openApnDetailDialogInCreateMode();
   }
 }
 

@@ -31,6 +31,7 @@ class SkiaGoldProperties():
     self._job_id = None
     self._local_pixel_tests = None
     self._no_luci_auth = None
+    self._service_account = None
     self._bypass_skia_gold_functionality = None
     self._code_review_system = None
     self._continuous_integration_system = None
@@ -74,6 +75,10 @@ class SkiaGoldProperties():
     return self._no_luci_auth
 
   @property
+  def service_account(self) -> str:
+    return self._service_account
+
+  @property
   def patchset(self) -> int:
     return self._patchset
 
@@ -105,7 +110,11 @@ class SkiaGoldProperties():
       # heuristic to determine whether we're running on a workstation or a bot.
       # This should always be set on swarming, but would be strange to be set on
       # a workstation.
-      self._local_pixel_tests = 'SWARMING_SERVER' not in os.environ
+      # However, since Skylab technically isn't swarming, we need to look for
+      # an alternative environment variable there.
+      in_swarming = 'SWARMING_SERVER' in os.environ
+      in_skylab = bool(int(os.environ.get('RUNNING_IN_SKYLAB', '0')))
+      self._local_pixel_tests = not (in_swarming or in_skylab)
       if self._local_pixel_tests:
         logging.warning(
             'Automatically determined that test is running on a workstation')
@@ -149,6 +158,11 @@ class SkiaGoldProperties():
 
     if hasattr(args, 'no_luci_auth'):
       self._no_luci_auth = args.no_luci_auth
+
+    if hasattr(args, 'service_account'):
+      self._service_account = args.service_account
+      if self._service_account:
+        self._no_luci_auth = True
 
     if hasattr(args, 'bypass_skia_gold_functionality'):
       self._bypass_skia_gold_functionality = args.bypass_skia_gold_functionality

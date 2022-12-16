@@ -1853,8 +1853,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       kToolsMenuGuide,
       kTabSwitcherGuide,
       kSecondaryToolbarGuide,
-      kDiscoverFeedHeaderMenuGuide,
-      kPrimaryToolbarLocationViewGuide,
     ];
     AddNamedGuidesToView(guideNames, self.view);
 
@@ -2262,8 +2260,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   ReadingListModel* readingModel =
       ReadingListModelFactory::GetForBrowserState(self.browserState);
-  readingModel->AddEntry(URL, base::SysNSStringToUTF8(title),
-                         reading_list::ADDED_VIA_CURRENT_APP);
+  readingModel->AddOrReplaceEntry(URL, base::SysNSStringToUTF8(title),
+                                  reading_list::ADDED_VIA_CURRENT_APP,
+                                  /*estimated_read_time=*/base::TimeDelta());
 }
 
 #pragma mark - Private SingleNTP feature helper methods
@@ -3648,6 +3647,24 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                    atOffset:[self currentHeaderOffset]];
 }
 
+- (void)findBarDidAppearForFindBarCoordinator:
+    (FindBarCoordinator*)findBarCoordinator {
+  // When the Find bar is presented, hide underlying elements from VoiceOver.
+  self.contentArea.accessibilityElementsHidden = YES;
+  self.primaryToolbarCoordinator.viewController.view
+      .accessibilityElementsHidden = YES;
+  self.secondaryToolbarContainerView.accessibilityElementsHidden = YES;
+}
+
+- (void)findBarDidDisappearForFindBarCoordinator:
+    (FindBarCoordinator*)findBarCoordinator {
+  // When the Find bar is dismissed, show underlying elements to VoiceOver.
+  self.contentArea.accessibilityElementsHidden = NO;
+  self.primaryToolbarCoordinator.viewController.view
+      .accessibilityElementsHidden = NO;
+  self.secondaryToolbarContainerView.accessibilityElementsHidden = NO;
+}
+
 #pragma mark - LensPresentationDelegate:
 
 - (CGRect)webContentAreaForLensCoordinator:(LensCoordinator*)lensCoordinator {
@@ -3681,6 +3698,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
         NTPHelper->GetNextNTPScrolledToFeed();
   } else {
     [self.ntpCoordinator ntpDidChangeVisibility:NO];
+    // This set needs to come after ntpDidChangeVisibility: so that the previous
+    // state can be cleaned up (e.g. if moving away from the Start surface).
     self.ntpCoordinator.webState = nullptr;
     [self stopNTPIfNeeded];
   }

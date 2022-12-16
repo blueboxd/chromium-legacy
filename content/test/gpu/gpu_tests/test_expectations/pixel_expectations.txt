@@ -83,6 +83,7 @@
 [ android ] Pixel_RepeatedWebGLTo2D_SoftwareCompositing [ Skip ]
 [ android ] Pixel_Canvas2DTabSwitch_SoftwareCompositing [ Skip ]
 [ android ] Pixel_WebGLReadPixelsTabSwitch_SoftwareCompositing [ Skip ]
+[ android ] Pixel_OffscreenCanvasTransferToImageBitmapSoftwareCompositing [ Skip ]
 [ chromeos ] Pixel_OffscreenCanvasUnaccelerated2D [ Skip ]
 [ chromeos ] Pixel_OffscreenCanvasUnaccelerated2DWorker [ Skip ]
 [ chromeos ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing [ Skip ]
@@ -95,6 +96,7 @@
 [ chromeos ] Pixel_RepeatedWebGLTo2D_SoftwareCompositing [ Skip ]
 [ chromeos ] Pixel_Canvas2DTabSwitch_SoftwareCompositing [ Skip ]
 [ chromeos ] Pixel_WebGLReadPixelsTabSwitch_SoftwareCompositing [ Skip ]
+[ chromeos ] Pixel_OffscreenCanvasTransferToImageBitmapSoftwareCompositing [ Skip ]
 [ fuchsia ] Pixel_OffscreenCanvasUnaccelerated2D [ Skip ]
 [ fuchsia ] Pixel_OffscreenCanvasUnaccelerated2DWorker [ Skip ]
 [ fuchsia ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing [ Skip ]
@@ -107,6 +109,7 @@
 [ fuchsia ] Pixel_RepeatedWebGLTo2D_SoftwareCompositing [ Skip ]
 [ fuchsia ] Pixel_Canvas2DTabSwitch_SoftwareCompositing [ Skip ]
 [ fuchsia ] Pixel_WebGLReadPixelsTabSwitch_SoftwareCompositing [ Skip ]
+[ fuchsia ] Pixel_OffscreenCanvasTransferToImageBitmapSoftwareCompositing [ Skip ]
 
 # Skip tab switching tests on Android webview and Fuchsia since they don't have tabs
 [ android android-webview-instrumentation ] Pixel_Canvas2DTabSwitch [ Skip ]
@@ -355,7 +358,7 @@ crbug.com/1307787 [ linux renderer-skia-vulkan ] Pixel_VulkanSwiftShader_WebGPUI
 
 crbug.com/1345777 [ android ] Pixel_VideoStreamFromWebGLCanvas [ Skip ]
 
-# WebGPU interop fails on windows and mac with unaccelerated webcodec videoFrame -- pixel color diff
+# WebGPU interop fails -- pixel color diff
 crbug.com/1395227 [ mac ] Pixel_WebGPUImportVideoFrameUnaccelerated [ Failure ]
 crbug.com/1395227 [ mac ] Pixel_WebGPUImportVideoFrameUnacceleratedOffscreenCanvas [ Failure ]
 crbug.com/1395227 [ mac ] Pixel_WebGPUImportVideoFrame [ Failure ]
@@ -364,6 +367,9 @@ crbug.com/1395227 [ win ] Pixel_WebGPUImportVideoFrameUnaccelerated [ Failure ]
 crbug.com/1395227 [ win ] Pixel_WebGPUImportVideoFrameUnacceleratedOffscreenCanvas [ Failure ]
 crbug.com/1395227 [ win ] Pixel_WebGPUImportVideoFrame [ Failure ]
 crbug.com/1395227 [ win ] Pixel_WebGPUImportVideoFrameOffscreenCanvas [ Failure ]
+crbug.com/1395227 [ linux renderer-skia-vulkan ] Pixel_VulkanSwiftShader_WebGPUImportVideoFrame [ Failure ]
+crbug.com/1395227 [ linux renderer-skia-vulkan ] Pixel_VulkanSwiftShader_WebGPUImportVideoFrameOffscreenCanvas [ Failure ]
+crbug.com/1395227 [ linux renderer-skia-vulkan ] Pixel_VulkanSwiftShader_WebGPUImportVideoFrameUnaccelerated [ Failure ]
 
 # Pixel_VideoStreamFromWebGL* tests sporadically fail on Linux FYI Release (NVIDIA) bot
 crbug.com/1348002 [ linux nvidia ] Pixel_VideoStreamFromWebGLAlphaCanvas [ Failure ]
@@ -386,9 +392,6 @@ crbug.com/1382332 [ chromeos ] Pixel_MediaRecorderFromVideoElementWithOoprCanvas
 crbug.com/1382332 [ android ] Pixel_MediaRecorderFromVideoElement [ Failure ]
 crbug.com/1382332 [ android ] Pixel_MediaRecorderFromVideoElementWithOoprCanvasDisabled [ Failure ]
 crbug.com/1382332 [ fuchsia ] Pixel_MediaRecorderFromVideoElementWithOoprCanvasDisabled [ Failure ]
-
-# Lacros failutres.
-crbug.com/1382332 [ desktop linux display-server-wayland passthrough intel ] Pixel_WebGLReadPixelsTabSwitch_SoftwareCompositing [ Failure ]
 
 #######################################################################
 # Automated Entries After This Point - Do Not Manually Add Below Here #

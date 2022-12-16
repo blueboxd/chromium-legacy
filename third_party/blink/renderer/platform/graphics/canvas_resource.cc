@@ -130,7 +130,12 @@ static void ReleaseFrameResources(
     scoped_refptr<CanvasResource>&& resource,
     const gpu::SyncToken& sync_token,
     bool lost_resource) {
-  if (!resource)
+  // If there is a LastUnrefCallback, we need to abort because recycling the
+  // resource now will prevent the LastUnrefCallback from ever being called.
+  // In such cases, ReleaseFrameResources will be called again when
+  // CanvasResourceDispatcher destroys the corresponding FrameResource object,
+  // at which time this resource will be safely recycled.
+  if (!resource || resource->HasLastUnrefCallback())
     return;
 
   resource->WaitSyncToken(sync_token);
@@ -144,8 +149,9 @@ static void ReleaseFrameResources(
   if (lost_resource)
     resource->NotifyResourceLost();
   if (resource_provider && !lost_resource && resource->IsRecycleable() &&
-      resource->HasOneRef())
+      resource->HasOneRef()) {
     resource_provider->RecycleResource(std::move(resource));
+  }
 }
 
 bool CanvasResource::PrepareTransferableResource(
@@ -699,7 +705,10 @@ void CanvasResourceRasterSharedImage::CopyRenderingResultsToGpuMemoryBuffer(
   auto surface = SkSurface::MakeRasterDirect(CreateSkImageInfo(),
                                              gpu_memory_buffer_->memory(0),
                                              gpu_memory_buffer_->stride(0));
-  surface->getCanvas()->drawImage(image, 0, 0);
+
+  SkPixmap pixmap;
+  image->peekPixels(&pixmap);
+  surface->writePixels(pixmap, 0, 0);
   auto* sii =
       ContextProviderWrapper()->ContextProvider()->SharedImageInterface();
   gpu_memory_buffer_->Unmap();

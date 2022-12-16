@@ -10,6 +10,7 @@
 #include <map>
 #include <memory>
 #include <sstream>
+#include <utility>
 #include <vector>
 
 #include "base/lazy_instance.h"
@@ -37,11 +38,6 @@
 #if BUILDFLAG(IS_OZONE)
 #include "ui/ozone/buildflags.h"
 #endif  // BUILDFLAG(IS_OZONE)
-
-#if BUILDFLAG(IS_ANDROID)
-#include <android/native_window_jni.h>
-#include "base/android/build_info.h"
-#endif
 
 #if !defined(EGL_FIXED_SIZE_ANGLE)
 #define EGL_FIXED_SIZE_ANGLE 0x3201
@@ -364,6 +360,16 @@ GLDisplayEGL* GLSurfaceEGL::GetGLDisplayEGL() {
 
 GLSurfaceEGL::~GLSurfaceEGL() = default;
 
+#if BUILDFLAG(IS_ANDROID)
+NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(
+    GLDisplayEGL* display,
+    ScopedANativeWindow scoped_window,
+    std::unique_ptr<gfx::VSyncProvider> vsync_provider)
+    : GLSurfaceEGL(display),
+      scoped_window_(std::move(scoped_window)),
+      window_(scoped_window_.a_native_window()),
+      vsync_provider_external_(std::move(vsync_provider)) {}
+#else
 NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(
     GLDisplayEGL* display,
     EGLNativeWindowType window,
@@ -371,17 +377,13 @@ NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(
     : GLSurfaceEGL(display),
       window_(window),
       vsync_provider_external_(std::move(vsync_provider)) {
-#if BUILDFLAG(IS_ANDROID)
-  if (window)
-    ANativeWindow_acquire(window);
-#endif
-
 #if BUILDFLAG(IS_WIN)
   RECT windowRect;
   if (GetClientRect(window_, &windowRect))
     size_ = gfx::Rect(windowRect).size();
 #endif
 }
+#endif  // BUILDFLAG(IS_ANDROID)
 
 bool NativeViewGLSurfaceEGL::Initialize(GLSurfaceFormat format) {
   DCHECK(!surface_);
@@ -622,7 +624,7 @@ bool NativeViewGLSurfaceEGL::IsOffscreen() {
 
 gfx::SwapResult NativeViewGLSurfaceEGL::SwapBuffers(
     PresentationCallback callback,
-    FrameData data) {
+    gfx::FrameData data) {
   TRACE_EVENT2("gpu", "NativeViewGLSurfaceEGL:RealSwapBuffers",
       "width", GetSize().width(),
       "height", GetSize().height());
@@ -967,7 +969,7 @@ bool NativeViewGLSurfaceEGL::GetFrameTimestampInfoIfAvailable(
 gfx::SwapResult NativeViewGLSurfaceEGL::SwapBuffersWithDamage(
     const std::vector<int>& rects,
     PresentationCallback callback,
-    FrameData data) {
+    gfx::FrameData data) {
   DCHECK(supports_swap_buffer_with_damage_);
 
   GLSurfacePresentationHelper::ScopedSwapBuffers scoped_swap_buffers(
@@ -988,7 +990,7 @@ gfx::SwapResult NativeViewGLSurfaceEGL::PostSubBuffer(
     int width,
     int height,
     PresentationCallback callback,
-    FrameData data) {
+    gfx::FrameData data) {
   TRACE_EVENT2("gpu", "NativeViewGLSurfaceEGL:PostSubBuffer", "width", width,
                "height", height);
   DCHECK(supports_post_sub_buffer_);
@@ -1015,7 +1017,7 @@ bool NativeViewGLSurfaceEGL::SupportsCommitOverlayPlanes() {
 
 gfx::SwapResult NativeViewGLSurfaceEGL::CommitOverlayPlanes(
     PresentationCallback callback,
-    FrameData data) {
+    gfx::FrameData data) {
   NOTREACHED();
   return gfx::SwapResult::SWAP_FAILED;
 }
@@ -1050,10 +1052,6 @@ bool NativeViewGLSurfaceEGL::ScheduleOverlayPlane(
 
 NativeViewGLSurfaceEGL::~NativeViewGLSurfaceEGL() {
   Destroy();
-#if BUILDFLAG(IS_ANDROID)
-  if (window_)
-    ANativeWindow_release(window_);
-#endif
 }
 
 PbufferGLSurfaceEGL::PbufferGLSurfaceEGL(GLDisplayEGL* display,
@@ -1136,7 +1134,7 @@ bool PbufferGLSurfaceEGL::IsOffscreen() {
 }
 
 gfx::SwapResult PbufferGLSurfaceEGL::SwapBuffers(PresentationCallback callback,
-                                                 FrameData data) {
+                                                 gfx::FrameData data) {
   NOTREACHED() << "Attempted to call SwapBuffers on a PbufferGLSurfaceEGL.";
   return gfx::SwapResult::SWAP_FAILED;
 }
@@ -1226,7 +1224,7 @@ bool SurfacelessEGL::IsSurfaceless() const {
 }
 
 gfx::SwapResult SurfacelessEGL::SwapBuffers(PresentationCallback callback,
-                                            FrameData data) {
+                                            gfx::FrameData data) {
   LOG(ERROR) << "Attempted to call SwapBuffers with SurfacelessEGL.";
   return gfx::SwapResult::SWAP_FAILED;
 }

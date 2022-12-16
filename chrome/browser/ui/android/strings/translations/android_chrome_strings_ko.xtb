@@ -12,7 +12,6 @@
 <translation id="1062628064301375934">웹의 개인 정보 보호 개선에 동참해 주세요</translation>
 <translation id="107147699690128016">파일 확장자를 변경하면 파일이 다른 애플리케이션에서 열리고 기기가 위험에 노출될 수도 있습니다.</translation>
 <translation id="1089606299949659462">검토 완료</translation>
-<translation id="1091604859693995976">새로고침하여 보기</translation>
 <translation id="1095761715416917775">언제든지 동기화 데이터에 액세스할 수 있도록 하세요</translation>
 <translation id="1100066534610197918">새 탭을 그룹에서 열기</translation>
 <translation id="1103142993930332957">Chrome을 개선하는 데 도움을 주시겠어요?</translation>
@@ -761,6 +760,7 @@
 <translation id="510275257476243843">1시간 남음</translation>
 <translation id="5115811374190515607">이동 위치: <ph name="PRODUCT_NAME" /></translation>
 <translation id="5118713593561876160">관심분야</translation>
+<translation id="5122378528687922675">도움이 필요하면 부모님(<ph name="PARENT_NAME_1" /> 또는 <ph name="PARENT_NAME_2" />)께 요청하세요</translation>
 <translation id="5123685120097942451">시크릿 탭</translation>
 <translation id="5126510351761255129">카드 인증</translation>
 <translation id="5132942445612118989">모든 기기의 비밀번호, 방문 기록 등 동기화</translation>
@@ -1106,7 +1106,6 @@
 <translation id="6903907808598579934">동기화 사용 설정</translation>
 <translation id="6908998565271542516">웹사이트 승인 또는 비승인 옵션이 전체 높이로 열림</translation>
 <translation id="6909589135458168665">페이지 미리 로드</translation>
-<translation id="692924882724759447">여기에서 내가 팔로우하는 사이트 보기</translation>
 <translation id="6942665639005891494">언제든지 설정 메뉴 옵션으로 기본 다운로드 위치 변경 가능</translation>
 <translation id="694267552845942083">현재 동기화 설정을 맞춤설정 중입니다. 동기화 사용 설정을 마무리하려면 화면 하단 근처에 있는 확인 버튼을 탭하세요. 위로 이동</translation>
 <translation id="6945221475159498467">선택</translation>
@@ -1148,6 +1147,7 @@
 <translation id="7177466738963138057">나중에 설정에서 변경 가능</translation>
 <translation id="7177873915659574692">QR 코드를 만들 수 없습니다. URL이 <ph name="CHARACTER_LIMIT" />자(영문 기준)를 초과합니다.</translation>
 <translation id="7177959540995930968">Chrome 설정에서 이러한 기능에 관해 자세히 알아볼 수 있습니다.</translation>
+<translation id="7180611975245234373">새로고침</translation>
 <translation id="718226107353899806">최대 <ph name="MAX_NUM_REACTIONS" />개의 반응을 추가할 수 있습니다.</translation>
 <translation id="7183693674623539380">탭 그룹 - <ph name="TITLE_OF_GROUP" /></translation>
 <translation id="7187993566681480880">로그인 상태일 때 Chrome에서 사용자를 보호하고 기타 Google 앱에서 사용자의 보안을 강화하는 데 사용될 수 있습니다.</translation>
@@ -1331,6 +1331,7 @@
 <translation id="8084285576995584326">Google 계정 데이터 관리</translation>
 <translation id="808747664143081553">기기에 연결되었습니다.</translation>
 <translation id="8088176524274673045">근처에 있는 사람과 공유하려면 상대방이 QR 코드를 스캔하도록 하세요.</translation>
+<translation id="8090732854597034573">도움이 필요하면 부모님께 요청하세요</translation>
 <translation id="8100969750121413114">로그인하여 Chrome을 맞춤설정하세요</translation>
 <translation id="8103578431304235997">시크릿 탭</translation>
 <translation id="8105613260829665809">계속하면 <ph name="BEGIN_TOS_LINK" />서비스 약관<ph name="END_TOS_LINK" />에 동의하는 것으로 간주됩니다.\n앱 개선을 위해 Chrome에서 사용 및 비정상 종료 데이터를 Google에 전송합니다. <ph name="BEGIN_UMA_LINK" />관리<ph name="END_UMA_LINK" /></translation>
@@ -1339,6 +1340,7 @@
 <translation id="8109613176066109935">어느 기기에서나 내 북마크를 사용하려면 동기화를 사용 설정하세요.</translation>
 <translation id="8110024788458304985">Chrome의 기능 및 성능 개선에 참여</translation>
 <translation id="8110087112193408731">디지털 웰빙에서 Chrome 활동을 표시할까요?</translation>
+<translation id="8118117428362942925">도움이 필요하면 부모님(<ph name="PARENT_NAME" />)께 요청하세요</translation>
 <translation id="8127542551745560481">홈페이지 수정</translation>
 <translation id="8130309322784422030">저장된 로그인 정보가 오래되었을 수 있습니다</translation>
 <translation id="813082847718468539">사이트 정보 보기</translation>

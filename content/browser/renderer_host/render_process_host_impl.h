@@ -81,6 +81,7 @@
 #include "ui/gfx/gpu_memory_buffer.h"
 
 #if BUILDFLAG(IS_ANDROID)
+#include "base/memory/memory_pressure_listener.h"
 #include "content/public/browser/android/child_process_importance.h"
 #endif
 
@@ -306,6 +307,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
       mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) override;
   void BindIndexedDB(
       const blink::StorageKey& storage_key,
+      const GlobalRenderFrameHostId& rfh_id,
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) override;
   void BindBucketManagerHost(
       base::WeakPtr<BucketContext> bucket_context,
@@ -323,7 +325,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
       const GlobalRenderFrameHostId& render_frame_host_id) override;
 
   void SetOsSupportForAttributionReporting(
-      blink::mojom::AttributionOsSupport os_support) override;
+      attribution_reporting::mojom::OsSupport os_support) override;
 
   // IPC::Sender via RenderProcessHost.
   bool Send(IPC::Message* msg) override;
@@ -744,6 +746,12 @@ class CONTENT_EXPORT RenderProcessHostImpl
   static void SetNetworkFactoryForTesting(
       const CreateNetworkFactoryCallback& url_loader_factory_callback);
 
+#if BUILDFLAG(IS_ANDROID)
+  // Notifies the renderer process of memory pressure level.
+  void NotifyMemoryPressureToRenderer(
+      base::MemoryPressureListener::MemoryPressureLevel level);
+#endif
+
  protected:
   // A proxy for our IPC::Channel that lives on the IO thread.
   std::unique_ptr<IPC::ChannelProxy> channel_;
@@ -1058,7 +1066,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Clients that contribute priority to this process.
   base::flat_set<RenderProcessHostPriorityClient*> priority_clients_;
 
-  ChildProcessLauncherPriority priority_;
+  RenderProcessPriority priority_;
 
   // If this is set then the built-in process priority calculation system is
   // ignored, and an externally computed process priority is used. Set to true

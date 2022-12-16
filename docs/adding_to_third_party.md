@@ -22,17 +22,37 @@ there.
 
 To make sure the inclusion of a new third_party project makes sense for the
 Chromium project, you should first obtain
-[Chrome Eng Review](../ENG_REVIEW_OWNERS) approval. Please include the following information in an
-email to chrome-eng-review@google.com:
+[Chrome ATL](../ATL_OWNERS) approval. Please include the following information in an
+email to chrome-atls@google.com:
 * Motivation of your project
 * Design docs
 * Additional checkout size
+   * If the increase is significant (e.g., 20+ MB), can we consider limiting the
+   files to be checked in?
 * Build time increase
-* Binary size increase on Android ([official](https://www.chromium.org/developers/gn-build-configuration)  builds)
+   * If the increase is significant (e.g., 30+ seconds), can we consider making
+   this an optional build target?
+* Binary size increase on Android ([official](https://www.chromium.org/developers/gn-build-configuration) builds)
+   * Any 16 KB increase on Android is flagged on the build bots and
+   justification is needed.
 * Binary size increase on Windows
+* Is this library maintained on all platforms that we will use it on?
+   * If not, will the Chrome org be expected to maintain this for some or all
+   platforms?
+* Does it have any performance / memory implications (esp. on Android)? Was the
+library designed with intended use on Android?
+* Do we really need the library? Is there any alternative such as an existing
+library already in Chromium? If introducing a library with similar functionality
+as existing, will it be easy for another developer to understand which should be
+used where? Will you commit to consolidating uses in Chromium and remove the
+alternative libraries?
+* For desktop (Win/Mac/Linux/ChromeOS), does the dependency introduce closed
+source components (e.g., binaries, WASM binaries, obfuscated code)? If yes,
+please reach out to Chrome ATLs.
 
-Googlers can access [go/chrome-eng-review](https://goto.google.com/chrome-eng-review) and review
-existing topics in g/chrome-eng-review, and can also come to office hours to ask
+
+Googlers can access [go/chrome-atls](https://goto.google.com/chrome-atls) and review
+existing topics in g/chrome-atls, and can also come to office hours to ask
 questions.
 
 ### Rust
@@ -50,7 +70,7 @@ mitigations).
 (memory/crashes/undefined behavior) bugs, when compared to the existing
 third-party library and related C++ code required to use the library. We realize
 assessing risk is quite complex and very nuanced. If this is the criteria by
-which the third-party library is being added, chrome-eng-review@google.com and
+which the third-party library is being added, chrome-atls@google.com and
 chrome-rust@google.com may ask for more data.
 
 Support for third-party libraries written in Rust is in active development. If
@@ -223,7 +243,7 @@ following sign-offs. Some of these are accessible to Googlers only.
 Non-Googlers can email one of the people in
 [//third_party/OWNERS](../third_party/OWNERS) for help.
 
-* Make sure you have the approval from Chrome Eng Review as mentioned
+* Make sure you have the approval from Chrome ATLs as mentioned
   [above](#before-you-start).
 * Get security@chromium.org (or chrome-security@google.com, Google-only)
   approval. Email the list with relevant details and a link to the CL.
@@ -242,8 +262,8 @@ Non-Googlers can email one of the people in
 * Lastly, if all other steps are complete, get a positive code review from a
   member of [//third_party/OWNERS](../third_party/OWNERS) to land the change.
 
-Please send separate emails to the eng review and security@chromium.org.
-You can skip the eng review and security@chromium.org when you are only moving
+Please send separate emails to the ATLs and security@chromium.org.
+You can skip the ATL review and security@chromium.org when you are only moving
 existing directories in Chromium to //third_party/.
 
 Subsequent changes don't normally require third-party-owners or security

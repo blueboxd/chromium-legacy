@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.payments;
 import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,7 +22,6 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.AppPresence;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.FactorySpeed;
-import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.payments.Event;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
@@ -33,23 +33,22 @@ import java.util.concurrent.TimeoutException;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallback {
+public class PaymentRequestJourneyLoggerTest {
     @Rule
     public PaymentRequestTestRule mPaymentRequestTestRule =
-            new PaymentRequestTestRule("payment_request_metrics_test.html", this);
+            new PaymentRequestTestRule("payment_request_metrics_test.html");
 
-    @Override
-    public void onMainActivityStarted() {}
-
-    private void createTestData() throws TimeoutException {
+    @Before
+    public void setUp() throws TimeoutException {
         AutofillTestHelper mHelper = new AutofillTestHelper();
         // The user has a shipping address.
-        String mBillingAddressId = mHelper.setProfile(new AutofillProfile("", "https://example.com",
-                true, "" /* honorific prefix */, "Jon Doe", "Google", "340 Main St", "CA",
-                "Los Angeles", "", "90291", "", "US", "650-253-0000", "jondoe@email.com", "en-US"));
+        String mBillingAddressId = mHelper.setProfile(
+                new AutofillProfile("", "https://example.test", true, "" /* honorific prefix */,
+                        "Jon Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "",
+                        "US", "650-253-0000", "jondoe@email.com", "en-US"));
         // The user also has an incomplete address.
         String mIncompleteAddressId = mHelper.setProfile(new AutofillProfile("",
-                "https://example.com", true, "" /* honorific prefix */, "In Complete", "Google",
+                "https://example.test", true, "" /* honorific prefix */, "In Complete", "Google",
                 "344 Main St", "CA", "", "", "90291", "", "US", "650-253-0000", "", "en-US"));
     }
 
@@ -61,8 +60,6 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
     @DisabledTest(message = "crbug.com/1182234")
     @Feature({"Payments"})
     public void testNumberOfSuggestionsShown_ShippingAddress_Completed() throws TimeoutException {
-        createTestData();
-
         // Complete a Payment Request with a credit card.
         mPaymentRequestTestRule.triggerUIAndWait("ccBuy", mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
@@ -87,8 +84,6 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
     @Feature({"Payments"})
     public void testNumberOfSuggestionsShown_ShippingAddress_AbortedByUser()
             throws InterruptedException, TimeoutException {
-        createTestData();
-
         // Cancel the payment request.
         mPaymentRequestTestRule.triggerUIAndWait("ccBuy", mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
@@ -111,18 +106,16 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
     @Feature({"Payments"})
     public void testNumberOfSuggestionsShown_PaymentMethod_Completed() throws TimeoutException {
         mPaymentRequestTestRule.addPaymentAppFactory(
-                "https://bobpay.com", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
+                "https://bobpay.test", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
         mPaymentRequestTestRule.addPaymentAppFactory(
-                "https://kylepay.com/webpay", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
-
-        createTestData();
+                "https://kylepay.test/webpay", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
 
         // Complete a Payment Request with the payment app.
         mPaymentRequestTestRule.triggerUIAndWait(
                 "buyWithUrlMethods", mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getDismissed());
-        // Matches either "https://bobpay.com" or "https://kylepay.com/webpay"
+        // Matches either "https://bobpay.test" or "https://kylepay.test/webpay"
         mPaymentRequestTestRule.expectResultContains(
                 new String[] {"https://", "\"transaction\"", "1337"});
 
@@ -141,11 +134,9 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
             throws InterruptedException, TimeoutException {
         // Add two payment apps
         mPaymentRequestTestRule.addPaymentAppFactory(
-                "https://bobpay.com", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
+                "https://bobpay.test", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
         mPaymentRequestTestRule.addPaymentAppFactory(
-                "https://kylepay.com/webpay", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
-
-        createTestData();
+                "https://kylepay.test/webpay", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
 
         // Cancel the payment request.
         mPaymentRequestTestRule.triggerUIAndWait(
@@ -172,11 +163,9 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
             throws InterruptedException, TimeoutException {
         // Add an incomplete payment app.
         mPaymentRequestTestRule.addPaymentAppFactory(
-                "https://bobpay.com", AppPresence.NO_APPS, FactorySpeed.FAST_FACTORY);
+                "https://bobpay.test", AppPresence.NO_APPS, FactorySpeed.FAST_FACTORY);
         mPaymentRequestTestRule.addPaymentAppFactory(
-                "https://kylepay.com/webpay", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
-
-        createTestData();
+                "https://kylepay.test/webpay", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
 
         // Cancel the payment request.
         mPaymentRequestTestRule.triggerUIAndWait(
@@ -200,8 +189,6 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
     @DisabledTest(message = "crbug.com/1182234")
     @Feature({"Payments"})
     public void testNumberOfSuggestionsShown_ContactInfo_Completed() throws TimeoutException {
-        createTestData();
-
         // Complete a Payment Request with a credit card.
         mPaymentRequestTestRule.triggerUIAndWait(
                 "contactInfoBuy", mPaymentRequestTestRule.getReadyToPay());
@@ -227,8 +214,6 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
     @DisabledTest(message = "https://crbug.com/1197578")
     public void testNumberOfSuggestionsShown_ContactInfo_AbortedByUser()
             throws InterruptedException, TimeoutException {
-        createTestData();
-
         // Cancel the payment request.
         mPaymentRequestTestRule.triggerUIAndWait(
                 "contactInfoBuy", mPaymentRequestTestRule.getReadyToPay());
@@ -253,9 +238,6 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
     @DisabledTest(message = "crbug.com/1182234")
     @Feature({"Payments"})
     public void testUserHadCompleteSuggestions_ShippingAndPayment() throws TimeoutException {
-        // Add two addresses and two cards.
-        createTestData();
-
         // Cancel the payment request.
         mPaymentRequestTestRule.triggerUIAndWait("ccBuy", mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
@@ -284,9 +266,10 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
             throws TimeoutException {
         // Add a card and an incomplete address (no region).
         AutofillTestHelper mHelper = new AutofillTestHelper();
-        String mBillingAddressId = mHelper.setProfile(new AutofillProfile("", "https://example.com",
-                true, "" /* honorific prefix */, "Jon Doe", "Google", "340 Main St", /*region=*/"",
-                "Los Angeles", "", "90291", "", "US", "650-253-0000", "", "en-US"));
+        String mBillingAddressId = mHelper.setProfile(
+                new AutofillProfile("", "https://example.test", true, "" /* honorific prefix */,
+                        "Jon Doe", "Google", "340 Main St", /*region=*/"", "Los Angeles", "",
+                        "90291", "", "US", "650-253-0000", "", "en-US"));
 
         // Cancel the payment request.
         mPaymentRequestTestRule.triggerUIAndWait(
@@ -319,9 +302,10 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
             throws TimeoutException {
         // Add an incomplete card (no exp date) and an complete address.
         AutofillTestHelper mHelper = new AutofillTestHelper();
-        String mBillingAddressId = mHelper.setProfile(new AutofillProfile("", "https://example.com",
-                true, "" /* honorific prefix */, "Jon Doe", "Google", "340 Main St", "CA",
-                "Los Angeles", "", "90291", "", "US", "650-253-0000", "", "en-US"));
+        String mBillingAddressId =
+                mHelper.setProfile(new AutofillProfile("", "https://example.test", true,
+                        "" /* honorific prefix */, "Jon Doe", "Google", "340 Main St", "CA",
+                        "Los Angeles", "", "90291", "", "US", "650-253-0000", "", "en-US"));
 
         // Cancel the payment request.
         mPaymentRequestTestRule.triggerUIAndWait(
@@ -352,7 +336,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
             throws TimeoutException {
         // Add a complete address and a working payment app.
         AutofillTestHelper mHelper = new AutofillTestHelper();
-        mHelper.setProfile(new AutofillProfile("", "https://example.com", true,
+        mHelper.setProfile(new AutofillProfile("", "https://example.test", true,
                 "" /* honorific prefix */, "Jon Doe", "Google", "340 Main St", "CA", "Los Angeles",
                 "", "90291", "", "US", "650-253-0000", "", "en-US"));
         mPaymentRequestTestRule.addPaymentAppFactory(
@@ -384,11 +368,9 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
     public void testUserHadCompleteSuggestions_PaymentApp_HasValidPaymentApp()
             throws TimeoutException {
         mPaymentRequestTestRule.addPaymentAppFactory(
-                "https://bobpay.com", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
+                "https://bobpay.test", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
         mPaymentRequestTestRule.addPaymentAppFactory(
-                "https://kylepay.com/webpay", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
-
-        createTestData();
+                "https://kylepay.test/webpay", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
 
         // Cancel the payment request.
         mPaymentRequestTestRule.triggerUIAndWait(
@@ -419,9 +401,10 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
             throws TimeoutException {
         // Add a card and an incomplete address (no region).
         AutofillTestHelper mHelper = new AutofillTestHelper();
-        String mBillingAddressId = mHelper.setProfile(new AutofillProfile("", "https://example.com",
-                true, "" /* honorific prefix */, "Jon Doe", "Google", "340 Main St", /*region=*/"",
-                "Los Angeles", "", "90291", "", "US", "650-253-0000", "", "en-US"));
+        String mBillingAddressId = mHelper.setProfile(
+                new AutofillProfile("", "https://example.test", true, "" /* honorific prefix */,
+                        "Jon Doe", "Google", "340 Main St", /*region=*/"", "Los Angeles", "",
+                        "90291", "", "US", "650-253-0000", "", "en-US"));
 
         // Cancel the payment request.
         mPaymentRequestTestRule.triggerUIAndWait(
@@ -450,8 +433,6 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
     @DisabledTest(message = "crbug.com/1182234")
     @Feature({"Payments"})
     public void testNoContactInfoHistogram() throws TimeoutException {
-        createTestData();
-
         // Complete a Payment Request with a credit card.
         mPaymentRequestTestRule.triggerUIAndWait("ccBuy", mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
@@ -476,11 +457,9 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
     @Feature({"Payments"})
     public void testTwoTimes() throws TimeoutException {
         mPaymentRequestTestRule.addPaymentAppFactory(
-                "https://bobpay.com", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
+                "https://bobpay.test", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
         mPaymentRequestTestRule.addPaymentAppFactory(
-                "https://kylepay.com/webpay", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
-
-        createTestData();
+                "https://kylepay.test/webpay", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
 
         // Complete a Payment Request with payment apps.
         mPaymentRequestTestRule.triggerUIAndWait(
@@ -494,7 +473,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
                         "PaymentRequest.NumberOfSuggestionsShown.PaymentMethod.Completed", 2));
 
         // Complete a second Payment Request with payment apps.
-        mPaymentRequestTestRule.reTriggerUIAndWait(
+        mPaymentRequestTestRule.triggerUIAndWait(
                 "buyWithUrlMethods", mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getDismissed());
@@ -525,7 +504,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
         // Android Pay has a factory but it does not return an app.
         mPaymentRequestTestRule.addPaymentAppFactory(
                 "https://android.com/pay", AppPresence.NO_APPS, FactorySpeed.SLOW_FACTORY);
-        mPaymentRequestTestRule.openPageAndClickNodeAndWait(
+        mPaymentRequestTestRule.clickNodeAndWait(
                 "androidPayBuy", mPaymentRequestTestRule.getShowFailed());
         mPaymentRequestTestRule.expectResultContains(
                 new String[] {"The payment method", "not supported"});

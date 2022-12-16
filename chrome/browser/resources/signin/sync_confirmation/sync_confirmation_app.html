@@ -2,6 +2,15 @@
   :host {
     --banner-size: auto;
     --footer-margin: 24px;
+    --tangible-sync-dialog-illustration-url:
+        url(./images/tangible_sync_dialog_illustration.svg);
+    --tangible-sync-window-left-illustration-url:
+        url(./images/tangible_sync_window_left_illustration.svg);
+    --tangible-sync-window-right-illustration-url:
+        url(./images/tangible_sync_window_right_illustration.svg);
+    --sync-benefits-list-color: var(--google-grey-50);
+    --sync-benefit-icon-color: var(--google-blue-600);
+    --sync-info-title-color: var(--google-grey-800);
     color: var(--cr-primary-text-color);
     display: block;
   }
@@ -216,6 +225,11 @@
     font-weight: normal;
   }
 
+  #tangible-sync-button-container cr-button {
+    font-size: 0.75rem;
+    min-width: 111px;
+  }
+
   #headerContainer.signin-intercept-design {
     background: center 36px no-repeat
         url(./images/sync_confirmation_signin_intercept_illustration.svg);
@@ -255,18 +269,40 @@
     margin: auto;
   }
 
+  #tangible-sync-button-container.action-container,
   .signin-intercept-design .action-container {
     --action-container-padding: 24px;
     column-gap: 12px;
   }
 
-  #contentContainer.tangible-sync {
-    align-items: center;
+  .tangible-sync {
+    --action-container-padding: 24px;
+  }
+
+  .tangible-sync #contentContainer {
+    align-items: stretch;
     display: flex;
     flex-direction: column;
     margin: auto;
-    padding-top: 120px;
-    width: 500px;
+    max-width: 500px;
+  }
+
+  .window-main-container {
+    --button-container-height: calc(2 * var(--action-container-padding) +
+        var(--cr-button-height));
+    display: flex;
+    height: calc(100vh - var(--button-container-height));
+    width: 100vw;
+  }
+
+  .dialog-main-container.tangible-sync #contentContainer {
+    --sync-info-desc-bottom-margin: 48px;
+    --container-bottom-padding: calc(var(--sync-info-desc-bottom-margin) +
+        var(--cr-button-height) + var(--action-container-padding));
+
+    /* Bottom padding is needed to save space for the button row in
+    the modal dialog view. */
+    padding: 32px 0 var(--container-bottom-padding);
   }
 
   .tangible-sync #avatarContainer {
@@ -284,29 +320,30 @@
   }
 
   .tangible-sync #syncConfirmationHeading {
-    font-size: 2.92em;
+    font-family: 'Google Sans', arial, sans-serif;
+    font-size: 1.25rem;
     font-weight: 500;
-    line-height: 44px;
-    margin: 24px 0 16px;
+    line-height: 24px;
+    margin: 16px 0 12px;
   }
 
   #syncInfoTitle {
-    font-size: 1.6em;
+    color: var(--sync-info-title-color);
+    font-size: 0.94rem;
     line-height: 24px;
   }
 
   #syncBenefitsList {
-    background: var(--google-grey-50);
+    background: var(--sync-benefits-list-color);
     border-radius: 24px;
     display: flex;
     flex-direction: column;
-    font-size: 1.05em;
+    font-size: 0.81rem;
     font-weight: 400;
     line-height: 20px;
-    margin: 24px 0 16px;
-    padding: 24px;
+    margin: 16px 38px;
+    padding: 20px 24px;
     row-gap: 16px;
-    width: 452px;
   }
 
   .sync-benefit {
@@ -318,17 +355,53 @@
   }
 
   .sync-benefit-icon {
-    color: var(--google-blue-600);
+    color: var(--sync-benefit-icon-color);
     height: 24px;
     width: 24px;
   }
 
   #syncInfoDesc {
-    font-size: 0.95em;
+    font-size: 0.75rem;
     line-height: 20px;
+    margin: 0 38px;
+  }
+
+  #tangible-sync-dialog-illustration {
+    content: var(--tangible-sync-dialog-illustration-url);
+    height: 68px;
+    left: 50%;
+    position: absolute;
+    top: 40px;
+    transform: translateX(-50%);
+    width: 328px;
+  }
+
+  #tangible-sync-window-left-illustration {
+    content: var(--tangible-sync-window-left-illustration-url);
+    left: 0;
+  }
+
+  #tangible-sync-window-right-illustration {
+    content: var(--tangible-sync-window-right-illustration-url);
+    right: 0;
+  }
+
+  .tangible-sync-window-illustration {
+    max-width: 320px;
+    position: absolute;
+    top: 0;
+    width: 17vw;
   }
 
   @media (prefers-color-scheme: dark) {
+    :host {
+      --tangible-sync-dialog-illustration-url:
+          url(./images/tangible_sync_dialog_illustration_dark.svg);
+      --sync-benefits-list-color: var(--google-grey-800);
+      --sync-benefit-icon-color: var(--google-blue-300);
+      --sync-info-title-color: var(--google-grey-500);
+    }
+
     /* Modal dialog design */
     #illustration {
       background-image:
@@ -482,38 +555,44 @@
 </template>
 
 <template is="dom-if" if="[[isTangibleSync_]]">
-  <div id="contentContainer" class="tangible-sync">
-    <div id="avatarContainer">
-      <img id="avatar" alt="" src="[[accountImageSrc_]]">
-      <div class="work-badge" id="badge" hidden="[[!showEnterpriseBadge_]]">
-        <iron-icon icon="cr:domain"></iron-icon>
+  <div class$="tangible-sync [[getMainContainerClass_()]]">
+    <img id="tangible-sync-dialog-illustration" hidden="[[!isModalDialog_]]">
+    <img id="tangible-sync-window-left-illustration"
+      class="tangible-sync-window-illustration" hidden="[[isModalDialog_]]">
+    <img id="tangible-sync-window-right-illustration"
+      class="tangible-sync-window-illustration" hidden="[[isModalDialog_]]">
+    <div id="contentContainer">
+      <div id="avatarContainer">
+        <img id="avatar" alt="" src="[[accountImageSrc_]]">
+        <div class="work-badge" id="badge" hidden="[[!showEnterpriseBadge_]]">
+          <iron-icon icon="cr:domain"></iron-icon>
+        </div>
+      </div>
+      <h1 id="syncConfirmationHeading" consent-description>
+        $i18n{syncConfirmationTitle}
+      </h1>
+      <div id="syncInfoTitle" consent-description>
+        $i18n{syncConfirmationSyncInfoTitle}
+      </div>
+      <div id="syncBenefitsList">
+        <template is="dom-repeat" items="[[syncBenefitsList_]]">
+          <div class="sync-benefit">
+            <iron-icon class="sync-benefit-icon" icon="[[item.iconName]]">
+            </iron-icon>
+            <div class="sync-benefit-text" consent-description>
+              [[i18n(item.title)]]
+            </div>
+          </div>
+        </template>
+      </div>
+      <div id="syncInfoDesc" class="secondary" consent-description>
+        $i18n{syncConfirmationSyncInfoDesc}
       </div>
     </div>
-    <h1 id="syncConfirmationHeading" consent-description>
-      $i18n{syncConfirmationTitle}
-    </h1>
-    <div id="syncInfoTitle" class="secondary" consent-description>
-      $i18n{syncConfirmationSyncInfoTitle}
-    </div>
-    <div id="syncBenefitsList">
-      <template is="dom-repeat" items="[[syncBenefitsList_]]">
-        <div class="sync-benefit">
-          <iron-icon class="sync-benefit-icon" icon="[[item.iconName]]">
-          </iron-icon>
-          <div class="sync-benefit-text" consent-description>
-            [[i18n(item.title)]]
-          </div>
-        </div>
-      </template>
-    </div>
-    <div id="syncInfoDesc" class="secondary" consent-description>
-      $i18n{syncConfirmationSyncInfoDesc}
-    </div>
   </div>
-
-  <div class="action-row">
+  <div class="action-row tangible-sync">
     <paper-spinner-lite active="[[anyButtonClicked_]]"></paper-spinner-lite>
-    <div id="buttonsContainer" class="action-container">
+    <div id="tangible-sync-button-container" class="action-container">
       <cr-button id="confirmButton" class="action-button" on-click="onConfirm_"
           disabled="[[anyButtonClicked_]]" consent-confirmation
           autofocus="[[isModalDialog_]]">

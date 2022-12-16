@@ -6,17 +6,23 @@
 #define CHROME_BROWSER_UI_VIEWS_SIDE_PANEL_READ_ANYTHING_READ_ANYTHING_CONSTANTS_H_
 
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/accessibility/ax_mode.h"
 
 // Various constants used throughout the Read Anything feature.
 namespace {
 
+// |ui::AXMode::kHTML| is needed for URL information.
+// |ui::AXMode::kScreenReader| is needed for heading level information.
+const ui::AXMode kReadAnythingAXMode =
+    ui::AXMode::kWebContents | ui::AXMode::kHTML | ui::AXMode::kScreenReader;
+
 // Visual constants for Read Anything feature.
 const int kInternalInsets = 8;
 const int kSeparatorTopBottomPadding = 4;
+const int kMinimumComboboxWidth = 110;
 
-const int kButtonPadding = 8;
-const int kSmallIconSize = 18;
-const int kLargeIconSize = 20;
+const int kButtonPadding = 4;
+const int kIconSize = 16;
 const int kColorsIconSize = 24;
 
 const char kReadAnythingDefaultFontName[] = "Standard font";

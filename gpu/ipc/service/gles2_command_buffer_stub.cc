@@ -72,9 +72,7 @@ GLES2CommandBufferStub::GLES2CommandBufferStub(
                         sequence_id,
                         stream_id,
                         route_id),
-      gles2_decoder_(nullptr),
-      use_shared_images_swapchain_for_ppapi_(
-          features::UseSharedImagesSwapChainForPPAPI()) {}
+      gles2_decoder_(nullptr) {}
 
 GLES2CommandBufferStub::~GLES2CommandBufferStub() = default;
 
@@ -106,15 +104,12 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
   } else {
     scoped_refptr<gles2::FeatureInfo> feature_info = new gles2::FeatureInfo(
         manager->gpu_driver_bug_workarounds(), manager->gpu_feature_info());
-    gpu::GpuMemoryBufferFactory* gmb_factory =
-        manager->gpu_memory_buffer_factory();
     context_group_ = new gles2::ContextGroup(
         manager->gpu_preferences(), gles2::PassthroughCommandDecoderSupported(),
         manager->mailbox_manager(), CreateMemoryTracker(),
         manager->shader_translator_cache(),
         manager->framebuffer_completeness_cache(), feature_info,
         init_params.attribs.bind_generates_resource,
-        gmb_factory ? gmb_factory->AsImageFactory() : nullptr,
         manager->watchdog() /* progress_reporter */,
         manager->gpu_feature_info(), manager->discardable_manager(),
         manager->passthrough_discardable_manager(),
@@ -165,14 +160,10 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
     use_virtualized_gl_context_ = false;
 #endif
 
-  gpu::GpuMemoryBufferFactory* gmb_factory =
-      manager->gpu_memory_buffer_factory();
-
   command_buffer_ = std::make_unique<CommandBufferService>(
       this, context_group_->memory_tracker());
   gles2_decoder_ = gles2::GLES2Decoder::Create(
-      this, command_buffer_.get(), manager->outputter(), context_group_.get(),
-      gmb_factory ? gmb_factory->AsImageFactory() : nullptr);
+      this, command_buffer_.get(), manager->outputter(), context_group_.get());
   set_decoder_context(std::unique_ptr<DecoderContext>(gles2_decoder_));
 
   sync_point_client_state_ =
@@ -263,7 +254,7 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
             gl::GLSurfaceFormat::COLOR_SPACE_DISPLAY_P3);
         break;
     }
-    surface_ = ImageTransportSurface::CreateNativeSurface(
+    surface_ = ImageTransportSurface::CreateNativeGLSurface(
         display, weak_ptr_factory_.GetWeakPtr(), surface_handle_,
         surface_format);
     if (!surface_ || !surface_->Initialize(surface_format)) {
@@ -479,10 +470,6 @@ void GLES2CommandBufferStub::OnSetDefaultFramebufferSharedImage(
     bool preserve,
     bool needs_depth,
     bool needs_stencil) {
-  if (!use_shared_images_swapchain_for_ppapi_)
-    return;
-
-  // No need to pull texture updates.
   gles2_decoder_->SetDefaultFramebufferSharedImage(
       mailbox, samples_count, preserve, needs_depth, needs_stencil);
 }

@@ -285,7 +285,7 @@
       origin_trial_allows_third_party: true,
       origin_trial_feature_name: "AnonymousIframeOriginTrial",
       public: true,
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "AOMAriaRelationshipProperties",
@@ -304,7 +304,7 @@
     },
     {
       name: "AudioContextSetSinkId",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "AudioOutputDevices",
@@ -594,7 +594,7 @@
     },
     {
       name: "CrossFramePerformanceTimeline",
-      status: "test",
+      status: "experimental",
       base_feature: "CrossFramePerformanceTimeline",
     },
     {
@@ -617,6 +617,10 @@
       // https://drafts.csswg.org/css-conditional-4/#support-definition-ext
       // https://github.com/w3c/csswg-drafts/issues/7280#issuecomment-1143852187
       name: "CSSAtSupportsAlwaysNonForgivingParsing",
+      status: "experimental",
+    },
+    {
+      name: "CSSBaselineSource",
       status: "experimental",
     },
     {
@@ -813,7 +817,6 @@
     {
       name: "CSSPictureInPicture",
       status: "stable",
-      depends_on: ["PictureInPictureAPI"],
     },
     {
       name: "CSSPositionStickyStaticScrollPosition",
@@ -1053,7 +1056,6 @@
     },
     {
       name: "DocumentPictureInPictureAPI",
-      depends_on: ["PictureInPictureAPI"],
       public: true,
       status: {
         "Android": "",
@@ -1184,6 +1186,13 @@
       status: "stable",
     },
     {
+      // This only exists so we can use RuntimeEnabled in the IDL file
+      // when either implied_by flag is enabled.
+      name: "FedCmIdentityProviderInterface",
+      public: true,
+      implied_by: ["FedCmIdpSigninStatus", "FedCmUserInfo"],
+    },
+    {
       name: "FedCmIdpSigninStatus",
       depends_on: ["FedCm"],
       public: true,
@@ -1199,10 +1208,15 @@
       name: "FedCmIframeSupport",
       depends_on: ["FedCm"],
       public: true,
-      status: "test",
+      status: "stable",
     },
     {
       name: "FedCmMultipleIdentityProviders",
+      depends_on: ["FedCm"],
+      public: true,
+    },
+    {
+      name: "FedCmUserInfo",
       depends_on: ["FedCm"],
       public: true,
     },
@@ -1874,6 +1888,16 @@
       origin_trial_feature_name: "NotificationTriggers",
       status: "experimental",
     },
+    // Origin trial to experiment with No-Vary-Search in Prefetch Cache
+    // See crbug.com/1378075. Depends on SpeculationRulesPrefetchProxy to be
+    // enabled.
+    // On the browser side, the trial needs features::kPrefetchUseContentRefactor
+    // enabled. If features::kPrefetchUseContentRefactor is disabled, then
+    // the code will behave as if PrefetchNoVarySearch is disabled.
+    {
+      name: "NoVarySearchPrefetch",
+      origin_trial_feature_name: "NoVarySearchPrefetch",
+    },
     {
       name: "OffMainThreadCSSPaint",
       status: "stable",
@@ -2093,11 +2117,6 @@
     {
       name: "PermissionsRequestRevoke",
       status: "experimental",
-    },
-    {
-      name: "PictureInPictureAPI",
-      public: true,
-      status: "stable"
     },
     // This is a reverse OT used for a phased deprecation.
     // https://crbug.com/918374
@@ -2424,12 +2443,6 @@
       status: "stable",
     },
     {
-      // Whether to enable scroll update optimizations. See crbug.com/1346789.
-      name: "ScrollUpdateOptimizations",
-      base_feature: "ScrollUpdateOptimizations",
-      status: "stable",
-    },
-    {
       name: "SecureContextFixForSharedWorkers",
       status: "stable",
     },
@@ -2452,7 +2465,8 @@
     {
       name: "SecurePaymentConfirmationOptOut",
       origin_trial_feature_name: "SecurePaymentConfirmationOptOut",
-      origin_trial_allows_third_party: true
+      origin_trial_allows_third_party: true,
+      status: "stable",
     },
     {
       // When a Web application calls getDisplayMedia() and asks for video,
@@ -2487,6 +2501,11 @@
     {
       name: "Serial",
       status: {"Android": "", "default": "stable"},
+    },
+    {
+      name: "ServiceWorkerBypassFetchHandler",
+      origin_trial_feature_name: "ServiceWorkerBypassFetchHandlerForMainResource",
+      public: true,
     },
     {
       name: "ServiceWorkerClientLifecycleState",
@@ -2573,6 +2592,7 @@
     // was enabled.
     {
       name: "SpeculationRules",
+      status: "stable",
       implied_by: ["SpeculationRulesPrefetchProxy", "SpeculationRulesPrefetchWithSubresources", "Prerender2", "SpeculationRulesDocumentRules", "SpeculationRulesRelativeToDocument"],
       origin_trial_feature_name: "SpeculationRules__DONOTUSE",
     },
@@ -2606,15 +2626,13 @@
       origin_trial_feature_name: "SpeculationRulesPrefetchFuture",
       origin_trial_allows_third_party: true,
     },
-    // Origin trial to enable Speculation Rules for access to the prefetch proxy.
-    // https://crbug.com/1190167
     {
       name: "SpeculationRulesPrefetchProxy",
       origin_trial_feature_name: "SpeculationRulesPrefetch",
-      status: {"Android": "stable"},
+      status: "stable",
       base_feature: "SpeculationRulesPrefetchProxy",
       copied_from_base_feature_if: "overridden",
-      implied_by: ["SpeculationRulesPrefetchFuture"],
+      implied_by: ["SpeculationRulesPrefetchFuture", "NoVarySearchPrefetch"],
     },
     {
       "name": "SpeculationRulesPrefetchWithSubresources",
@@ -3218,6 +3236,14 @@
       name: "WebUSBOnServiceWorkers",
       depends_on: ["WebUSB"],
       public: true,
+    },
+    {
+      name: "WebViewXRequestedWithDeprecation",
+      origin_trial_feature_name: "WebViewXRequestedWithDeprecation",
+      origin_trial_allows_insecure: true,
+      origin_trial_os: ["android"],
+      origin_trial_type: "deprecation",
+      status: "experimental",
     },
     {
       name: "WebVTTRegions",

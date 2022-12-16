@@ -74,7 +74,9 @@ enum class PrerenderFinalStatus {
   // PrerenderHost, but the activation navigation's parameters are different
   // from the initial prerendering navigation so Prerender fails to activate it.
   kActivationNavigationParameterMismatch = 50,
-  kMaxValue = kActivationNavigationParameterMismatch,
+  kActivatedInBackground = 51,
+  kEmbedderHostDisallowed = 52,
+  kMaxValue = kEmbedderHostDisallowed,
 };
 
 #endif  // CONTENT_BROWSER_PRELOADING_PRERENDER_PRERENDER_FINAL_STATUS_H_

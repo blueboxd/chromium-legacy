@@ -84,12 +84,6 @@ enum class HidePopoverForcingLevel {
   kHideImmediately,
 };
 
-enum class PopoverAncestorType {
-  kDefault,
-  kNewPopover,
-  kInclusive,
-};
-
 class CORE_EXPORT HTMLElement : public Element {
   DEFINE_WRAPPERTYPEINFO();
 
@@ -229,8 +223,7 @@ class CORE_EXPORT HTMLElement : public Element {
   void HidePopoverInternal(HidePopoverFocusBehavior focus_behavior,
                            HidePopoverForcingLevel forcing_level);
   void PopoverHideFinishIfNeeded();
-  static const HTMLElement* NearestOpenAncestralPopover(const Node&,
-                                                        PopoverAncestorType);
+  static const HTMLElement* FindTopmostPopoverAncestor(const HTMLElement&);
 
   // Retrieves the element pointed to by this element's 'anchor' content
   // attribute, if that element exists, and if this element is a popover.
@@ -239,7 +232,6 @@ class CORE_EXPORT HTMLElement : public Element {
   void PopoverAnchorElementChanged();
   static void HandlePopoverLightDismiss(const Event& event, const Node& node);
   void InvokePopover(Element* invoker);
-  Element* GetPopoverFirstFocusableElement(bool autofocus_only);
   void SetPopoverFocusOnShow();
   // This hides all visible popovers up to, but not including,
   // |endpoint|. If |endpoint| is nullptr, all popovers are hidden.
@@ -336,9 +328,6 @@ class CORE_EXPORT HTMLElement : public Element {
 
   static AttributeTriggers* TriggersForAttributeName(
       const QualifiedName& attr_name);
-
-  // Special focus handling for popovers.
-  Element* GetPopoverFocusableArea(bool autofocus_only) const;
 
   void OnDirAttrChanged(const AttributeModificationParams&);
   void OnFormAttrChanged(const AttributeModificationParams&);

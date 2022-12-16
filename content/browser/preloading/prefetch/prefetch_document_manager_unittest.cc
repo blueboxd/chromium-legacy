@@ -36,6 +36,7 @@ class TestPrefetchService : public PrefetchService {
 
   void PrefetchUrl(
       base::WeakPtr<PrefetchContainer> prefetch_container) override {
+    prefetch_container->DisablePrecogLoggingForTest();
     prefetches_.push_back(prefetch_container);
   }
 
@@ -128,6 +129,7 @@ TEST_F(PrefetchDocumentManagerTest, ProcessNoVarySearchResponse) {
   auto* prefetch_document_manager =
       PrefetchDocumentManager::GetOrCreateForCurrentDocument(
           &GetPrimaryMainFrame());
+  prefetch_document_manager->EnableNoVarySearchSupport();
   {
     // Create list of SpeculationCandidatePtrs.
     std::vector<blink::mojom::SpeculationCandidatePtr> candidates;
@@ -159,6 +161,7 @@ TEST_F(PrefetchDocumentManagerTest, ProcessNoVarySearchResponse) {
     auto response = std::make_unique<PrefetchedMainframeResponseContainer>(
         info, std::move(head), std::move(body));
     GetPrefetches()[0]->TakePrefetchedResponse(std::move(response));
+    GetPrefetches()[0]->OnPrefetchedResponseHeadReceived();
 
     const auto* urls_with_no_vary_search =
         helper.GetAllForUrlWithoutRefAndQueryForTesting(test_url);
@@ -199,6 +202,7 @@ TEST_F(PrefetchDocumentManagerTest, ProcessNoVarySearchResponse) {
     auto response = std::make_unique<PrefetchedMainframeResponseContainer>(
         info, std::move(head), std::move(body));
     GetPrefetches().back()->TakePrefetchedResponse(std::move(response));
+    GetPrefetches().back()->OnPrefetchedResponseHeadReceived();
 
     const auto& helper = prefetch_document_manager->GetNoVarySearchHelper();
     const auto* urls_with_no_vary_search =
@@ -242,6 +246,9 @@ TEST_F(PrefetchDocumentManagerTest, ProcessNoVarySearchResponse) {
 }
 
 TEST_F(PrefetchDocumentManagerTest, ProcessSpeculationCandidates) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      network::features::kPrefetchNoVarySearch);
   // Create list of SpeculationCandidatePtrs.
   std::vector<blink::mojom::SpeculationCandidatePtr> candidates;
 

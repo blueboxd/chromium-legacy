@@ -4,7 +4,7 @@
 
 import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
 
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
 
 import * as routesMojomWebui from '../mojom-webui/routes.mojom-webui.js';
 import {Route, Router} from './router.js';
@@ -140,6 +140,14 @@ function createOSSettingsRoutes() {
   if (loadTimeData.getBoolean('enableAudioSettingsPage')) {
     r.AUDIO = createSubpage(
         r.DEVICE, routesMojomWebui.AUDIO_SUBPAGE_PATH, Subpage.kAudio);
+  }
+  if (loadTimeData.getBoolean('enableInputDeviceSettingsSplit')) {
+    r.PER_DEVICE_KEYBOARD = createSubpage(
+        r.DEVICE, routesMojomWebui.PER_DEVICE_KEYBOARD_SUBPAGE_PATH,
+        Subpage.kPerDeviceKeyboard);
+    r.PER_DEVICE_MOUSE = createSubpage(
+        r.DEVICE, routesMojomWebui.PER_DEVICE_MOUSE_SUBPAGE_PATH,
+        Subpage.kPerDeviceMouse);
   }
   r.STORAGE = createSubpage(
       r.DEVICE, routesMojomWebui.STORAGE_SUBPAGE_PATH, Subpage.kStorage);

@@ -29,16 +29,6 @@ chromium-metrics-reviews@google.com.
   <summary>The HRESULT for a failed on-demand update check.</summary>
 </histogram>
 
-<histogram name="GoogleUpdate.InfoBar.DeviceFreeSpace" units="MB"
-    expires_after="M85">
-  <owner>shaktisahu@chromium.org</owner>
-  <summary>
-    (Android-only) The amount of internal memory storage that is free on the
-    file system and available to the applications when the InfoBar or update
-    menu item is shown.
-  </summary>
-</histogram>
-
 <histogram name="GoogleUpdate.InstallDetails.UpdateCohort" units="units"
     expires_after="2019-06-01">
   <owner>nikunjb@chromium.org</owner>
@@ -46,28 +36,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Store the hash of update cohort name as reported by Chrome Updater on
     Windows. Recorded at the start of metrics service.
-  </summary>
-</histogram>
-
-<histogram name="GoogleUpdate.MenuItem.ActionTakenAfterItemClicked"
-    enum="GoogleUpdateAfterItemClickedActions" expires_after="2021-08-25">
-  <owner>dtrainor@chromium.org</owner>
-  <owner>nyquist@chromium.org</owner>
-  <owner>twellington@chromium.org</owner>
-  <summary>
-    (Android-only) Records whether Chrome was updated after the update menu item
-    was clicked.
-  </summary>
-</histogram>
-
-<histogram name="GoogleUpdate.MenuItem.ActionTakenOnMenuOpen"
-    enum="GoogleUpdateMenuItemActions" expires_after="2021-08-25">
-  <owner>dtrainor@chromium.org</owner>
-  <owner>nyquist@chromium.org</owner>
-  <owner>twellington@chromium.org</owner>
-  <summary>
-    (Android-only) Records whether the update menu item was clicked when the app
-    menu was opened.
   </summary>
 </histogram>
 
@@ -106,16 +74,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     (Android-only) Whether or not an update was being tracked as 'in progress'
     when another update was started.
-  </summary>
-</histogram>
-
-<histogram name="GoogleUpdate.StartUp.State" enum="UpdateState"
-    expires_after="2020-10-15">
-  <owner>dtrainor@chromium.org</owner>
-  <owner>nyquist@chromium.org</owner>
-  <summary>
-    (Android-only) The state of any in-progress updates when the process first
-    starts and queries for it.
   </summary>
 </histogram>
 

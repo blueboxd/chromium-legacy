@@ -26,6 +26,9 @@ tast_disabled_tests_from_chrome_all = [
   "graphics.KmsvncConnect",
   "graphics.Smoke.chrome",
 
+  # https://crbug.com/1400636
+  "graphics.ScreenshotCLI",
+
   # b/258714568
   "inputs.InputMethodManagement.guest",
   "inputs.PhysicalKeyboardEmojiSuggestion.guest",
@@ -152,6 +155,9 @@ tast_disabled_tests_from_chrome_all = [
   # https://crbug.com/1318989
   "assistant.StartupInSignedOutMode",
   "login.ChangePassword",
+
+  # https://crbug.com/1401568
+  "assistant.Hotkey.search_plus_a",
 
   # https://crbug.com/1326279
   "policy.AccessibilityPolicies.focus_highlight",
@@ -296,6 +302,28 @@ tast_disabled_tests_from_chrome_all = [
   # http://b/261363192
   "crostini.*@kevin",
 
+  # http://b/262361695
+  "printer.ProxyAdd.*",
+
+  # http://b/262649361
+  # Until the LKGM with http://crrev.com/c/4110195 is rolled
+  "a11y.LiveCaption",
+
+  # http://b/262792309
+  "inputs.PhysicalKeyboardJapaneseTyping.jp",
+  "inputs.PhysicalKeyboardJapaneseTyping.us",
+
+  # http://b/262693819
+  "inputs.VirtualKeyboardAutocorrect.es_es_a11y",
+  "inputs.VirtualKeyboardAutocorrect.fr_rf_a11y",
+  "inputs.VirtualKeyboardAutocorrect.fr_fr_tablet",
+
+  # https://crbug.com/1401605
+  "hwsec.CrossVersionLogin.small",
+
+  # https://crbug.com/1401566
+  "lockscreen.CloseLid.finch_on",
+
   # READ COMMENT AT TOP BEFORE ADDING NEW TESTS HERE.
 ]
 
@@ -320,4 +348,7 @@ tast_disabled_tests_from_lacros_all = [
 
   # https://crbug.com/1376638
   "lacros.AudioRecord",
+
+  # https://crbug.com/1399370
+  "security.ChromeSandboxed.lacros",
 ]

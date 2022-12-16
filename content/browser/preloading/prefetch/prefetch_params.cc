@@ -176,13 +176,11 @@ bool PrefetchProbingEnabled() {
 bool PrefetchCanaryCheckEnabled() {
   return base::GetFieldTrialParamByFeatureAsBool(
       features::kPrefetchUseContentRefactor, "do_canary", true);
-  ;
 }
 
 bool PrefetchTLSCanaryCheckEnabled() {
   return base::GetFieldTrialParamByFeatureAsBool(
       features::kPrefetchUseContentRefactor, "do_tls_canary", false);
-  ;
 }
 
 GURL PrefetchTLSCanaryCheckURL(const GURL& default_tls_canary_check_url) {
@@ -219,4 +217,13 @@ int PrefetchCanaryCheckRetries() {
       features::kPrefetchUseContentRefactor, "canary_check_retries", 1);
 }
 
+bool PrefetchUseStreamingURLLoader() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      features::kPrefetchUseContentRefactor, "use_streaming_url_loader", true);
+}
+
+bool IsContentPrefetchHoldback() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      features::kPrefetchUseContentRefactor, "prefetch_holdback", false);
+}
 }  // namespace content

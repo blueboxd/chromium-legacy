@@ -12,7 +12,6 @@
 <translation id="1062628064301375934">Aiutaci a rendere il Web più privato</translation>
 <translation id="107147699690128016">Se cambi l'estensione del file, il file potrebbe essere aperto in un'altra applicazione e costituire un pericolo per il dispositivo.</translation>
 <translation id="1089606299949659462">Revisione completata.</translation>
-<translation id="1091604859693995976">Aggiorna per visualizzare</translation>
 <translation id="1095761715416917775">Assicurati di poter accedere sempre ai dati sincronizzati</translation>
 <translation id="1100066534610197918">Apri in nuova scheda in gruppo</translation>
 <translation id="1103142993930332957">Vuoi contribuire a migliorare Chrome?</translation>
@@ -444,7 +443,7 @@ I token di stato privati migliorano la privacy sul Web e non possono essere usat
 <translation id="3387650086002190359">Download di <ph name="FILE_NAME" /> non riuscito a causa di errori del file system.</translation>
 <translation id="3389286852084373014">Il testo è troppo grande</translation>
 <translation id="3391512812407811893">Prove di Privacy Sandbox</translation>
-<translation id="3398320232533725830">Apri Gestione Preferiti</translation>
+<translation id="3398320232533725830">Apri Gestione preferiti</translation>
 <translation id="3407392651057365886">Vengono precaricate più pagine. Le pagine potrebbero essere precaricate tramite i server di Google quando richiesto da altri siti.</translation>
 <translation id="3414952576877147120">Dimensioni:</translation>
 <translation id="3421726884497337397">Scegli quando bloccare i cookie di terze parti</translation>
@@ -761,6 +760,7 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="510275257476243843">1 ora rimanente</translation>
 <translation id="5115811374190515607">in <ph name="PRODUCT_NAME" /></translation>
 <translation id="5118713593561876160">Interessi</translation>
+<translation id="5122378528687922675">Se hai bisogno di aiuto, rivolgiti al tuo genitore (<ph name="PARENT_NAME_1" /> o <ph name="PARENT_NAME_2" />)</translation>
 <translation id="5123685120097942451">Scheda di navigazione in incognito</translation>
 <translation id="5126510351761255129">Verifica la carta</translation>
 <translation id="5132942445612118989">Sincronizza le tue password, la tua cronologia e altro su tutti i tuoi dispositivi</translation>
@@ -1106,7 +1106,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6903907808598579934">Attiva la sincronizzazione</translation>
 <translation id="6908998565271542516">Opzione per approvare o meno un sito web aperto a schermo intero</translation>
 <translation id="6909589135458168665">Precarica le pagine</translation>
-<translation id="692924882724759447">Visualizza qui i siti che segui</translation>
 <translation id="6942665639005891494">Modifica in qualsiasi momento il percorso di download predefinito utilizzando l'opzione del menu Impostazioni</translation>
 <translation id="694267552845942083">Stai personalizzando le impostazioni di sincronizzazione. Per terminare l'attivazione della sincronizzazione, tocca il pulsante Conferma nella parte inferiore dello schermo. Torna indietro</translation>
 <translation id="6945221475159498467">Seleziona</translation>
@@ -1148,6 +1147,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7177466738963138057">Puoi cambiarlo in un secondo momento nelle Impostazioni</translation>
 <translation id="7177873915659574692">Impossibile creare il codice QR. L'URL contiene più di <ph name="CHARACTER_LIMIT" /> caratteri.</translation>
 <translation id="7177959540995930968">Puoi scoprire di più su queste funzionalità nelle impostazioni di Chrome.</translation>
+<translation id="7180611975245234373">Aggiorna</translation>
 <translation id="718226107353899806">Puoi aggiungere massimo <ph name="MAX_NUM_REACTIONS" /> reazioni</translation>
 <translation id="7183693674623539380">Gruppo di schede - <ph name="TITLE_OF_GROUP" /></translation>
 <translation id="7187993566681480880">Ti protegge su Chrome e potrebbe essere utilizzata per migliorare la sicurezza su altre app Google se esegui l'accesso.</translation>
@@ -1331,6 +1331,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="8084285576995584326">Controlla i dati del tuo Account Google</translation>
 <translation id="808747664143081553">Collegamento al dispositivo effettuato</translation>
 <translation id="8088176524274673045">Per condividere i contenuti con le persone qui vicino, fa' scansionare loro questo codice QR</translation>
+<translation id="8090732854597034573">Se hai bisogno di aiuto, rivolgiti al tuo genitore</translation>
 <translation id="8100969750121413114">Accedi per personalizzare Chrome</translation>
 <translation id="8103578431304235997">Scheda di navigazione in incognito</translation>
 <translation id="8105613260829665809">Se continui, accetti i <ph name="BEGIN_TOS_LINK" />Termini di servizio<ph name="END_TOS_LINK" />.\nPer contribuire a migliorare l'app, Chrome invia a Google dati sull'utilizzo e sugli arresti anomali. <ph name="BEGIN_UMA_LINK" />Gestisci<ph name="END_UMA_LINK" /></translation>
@@ -1339,6 +1340,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="8109613176066109935">Attiva la sincronizzazione per trovare i tuoi preferiti su tutti i dispositivi</translation>
 <translation id="8110024788458304985">Contribuisci a migliorare le funzionalità e le prestazioni di Chrome</translation>
 <translation id="8110087112193408731">Vuoi mostrare la tua attività di Chrome in Benessere digitale?</translation>
+<translation id="8118117428362942925">Se hai bisogno di aiuto, rivolgiti al tuo genitore (<ph name="PARENT_NAME" />)</translation>
 <translation id="8127542551745560481">Modifica home page</translation>
 <translation id="8130309322784422030">I dati di accesso memorizzati potrebbero essere obsoleti</translation>
 <translation id="813082847718468539">Visualizza informazioni sul sito</translation>
@@ -1544,7 +1546,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="9209888181064652401">Impossibile effettuare chiamate</translation>
 <translation id="9212845824145208577">Non puoi scorrere più in basso di così. Prova a partire da un punto più in basso nella pagina.</translation>
 <translation id="9219103736887031265">Immagini</translation>
-<translation id="9219582468404818260">Aiutaci a migliorare il Web</translation>
+<translation id="9219582468404818260">Aiutaci a migliorare il web</translation>
 <translation id="92381315203627188">Quando un sito richiede di precaricare privatamente i link sulle sue pagine, Chrome cripta e precarica le pagine tramite i server di Google senza usare cookie. In questo modo la tua identità rimane nascosta ai siti precaricati.</translation>
 <translation id="926205370408745186">Rimuovi la tua attività di Chrome da Benessere digitale</translation>
 <translation id="927968626442779827">Usa la modalità Lite su Google Chrome</translation>

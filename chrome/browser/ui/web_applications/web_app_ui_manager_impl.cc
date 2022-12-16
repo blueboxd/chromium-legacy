@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "base/callback.h"
-#include "base/callback_helpers.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -46,9 +46,9 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/public/cpp/shelf_model.h"
-#include "chrome/browser/ui/app_list/app_list_syncable_service.h"
-#include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
-#include "chrome/browser/ui/app_list/extension_app_utils.h"
+#include "chrome/browser/ash/app_list/app_list_syncable_service.h"
+#include "chrome/browser/ash/app_list/app_list_syncable_service_factory.h"
+#include "chrome/browser/ash/app_list/extension_app_utils.h"
 #include "chrome/browser/ui/ash/shelf/app_shortcut_shelf_item_controller.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller_util.h"
@@ -102,11 +102,16 @@ void UninstallWebAppWithDialogFromStartupSwitch(const AppId& app_id,
     // In this case we clean up the OsSettings entry.
     web_app::OsHooksOptions options;
     options[OsHookType::kUninstallationViaOsSettings] = true;
-    provider->os_integration_manager().UninstallOsHooks(
-        app_id, options,
-        base::BindOnce([](std::unique_ptr<ScopedKeepAlive> scoped_keep_alive,
-                          OsHooksErrors os_hooks_errors) {},
-                       std::move(scoped_keep_alive)));
+
+    auto synchronize_barrier =
+        web_app::OsIntegrationManager::GetBarrierForSynchronize(base::BindOnce(
+            [](std::unique_ptr<ScopedKeepAlive> scoped_keep_alive,
+               OsHooksErrors os_hooks_errors) {},
+            std::move(scoped_keep_alive)));
+    provider->os_integration_manager().UninstallOsHooks(app_id, options,
+                                                        synchronize_barrier);
+    provider->os_integration_manager().Synchronize(
+        app_id, base::BindOnce(synchronize_barrier, OsHooksErrors()));
   }
 }
 
@@ -344,8 +349,11 @@ void WebAppUiManagerImpl::InstallOsHooksForReplacementApp(
   options.add_to_desktop = locations.on_desktop;
   options.add_to_quick_launch_bar = locations.in_quick_launch_bar;
   options.os_hooks[OsHookType::kRunOnOsLogin] = locations.in_startup;
+  // TODO(crbug.com/1401125): Remove InstallOsHooks() once OS integration
+  // sub managers have been implemented.
   os_integration_manager_->InstallOsHooks(app_id, base::DoNothing(), nullptr,
                                           options);
+  os_integration_manager_->Synchronize(app_id, base::DoNothing());
 }
 
 bool WebAppUiManagerImpl::CanAddAppToQuickLaunchBar() const {

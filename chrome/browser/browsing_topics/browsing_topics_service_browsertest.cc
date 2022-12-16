@@ -367,9 +367,10 @@ class BrowsingTopicsBrowserTest : public BrowsingTopicsBrowserTestBase {
 
     auto page_content_annotations_service =
         std::make_unique<optimization_guide::PageContentAnnotationsService>(
-            "en-US", optimization_guide_model_providers_.at(profile).get(),
-            history_service, nullptr, nullptr, base::FilePath(), nullptr,
-            nullptr);
+            nullptr, "en-US",
+            optimization_guide_model_providers_.at(profile).get(),
+            history_service, nullptr, nullptr, nullptr, base::FilePath(),
+            nullptr, nullptr);
 
     page_content_annotations_service->OverridePageContentAnnotatorForTesting(
         &test_page_content_annotator_);
@@ -1117,8 +1118,9 @@ IN_PROC_BROWSER_TEST_F(BrowsingTopicsBrowserTest,
                                  "available in secure contexts."));
 }
 
-IN_PROC_BROWSER_TEST_F(BrowsingTopicsBrowserTest,
-                       Fetch_SecureInitiatorContext) {
+// Right now the E2E topics handling isn't implemented. This test just show the
+// distinction with other failure test case.
+IN_PROC_BROWSER_TEST_F(BrowsingTopicsBrowserTest, Fetch_Success) {
   GURL main_frame_url =
       https_server_.GetURL("a.test", "/browsing_topics/empty_page.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), main_frame_url));
@@ -1129,6 +1131,26 @@ IN_PROC_BROWSER_TEST_F(BrowsingTopicsBrowserTest,
   EXPECT_TRUE(ExecJs(
       web_contents()->GetPrimaryMainFrame(),
       content::JsReplace("fetch($1, {browsingTopics: true})", fetch_url)));
+}
+
+IN_PROC_BROWSER_TEST_F(BrowsingTopicsBrowserTest,
+                       Fetch_PermissionsPolicyDisabledInInitiatorContext) {
+  GURL main_frame_url = https_server_.GetURL(
+      "a.test", "/browsing_topics/empty_page_browsing_topics_none.html");
+
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), main_frame_url));
+
+  GURL fetch_url =
+      https_server_.GetURL("a.test", "/browsing_topics/empty_page.html");
+
+  content::EvalJsResult result = EvalJs(
+      web_contents()->GetPrimaryMainFrame(),
+      content::JsReplace("fetch($1, {browsingTopics: true})", fetch_url));
+
+  EXPECT_THAT(
+      result.error,
+      testing::HasSubstr("The \"browsing-topics\" Permissions Policy denied "
+                         "the use of fetch(<url>, {browsingTopics: true})."));
 }
 
 }  // namespace browsing_topics

@@ -4,9 +4,7 @@
 
 #include "third_party/blink/renderer/core/fetch/headers.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/v8_iterator_result_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_bytestringbytestringrecord_bytestringsequencesequence.h"
-#include "third_party/blink/renderer/core/dom/iterator.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -26,10 +24,10 @@ void Headers::HeadersIterationSource::ResetHeaderList() {
   headers_list_ = headers_->HeaderList()->SortAndCombine();
 }
 
-bool Headers::HeadersIterationSource::Next(ScriptState* script_state,
-                                           String& key,
-                                           String& value,
-                                           ExceptionState& exception) {
+bool Headers::HeadersIterationSource::FetchNextItem(ScriptState* script_state,
+                                                    String& key,
+                                                    String& value,
+                                                    ExceptionState& exception) {
   // This simply advances an index and returns the next value if any;
   if (current_ >= headers_list_.size())
     return false;
@@ -42,10 +40,10 @@ bool Headers::HeadersIterationSource::Next(ScriptState* script_state,
 
 void Headers::HeadersIterationSource::Trace(Visitor* visitor) const {
   visitor->Trace(headers_);
-  PairIterable::IterationSource::Trace(visitor);
+  PairSyncIterable<Headers>::IterationSource::Trace(visitor);
 }
 
-Headers::HeadersIterationSource::~HeadersIterationSource() {}
+Headers::HeadersIterationSource::~HeadersIterationSource() = default;
 
 Headers* Headers::Create(ScriptState* script_state, ExceptionState&) {
   return MakeGarbageCollected<Headers>();
@@ -369,8 +367,9 @@ void Headers::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
 }
 
-PairIterable<String, IDLString, String, IDLString>::IterationSource*
-Headers::StartIteration(ScriptState*, ExceptionState&) {
+PairSyncIterable<Headers>::IterationSource* Headers::CreateIterationSource(
+    ScriptState*,
+    ExceptionState&) {
   auto* iter = MakeGarbageCollected<HeadersIterationSource>(this);
   iterators_.insert(iter);
   return iter;

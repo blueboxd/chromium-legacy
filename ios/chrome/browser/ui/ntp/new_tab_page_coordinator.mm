@@ -46,6 +46,7 @@
 #import "ios/chrome/browser/ui/commands/lens_commands.h"
 #import "ios/chrome/browser/ui/commands/omnibox_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_coordinator.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
@@ -67,11 +68,14 @@
 #import "ios/chrome/browser/ui/ntp/feed_management/feed_management_coordinator.h"
 #import "ios/chrome/browser/ui/ntp/feed_management/feed_management_navigation_delegate.h"
 #import "ios/chrome/browser/ui/ntp/feed_menu_commands.h"
+#import "ios/chrome/browser/ui/ntp/feed_promos/feed_sign_in_promo_coordinator.h"
+#import "ios/chrome/browser/ui/ntp/feed_sign_in_promo_delegate.h"
 #import "ios/chrome/browser/ui/ntp/feed_top_section/feed_top_section_coordinator.h"
 #import "ios/chrome/browser/ui/ntp/feed_wrapper_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/incognito_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/metrics/feed_metrics_recorder.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_content_delegate.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_coordinator+private.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_delegate.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_follow_delegate.h"
@@ -80,6 +84,7 @@
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
+#import "ios/chrome/browser/ui/util/util_swift.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -110,6 +115,7 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
                                      FeedDelegate,
                                      FeedManagementNavigationDelegate,
                                      FeedMenuCommands,
+                                     FeedSignInPromoDelegate,
                                      FeedWrapperViewControllerDelegate,
                                      IdentityManagerObserverBridgeDelegate,
                                      NewTabPageContentDelegate,
@@ -189,6 +195,10 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
 // The Coordinator to display previews for Discover feed websites. It also
 // handles the actions related to them.
 @property(nonatomic, strong) LinkPreviewCoordinator* linkPreviewCoordinator;
+
+// The Coordinator to display Sign In promo UI.
+@property(nonatomic, strong)
+    FeedSignInPromoCoordinator* feedSignInPromoCoordinator;
 
 // The view controller representing the NTP feed header.
 @property(nonatomic, strong) FeedHeaderViewController* feedHeaderViewController;
@@ -319,6 +329,11 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
   [self.feedTopSectionCoordinator stop];
   self.feedTopSectionCoordinator = nil;
 
+  if (self.feedSignInPromoCoordinator) {
+    [self.feedSignInPromoCoordinator stop];
+    self.feedSignInPromoCoordinator = nil;
+  }
+
   self.alertCoordinator = nil;
   self.authService = nil;
   self.templateURLService = nil;
@@ -400,11 +415,9 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
   if (self.browser->GetBrowserState()->IsOffTheRecord()) {
     return;
   }
-  NamedGuide* menuButtonGuide =
-      [NamedGuide guideWithName:kDiscoverFeedHeaderMenuGuide
-                           view:self.feedHeaderViewController.menuButton];
-
-  menuButtonGuide.constrainedView = self.feedHeaderViewController.menuButton;
+  [LayoutGuideCenterForBrowser(self.browser)
+      referenceView:self.feedHeaderViewController.menuButton
+          underName:kDiscoverFeedHeaderMenuGuide];
 }
 
 - (void)updateFollowingFeedHasUnseenContent:(BOOL)hasUnseenContent {
@@ -432,12 +445,8 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
 
 - (void)ntpDidChangeVisibility:(BOOL)visible {
   if (!self.browser->GetBrowserState()->IsOffTheRecord()) {
+    [self updateStartForVisibilityChange:visible];
     if (visible && self.started) {
-      if (NewTabPageTabHelper::FromWebState(self.webState)
-              ->ShouldShowStartSurface()) {
-        self.headerController.isStartShowing = YES;
-        [self.contentSuggestionsCoordinator configureStartSurfaceIfNeeded];
-      }
       if ([self isFollowingFeedAvailable]) {
         self.ntpViewController.shouldScrollIntoFeed = self.shouldScrollIntoFeed;
         self.shouldScrollIntoFeed = NO;
@@ -622,6 +631,10 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
   self.headerController.toolbarDelegate = self.toolbarDelegate;
   self.headerController.baseViewController = self.baseViewController;
   self.headerController.collectionSynchronizer = self.headerSynchronizer;
+  if (NewTabPageTabHelper::FromWebState(self.webState)
+          ->ShouldShowStartSurface()) {
+    self.headerController.isStartShowing = YES;
+  }
 }
 
 // Configures `self.ntpMediator`.
@@ -953,6 +966,29 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
   [self.ntpMediator handleVisitSiteFromFollowManagementList:url];
 }
 
+#pragma mark - FeedSignInPromoDelegate
+
+- (void)showSignInPromoUI {
+  // Show a sign-in promo half sheet.
+  self.feedSignInPromoCoordinator = [[FeedSignInPromoCoordinator alloc]
+      initWithBaseViewController:self.ntpViewController
+                         browser:self.browser];
+  [self.feedSignInPromoCoordinator start];
+  // TODO (crbug.com/1382615): add metrics.
+}
+
+- (void)showSignInUI {
+  // Show sign-in and sync page.
+  using AccessPoint = signin_metrics::AccessPoint;
+  id<ApplicationCommands> handler = HandlerForProtocol(
+      self.browser->GetCommandDispatcher(), ApplicationCommands);
+  ShowSigninCommand* command = [[ShowSigninCommand alloc]
+      initWithOperation:AuthenticationOperationSigninAndSync
+            accessPoint:AccessPoint::ACCESS_POINT_NTP_FEED_BOTTOM_PROMO];
+  [handler showSignin:command baseViewController:self.ntpViewController];
+  // TODO (crbug.com/1382615): add metrics.
+}
+
 #pragma mark - FeedWrapperViewControllerDelegate
 
 - (void)updateTheme {
@@ -972,8 +1008,8 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
   return [self isFollowingFeedAvailable] && [self isFeedHeaderVisible];
 }
 
-- (void)feedTopSectionHasChangedVisibility:(BOOL)visible {
-  [self.feedTopSectionCoordinator feedTopSectionHasChangedVisibility:visible];
+- (void)signinPromoHasChangedVisibility:(BOOL)visible {
+  [self.feedTopSectionCoordinator signinPromoHasChangedVisibility:visible];
 }
 
 #pragma mark - NewTabPageDelegate
@@ -1210,6 +1246,25 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
                           !value);
 }
 
+- (void)updateStartForVisibilityChange:(BOOL)visible {
+  if (visible && self.started &&
+      NewTabPageTabHelper::FromWebState(self.webState)
+          ->ShouldShowStartSurface()) {
+    // Start is being shown on an existing NTP, so configure it
+    // appropriately.
+    self.headerController.isStartShowing = YES;
+    [self.contentSuggestionsCoordinator configureStartSurfaceIfNeeded];
+  }
+  if (!visible && NewTabPageTabHelper::FromWebState(self.webState)
+                      ->ShouldShowStartSurface()) {
+    // This means the NTP going away was showing Start. Reset configuration
+    // since it should not show Start after disappearing.
+    NewTabPageTabHelper::FromWebState(self.webState)
+        ->SetShowStartSurface(false);
+    self.headerController.isStartShowing = NO;
+  }
+}
+
 // Updates the visible property based on viewPresented and sceneInForeground
 // properties.
 // Sends metrics when NTP becomes invisible.
@@ -1355,6 +1410,7 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
   viewControllerConfig.browser = self.browser;
   viewControllerConfig.scrollDelegate = self.ntpViewController;
   viewControllerConfig.previewDelegate = self;
+  viewControllerConfig.signInPromoDelegate = self;
 
   return viewControllerConfig;
 }

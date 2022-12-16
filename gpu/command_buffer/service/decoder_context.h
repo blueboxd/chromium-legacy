@@ -155,7 +155,7 @@ class GPU_GLES2_EXPORT DecoderContext : public AsyncAPIInterface,
       uint32_t client_texture_id,
       uint32_t texture_target,
       gl::GLImage* image) = 0;
-#else
+#elif !BUILDFLAG(IS_ANDROID)
   // Attaches |image| to the texture referred to by |client_texture_id|, marking
   // the image as not needing on-demand binding by the decoder.
   virtual void AttachImageToTextureWithClientBinding(uint32_t client_texture_id,
@@ -170,6 +170,7 @@ class GPU_GLES2_EXPORT DecoderContext : public AsyncAPIInterface,
   //
   virtual gles2::ContextGroup* GetContextGroup() = 0;
   virtual gles2::ErrorState* GetErrorState() = 0;
+#if !BUILDFLAG(IS_ANDROID)
   virtual std::unique_ptr<gpu::gles2::AbstractTexture> CreateAbstractTexture(
       unsigned /* GLenum */ target,
       unsigned /* GLenum */ internal_format,
@@ -179,6 +180,7 @@ class GPU_GLES2_EXPORT DecoderContext : public AsyncAPIInterface,
       int /* GLint */ border,
       unsigned /* GLenum */ format,
       unsigned /* GLenum */ type) = 0;
+#endif
 
   //
   // Methods required by Texture.

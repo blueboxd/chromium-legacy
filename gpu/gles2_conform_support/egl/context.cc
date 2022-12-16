@@ -255,16 +255,15 @@ bool Context::CreateService(gl::GLSurface* gl_surface) {
   scoped_refptr<gpu::gles2::ContextGroup> group(new gpu::gles2::ContextGroup(
       gpu_preferences, true, &mailbox_manager_, nullptr /* memory_tracker */,
       &translator_cache_, &completeness_cache_, feature_info, true,
-      nullptr /* image_factory */, nullptr /* progress_reporter */,
-      gpu_feature_info, &discardable_manager_,
+      nullptr /* progress_reporter */, gpu_feature_info, &discardable_manager_,
       &passthrough_discardable_manager_, &shared_image_manager_));
 
   auto command_buffer = std::make_unique<gpu::CommandBufferDirect>();
 
   std::unique_ptr<gpu::gles2::GLES2Decoder> decoder(
-      gpu::gles2::GLES2Decoder::Create(
-          command_buffer.get(), command_buffer->service(), &outputter_,
-          group.get(), /*image_factory_for_nacl_swapchain=*/nullptr));
+      gpu::gles2::GLES2Decoder::Create(command_buffer.get(),
+                                       command_buffer->service(), &outputter_,
+                                       group.get()));
 
   command_buffer->set_handler(decoder.get());
 

@@ -346,11 +346,6 @@ are declared in tools/grit/grit_rule.gni.
         <part file="vr_strings.grdp" />
       </if>
 
-      <!-- Supervised user error page -->
-      <if expr="enable_supervised_users">
-        <part file="supervised_user_error_page_strings.grdp" />
-      </if>
-
       <!-- TODO add all of your "string table" messages here.  Remember to
       change nontranslateable parts of the messages into placeholders (using the
       <ph> element).  You can also use the 'grit add' tool to help you identify
@@ -1927,8 +1922,8 @@ are declared in tools/grit/grit_rule.gni.
         desc="Message shown in the download shelf when a download is being scanned for an Advanced Protection user">
         <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> is being scanned.
       </message>
-      <message name="IDS_PROMPT_CONFIRM_MIXED_CONTENT_DOWNLOAD"
-        desc="Message shown to the user to validate the download when the download content is a mixed-content download.">
+      <message name="IDS_PROMPT_CONFIRM_INSECURE_DOWNLOAD"
+        desc="Message shown to the user to validate the download when the download content is an insecure download.">
         <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> can't be downloaded securely
       </message>
       <message name="IDS_PROMPT_DOWNLOAD_BLOCKED_TOO_LARGE"
@@ -1955,12 +1950,12 @@ are declared in tools/grit/grit_rule.gni.
         desc="Message shown in the download shelf when a download is finished being scanned, and issues were found">
         This file is dangerous
       </message>
-      <message name="IDS_PROMPT_DOWNLOAD_MIXED_CONTENT_WARNING"
-        desc="Message shown in the download shelf when a download is mixed content, and Chrome needs to show a warning.">
+      <message name="IDS_PROMPT_DOWNLOAD_INSECURE_WARNING"
+        desc="Message shown in the download shelf when a download is insecure, and Chrome needs to show a warning.">
         <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> can't be downloaded securely
       </message>
-      <message name="IDS_PROMPT_DOWNLOAD_MIXED_CONTENT_BLOCKED"
-        desc="Message shown in the download shelf when a download is mixed content, and Chrome has blocked it.">
+      <message name="IDS_PROMPT_DOWNLOAD_INSECURE_BLOCKED"
+        desc="Message shown in the download shelf when a download is insecure, and Chrome has blocked it.">
         <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> can't be downloaded securely
       </message>
       <message name="IDS_PROMPT_APP_DEEP_SCANNING"
@@ -1983,8 +1978,8 @@ are declared in tools/grit/grit_rule.gni.
          desc="Message shown to the user on chrome://downloads page to explain that this download is blocked because it may be dangerous.">
         This type of file may harm your computer.
       </message>
-      <message name="IDS_BLOCK_REASON_MIXED_CONTENT"
-         desc="Message shown to the user on chrome://downloads page to explain that this download is blocked because it is mixed-content.">
+      <message name="IDS_BLOCK_REASON_INSECURE_DOWNLOAD"
+         desc="Message shown to the user on chrome://downloads page to explain that this download is blocked because it was insecurely delivered.">
         This file can't be downloaded securely
       </message>
       <message name="IDS_BLOCK_REASON_DEEP_SCANNING"
@@ -2017,7 +2012,7 @@ are declared in tools/grit/grit_rule.gni.
       </message>
 
       <if expr="is_chromeos">
-        <message name="IDS_PROMPT_BLOCKED_MIXED_DOWNLOAD_TITLE"
+        <message name="IDS_PROMPT_BLOCKED_INSECURE_DOWNLOAD_TITLE"
                  desc="In the download notification, a title of the message shown on a download blocked for being insecure.">
           Insecure download blocked
         </message>
@@ -2277,19 +2272,19 @@ are declared in tools/grit/grit_rule.gni.
         </else>
       </if>
       <message name="IDS_DEEP_SCANNING_ACCESSIBLE_ALERT"
-               desc="The title of a download notification inidcating that the file may be malicious, and the Advanced Protection Program recommends sending the file to Google. This message is for screen reader users">
+               desc="The title of a download notification indicating that the file may be malicious, and the Advanced Protection Program recommends sending the file to Google. This message is for screen reader users">
         <ph name="FILE_NAME">$1<ex>file.exe</ex></ph> is being scanned.
       </message>
       <if expr="is_macosx">
         <then>
-          <message name="IDS_PROMPT_DOWNLOAD_MIXED_CONTENT_BLOCKED_ACCESSIBLE_ALERT"
-                   desc="The title of a download notification inidcating that the download was delivered insecurely. This message is for screen reader users">
+          <message name="IDS_PROMPT_DOWNLOAD_INSECURE_BLOCKED_ACCESSIBLE_ALERT"
+                   desc="The title of a download notification indicating that the download was delivered insecurely. This message is for screen reader users">
             <ph name="FILE_NAME">$1<ex>file.exe</ex></ph> can't be downloaded securely.
           </message>
         </then>
         <else>
-          <message name="IDS_PROMPT_DOWNLOAD_MIXED_CONTENT_BLOCKED_ACCESSIBLE_ALERT"
-                   desc="The title of a download notification inidcating that the download was delivered insecurely. This message is for screen reader users">
+          <message name="IDS_PROMPT_DOWNLOAD_INSECURE_BLOCKED_ACCESSIBLE_ALERT"
+                   desc="The title of a download notification indicating that the download was delivered insecurely. This message is for screen reader users">
             <ph name="FILE_NAME">$1<ex>file.exe</ex></ph> can't be downloaded securely. Press Shift+F6 to cycle to the downloads bar area.
           </message>
         </else>
@@ -2366,8 +2361,8 @@ are declared in tools/grit/grit_rule.gni.
                    desc="Download context menu: Show information about interrupted downloads">
             &amp;More information
           </message>
-          <message name="IDS_DOWNLOAD_MENU_LEARN_MORE_MIXED_CONTENT"
-                   desc="Download context menu: Show information about mixed content downloads">
+          <message name="IDS_DOWNLOAD_MENU_LEARN_MORE_INSECURE"
+                   desc="Download context menu: Show information about insecure downloads">
             &amp;Learn more
           </message>
         </if>
@@ -2434,8 +2429,8 @@ are declared in tools/grit/grit_rule.gni.
                    desc="In Title Case: Download context menu: Show information about interrupted downloads">
             &amp;More Information
           </message>
-          <message name="IDS_DOWNLOAD_MENU_LEARN_MORE_MIXED_CONTENT"
-                   desc="In Title Case: Download context menu: Show information about mixed content downloads">
+          <message name="IDS_DOWNLOAD_MENU_LEARN_MORE_INSECURE"
+                   desc="In Title Case: Download context menu: Show information about insecure downloads">
             &amp;Learn More
           </message>
         </if>  <!-- not use_titlecase -->
@@ -2756,38 +2751,66 @@ are declared in tools/grit/grit_rule.gni.
         Anyone using this device can see downloaded files
       </message>
       <message name="IDS_DOWNLOAD_BUBBLE_RESUME_QUICK_ACTION"
-            desc="Accessibility/tooltip label for action to resume a download.">
+            desc="Tooltip label for action to resume a download.">
         Resume
       </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_RESUME_QUICK_ACTION_ACCESSIBILITY"
+            desc="Accessibility label for action to resume a download.">
+        Resume <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph>
+      </message>
       <message name="IDS_DOWNLOAD_BUBBLE_PAUSE_QUICK_ACTION"
-              desc="Accessibility/tooltip label for action to pause a download.">
+              desc="Tooltip label for action to pause a download.">
         Pause
       </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_PAUSE_QUICK_ACTION_ACCESSIBILITY"
+              desc="Accessibility label for action to pause a download.">
+        Pause <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph>
+      </message>
       <message name="IDS_DOWNLOAD_BUBBLE_CANCEL_QUICK_ACTION"
-              desc="Accessibility/tooltip label for action to cancel a download.">
+              desc="Tooltip label for action to cancel a download.">
         Cancel
       </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_CANCEL_QUICK_ACTION_ACCESSIBILITY"
+              desc="Accessibility label for action to cancel a download.">
+        Cancel <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph>
+      </message>
       <message name="IDS_DOWNLOAD_BUBBLE_OPEN_QUICK_ACTION"
-              desc="Accessibility/tooltip label for action to open a download.">
+              desc="Tooltip label for action to open a download.">
         Open
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_OPEN_QUICK_ACTION_ACCESSIBILITY"
+              desc="Accessibility label for action to open a download.">
+        Open <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph>
       </message>
       <if expr="is_macosx">
             <message name="IDS_DOWNLOAD_BUBBLE_SHOW_IN_FOLDER_QUICK_ACTION"
-                  desc="Mac: Accessibility/tooltip label for showing the file in the Finder">
+                  desc="Mac: Tooltip label for showing the file in the Finder">
               Show in Finder
+            </message>
+            <message name="IDS_DOWNLOAD_BUBBLE_SHOW_IN_FOLDER_QUICK_ACTION_ACCESSIBILITY"
+                  desc="Mac: Accessibility label for showing the file in the Finder">
+              Show <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> in Finder
             </message>
       </if>
       <if expr="not is_macosx">
         <if expr="not use_titlecase">
             <message name="IDS_DOWNLOAD_BUBBLE_SHOW_IN_FOLDER_QUICK_ACTION"
-                     desc="Accessibility/tooltip label for showing the file in file explorer">
+                     desc="Tooltip label for showing the file in file explorer">
               Show in folder
+            </message>
+            <message name="IDS_DOWNLOAD_BUBBLE_SHOW_IN_FOLDER_QUICK_ACTION_ACCESSIBILITY"
+                     desc="Accessibility label for showing the file in file explorer">
+              Show <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> in folder
             </message>
           </if>
           <if expr="use_titlecase">
             <message name="IDS_DOWNLOAD_BUBBLE_SHOW_IN_FOLDER_QUICK_ACTION"
-                     desc="In Title Case: Accessibility/tooltip label for showing the file in file explorer">
+                     desc="In Title Case: Tooltip label for showing the file in file explorer">
               Show in Folder
+            </message>
+            <message name="IDS_DOWNLOAD_BUBBLE_SHOW_IN_FOLDER_QUICK_ACTION_ACCESSIBILITY"
+                     desc="In Title Case: Accessibility label for showing the file in file explorer">
+              Show <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> in Folder
             </message>
           </if>
       </if>
@@ -5512,6 +5535,24 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
       <!-- End Force Installed Deprecated Apps Deletion Dialog strings. -->
+      <!-- Force Installed Preinstalled Deprecated Apps Deletion Dialog strings. -->
+      <message name="IDS_FORCE_INSTALLED_PREINSTALLED_DEPRECATED_APPS_TITLE" desc="Title of the force installed deprecated app dialog, prompting the user to contact their organization's administrator.">
+        Ask your admin to update this app
+      </message>
+      <message name="IDS_FORCE_INSTALLED_PREINSTALLED_DEPRECATED_APPS_CONTENT" desc="Content of the force installed preinstalled deprecated app dialog">
+        Chrome Apps are migrating to Progressive Web Apps. This Chrome App was installed on your browser by your organization. To open the Progressive Web App from the Apps list, first contact your administrator and ask them to uninstall the Chrome App. In the meantime, you can visit <ph name="EXTENSION_LAUNCH_URL">$1<ex>sheets.google.com</ex></ph> to open <ph name="EXTENSION_NAME">$2<ex>Google Sheets</ex></ph> on the web.
+      </message>
+      <if expr="use_titlecase">
+        <message name="IDS_FORCE_INSTALLED_PREINSTALLED_DEPRECATED_APPS_GO_TO_SITE_BUTTON" desc="Label for the button that opens the website for the app">
+          Go To Site
+        </message>
+      </if>
+        <if expr="not use_titlecase">
+        <message name="IDS_FORCE_INSTALLED_PREINSTALLED_DEPRECATED_APPS_GO_TO_SITE_BUTTON" desc="Label for the button that opens the website for the app">
+          Go to site
+        </message>
+      </if>
+      <!-- End Force Installed Preinstalled Deprecated Apps Deletion Dialog strings. -->
       <!-- Deprecated Apps Deletion Dialog strings. -->
       <message name="IDS_DEPRECATED_APPS_RENDERER_TITLE_PLURAL" desc="The title of the deprecated app dialog">
         <ph name="APPS">$1<ex>2</ex></ph> apps are no longer supported
@@ -5644,6 +5685,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_EXTENSIONS_MENU_EXTENSIONS_TAB_DISCOVER_MORE_TITLE" desc="Text of the button in the installed extensions tab used to open the webstore page">
         Discover more extensions
+      </message>
+      <message name="IDS_EXTENSIONS_MENU_REQUESTS_ACCESS_SECTION_TITLE" desc="Title of the requests access section that lists the extensions requesting site access">
+        Requests access
       </message>
 
       <!-- Settings API bubble -->
@@ -6607,6 +6651,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NTP_CUSTOMIZE_APPEARANCE_LABEL" desc="The label for the option to edit appearance in the Customize Chrome side panel.">
         Appearance
       </message>
+      <message name="IDS_NTP_CUSTOMIZE_THEMES_HEADER" desc="The header for the page that lists theme categories in the Customize Chrome side panel.">
+        Themes
+      </message>
       <message name="IDS_NTP_CUSTOMIZE_MENU_BACKGROUND_LABEL" desc="The label for the backgrounds option in the customization menu on the New Tab Page.">
         Background
       </message>
@@ -6624,6 +6671,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_NTP_CUSTOMIZE_NO_BACKGROUND_LABEL" desc="The label for the 'Classic Chrome' tile in the customization menu on the New Tab Page">
         Classic Chrome
+      </message>
+      <message name="IDS_NTP_CUSTOMIZE_CHROME_COLORS_LABEL" desc="The label for the 'Chrome Colors' tile in the New Tab Page customize chrome side panel, which lists themes of colored classic chrome.">
+        Chrome Colors
+      </message>
+      <message name="IDS_NTP_CUSTOMIZE_UPLOADED_IMAGE_LABEL" desc="The label for the 'Uploaded image' tile in the customization menu on the New Tab Page side panel.">
+        Uploaded image
       </message>
       <message name="IDS_NTP_CUSTOMIZE_UPLOAD_FROM_DEVICE_LABEL" desc="The label for the 'Upload from device' tile in the customization menu on the New Tab Page">
         Upload from device
@@ -7215,6 +7268,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_BOOKMARKS_EMPTY_STATE_BODY" desc="Body text for the bookmarks side panel empty state">
         Bookmark things you want to come back to later
+      </message>
+      <message name="IDS_BOOKMARKS_EMPTY_STATE_TITLE_GUEST" desc="Title for the bookmarks side panel empty state in guest mode">
+        Sign in to see your bookmarks
+      </message>
+      <message name="IDS_BOOKMARKS_EMPTY_STATE_BODY_GUEST" desc="Body text for the bookmarks side panel empty state in guest mode">
+        Bookmarks are unavailable in guest mode
       </message>
       <message name="IDS_BOOKMARK_FOLDER_CHILD_COUNT" desc="Text description for the number of children of a bookmark folder">
         {NUM_BOOKMARKS, plural, =1 {1 bookmark} other {# bookmarks}}
@@ -8061,9 +8120,6 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
         </message>
         <message name="IDS_PASSWORD_MANAGER_UPDATE_BUTTON" desc="Label for the 'update' button in the Update Password infobar. This infobar asks if the user wishes to update the saved password for a site to a new password the user has just entered; the button applies the suggested update." formatter_data="android_java">
           Update
-        </message>
-        <message name="IDS_PASSWORD_MANAGER_UPDATE_WITH_FOLLOWUP_BUTTON" desc="Label for the 'update' button in the Update Password prompt that will be followed by username confirmation dialog. This prompt asks if the user wishes to update the saved password for a site to a new password the user has just entered; the button applies the suggested update.">
-          Update...
         </message>
         <message name="IDS_PASSWORD_MANAGER_CONTINUE_BUTTON" desc="Label for the 'continue' button in the Update Password prompt that will be followed by username confirmation dialog. This prompt asks if the user wishes to update the saved password for a site to a new password the user has just entered; the button applies the suggested update.">
           Continue
@@ -11557,8 +11613,11 @@ Please help our engineers fix this problem. Tell us what happened right before y
         <message name="IDS_MIC_TURNED_OFF_IN_MACOS" desc="Title for the media status bubble that is used when a site requests microphone access, but microphone is blocked on an OS level in macOS.">
           Microphone is turned off in Mac System Preferences
         </message>
-        <message name="IDS_OPEN_PREFERENCES_LINK" desc="Title for the button that takes the user to the Security and Privacy settings in macOS, in order for the user to be able to modify the ability to access camera and microphone for Chrome.">
+        <message name="IDS_OPEN_PREFERENCES_LINK" desc="Title for the button that takes the user to the Security and Privacy settings in macOS, in order for the user to be able to modify the ability to access camera and microphone for Chrome. System Preferences was renamed to System Settings in macOS 13 so this string shouldn't be used past macOS 12.">
           Open Preferences
+        </message>
+        <message name="IDS_OPEN_SETTINGS_LINK" desc="Title for the button that takes the user to System Settings in macOS >= 13. The translation for this string should match the translation of the System Settings app title in the macOS target locale. You can find this by selecting the locale from https://support.apple.com/guide/mac-help/mh15217/mac/localeselector. The title of the next page after that includes the desired translation. Note that, for size reasons, the English string omits 'System' and the same contraction may be suitable in other languages.">
+          Open Settings
         </message>
         <message name="IDS_CAMERA" desc="Description text for the camera.">
           Camera
@@ -12354,6 +12413,22 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <ph name="USB_DEVICE_NAME">$1<ex>Nexus 5</ex></ph> detected
     </message>
 
+    <if expr="not is_android">
+      <!-- WebHID Notification -->
+      <message name="IDS_WEBHID_DEVICE_CONNECTED_BY_EXTENSION_NOTIFICATION_TITLE" desc="Notification title shown to the user when a HID device is being accessed by an extension.">
+        An extension is using a HID device
+      </message>
+      <message name="IDS_WEBHID_DEVICE_CONNECTED_BY_EXTENSION_NOTIFICATION_MESSAGE" desc="Notification content shown to the user when a HID device is being accessed by an extension.">
+        Click to manage permissions for "<ph name="EXTENSION">$1<ex>Google Translate</ex></ph>"
+      </message>
+      <message name="IDS_WEBHID_SYSTEM_TRAY_ICON_BUTTON_FOR_MANAGE_HID_DEVICE" desc="The text for WebHID system tray icon button for managing HID devices.">
+        Manage HID devices
+      </message>
+      <message name="IDS_WEBHID_SYSTEM_TRAY_ICON_BUTTON_FOR_MANAGE_HID_DEVICE_WITH_PROFILE_NAME" desc="The text with profile name for WebHID system tray icon button for managing HID devices.">
+        Manage HID devices for <ph name="PROFILE_NAME">$1<ex>Nina@gmail.com</ex></ph>
+      </message>
+    </if>
+
     <if expr="chromeos_ash">
       <!-- CrOSUsb Notification -->
       <message name="IDS_CROSUSB_DEVICE_DETECTED_NOTIFICATION" desc="Content for notification shown to the user when a USB device gets plugged in.">
@@ -12997,6 +13072,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
       <message name="IDS_WEBAUTHN_ERROR_NO_TRANSPORTS_DESCRIPTION" desc="Description in the dialog shown when the user could not sign in to a web site, because their computer did not support any of the hardware-based authentication mechanisms desired by the web site.">
         This device doesn't support the type of security key requested by this website
+      </message>
+      <message name="IDS_WEBAUTHN_ERROR_NO_PASSKEYS_TITLE" desc="Title of the dialog shown when the user could not sign in to a web site because their computer did not have any of the passkeys registered with the site.">
+        No passkeys available
+      </message>
+      <message name="IDS_WEBAUTHN_ERROR_NO_PASSKEYS_DESCRIPTION" desc="Description in the dialog shown when the user could not sign in to a web site because their computer did not have any of the passkeys registered with the site.">
+        There aren't any passkeys for <ph name="APP_NAME">$1<ex>google.com</ex></ph> on this device
       </message>
       <message name="IDS_WEBAUTHN_BLUETOOTH_POWER_ON_AUTO_TITLE" desc="Title of the dialog informing the user that Chrome needs to turn on Bluetooth by itself so that security keys can be used over Bluetooth.">
         Turn on Bluetooth?

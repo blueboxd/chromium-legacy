@@ -4,8 +4,11 @@
 
 #include "components/optimization_guide/core/prediction_model_store.h"
 
+#include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/guid.h"
+#include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/rand_util.h"
 #include "base/task/thread_pool.h"
 #include "components/optimization_guide/core/model_store_metadata_entry.h"
@@ -13,11 +16,12 @@
 #include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/optimization_guide/core/optimization_guide_prefs.h"
 #include "components/prefs/pref_service.h"
-#include "model_store_metadata_entry.h"
 
 namespace optimization_guide {
 
 namespace {
+
+constexpr size_t kBytesPerMegabyte = 1024 * 1024;
 
 // Returns the model info parsed from |model_info_path|.
 absl::optional<proto::ModelInfo> ParseModelInfoFromFile(
@@ -55,20 +59,92 @@ std::vector<base::FilePath> GetModelFilePaths(
   return model_file_paths;
 }
 
+// Parses the OptimizationTarget from the string.
+proto::OptimizationTarget ParseOptimizationTargetFromString(
+    const std::string& optimization_target_str) {
+  int optimization_target;
+  if (!base::StringToInt(optimization_target_str, &optimization_target)) {
+    return proto::OPTIMIZATION_TARGET_UNKNOWN;
+  }
+  if (!proto::OptimizationTarget_IsValid(optimization_target)) {
+    return proto::OPTIMIZATION_TARGET_UNKNOWN;
+  }
+  return static_cast<proto::OptimizationTarget>(optimization_target);
+}
+
+void RecordModelStorageMetrics(const base::FilePath& base_store_dir) {
+  base::FileEnumerator enumerator(base_store_dir, false,
+                                  base::FileEnumerator::DIRECTORIES);
+  for (base::FilePath optimization_target_dir = enumerator.Next();
+       !optimization_target_dir.empty();
+       optimization_target_dir = enumerator.Next()) {
+    proto::OptimizationTarget optimization_target =
+        ParseOptimizationTargetFromString(
+            optimization_target_dir.BaseName().AsUTF8Unsafe());
+    if (optimization_target == proto::OPTIMIZATION_TARGET_UNKNOWN) {
+      continue;
+    }
+    size_t total_models = 0;
+    base::FileEnumerator models_enumerator(optimization_target_dir, false,
+                                           base::FileEnumerator::DIRECTORIES);
+    for (base::FilePath model_dir = models_enumerator.Next();
+         !model_dir.empty(); model_dir = models_enumerator.Next()) {
+      total_models++;
+    }
+    base::UmaHistogramCounts100(
+        "OptimizationGuide.PredictionModelStore.ModelCount." +
+            GetStringNameForOptimizationTarget(optimization_target),
+        total_models);
+    base::UmaHistogramMemoryMB(
+        "OptimizationGuide.PredictionModelStore.TotalDirectorySize." +
+            GetStringNameForOptimizationTarget(optimization_target),
+        base::ComputeDirectorySize(optimization_target_dir) /
+            kBytesPerMegabyte);
+  }
+}
+
 }  // namespace
 
-PredictionModelStore::PredictionModelStore(PrefService* local_state,
-                                           const base::FilePath& base_store_dir)
-    : local_state_(local_state),
-      base_store_dir_(base_store_dir),
-      background_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+// static
+PredictionModelStore* PredictionModelStore::GetInstance() {
+  static base::NoDestructor<PredictionModelStore> model_store;
+  return model_store.get();
+}
+
+PredictionModelStore::PredictionModelStore()
+    : background_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT})) {
   DCHECK(optimization_guide::features::IsInstallWideModelStoreEnabled());
-  DCHECK(local_state);
-  DCHECK(!base_store_dir.empty());
 }
 
 PredictionModelStore::~PredictionModelStore() = default;
+
+void PredictionModelStore::Initialize(PrefService* local_state,
+                                      const base::FilePath& base_store_dir) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(local_state);
+  DCHECK(!base_store_dir.empty());
+
+  // Should not be initialized already.
+  DCHECK(!local_state_);
+  DCHECK(base_store_dir_.empty());
+
+  local_state_ = local_state;
+  base_store_dir_ = base_store_dir;
+
+  background_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&RecordModelStorageMetrics, base_store_dir_));
+}
+
+// static
+std::unique_ptr<PredictionModelStore>
+PredictionModelStore::CreatePredictionModelStoreForTesting(
+    PrefService* local_state,
+    const base::FilePath& base_store_dir) {
+  auto store = base::WrapUnique(new PredictionModelStore());
+  store->Initialize(local_state, base_store_dir);
+  return store;
+}
 
 bool PredictionModelStore::HasModel(
     proto::OptimizationTarget optimization_target,
@@ -153,6 +229,36 @@ void PredictionModelStore::OnModelLoaded(
     return;
   }
   std::move(callback).Run(std::move(model));
+}
+
+void PredictionModelStore::UpdateMetadataForExistingModel(
+    proto::OptimizationTarget optimization_target,
+    const proto::ModelCacheKey& model_cache_key,
+    const proto::ModelInfo& model_info) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(model_info.has_version());
+  DCHECK_EQ(optimization_target, model_info.optimization_target());
+
+  if (!HasModel(optimization_target, model_cache_key))
+    return;
+
+  ModelStoreMetadataEntryUpdater metadata(local_state_, optimization_target,
+                                          model_cache_key);
+  auto base_model_dir = metadata.GetModelBaseDir();
+  DCHECK(base_store_dir_.IsParent(*base_model_dir));
+  if (model_info.has_valid_duration()) {
+    metadata.SetExpiryTime(
+        base::Time::Now() +
+        base::Seconds(model_info.valid_duration().seconds()));
+  }
+  metadata.SetKeepBeyondValidDuration(model_info.keep_beyond_valid_duration());
+  background_task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
+      base::BindOnce(&CheckAllPathsExist,
+                     GetModelFilePaths(model_info, *base_model_dir)),
+      base::BindOnce(&PredictionModelStore::OnModelUpdateVerified,
+                     weak_ptr_factory_.GetWeakPtr(), optimization_target,
+                     model_cache_key, base::DoNothing()));
 }
 
 void PredictionModelStore::UpdateModel(

@@ -115,8 +115,7 @@ class TestRasterInterface : public gpu::raster::RasterInterface {
                       const gfx::Vector2dF& post_translate,
                       const gfx::Vector2dF& post_scale,
                       bool requires_clear,
-                      size_t* max_op_size_hint,
-                      bool preserve_recording = true) override {}
+                      size_t* max_op_size_hint) override {}
   void EndRasterCHROMIUM() override {}
   gpu::SyncToken ScheduleImageDecode(base::span<const uint8_t> encoded_data,
                                      const gfx::Size& output_size,
@@ -127,6 +126,7 @@ class TestRasterInterface : public gpu::raster::RasterInterface {
       const gpu::Mailbox& source_mailbox,
       GLenum source_target,
       GrSurfaceOrigin source_origin,
+      const gfx::Size& source_size,
       const gfx::Point& source_starting_point,
       const SkImageInfo& dst_info,
       GLuint dst_row_bytes,

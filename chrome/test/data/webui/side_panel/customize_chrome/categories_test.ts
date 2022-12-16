@@ -87,4 +87,34 @@ suite('CategoriesTest', () => {
     const event = await eventPromise;
     assertTrue(!!event);
   });
+
+  test('clicking classic chrome sets theme and sends event', async () => {
+    await setInitialSettings(0);
+
+    const eventPromise = eventToPromise('theme-select', categoriesElement);
+    categoriesElement.$.classicChromeTile.click();
+    const event = await eventPromise;
+    assertTrue(!!event);
+    assertEquals(1, handler.getCallCount('setClassicChromeDefaultTheme'));
+  });
+
+  test('clicking upload image creates dialog and sends event', async () => {
+    await setInitialSettings(0);
+    handler.setResultFor('chooseLocalCustomBackground', Promise.resolve({
+      success: true,
+    }));
+
+    const eventPromise = eventToPromise('theme-select', categoriesElement);
+    categoriesElement.$.uploadImageTile.click();
+    const event = await eventPromise;
+    assertTrue(!!event);
+    assertEquals(1, handler.getCallCount('chooseLocalCustomBackground'));
+  });
+
+  test('clicking Chrome Web Store tile opens Chrome Web Store', async () => {
+    await setInitialSettings(0);
+
+    categoriesElement.$.chromeWebStoreTile.click();
+    assertEquals(1, handler.getCallCount('openChromeWebStore'));
+  });
 });

@@ -33,6 +33,7 @@
 #include "extensions/browser/api/scripting/scripting_utils.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/url_pattern_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -73,7 +74,7 @@ scoped_refptr<Extension> LoadExtension(const std::string& filename,
   if (!value)
     return nullptr;
   return Extension::Create(path.DirName(), mojom::ManifestLocation::kUnpacked,
-                           *value, Extension::NO_FLAGS, error);
+                           value->GetDict(), Extension::NO_FLAGS, error);
 }
 
 }  // namespace
@@ -115,8 +116,10 @@ class UserScriptListenerTest : public testing::Test {
                                         .AppendASCII("Extensions")
                                         .AppendASCII(kTestExtensionId)
                                         .AppendASCII("1.0.0.0");
+    extensions::TestExtensionRegistryObserver observer(
+        ExtensionRegistry::Get(profile_), kTestExtensionId);
     UnpackedInstaller::Create(service_)->Load(extension_path);
-    content::RunAllTasksUntilIdle();
+    observer.WaitForExtensionLoaded();
   }
 
   void UnloadTestExtension() {

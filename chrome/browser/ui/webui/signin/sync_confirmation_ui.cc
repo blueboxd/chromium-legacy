@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/json/json_writer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -43,6 +44,46 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/webui_generated_resources.h"
+
+namespace {
+const char kSyncBenefitAutofillStringName[] = "syncConfirmationAutofill";
+const char kSyncBenefitBookmarksStringName[] = "syncConfirmationBookmarks";
+const char kSyncBenefitExtensionsStringName[] = "syncConfirmationExtensions";
+const char kSyncBenefitHistoryAndMoreStringName[] =
+    "syncConfirmationHistoryAndMore";
+const char kSyncBenefitIconNameKey[] = "iconName";
+const char kSyncBenefitTitleKey[] = "title";
+
+std::string GetSyncBenefitsListJSON() {
+  base::Value::List sync_benefits_list;
+
+  // TODO(crbug.com/1383163): Select available types from SyncTypesListDisabled.
+  base::Value::Dict bookmarks;
+  bookmarks.Set(kSyncBenefitTitleKey, kSyncBenefitBookmarksStringName);
+  bookmarks.Set(kSyncBenefitIconNameKey, "signin:star-outline");
+  sync_benefits_list.Append(std::move(bookmarks));
+
+  base::Value::Dict autofill;
+  autofill.Set(kSyncBenefitTitleKey, kSyncBenefitAutofillStringName);
+  autofill.Set(kSyncBenefitIconNameKey, "signin:assignment-outline");
+  sync_benefits_list.Append(std::move(autofill));
+
+  base::Value::Dict extensions;
+  extensions.Set(kSyncBenefitTitleKey, kSyncBenefitExtensionsStringName);
+  extensions.Set(kSyncBenefitIconNameKey, "signin:extension-outline");
+  sync_benefits_list.Append(std::move(extensions));
+
+  base::Value::Dict history_and_more;
+  history_and_more.Set(kSyncBenefitTitleKey,
+                       kSyncBenefitHistoryAndMoreStringName);
+  history_and_more.Set(kSyncBenefitIconNameKey, "signin:devices");
+  sync_benefits_list.Append(std::move(history_and_more));
+
+  std::string json_benefits_list;
+  base::JSONWriter::Write(sync_benefits_list, &json_benefits_list);
+  return json_benefits_list;
+}
+}  // namespace
 
 SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
     : SigninWebDialogUI(web_ui), profile_(Profile::FromWebUI(web_ui)) {
@@ -135,6 +176,8 @@ void SyncConfirmationUI::InitializeForSyncConfirmation(
   source->AddString("accountPictureUrl",
                     profiles::GetPlaceholderAvatarIconUrl());
 
+  source->AddString("syncBenefitsList", GetSyncBenefitsListJSON());
+
   // Default overrides without placeholders
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   title_id = IDS_SYNC_CONFIRMATION_TITLE_LACROS_NON_FORCED;
@@ -173,6 +216,22 @@ void SyncConfirmationUI::InitializeForSyncConfirmation(
         isSigninInterceptFre
             ? IDS_SYNC_CONFIRMATION_TANGIBLE_SYNC_INFO_TITLE_SIGNIN_INTERCEPT
             : IDS_SYNC_CONFIRMATION_TANGIBLE_SYNC_INFO_TITLE;
+
+    illustration_path = "images/tangible_sync_dialog_illustration.svg";
+    illustration_dark_path =
+        "images/tangible_sync_dialog_illustration_dark.svg";
+
+    illustration_id =
+        IDR_SIGNIN_SYNC_CONFIRMATION_IMAGES_TANGIBLE_SYNC_DIALOG_ILLUSTRATION_SVG;
+    illustration_dark_id =
+        IDR_SIGNIN_SYNC_CONFIRMATION_IMAGES_TANGIBLE_SYNC_DIALOG_ILLUSTRATION_DARK_SVG;
+
+    source->AddResourcePath(
+        "images/tangible_sync_window_left_illustration.svg",
+        IDR_SIGNIN_SYNC_CONFIRMATION_IMAGES_TANGIBLE_SYNC_WINDOW_LEFT_ILLUSTRATION_SVG);
+    source->AddResourcePath(
+        "images/tangible_sync_window_right_illustration.svg",
+        IDR_SIGNIN_SYNC_CONFIRMATION_IMAGES_TANGIBLE_SYNC_WINDOW_RIGHT_ILLUSTRATION_SVG);
   }
 
   // Registering and resolving the strings with placeholders

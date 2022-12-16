@@ -17,6 +17,7 @@
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -197,6 +198,7 @@
 #include "content/public/browser/keyboard_event_processing_result.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
@@ -1438,7 +1440,9 @@ bool Browser::IsBackForwardCacheSupported() {
 bool Browser::IsPrerender2Supported(content::WebContents& web_contents) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents.GetBrowserContext());
-  return prefetch::IsSomePreloadingEnabled(*profile->GetPrefs());
+  return prefetch::IsSomePreloadingEnabled(*profile->GetPrefs(),
+                                           &web_contents) ==
+         content::PreloadingEligibility::kEligible;
 }
 
 std::unique_ptr<content::WebContents> Browser::ActivatePortalWebContents(
@@ -1890,11 +1894,6 @@ void Browser::RendererResponsive(
   }
 }
 
-void Browser::DidNavigatePrimaryMainFramePostCommit(WebContents* web_contents) {
-  if (web_contents == tab_strip_model_->GetActiveWebContents())
-    UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
-}
-
 content::JavaScriptDialogManager* Browser::GetJavaScriptDialogManager(
     WebContents* source) {
   return javascript_dialogs::TabModalDialogManager::FromWebContents(source);
@@ -1919,6 +1918,18 @@ std::unique_ptr<content::EyeDropper> Browser::OpenEyeDropper(
     content::RenderFrameHost* frame,
     content::EyeDropperListener* listener) {
   return window()->OpenEyeDropper(frame, listener);
+}
+
+void Browser::DidFinishNavigation(
+    content::WebContents* web_contents,
+    content::NavigationHandle* navigation_handle) {
+  if (web_contents != tab_strip_model_->GetActiveWebContents())
+    return;
+
+  if (navigation_handle->IsInPrimaryMainFrame() &&
+      navigation_handle->HasCommitted()) {
+    UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
+  }
 }
 
 void Browser::RunFileChooser(
@@ -1982,6 +1993,10 @@ blink::mojom::DisplayMode Browser::GetDisplayMode(
     if (app_controller_ && app_controller_->AppUsesWindowControlsOverlay() &&
         !web_contents->GetWindowsControlsOverlayRect().IsEmpty()) {
       return blink::mojom::DisplayMode::kWindowControlsOverlay;
+    }
+
+    if (app_controller_ && app_controller_->AppUsesTabbed()) {
+      return blink::mojom::DisplayMode::kTabbed;
     }
 
     if (app_controller_ && app_controller_->AppUsesBorderlessMode() &&
@@ -2535,12 +2550,10 @@ void Browser::OnTabReplacedAt(WebContents* old_contents,
 }
 
 void Browser::OnDevToolsAvailabilityChanged() {
-  using DTPH = policy::DeveloperToolsPolicyHandler;
-  // We close all windows as a safety measure, even for
-  // kDisallowedForForceInstalledExtensions.
-  if (DTPH::GetDevToolsAvailability(profile_->GetPrefs()) !=
-      DTPH::Availability::kAllowed) {
-    content::DevToolsAgentHost::DetachAllClients();
+  for (auto& agent_host : content::DevToolsAgentHost::GetAll()) {
+    if (!DevToolsWindow::AllowDevToolsFor(profile_,
+                                          agent_host->GetWebContents()))
+      agent_host->ForceDetachAllSessions();
   }
 }
 
@@ -2821,10 +2834,12 @@ void Browser::SetAsDelegate(WebContents* web_contents, bool set_delegate) {
     zoom::ZoomController::FromWebContents(web_contents)->AddObserver(this);
     content_translate_driver->AddTranslationObserver(this);
     BookmarkTabHelper::FromWebContents(web_contents)->AddObserver(this);
+    web_contents_collection_.StartObserving(web_contents);
   } else {
     zoom::ZoomController::FromWebContents(web_contents)->RemoveObserver(this);
     content_translate_driver->RemoveTranslationObserver(this);
     BookmarkTabHelper::FromWebContents(web_contents)->RemoveObserver(this);
+    web_contents_collection_.StopObserving(web_contents);
   }
 }
 

@@ -44,6 +44,19 @@ static const char kDefaultMV3CSP[] = "script-src 'self'; object-src 'self';";
 // The minimum CSP to be used in order to prevent remote scripts.
 static const char kMinimumMV3CSP[] =
     "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';";
+// For unpacked extensions, we additionally allow the use of localhost files to
+// aid in rapid local development.
+static const char kMinimumUnpackedMV3CSP[] =
+    "script-src 'self' 'wasm-unsafe-eval' http://localhost:* "
+    "http://127.0.0.1:*; object-src 'self';";
+
+// Variants to support inline-specluation-rules. See https://crbug.com/1382361.
+static const char kMinimumMV3CSPWithInlineSpeculationRules[] =
+    "script-src 'self' 'wasm-unsafe-eval' 'inline-speculation-rules'; "
+    "object-src 'self';";
+static const char kMinimumUnpackedMV3CSPWithInlineSpeculationRules[] =
+    "script-src 'self' 'wasm-unsafe-eval' 'inline-speculation-rules' "
+    "http://localhost:* http://127.0.0.1:*; object-src 'self';";
 
 #define PLATFORM_APP_LOCAL_CSP_SOURCES "'self' blob: filesystem: data:"
 
@@ -107,6 +120,26 @@ const char* GetDefaultExtensionPagesCSP(Extension* extension) {
   return kDefaultContentSecurityPolicy;
 }
 
+// Returns the minimum CSP to apply for the given MV3 extension.
+const std::string* GetMinimumMV3CSPForExtension(const Extension& extension) {
+  DCHECK_GE(extension.manifest_version(), 3);
+
+  static const base::NoDestructor<std::string> default_csp(
+      base::FeatureList::IsEnabled(
+          extensions_features::kMinimumMV3CSPWithInlineSpeculationRules)
+          ? kMinimumMV3CSPWithInlineSpeculationRules
+          : kMinimumMV3CSP);
+  static const base::NoDestructor<std::string> default_unpacked_csp(
+      base::FeatureList::IsEnabled(
+          extensions_features::kMinimumMV3CSPWithInlineSpeculationRules)
+          ? kMinimumUnpackedMV3CSPWithInlineSpeculationRules
+          : kMinimumUnpackedMV3CSP);
+
+  return Manifest::IsUnpackedLocation(extension.location())
+             ? default_unpacked_csp.get()
+             : default_csp.get();
+}
+
 }  // namespace
 
 CSPInfo::CSPInfo(std::string extension_pages_csp)
@@ -143,8 +176,7 @@ const std::string* CSPInfo::GetMinimumCSPToAppend(
   // cause the parsed CSP to not be as strong as the default one. For example,
   // see crbug.com/1042963.
 
-  static const base::NoDestructor<std::string> default_csp(kMinimumMV3CSP);
-  return default_csp.get();
+  return GetMinimumMV3CSPForExtension(extension);
 }
 
 // static
@@ -152,9 +184,7 @@ const std::string* CSPInfo::GetIsolatedWorldCSP(const Extension& extension) {
   if (extension.manifest_version() >= 3) {
     // The isolated world will use its own CSP which blocks remotely hosted
     // code.
-    static const base::NoDestructor<std::string> default_isolated_world_csp(
-        kMinimumMV3CSP);
-    return default_isolated_world_csp.get();
+    return GetMinimumMV3CSPForExtension(extension);
   }
 
   Manifest::Type type = extension.GetType();
@@ -191,6 +221,22 @@ CSPHandler::CSPHandler() = default;
 
 CSPHandler::~CSPHandler() = default;
 
+// static
+const char* CSPHandler::GetMinimumMV3CSPForTesting() {
+  return base::FeatureList::IsEnabled(
+             extensions_features::kMinimumMV3CSPWithInlineSpeculationRules)
+             ? kMinimumMV3CSPWithInlineSpeculationRules
+             : kMinimumMV3CSP;
+}
+
+// static
+const char* CSPHandler::GetMinimumUnpackedMV3CSPForTesting() {
+  return base::FeatureList::IsEnabled(
+             extensions_features::kMinimumMV3CSPWithInlineSpeculationRules)
+             ? kMinimumUnpackedMV3CSPWithInlineSpeculationRules
+             : kMinimumUnpackedMV3CSP;
+}
+
 bool CSPHandler::Parse(Extension* extension, std::u16string* error) {
   const char* key = extension->GetType() == Manifest::TYPE_PLATFORM_APP
                         ? keys::kPlatformAppContentSecurityPolicy
@@ -218,8 +264,12 @@ bool CSPHandler::Parse(Extension* extension, std::u16string* error) {
     return false;
   }
 
+  // Since this is a MV2 extension / app, we don't allow remote sources in
+  // the CSP.
+  constexpr bool kAllowRemoteSources = false;
   if (!ParseSandboxCSP(extension, error, keys::kSandboxedPagesCSP,
-                       GetManifestPath(extension, keys::kSandboxedPagesCSP))) {
+                       GetManifestPath(extension, keys::kSandboxedPagesCSP),
+                       kAllowRemoteSources)) {
     return false;
   }
 
@@ -235,6 +285,9 @@ bool CSPHandler::ParseCSPDictionary(Extension* extension,
     return false;
   }
 
+  // Since this is an MV3 extension, we allow remote sources in the
+  // sandboxed page CSP.
+  constexpr bool kAllowRemoteSources = true;
   return ParseExtensionPagesCSP(
              extension, error, keys::kContentSecurityPolicy_ExtensionPagesPath,
              GetManifestPath(
@@ -242,7 +295,8 @@ bool CSPHandler::ParseCSPDictionary(Extension* extension,
          ParseSandboxCSP(
              extension, error, keys::kContentSecurityPolicy_SandboxedPagesPath,
              GetManifestPath(extension,
-                             keys::kContentSecurityPolicy_SandboxedPagesPath));
+                             keys::kContentSecurityPolicy_SandboxedPagesPath),
+             kAllowRemoteSources);
 }
 
 bool CSPHandler::ParseExtensionPagesCSP(
@@ -290,7 +344,8 @@ bool CSPHandler::ParseExtensionPagesCSP(
 bool CSPHandler::ParseSandboxCSP(Extension* extension,
                                  std::u16string* error,
                                  base::StringPiece manifest_key,
-                                 const base::Value* sandbox_csp) {
+                                 const base::Value* sandbox_csp,
+                                 bool allow_remote_sources) {
   if (!sandbox_csp) {
     SetSandboxCSP(extension, kDefaultSandboxedPageContentSecurityPolicy);
     return true;
@@ -310,9 +365,12 @@ bool CSPHandler::ParseSandboxCSP(Extension* extension,
   }
 
   std::vector<InstallWarning> warnings;
-  std::string effective_sandbox_csp =
-      csp_validator::GetEffectiveSandoxedPageCSP(
-          sandbox_csp_str, std::string(manifest_key), &warnings);
+  std::string effective_sandbox_csp = sandbox_csp_str;
+  if (!allow_remote_sources) {
+    effective_sandbox_csp =
+        csp_validator::GetSandboxedPageCSPDisallowingRemoteSources(
+            sandbox_csp_str, std::string(manifest_key), &warnings);
+  }
   SetSandboxCSP(extension, std::move(effective_sandbox_csp));
   extension->AddInstallWarnings(std::move(warnings));
   return true;

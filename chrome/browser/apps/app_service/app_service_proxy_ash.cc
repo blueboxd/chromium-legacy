@@ -26,12 +26,12 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/supervised_user/grit/supervised_user_unscaled_resources.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "components/account_id/account_id.h"
 #include "components/app_constants/constants.h"
 #include "components/app_restore/full_restore_save_handler.h"
 #include "components/app_restore/full_restore_utils.h"
+#include "components/grit/components_resources.h"
 #include "components/services/app_service/app_service_mojom_impl.h"
 #include "components/services/app_service/public/cpp/app_capability_access_cache_wrapper.h"
 #include "components/services/app_service/public/cpp/app_registry_cache_wrapper.h"
@@ -215,11 +215,6 @@ void AppServiceProxyAsh::OnApps(std::vector<apps::mojom::AppPtr> deltas,
 
 void AppServiceProxyAsh::PauseApps(
     const std::map<std::string, PauseData>& pause_data) {
-  if (!base::FeatureList::IsEnabled(kAppServiceWithoutMojom) &&
-      !app_service_.is_connected()) {
-    return;
-  }
-
   for (auto& data : pause_data) {
     auto app_type = app_registry_cache_.GetAppType(data.first);
     if (app_type == AppType::kUnknown) {
@@ -235,14 +230,9 @@ void AppServiceProxyAsh::PauseApps(
 
     // The app pause dialog can't be loaded for unit tests.
     if (!data.second.should_show_pause_dialog || is_using_testing_profile_) {
-      if (base::FeatureList::IsEnabled(kAppServiceWithoutMojom)) {
-        auto* publisher = GetPublisher(app_type);
-        if (publisher) {
-          publisher->PauseApp(data.first);
-        }
-      } else {
-        app_service_->PauseApp(ConvertAppTypeToMojomAppType(app_type),
-                               data.first);
+      auto* publisher = GetPublisher(app_type);
+      if (publisher) {
+        publisher->PauseApp(data.first);
       }
       continue;
     }
@@ -259,11 +249,6 @@ void AppServiceProxyAsh::PauseApps(
 }
 
 void AppServiceProxyAsh::UnpauseApps(const std::set<std::string>& app_ids) {
-  if (!base::FeatureList::IsEnabled(kAppServiceWithoutMojom) &&
-      !app_service_.is_connected()) {
-    return;
-  }
-
   for (auto& app_id : app_ids) {
     auto app_type = app_registry_cache_.GetAppType(app_id);
     if (app_type == AppType::kUnknown) {
@@ -271,13 +256,9 @@ void AppServiceProxyAsh::UnpauseApps(const std::set<std::string>& app_ids) {
     }
 
     pending_pause_requests_.MaybeRemoveApp(app_id);
-    if (base::FeatureList::IsEnabled(kAppServiceWithoutMojom)) {
-      auto* publisher = GetPublisher(app_type);
-      if (publisher) {
-        publisher->UnpauseApp(app_id);
-      }
-    } else {
-      app_service_->UnpauseApp(ConvertAppTypeToMojomAppType(app_type), app_id);
+    auto* publisher = GetPublisher(app_type);
+    if (publisher) {
+      publisher->UnpauseApp(app_id);
     }
   }
 }
@@ -287,15 +268,6 @@ void AppServiceProxyAsh::SetResizeLocked(const std::string& app_id,
   auto* publisher = GetPublisher(app_registry_cache_.GetAppType(app_id));
   if (publisher) {
     publisher->SetResizeLocked(app_id, locked);
-  }
-}
-
-void AppServiceProxyAsh::SetResizeLocked(const std::string& app_id,
-                                         apps::mojom::OptionalBool locked) {
-  if (app_service_.is_connected()) {
-    auto app_type = app_registry_cache_.GetAppType(app_id);
-    app_service_->SetResizeLocked(ConvertAppTypeToMojomAppType(app_type),
-                                  app_id, locked);
   }
 }
 
@@ -609,13 +581,9 @@ void AppServiceProxyAsh::OnPauseDialogClosed(apps::AppType app_type,
         });
   }
   if (should_pause_app) {
-    if (base::FeatureList::IsEnabled(kAppServiceWithoutMojom)) {
-      auto* publisher = GetPublisher(app_type);
-      if (publisher) {
-        publisher->PauseApp(app_id);
-      }
-    } else if (app_service_.is_connected()) {
-      app_service_->PauseApp(ConvertAppTypeToMojomAppType(app_type), app_id);
+    auto* publisher = GetPublisher(app_type);
+    if (publisher) {
+      publisher->PauseApp(app_id);
     }
   }
 }

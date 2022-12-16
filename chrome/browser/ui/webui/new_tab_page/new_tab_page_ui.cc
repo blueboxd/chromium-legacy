@@ -20,6 +20,7 @@
 #include "chrome/browser/cart/cart_handler.h"
 #include "chrome/browser/new_tab_page/modules/drive/drive_handler.h"
 #include "chrome/browser/new_tab_page/modules/feed/feed_handler.h"
+#include "chrome/browser/new_tab_page/modules/new_tab_page_modules.h"
 #include "chrome/browser/new_tab_page/modules/photos/photos_handler.h"
 #include "chrome/browser/new_tab_page/modules/recipes/recipes_handler.h"
 #include "chrome/browser/new_tab_page/new_tab_page_util.h"
@@ -95,14 +96,6 @@ namespace {
 
 constexpr char kPrevNavigationTimePrefName[] = "NewTabPage.PrevNavigationTime";
 constexpr char kSignedOutNtpModulesSwitch[] = "signed-out-ntp-modules";
-
-const std::pair<const char*, const base::Feature&> kModuleFeatures[] = {
-#if !defined(OFFICIAL_BUILD)
-    {"dummyModulesEnabled", ntp_features::kNtpDummyModules},
-#endif
-    {"photosModuleEnabled", ntp_features::kNtpPhotosModule},
-    {"feedModuleEnabled", ntp_features::kNtpFeedModule},
-};
 
 void AddRawStringOrDefault(content::WebUIDataSource* source,
                            const char key[],
@@ -473,12 +466,6 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
                                IDS_NTP_MODULES_CART_DISCOUNT_CONSENT_CONTENT);
   }
 
-  for (const auto& nameFeature : kModuleFeatures) {
-    source->AddBoolean(nameFeature.first,
-                       base::FeatureList::IsEnabled(nameFeature.second));
-  }
-  source->AddBoolean("recipeTasksModuleEnabled", IsRecipeTasksModuleEnabled());
-  source->AddBoolean("chromeCartModuleEnabled", IsCartModuleEnabled());
   source->AddString("photosModuleCustomArtWork",
                     base::GetFieldTrialParamValueByFeature(
                         ntp_features::kNtpPhotosModuleCustomizedOptInArtWork,
@@ -543,7 +530,7 @@ bool HasCredentials(Profile* profile) {
 }  // namespace
 
 NewTabPageUI::NewTabPageUI(content::WebUI* web_ui)
-    : ui::MojoWebUIController(web_ui, /*enable_chrome_send=*/false),
+    : ui::MojoWebUIController(web_ui, /*enable_chrome_send=*/true),
       content::WebContentsObserver(web_ui->GetWebContents()),
       page_factory_receiver_(this),
       customize_themes_factory_receiver_(this),
@@ -556,7 +543,9 @@ NewTabPageUI::NewTabPageUI(content::WebUI* web_ui)
       // We initialize navigation_start_time_ to a reasonable value to account
       // for the unlikely case where the NewTabPageHandler is created before we
       // received the DidStartNavigation event.
-      navigation_start_time_(base::Time::Now()) {
+      navigation_start_time_(base::Time::Now()),
+      module_id_names_(ntp::MakeModuleIdNames(
+          NewTabPageUI::IsDriveModuleEnabledForProfile(profile_))) {
   auto* source = CreateNewTabPageUiHtmlSource(profile_);
   source->AddBoolean(
       "customBackgroundDisabledByPolicy",
@@ -687,7 +676,13 @@ void NewTabPageUI::BindInterface(
 void NewTabPageUI::BindInterface(
     mojo::PendingReceiver<omnibox::mojom::PageHandler> pending_page_handler) {
   realbox_handler_ = std::make_unique<RealboxHandler>(
-      std::move(pending_page_handler), profile_, web_contents());
+      std::move(pending_page_handler), profile_, web_contents(),
+      &metrics_reporter_);
+}
+
+void NewTabPageUI::BindInterface(
+    mojo::PendingReceiver<metrics_reporter::mojom::PageMetricsHost> receiver) {
+  metrics_reporter_.BindInterface(std::move(receiver));
 }
 
 void NewTabPageUI::BindInterface(
@@ -760,11 +755,12 @@ void NewTabPageUI::CreatePageHandler(
     mojo::PendingReceiver<new_tab_page::mojom::PageHandler>
         pending_page_handler) {
   DCHECK(pending_page.is_valid());
+
   page_handler_ = std::make_unique<NewTabPageHandler>(
       std::move(pending_page_handler), std::move(pending_page), profile_,
       ntp_custom_background_service_, theme_service_,
       LogoServiceFactory::GetForProfile(profile_), web_contents(),
-      navigation_start_time_);
+      navigation_start_time_, module_id_names_);
 }
 
 void NewTabPageUI::CreateCustomizeThemesHandler(
@@ -849,6 +845,7 @@ void NewTabPageUI::DidStartNavigation(
   if (navigation_handle->IsInPrimaryMainFrame() &&
       navigation_handle->GetURL() == GURL(chrome::kChromeUINewTabPageURL)) {
     navigation_start_time_ = base::Time::Now();
+
     OnLoad();
     auto prev_navigation_time =
         profile_->GetPrefs()->GetTime(kPrevNavigationTimePrefName);
@@ -888,25 +885,17 @@ void NewTabPageUI::OnTilesVisibilityPrefChanged() {
 void NewTabPageUI::OnLoad() {
   base::Value::Dict update;
   update.Set("navigationStartTime", navigation_start_time_.ToJsTime());
-  bool driveModuleEnabled =
-      NewTabPageUI::IsDriveModuleEnabledForProfile(profile_);
-  bool anyModuleEnabled = driveModuleEnabled;
-  for (const auto& nameFeature : kModuleFeatures) {
-    anyModuleEnabled |= base::FeatureList::IsEnabled(nameFeature.second);
-  }
-  anyModuleEnabled |= IsRecipeTasksModuleEnabled();
-  anyModuleEnabled |= IsCartModuleEnabled();
+
   // Only enable modules if account credentials are available as most modules
   // won't have data to render otherwise. We can override this behavior with the
   // "--signed-out-ntp-modules" command line switch, e.g. to allow modules in
   // perf tests, which do not support sign-in.
   update.Set("modulesEnabled",
-             anyModuleEnabled &&
+             !module_id_names_.empty() &&
                  !base::FeatureList::IsEnabled(ntp_features::kNtpModulesLoad) &&
                  (base::CommandLine::ForCurrentProcess()->HasSwitch(
                       kSignedOutNtpModulesSwitch) ||
                   HasCredentials(profile_)));
-  update.Set("driveModuleEnabled", driveModuleEnabled);
   content::WebUIDataSource::Update(profile_, chrome::kChromeUINewTabPageHost,
                                    std::move(update));
 }

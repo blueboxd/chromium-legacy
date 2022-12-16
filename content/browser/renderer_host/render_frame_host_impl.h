@@ -168,6 +168,10 @@
 #include "third_party/blink/public/mojom/serial/serial.mojom-forward.h"
 #endif
 
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_FUCHSIA)
+#include "third_party/blink/public/mojom/smart_card/smart_card.mojom-forward.h"
+#endif
+
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
 #include "media/mojo/mojom/remoting.mojom-forward.h"
 #endif
@@ -372,7 +376,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
                              bool exclude_offscreen,
                              size_t max_nodes,
                              const base::TimeDelta& timeout) override;
-  void RequestDistilledAXTree(AXTreeDistillerCallback callback) override;
   SiteInstanceImpl* GetSiteInstance() const override;
   RenderProcessHost* GetProcess() const override;
   GlobalRenderFrameHostId GetGlobalId() const override;
@@ -1792,12 +1795,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
     BackForwardCacheDisablingFeatureHandle(
         BackForwardCacheDisablingFeatureHandle&&);
     BackForwardCacheDisablingFeatureHandle& operator=(
-        BackForwardCacheDisablingFeatureHandle&& other) {
-      feature_ = other.feature_;
-      render_frame_host_ = other.render_frame_host_;
-      other.render_frame_host_ = nullptr;
-      return *this;
-    }
+        BackForwardCacheDisablingFeatureHandle&& other) = default;
 
     inline ~BackForwardCacheDisablingFeatureHandle() { reset(); }
 
@@ -1863,6 +1861,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void BindSerialService(
       mojo::PendingReceiver<blink::mojom::SerialService> receiver);
+#endif
+
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_FUCHSIA)
+  void GetSmartCardService(
+      mojo::PendingReceiver<blink::mojom::SmartCardService> receiver);
 #endif
 
   IdleManagerImpl* GetIdleManager();
@@ -2058,6 +2061,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   }
 
   bool IsCredentialless() const override;
+
+  void AddObserver(RenderFrameHostObserver* observer) override;
+  void RemoveObserver(RenderFrameHostObserver* observer) override;
 
   bool is_fenced_frame_root_originating_from_opaque_url() const {
     return is_fenced_frame_root_originating_from_opaque_url_;
@@ -2631,6 +2637,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Retrieve proxies in a way that is no longer dependent on access to
   // FrameTreeNode or RenderFrameHostManager.
   RenderFrameProxyHost* GetProxyToParent();
+
+  // Returns the proxy to inner WebContents in the outer WebContents's
+  // SiteInstance. Note that this is not allowed to call this function on
+  // inactive RenderFrameHost.
   RenderFrameProxyHost* GetProxyToOuterDelegate();
 
   void DidChangeReferrerPolicy(network::mojom::ReferrerPolicy referrer_policy);
@@ -2698,6 +2708,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void GetSandboxedFileSystemForBucket(
       const storage::BucketInfo& bucket,
       blink::mojom::BucketHost::GetDirectoryCallback callback) override;
+  GlobalRenderFrameHostId GetAssociatedRenderFrameHostId() const override;
 
   // Sends out all pending beacons held by this document and all its child
   // documents.
@@ -3201,15 +3212,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // standalone snapshot of the accessibility tree as |snapshot|.
   void RequestAXTreeSnapshotCallback(AXTreeSnapshotCallback callback,
                                      const ui::AXTreeUpdate& snapshot);
-
-  // Callback that will be called as a response to the call to the method
-  // content::mojom::RenderAccessibility::DistillAXTree(). The |callback| passed
-  // will be invoked after the renderer has responded with a list of
-  // |content_node_ids|.
-  void RequestDistilledAXTreeCallback(
-      AXTreeDistillerCallback callback,
-      const ui::AXTreeUpdate& snapshot,
-      const std::vector<ui::AXNodeID>& content_node_ids);
 
   // Makes a copy of an AXTreeUpdate to send to the destination.
   void CopyAXTreeUpdate(const ui::AXTreeUpdate& snapshot,
@@ -4703,6 +4705,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // and it's meant to generally be stable for the FTN lifetime, but is allowed
   // to change across MPArch activations like prerendering.
   const base::UnguessableToken devtools_frame_token_;
+
+  // The observers watching our state changed event.
+  base::ObserverList<RenderFrameHostObserver> observers_;
 
   // BrowserInterfaceBroker implementation through which this
   // RenderFrameHostImpl exposes document-scoped Mojo services to the currently

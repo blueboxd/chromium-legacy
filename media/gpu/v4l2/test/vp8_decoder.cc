@@ -38,6 +38,37 @@ static_assert(kVp8FrameAltref ==
                   base::strict_cast<TypeOfVp8RefType>(media::VP8_FRAME_ALTREF),
               "Invalid index value for Altref reference frame");
 
+// The resolution encoded in the bitstream is required for queue creation. Note
+// that parsing ivf file and parsing the first frame VP8 parser happen
+// again later in the code. This is intentionally duplicated.
+const gfx::Size GetResolutionFromBitstream(
+    const base::MemoryMappedFile& stream) {
+  media::IvfParser ivf_parser{};
+  media::IvfFileHeader ivf_file_header{};
+
+  if (!ivf_parser.Initialize(stream.data(), stream.length(),
+                             &ivf_file_header)) {
+    LOG(FATAL) << "Couldn't initialize IVF parser.";
+  }
+
+  media::IvfFrameHeader ivf_frame_header{};
+  const uint8_t* ivf_frame_data;
+
+  if (!ivf_parser.ParseNextFrame(&ivf_frame_header, &ivf_frame_data)) {
+    LOG(FATAL) << "Failed to parse the first frame with IVF parser.";
+  }
+
+  VLOG(2) << "Ivf file header: " << ivf_file_header.width << " x "
+          << ivf_file_header.height;
+
+  media::Vp8Parser vp8_parser;
+  media::Vp8FrameHeader vp8_frame_header;
+  vp8_parser.ParseFrame(ivf_frame_data, ivf_frame_header.frame_size,
+                        &vp8_frame_header);
+
+  return gfx::Size(vp8_frame_header.width, vp8_frame_header.height);
+}
+
 // Section 9.4. Loop filter type and levels syntax in VP8 specs.
 // https://datatracker.ietf.org/doc/rfc6386/
 struct v4l2_vp8_loop_filter FillV4L2VP8LoopFilterHeader(
@@ -203,11 +234,6 @@ constexpr uint32_t kNumberOfBuffersInOutputQueue = 1;
 
 constexpr uint32_t kNumberOfPlanesInOutputQueue = 1;
 
-// MM21 is an uncompressed opaque format that is produced by MediaTek
-// video decoders.
-// TODO(b/256174196): Extend decoder format options to support non-MTK devices
-constexpr uint32_t kMm21Fourcc = v4l2_fourcc('M', 'M', '2', '1');
-
 static_assert(kNumberOfBuffersInCaptureQueue <= 16,
               "Too many CAPTURE buffers are used. The number of CAPTURE "
               "buffers is currently assumed to be no larger than 16.");
@@ -232,6 +258,7 @@ Vp8Decoder::Vp8Decoder(std::unique_ptr<IvfParser> ivf_parser,
   DCHECK(v4l2_ioctl_->QueryCtrl(V4L2_CID_STATELESS_VP8_FRAME));
 
   std::fill(ref_frames_.begin(), ref_frames_.end(), nullptr);
+  number_of_buffers_in_capture_queue_ = kNumberOfBuffersInCaptureQueue;
 }
 
 Vp8Decoder::~Vp8Decoder() = default;
@@ -263,31 +290,44 @@ std::unique_ptr<Vp8Decoder> Vp8Decoder::Create(
     return nullptr;
   }
 
-  auto v4l2_ioctl = std::make_unique<V4L2IoctlShim>();
+  auto v4l2_ioctl = std::make_unique<V4L2IoctlShim>(kDriverCodecFourcc);
+  uint32_t uncompressed_fourcc = V4L2_PIX_FMT_NV12;
+  int num_planes = 1;
 
-  if (!v4l2_ioctl->VerifyCapabilities(kDriverCodecFourcc, kMm21Fourcc)) {
-    LOG(ERROR) << "Device doesn't support the provided FourCCs.";
-    return nullptr;
+  if (!v4l2_ioctl->VerifyCapabilities(kDriverCodecFourcc,
+                                      uncompressed_fourcc)) {
+    // Fall back to MM21 for MediaTek platforms
+    uncompressed_fourcc = v4l2_fourcc('M', 'M', '2', '1');
+    num_planes = 2;
+
+    if (!v4l2_ioctl->VerifyCapabilities(kDriverCodecFourcc,
+                                        uncompressed_fourcc)) {
+      LOG(ERROR) << "Device doesn't support the provided FourCCs.";
+      return nullptr;
+    }
   }
 
   LOG(INFO) << "Ivf file header: " << file_header.width << " x "
             << file_header.height;
+
+  const gfx::Size bitstream_coded_size = GetResolutionFromBitstream(stream);
 
   // TODO(b/256251694): might need to consider using more than 1 file descriptor
   // (fd) & buffer with the output queue for 4K60 requirement.
   // https://buganizer.corp.google.com/issues/202214561#comment31
   auto OUTPUT_queue = std::make_unique<V4L2Queue>(
       V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE, kDriverCodecFourcc,
-      gfx::Size(file_header.width, file_header.height), /*num_planes=*/1,
-      V4L2_MEMORY_MMAP, /*num_buffers=*/kNumberOfBuffersInOutputQueue);
+      bitstream_coded_size, /*num_planes=*/1, V4L2_MEMORY_MMAP,
+      /*num_buffers=*/kNumberOfBuffersInOutputQueue);
 
   // TODO(b/256543928): enable V4L2_MEMORY_DMABUF memory for CAPTURE queue.
   // |num_planes| represents separate memory buffers, not planes for Y, U, V.
   // https://www.kernel.org/doc/html/v5.10/userspace-api/media/v4l/pixfmt-v4l2-mplane.html#c.V4L.v4l2_plane_pix_format
   auto CAPTURE_queue = std::make_unique<V4L2Queue>(
-      V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE, kMm21Fourcc,
-      gfx::Size(file_header.width, file_header.height), /*num_planes=*/2,
-      V4L2_MEMORY_MMAP, /*num_buffers=*/kNumberOfBuffersInCaptureQueue);
+      V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE, uncompressed_fourcc,
+      bitstream_coded_size,
+      /*num_planes=*/num_planes, V4L2_MEMORY_MMAP,
+      /*num_buffers=*/kNumberOfBuffersInCaptureQueue);
 
   return base::WrapUnique(
       new Vp8Decoder(std::move(ivf_parser), std::move(v4l2_ioctl),
@@ -528,6 +568,23 @@ VideoDecoder::Result Vp8Decoder::DecodeNextFrame(std::vector<char>& y_plane,
       break;
   }
 
+  if (frame_hdr.IsKeyframe()) {
+    is_resolution_changed_ =
+        frame_hdr.width != OUTPUT_queue_->coded_size().width() ||
+        frame_hdr.height != OUTPUT_queue_->coded_size().height();
+  } else {
+    frame_hdr.width = OUTPUT_queue_->coded_size().width();
+    frame_hdr.height = OUTPUT_queue_->coded_size().height();
+  }
+
+  if (IsResolutionChanged()) {
+    const gfx::Size new_resolution(frame_hdr.width, frame_hdr.height);
+    LOG_ASSERT(!new_resolution.IsEmpty())
+        << "New key frame resolution is empty.";
+
+    HandleDynamicResolutionChange(new_resolution);
+  }
+
   VLOG_IF(2, !frame_hdr.show_frame) << "Not displaying frame";
   last_decoded_frame_visible_ = frame_hdr.show_frame;
 
@@ -565,15 +622,25 @@ VideoDecoder::Result Vp8Decoder::DecodeNextFrame(std::vector<char>& y_plane,
     LOG(FATAL) << "VIDIOC_DQBUF failed for CAPTURE queue.";
 
   scoped_refptr<MmapedBuffer> buffer = CAPTURE_queue_->GetBuffer(CAPTURE_index);
-  CHECK_EQ(buffer->mmaped_planes().size(), 2u)
-      << "MM21 should have exactly 2 planes but CAPTURE queue does not.";
-
-  CHECK_EQ(CAPTURE_queue_->fourcc(), kMm21Fourcc);
   size = CAPTURE_queue_->display_size();
-  ConvertMM21ToYUV(y_plane, u_plane, v_plane, size,
-                   static_cast<char*>(buffer->mmaped_planes()[0].start_addr),
-                   static_cast<char*>(buffer->mmaped_planes()[1].start_addr),
-                   CAPTURE_queue_->coded_size());
+  if (CAPTURE_queue_->fourcc() == V4L2_PIX_FMT_NV12) {
+    CHECK_EQ(buffer->mmaped_planes().size(), 1u)
+        << "NV12 should have exactly 1 plane but CAPTURE queue does not.";
+
+    ConvertNV12ToYUV(y_plane, u_plane, v_plane, size,
+                     static_cast<char*>(buffer->mmaped_planes()[0].start_addr),
+                     CAPTURE_queue_->coded_size());
+  } else if (CAPTURE_queue_->fourcc() == v4l2_fourcc('M', 'M', '2', '1')) {
+    CHECK_EQ(buffer->mmaped_planes().size(), 2u)
+        << "MM21 should have exactly 2 planes but CAPTURE queue does not.";
+
+    ConvertMM21ToYUV(y_plane, u_plane, v_plane, size,
+                     static_cast<char*>(buffer->mmaped_planes()[0].start_addr),
+                     static_cast<char*>(buffer->mmaped_planes()[1].start_addr),
+                     CAPTURE_queue_->coded_size());
+  } else {
+    LOG(FATAL) << "Unsupported CAPTURE queue format";
+  }
 
   const std::set<int> reusable_buffer_slots = RefreshReferenceSlots(
       frame_hdr, CAPTURE_queue_->GetBuffer(CAPTURE_index).get(),

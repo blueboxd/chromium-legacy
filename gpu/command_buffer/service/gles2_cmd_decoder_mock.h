@@ -158,6 +158,7 @@ class MockGLES2Decoder : public GLES2Decoder {
                     int height,
                     int depth));
   MOCK_METHOD0(GetErrorState, ErrorState *());
+#if !BUILDFLAG(IS_ANDROID)
   MOCK_METHOD8(CreateAbstractTexture,
                std::unique_ptr<gpu::gles2::AbstractTexture>(
                    unsigned /* GLenum */ target,
@@ -168,6 +169,7 @@ class MockGLES2Decoder : public GLES2Decoder {
                    int /* GLint */ border,
                    unsigned /* GLenum */ format,
                    unsigned /* GLenum */ type));
+#endif
 
   MOCK_METHOD0(GetLogger, Logger*());
 
@@ -186,7 +188,7 @@ class MockGLES2Decoder : public GLES2Decoder {
                void(uint32_t client_texture_id,
                     uint32_t texture_target,
                     gl::GLImage* image));
-#else
+#elif !BUILDFLAG(IS_ANDROID)
   MOCK_METHOD3(AttachImageToTextureWithClientBinding,
                void(uint32_t client_texture_id,
                     uint32_t texture_target,

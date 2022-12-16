@@ -7,6 +7,7 @@
 #include <aura-shell-client-protocol.h>
 #include <string>
 
+#include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -110,6 +111,7 @@ bool WaylandToplevelWindow::CreateShellToplevel() {
       IsSupportedOnAuraSurface(ZAURA_SURFACE_SET_FRAME_SINCE_VERSION)) {
     zaura_surface_set_frame(aura_surface(), ZAURA_SURFACE_FRAME_TYPE_SHADOW);
   }
+
   if (screen_coordinates_enabled_)
     SetBoundsInDIP(GetBoundsInDIP());
 
@@ -172,8 +174,8 @@ void WaylandToplevelWindow::Hide() {
   WaylandWindow::Hide();
 
   // Request the compositor to cease any possible ongoing snapping
-  // preview/commit.
-  CommitSnap(WaylandWindowSnapDirection::kNone);
+  // preview/commit. Use any value for `snap_ratio` since it will not be used.
+  CommitSnap(WaylandWindowSnapDirection::kNone, /*snap_ratio=*/1.f);
 
   if (IsSupportedOnAuraSurface(ZAURA_SURFACE_RELEASE_SINCE_VERSION))
     SetAuraSurface(nullptr);
@@ -620,6 +622,33 @@ void WaylandToplevelWindow::PropagateBufferScale(float new_scale) {
   }
 }
 
+void WaylandToplevelWindow::ShowTooltip(
+    const std::u16string& text,
+    const gfx::Point& position,
+    const PlatformWindowTooltipTrigger trigger,
+    const base::TimeDelta show_delay,
+    const base::TimeDelta hide_delay) {
+  if (IsSupportedOnAuraSurface(ZAURA_SURFACE_SHOW_TOOLTIP_SINCE_VERSION)) {
+    uint32_t zaura_shell_trigger =
+        trigger == PlatformWindowTooltipTrigger::kCursor
+            ? ZAURA_SURFACE_TOOLTIP_TRIGGER_CURSOR
+            : ZAURA_SURFACE_TOOLTIP_TRIGGER_KEYBOARD;
+    zaura_surface_show_tooltip(
+        aura_surface(), base::UTF16ToUTF8(text).c_str(), position.x(),
+        position.y(), zaura_shell_trigger,
+        // Cast `show_delay` and `hide_delay` into int32_t as TimeDelta should
+        // not be larger than what can be handled in int32_t
+        base::saturated_cast<uint32_t>(show_delay.InMilliseconds()),
+        base::saturated_cast<uint32_t>(hide_delay.InMilliseconds()));
+  }
+}
+
+void WaylandToplevelWindow::HideTooltip() {
+  if (IsSupportedOnAuraSurface(ZAURA_SURFACE_HIDE_TOOLTIP_SINCE_VERSION)) {
+    zaura_surface_hide_tooltip(aura_surface());
+  }
+}
+
 bool WaylandToplevelWindow::IsClientControlledWindowMovementSupported() const {
   auto* window_drag_controller = connection()->window_drag_controller();
   DCHECK(window_drag_controller);
@@ -639,13 +668,13 @@ void WaylandToplevelWindow::OcclusionChanged(void* data,
                                              uint32_t occlusion_reason) {}
 
 void WaylandToplevelWindow::LockFrame(void* data, zaura_surface* surface) {
-  WaylandToplevelWindow* self = static_cast<WaylandToplevelWindow*>(data);
+  auto* self = static_cast<WaylandToplevelWindow*>(data);
   DCHECK(self);
   self->OnFrameLockingChanged(true);
 }
 
 void WaylandToplevelWindow::UnlockFrame(void* data, zaura_surface* surface) {
-  WaylandToplevelWindow* self = static_cast<WaylandToplevelWindow*>(data);
+  auto* self = static_cast<WaylandToplevelWindow*>(data);
   DCHECK(self);
   self->OnFrameLockingChanged(false);
 }
@@ -653,7 +682,7 @@ void WaylandToplevelWindow::UnlockFrame(void* data, zaura_surface* surface) {
 void WaylandToplevelWindow::OcclusionStateChanged(void* data,
                                                   zaura_surface* surface,
                                                   uint32_t mode) {
-  WaylandToplevelWindow* self = static_cast<WaylandToplevelWindow*>(data);
+  auto* self = static_cast<WaylandToplevelWindow*>(data);
   DCHECK(self);
   auto state = PlatformWindowOcclusionState::kUnknown;
   switch (mode) {
@@ -676,19 +705,38 @@ void WaylandToplevelWindow::OcclusionStateChanged(void* data,
 void WaylandToplevelWindow::DeskChanged(void* data,
                                         zaura_surface* surface,
                                         int state) {
-  WaylandToplevelWindow* self = static_cast<WaylandToplevelWindow*>(data);
+  auto* self = static_cast<WaylandToplevelWindow*>(data);
   DCHECK(self);
   self->OnDeskChanged(state);
 }
 
 void WaylandToplevelWindow::StartThrottle(void* data, zaura_surface* surface) {
-  WaylandToplevelWindow* self = static_cast<WaylandToplevelWindow*>(data);
+  auto* self = static_cast<WaylandToplevelWindow*>(data);
   self->delegate()->SetFrameRateThrottleEnabled(true);
 }
 
 void WaylandToplevelWindow::EndThrottle(void* data, zaura_surface* surface) {
-  WaylandToplevelWindow* self = static_cast<WaylandToplevelWindow*>(data);
+  auto* self = static_cast<WaylandToplevelWindow*>(data);
   self->delegate()->SetFrameRateThrottleEnabled(false);
+}
+
+void WaylandToplevelWindow::TooltipShown(void* data,
+                                         zaura_surface* surface,
+                                         const char* text,
+                                         int32_t x,
+                                         int32_t y,
+                                         int32_t width,
+                                         int32_t height) {
+  WaylandToplevelWindow* self = static_cast<WaylandToplevelWindow*>(data);
+  DCHECK(self);
+  self->delegate()->OnTooltipShownOnServer(base::UTF8ToUTF16(text),
+                                           gfx::Rect(x, y, width, height));
+}
+
+void WaylandToplevelWindow::TooltipHidden(void* data, zaura_surface* surface) {
+  WaylandToplevelWindow* self = static_cast<WaylandToplevelWindow*>(data);
+  DCHECK(self);
+  self->delegate()->OnTooltipHiddenOnServer();
 }
 
 bool WaylandToplevelWindow::RunMoveLoop(const gfx::Vector2d& drag_offset) {
@@ -729,8 +777,7 @@ void WaylandToplevelWindow::SetImmersiveFullscreenStatus(bool status) {
   } else {
     // TODO(https://crbug.com/1113900): Implement AuraShell support for
     // non-browser windows and replace this if-else clause by a DCHECK.
-    NOTIMPLEMENTED_LOG_ONCE()
-        << "Implement AuraShell support for non-browser windows.";
+    NOTIMPLEMENTED_LOG_ONCE();
   }
 }
 #endif
@@ -738,6 +785,11 @@ void WaylandToplevelWindow::SetImmersiveFullscreenStatus(bool status) {
 void WaylandToplevelWindow::ShowSnapPreview(
     WaylandWindowSnapDirection snap_direction,
     bool allow_haptic_feedback) {
+  if (IsSupportedOnAuraSurface(ZAURA_TOPLEVEL_INTENT_TO_SNAP_SINCE_VERSION)) {
+    shell_toplevel_->ShowSnapPreview(snap_direction, allow_haptic_feedback);
+    return;
+  }
+
   if (IsSupportedOnAuraSurface(ZAURA_SURFACE_INTENT_TO_SNAP_SINCE_VERSION)) {
     uint32_t zaura_shell_snap_direction = ZAURA_SURFACE_SNAP_DIRECTION_NONE;
     switch (snap_direction) {
@@ -754,12 +806,30 @@ void WaylandToplevelWindow::ShowSnapPreview(
     return;
   }
 
-  NOTIMPLEMENTED_LOG_ONCE()
-      << "Window snapping isn't available for non-lacros builds.";
+  // Window snapping isn't available for non-lacros builds.
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void WaylandToplevelWindow::CommitSnap(
-    WaylandWindowSnapDirection snap_direction) {
+    WaylandWindowSnapDirection snap_direction,
+    float snap_ratio) {
+  if (IsSupportedOnAuraSurface(ZAURA_TOPLEVEL_UNSET_SNAP_SINCE_VERSION)) {
+    shell_toplevel_->CommitSnap(snap_direction, snap_ratio);
+    return;
+  }
+
+  if (IsSupportedOnAuraSurface(ZAURA_TOPLEVEL_SET_SNAP_PRIMARY_SINCE_VERSION)) {
+    switch (snap_direction) {
+      case WaylandWindowSnapDirection::kNone:
+        zaura_surface_unset_snap(aura_surface());
+        return;
+      case WaylandWindowSnapDirection::kPrimary:
+      case WaylandWindowSnapDirection::kSecondary:
+        shell_toplevel_->CommitSnap(snap_direction, snap_ratio);
+        return;
+    }
+  }
+
   if (IsSupportedOnAuraSurface(ZAURA_SURFACE_UNSET_SNAP_SINCE_VERSION)) {
     switch (snap_direction) {
       case WaylandWindowSnapDirection::kPrimary:
@@ -773,9 +843,8 @@ void WaylandToplevelWindow::CommitSnap(
         return;
     }
   }
-
-  NOTIMPLEMENTED_LOG_ONCE()
-      << "Window snapping isn't available for non-lacros builds.";
+  // Window snapping isn't available for non-lacros builds.
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void WaylandToplevelWindow::SetCanGoBack(bool value) {
@@ -801,11 +870,11 @@ void WaylandToplevelWindow::Unlock() {
 }
 
 bool WaylandToplevelWindow::SupportsPointerLock() {
-  return !!connection()->wayland_zwp_pointer_constraints() &&
-         !!connection()->wayland_zwp_relative_pointer_manager();
+  return !!connection()->zwp_pointer_constraints() &&
+         !!connection()->zwp_relative_pointer_manager();
 }
 void WaylandToplevelWindow::LockPointer(bool enabled) {
-  auto* pointer_constraints = connection()->wayland_zwp_pointer_constraints();
+  auto* pointer_constraints = connection()->zwp_pointer_constraints();
   if (enabled)
     pointer_constraints->LockPointer(root_surface());
   else

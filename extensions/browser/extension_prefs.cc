@@ -528,17 +528,16 @@ void ExtensionPrefs::SetBooleanPref(const std::string& id,
 
 void ExtensionPrefs::SetStringPref(const std::string& id,
                                    const PrefMap& pref,
-                                   const std::string value) {
+                                   std::string value) {
   DCHECK_EQ(pref.type, PrefType::kString);
   UpdateExtensionPrefInternal(id, pref, base::Value(std::move(value)));
 }
 
 void ExtensionPrefs::SetListPref(const std::string& id,
                                  const PrefMap& pref,
-                                 base::Value value) {
+                                 base::Value::List value) {
   DCHECK_EQ(pref.type, PrefType::kList);
-  DCHECK_EQ(base::Value::Type::LIST, value.type());
-  UpdateExtensionPrefInternal(id, pref, std::move(value));
+  UpdateExtensionPrefInternal(id, pref, base::Value(std::move(value)));
 }
 
 void ExtensionPrefs::SetDictionaryPref(const std::string& id,
@@ -550,7 +549,7 @@ void ExtensionPrefs::SetDictionaryPref(const std::string& id,
 
 void ExtensionPrefs::SetTimePref(const std::string& id,
                                  const PrefMap& pref,
-                                 const base::Time value) {
+                                 base::Time value) {
   DCHECK_EQ(pref.type, PrefType::kTime);
   UpdateExtensionPrefInternal(id, pref, ::base::TimeToValue(value));
 }
@@ -847,21 +846,20 @@ std::unique_ptr<PermissionSet> ExtensionPrefs::ReadPrefAsPermissionSet(
 //   ...
 // ]
 template <typename T>
-static std::unique_ptr<base::ListValue> CreatePermissionList(
-    const T& permissions) {
-  auto values = std::make_unique<base::ListValue>();
-  for (typename T::const_iterator i = permissions.begin();
-       i != permissions.end(); ++i) {
-    std::unique_ptr<base::Value> detail(i->ToValue());
+static std::unique_ptr<base::Value> CreatePermissionList(const T& permissions) {
+  base::Value::List values;
+  for (const auto* permission : permissions) {
+    std::unique_ptr<base::Value> detail(permission->ToValue());
     if (detail) {
       base::Value::Dict tmp;
-      tmp.Set(i->name(), base::Value::FromUniquePtrValue(std::move(detail)));
-      values->Append(base::Value(std::move(tmp)));
+      tmp.Set(permission->name(),
+              base::Value::FromUniquePtrValue(std::move(detail)));
+      values.Append(std::move(tmp));
     } else {
-      values->Append(i->name());
+      values.Append(permission->name());
     }
   }
-  return values;
+  return std::make_unique<base::Value>(std::move(values));
 }
 
 void ExtensionPrefs::SetExtensionPrefPermissionSet(
@@ -1433,13 +1431,11 @@ void ExtensionPrefs::UpdateManifest(const Extension* extension) {
     const base::Value::Dict* old_manifest =
         extension_dict->FindDict(kPrefManifest);
     bool update_required =
-        !old_manifest ||
-        extension->manifest()->value()->GetDict() != *old_manifest;
+        !old_manifest || *extension->manifest()->value() != *old_manifest;
     if (update_required) {
-      UpdateExtensionPref(
-          extension->id(), kPrefManifest,
-          base::DictionaryValue::From(base::Value::ToUniquePtrValue(
-              extension->manifest()->value()->Clone())));
+      UpdateExtensionPref(extension->id(), kPrefManifest,
+                          std::make_unique<base::Value>(
+                              extension->manifest()->value()->Clone()));
     }
   }
 }
@@ -1494,10 +1490,8 @@ std::unique_ptr<ExtensionInfo> ExtensionPrefs::GetInstalledInfoHelper(
   // Make path absolute. Most (but not all) extension types have relative paths.
   if (!file_path.IsAbsolute())
     file_path = install_directory_.Append(file_path);
-  const base::DictionaryValue* manifest_dict =
-      (manifest && manifest->is_dict())
-          ? &base::Value::AsDictionaryValue(*manifest)
-          : nullptr;
+  const base::Value::Dict* manifest_dict =
+      (manifest && manifest->is_dict()) ? &manifest->GetDict() : nullptr;
   return std::make_unique<ExtensionInfo>(manifest_dict, extension_id, file_path,
                                          location);
 }
@@ -1917,10 +1911,10 @@ void ExtensionPrefs::InitPrefStore() {
       // we could instead initialize the controlled preferences when the
       // extension is more finalized, but this also needs to happen sufficiently
       // before other subsystems are notified about the extension being loaded.
-      Manifest::Type type = info->extension_manifest
-                                ? Manifest::GetTypeFromManifestValue(
-                                      info->extension_manifest->GetDict())
-                                : Manifest::TYPE_UNKNOWN;
+      Manifest::Type type =
+          info->extension_manifest
+              ? Manifest::GetTypeFromManifestValue(*info->extension_manifest)
+              : Manifest::TYPE_UNKNOWN;
       bool is_theme = type == Manifest::TYPE_THEME;
       // Erase the entry if the extension won't be loaded.
       return !Manifest::ShouldAlwaysLoadExtension(info->extension_location,
@@ -2186,8 +2180,6 @@ ExtensionPrefs::ExtensionPrefs(
 
   MigrateToNewExternalUninstallPref();
 
-  MigrateYoutubeOffBookmarkApps();
-
   MigrateDeprecatedDisableReasons();
 }
 
@@ -2359,8 +2351,8 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
   // We store prefs about LOAD extensions, but don't cache their manifest
   // since it may change on disk.
   if (!Manifest::IsUnpackedLocation(extension->location())) {
-    extension_dict->SetKey(kPrefManifest,
-                           extension->manifest()->value()->Clone());
+    extension_dict->SetKey(
+        kPrefManifest, base::Value(extension->manifest()->value()->Clone()));
   }
 
   // Only writes kPrefDoNotSync when it is not the default.
@@ -2524,23 +2516,6 @@ void ExtensionPrefs::MigrateDeprecatedDisableReasons() {
   }
 }
 
-void ExtensionPrefs::MigrateYoutubeOffBookmarkApps() {
-  const base::Value::Dict& extensions_dictionary =
-      prefs_->GetDict(pref_names::kExtensions);
-  const base::Value::Dict* youtube_dictionary =
-      extensions_dictionary.FindDict(extension_misc::kYoutubeAppId);
-  if (!youtube_dictionary) {
-    return;
-  }
-  int creation_flags =
-      youtube_dictionary->FindInt(kPrefCreationFlags).value_or(0);
-  if ((creation_flags & Extension::FROM_BOOKMARK) == 0)
-    return;
-  ScopedExtensionPrefUpdate update(prefs_, extension_misc::kYoutubeAppId);
-  creation_flags &= ~Extension::FROM_BOOKMARK;
-  update->SetInteger(kPrefCreationFlags, creation_flags);
-}
-
 void ExtensionPrefs::MigrateObsoleteExtensionPrefs() {
   const base::Value::Dict& extensions_dictionary =
       prefs_->GetDict(pref_names::kExtensions);
@@ -2585,7 +2560,7 @@ void ExtensionPrefs::MigrateToNewWithholdingPref() {
     // We only want to migrate extensions we can actually withhold permissions
     // from.
     Manifest::Type type =
-        Manifest::GetTypeFromManifestValue(info->extension_manifest->GetDict());
+        Manifest::GetTypeFromManifestValue(*info->extension_manifest);
     ManifestLocation location = info->extension_location;
     if (!util::CanWithholdPermissionsFromExtension(extension_id, type,
                                                    location))

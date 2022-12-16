@@ -21,6 +21,7 @@ build_webui("build") {
   ]
   web_component_files = [
     "checkup_section.ts",
+    "checkup_details_section.ts",
     "dialogs/passwords_export_dialog.ts",
     "password_details_card.ts",
     "password_details_section.ts",
@@ -39,6 +40,7 @@ build_webui("build") {
     "prefs/pref_mixin.ts",
     "prefs/prefs_browser_proxy.ts",
     "router.ts",
+    "show_password_mixin.ts",
   ]
 
   # Files that are passed as input to css_to_wrapper().

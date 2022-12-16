@@ -39,7 +39,6 @@ import org.chromium.chrome.browser.omnibox.OmniboxFeatures;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionCommonProperties;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionCommonProperties.FormFactor;
 import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -54,7 +53,6 @@ import java.util.List;
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-@EnableFeatures({ChromeFeatureList.OMNIBOX_MOST_VISITED_TILES_DYNAMIC_SPACING})
 public class BaseCarouselSuggestionViewBinderUnitTest {
     static final int SUGGESTION_VERTICAL_PADDING = 123;
     static final int SUGGESTION_SMALL_BOTTOM_PADDING = 31;
@@ -155,7 +153,6 @@ public class BaseCarouselSuggestionViewBinderUnitTest {
     }
 
     @Test
-    @Features.DisableFeatures({ChromeFeatureList.OMNIBOX_HEADER_PADDING_UPDATE})
     public void headerTitle_visibilityChangeAltersTopPadding() {
         mModel.set(BaseCarouselSuggestionViewProperties.SHOW_TITLE, true);
         verify(mHeaderView, times(1)).setVisibility(eq(View.VISIBLE));
@@ -174,7 +171,6 @@ public class BaseCarouselSuggestionViewBinderUnitTest {
     }
 
     @Test
-    @Features.DisableFeatures({ChromeFeatureList.OMNIBOX_HEADER_PADDING_UPDATE})
     @Features.EnableFeatures({ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE})
     public void headerTitle_visibilityChangeAltersTopPadding_smallBottomPadding() {
         OmniboxFeatures.ENABLE_MODERNIZE_VISUAL_UPDATE_ON_TABLET.setForTesting(true);
@@ -201,14 +197,10 @@ public class BaseCarouselSuggestionViewBinderUnitTest {
      */
     @Test
     public void formFactor_itemSpacingPhone_computedPortrait() {
-        int tileSpacingMaximum = 28;
         int displayWidth = 1440;
         int tileViewPaddingEdgePortrait = 12;
         int tileViewwidth = 280;
 
-        when(mResources.getDimensionPixelOffset(
-                     eq(R.dimen.omnibox_suggestion_carousel_spacing_maximum)))
-                .thenReturn(tileSpacingMaximum);
         when(mResources.getDimensionPixelSize(eq(R.dimen.tile_view_padding_edge_portrait)))
                 .thenReturn(tileViewPaddingEdgePortrait);
         when(mResources.getDimensionPixelOffset(eq(R.dimen.tile_view_width)))

@@ -15,6 +15,7 @@
 #include "ash/system/video_conference/fake_video_conference_tray_controller.h"
 #include "base/command_line.h"
 #include "base/scoped_observation.h"
+#include "chrome/browser/ash/app_list/app_list_client_impl.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/game_mode/game_mode_controller.h"
 #include "chrome/browser/ash/login/signin/signin_error_notifier_factory.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/ash/policy/display/display_resolution_handler.h"
 #include "chrome/browser/ash/policy/display/display_rotation_default_handler.h"
 #include "chrome/browser/ash/policy/display/display_settings_handler.h"
+#include "chrome/browser/ash/privacy_hub/privacy_hub_util.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/sync/sync_error_notifier_factory.h"
 #include "chrome/browser/ash/video_conference/video_conference_tray_controller_impl.h"
@@ -29,7 +31,6 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/tablet_mode/tablet_mode_page_behavior.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/ash/accessibility/accessibility_controller_client.h"
 #include "chrome/browser/ui/ash/ambient/ambient_client_impl.h"
 #include "chrome/browser/ui/ash/app_access_notifier.h"
@@ -277,6 +278,9 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit(Profile* profile,
 
   media_client_ = std::make_unique<MediaClientImpl>();
   media_client_->Init();
+
+  // Passes (and continues passing) the current camera count to the PrivacyHub.
+  ash::privacy_hub_util::SetUpCameraCountObserver();
 
   if (ash::features::IsMicMuteNotificationsEnabled()) {
     app_access_notifier_ = std::make_unique<AppAccessNotifier>();

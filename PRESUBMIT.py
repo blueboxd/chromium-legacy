@@ -265,6 +265,7 @@ _BANNED_JAVASCRIPT_FUNCTIONS : Sequence [BanRule] = (
           r'^(?!ash\/webui).+',
           # TODO(crbug.com/1385601): pre-existing violations still need to be
           # cleaned up.
+          'ash/webui/common/resources/cr.m.js',
           'ash/webui/common/resources/multidevice_setup/multidevice_setup_browser_proxy.js',
           'ash/webui/common/resources/quick_unlock/lock_screen_constants.js',
           'ash/webui/common/resources/smb_shares/smb_browser_proxy.js',
@@ -1056,7 +1057,9 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
           # Required for interop with the third-party webrtc library.
           'third_party/blink/renderer/modules/peerconnection/mock_peer_connection_impl\.cc',
           'third_party/blink/renderer/modules/peerconnection/mock_peer_connection_impl\.h',
-
+          # This code is in the process of being extracted into a third-party library.
+          # See https://crbug.com/1322914
+          '^net/cert/pki/path_builder_unittest\.cc',
           # TODO(https://crbug.com/1364577): Various uses that should be
           # migrated to something else.
           # Should use base::OnceCallback or base::RepeatingCallback.

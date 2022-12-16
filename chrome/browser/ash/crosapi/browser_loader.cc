@@ -206,21 +206,19 @@ void BrowserLoader::Load(LoadCompletionCallback callback) {
     return;
   }
 
-  // If the user has specified to force using stateful or rootfs lacros-chrome
-  // binary, force the selection.
-  const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
-  if (cmdline->HasSwitch(browser_util::kLacrosSelectionSwitch)) {
+  // If the LacrosSelection policy or the user have specified to force using
+  // stateful or rootfs lacros-chrome binary, force the selection.
+  if (absl::optional<browser_util::LacrosSelection> lacros_selection =
+          browser_util::DetermineLacrosSelection()) {
     // TODO(crbug.com/1293250): We should check the version compatibility here,
     // too.
-    auto value =
-        cmdline->GetSwitchValueASCII(browser_util::kLacrosSelectionSwitch);
-    if (value == browser_util::kLacrosSelectionRootfs) {
-      LoadRootfsLacros(std::move(callback));
-      return;
-    }
-    if (value == browser_util::kLacrosSelectionStateful) {
-      LoadStatefulLacros(std::move(callback));
-      return;
+    switch (lacros_selection.value()) {
+      case browser_util::LacrosSelection::kRootfs:
+        LoadRootfsLacros(std::move(callback));
+        return;
+      case browser_util::LacrosSelection::kStateful:
+        LoadStatefulLacros(std::move(callback));
+        return;
     }
   }
 
@@ -488,12 +486,12 @@ void BrowserLoader::OnCheckInstalled(bool was_installed) {
   // assumes that system salt is available. This isn't always true when chrome
   // restarts to apply non-owner flags. It's hard to make MetadataTable async.
   // Ensure salt is available before unloading. https://crbug.com/1122674
-  chromeos::SystemSaltGetter::Get()->GetSystemSalt(base::BindOnce(
+  ash::SystemSaltGetter::Get()->GetSystemSalt(base::BindOnce(
       &BrowserLoader::UnloadAfterCleanUp, weak_factory_.GetWeakPtr()));
 }
 
 void BrowserLoader::UnloadAfterCleanUp(const std::string& ignored_salt) {
-  CHECK(chromeos::SystemSaltGetter::Get()->GetRawSalt());
+  CHECK(ash::SystemSaltGetter::Get()->GetRawSalt());
   component_manager_->Unload(GetLacrosComponentName());
 }
 

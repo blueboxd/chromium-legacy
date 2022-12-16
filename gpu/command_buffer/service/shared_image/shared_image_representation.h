@@ -25,12 +25,7 @@
 #include "ui/gfx/gpu_fence.h"
 
 #if BUILDFLAG(IS_WIN)
-#include <wrl/client.h>
-#include "ui/gl/dcomp_surface_proxy.h"
-
-class IDCompositionSurface;
-class IDXGISwapChain1;
-class IUnknown;
+#include "ui/gl/dc_layer_overlay_image.h"
 #endif
 
 #if BUILDFLAG(IS_MAC)
@@ -43,17 +38,18 @@ class IUnknown;
 extern "C" typedef struct AHardwareBuffer AHardwareBuffer;
 #endif
 
+#if BUILDFLAG(IS_WIN)
+#include <d3d11.h>
+#include <wrl/client.h>
+#endif
+
 typedef unsigned int GLenum;
 class GrBackendSurfaceMutableState;
 class SkPromiseImageTexture;
 
 namespace cc {
 class PaintOpBuffer;
-}
-
-namespace gl {
-class GLImage;
-}
+}  // namespace cc
 
 namespace gfx {
 class NativePixmap;
@@ -487,32 +483,6 @@ class GPU_GLES2_EXPORT OverlayImageRepresentation
                              MemoryTypeTracker* tracker)
       : SharedImageRepresentation(manager, backing, tracker) {}
 
-#if BUILDFLAG(IS_WIN)
-  // Holds DComp content needed to update the DComp layer tree
-  class GPU_GLES2_EXPORT DCompLayerContent {
-   public:
-    explicit DCompLayerContent(
-        Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain);
-    DCompLayerContent(
-        Microsoft::WRL::ComPtr<IDCompositionSurface> dcomp_surface,
-        uint64_t surface_serial);
-    DCompLayerContent(const DCompLayerContent&);
-    DCompLayerContent& operator=(const DCompLayerContent&);
-    ~DCompLayerContent();
-
-    IUnknown* content() const { return content_.Get(); }
-    uint64_t surface_serial() const { return surface_serial_; }
-
-   private:
-    // Either an IDCompositionSurface or an IDXGISwapChain1
-    Microsoft::WRL::ComPtr<IUnknown> content_;
-    // This is a number that increments once for every EndDraw on a surface, and
-    // is used to determine when the contents have changed so Commit() needs to
-    // be called on the device.
-    uint64_t surface_serial_ = 0;
-  };
-#endif
-
   class GPU_GLES2_EXPORT ScopedReadAccess
       : public ScopedAccessBase<OverlayImageRepresentation> {
    public:
@@ -537,13 +507,8 @@ class GPU_GLES2_EXPORT OverlayImageRepresentation
       return representation()->GetNativePixmap();
     }
 #elif BUILDFLAG(IS_WIN)
-    gl::GLImage* gl_image() { return representation()->GetGLImage(); }
-
-    scoped_refptr<gl::DCOMPSurfaceProxy> GetDCOMPSurfaceProxy() {
-      return representation()->GetDCOMPSurfaceProxy();
-    }
-    DCompLayerContent GetDCompLayerContent() const {
-      return representation()->GetDCompLayerContent();
+    absl::optional<gl::DCLayerOverlayImage> GetDCLayerOverlayImage() {
+      return representation()->GetDCLayerOverlayImage();
     }
 #elif BUILDFLAG(IS_MAC)
     gfx::ScopedIOSurface GetIOSurface() const {
@@ -593,9 +558,7 @@ class GPU_GLES2_EXPORT OverlayImageRepresentation
 #elif BUILDFLAG(IS_OZONE)
   scoped_refptr<gfx::NativePixmap> GetNativePixmap();
 #elif BUILDFLAG(IS_WIN)
-  virtual scoped_refptr<gl::DCOMPSurfaceProxy> GetDCOMPSurfaceProxy();
-  virtual gl::GLImage* GetGLImage() = 0;
-  virtual DCompLayerContent GetDCompLayerContent() const;
+  virtual absl::optional<gl::DCLayerOverlayImage> GetDCLayerOverlayImage();
 #elif BUILDFLAG(IS_MAC)
   virtual gfx::ScopedIOSurface GetIOSurface() const;
   // Return true if the macOS WindowServer is currently using the underlying
@@ -789,6 +752,38 @@ class GPU_GLES2_EXPORT RasterImageRepresentation
       const absl::optional<SkColor4f>& clear_color,
       bool visible) = 0;
   virtual void EndWriteAccess(base::OnceClosure callback) = 0;
+};
+
+class GPU_GLES2_EXPORT VideoDecodeImageRepresentation
+    : public SharedImageRepresentation {
+ public:
+  class GPU_GLES2_EXPORT ScopedWriteAccess
+      : public ScopedAccessBase<VideoDecodeImageRepresentation> {
+   public:
+    ScopedWriteAccess(base::PassKey<VideoDecodeImageRepresentation> pass_key,
+                      VideoDecodeImageRepresentation* representation);
+    ~ScopedWriteAccess();
+
+#if BUILDFLAG(IS_WIN)
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> GetD3D11Texture() const {
+      return representation()->GetD3D11Texture();
+    }
+#endif  // BUILDFLAG(IS_WIN)
+  };
+
+  VideoDecodeImageRepresentation(SharedImageManager* manager,
+                                 SharedImageBacking* backing,
+                                 MemoryTypeTracker* tracker);
+  ~VideoDecodeImageRepresentation() override;
+
+  virtual std::unique_ptr<ScopedWriteAccess> BeginScopedWriteAccess();
+
+ protected:
+#if BUILDFLAG(IS_WIN)
+  virtual Microsoft::WRL::ComPtr<ID3D11Texture2D> GetD3D11Texture() const = 0;
+#endif  // BUILDFLAG(IS_WIN)
+  virtual bool BeginWriteAccess() = 0;
+  virtual void EndWriteAccess() = 0;
 };
 
 }  // namespace gpu

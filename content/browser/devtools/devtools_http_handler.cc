@@ -557,15 +557,6 @@ static bool ParseJsonPath(
   return true;
 }
 
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class DevToolsMutatingHttpActionVerb {
-  kGet = 0,
-  kPost = 1,
-  kOther = 2,
-  kMaxValue = kOther,
-};
-
 void DevToolsHttpHandler::OnJsonRequest(
     int connection_id,
     const net::HttpServerRequestInfo& info) {
@@ -627,29 +618,27 @@ void DevToolsHttpHandler::OnJsonRequest(
   }
 
   if (command == "new") {
-    DevToolsMutatingHttpActionVerb verb;
-    if (base::EqualsCaseInsensitiveASCII(info.method,
-                                         net::HttpRequestHeaders::kGetMethod)) {
-      verb = DevToolsMutatingHttpActionVerb::kGet;
-    } else if (base::EqualsCaseInsensitiveASCII(
-                   info.method, net::HttpRequestHeaders::kPostMethod)) {
-      verb = DevToolsMutatingHttpActionVerb::kPost;
-    } else {
-      verb = DevToolsMutatingHttpActionVerb::kOther;
+    if (!base::EqualsCaseInsensitiveASCII(
+            info.method, net::HttpRequestHeaders::kPutMethod)) {
+      SendJson(
+          connection_id, net::HTTP_METHOD_NOT_ALLOWED, absl::nullopt,
+          base::StringPrintf("Using unsafe HTTP verb %s to invoke /json/new. "
+                             "This action supports only PUT verb.",
+                             info.method.c_str()));
+      return;
     }
 
-    UMA_HISTOGRAM_ENUMERATION("DevTools.MutatingHttpAction", verb);
-    if (verb != DevToolsMutatingHttpActionVerb::kOther) {
-      LOG(ERROR) << "Using unsafe HTTP verb " << info.method
-                 << " to invoke /json/new. This action will stop supporting "
-                    "GET and POST verbs in future versions.";
-    }
-
-    GURL url(base::UnescapeBinaryURLComponent(query));
+    std::vector<base::StringPiece> query_components = base::SplitStringPiece(
+        query, "&", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    base::StringPiece escaped_url =
+        query_components.empty() ? "" : query_components[0];
+    GURL url(base::UnescapeBinaryURLComponent(escaped_url));
     if (!url.is_valid())
       url = GURL(url::kAboutBlankURL);
-    scoped_refptr<DevToolsAgentHost> agent_host =
-        delegate_->CreateNewTarget(url);
+    // TODO(dsv): Remove for "for_tab" support once DevTools Frontend
+    // no longer needs it for e2e tests
+    scoped_refptr<DevToolsAgentHost> agent_host = delegate_->CreateNewTarget(
+        url, query_components.size() > 1 && query_components[1] == "for_tab");
     if (!agent_host) {
       SendJson(connection_id, net::HTTP_INTERNAL_SERVER_ERROR, absl::nullopt,
                "Could not create new page");

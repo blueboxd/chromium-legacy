@@ -7,6 +7,7 @@ import("//build/config/android/rules.gni")
 android_library("java") {
   sources = [
     "java/src/org/chromium/chrome/browser/privacy_guide/CookiesFragment.java",
+    "java/src/org/chromium/chrome/browser/privacy_guide/HistorySyncFragment.java",
     "java/src/org/chromium/chrome/browser/privacy_guide/MSBBFragment.java",
     "java/src/org/chromium/chrome/browser/privacy_guide/PrivacyGuideBottomSheetView.java",
     "java/src/org/chromium/chrome/browser/privacy_guide/PrivacyGuideExplanationHeading.java",
@@ -18,12 +19,10 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/privacy_guide/SafeBrowsingFragment.java",
     "java/src/org/chromium/chrome/browser/privacy_guide/StepDisplayHandler.java",
     "java/src/org/chromium/chrome/browser/privacy_guide/StepDisplayHandlerImpl.java",
-    "java/src/org/chromium/chrome/browser/privacy_guide/SyncFragment.java",
   ]
   deps = [
     ":java_resources",
     "//base:base_java",
-    "//chrome/browser/privacy_guide:privacy_guide_settings_states_enum_java",
     "//chrome/browser/profiles/android:java",
     "//chrome/browser/safe_browsing/android:java",
     "//chrome/browser/signin/services/android:java",
@@ -43,25 +42,25 @@ android_library("java") {
     "//third_party/androidx:androidx_viewpager2_viewpager2_java",
     "//ui/android:ui_full_java",
   ]
+  srcjar_deps = [ "//chrome/browser/privacy_guide:privacy_guide_enum_javagen" ]
   resources_package = "org.chromium.chrome.browser.privacy_guide"
 }
 
 robolectric_library("junit") {
   sources = [
     "junit/src/org/chromium/chrome/browser/privacy_guide/CookiesFragmentTest.java",
+    "junit/src/org/chromium/chrome/browser/privacy_guide/HistorySyncFragmentTest.java",
     "junit/src/org/chromium/chrome/browser/privacy_guide/MSBBFragmentTest.java",
     "junit/src/org/chromium/chrome/browser/privacy_guide/PrivacyGuideMetricsDelegateTest.java",
     "junit/src/org/chromium/chrome/browser/privacy_guide/PrivacyGuidePagerAdapterTest.java",
     "junit/src/org/chromium/chrome/browser/privacy_guide/SafeBrowsingFragmentTest.java",
     "junit/src/org/chromium/chrome/browser/privacy_guide/StepDisplayHandlerImplTest.java",
-    "junit/src/org/chromium/chrome/browser/privacy_guide/SyncFragmentTest.java",
   ]
   deps = [
     ":java",
     "//base:base_java",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
-    "//chrome/browser/privacy_guide:privacy_guide_settings_states_enum_java",
     "//chrome/browser/profiles/android:java",
     "//chrome/browser/safe_browsing/android:java",
     "//chrome/browser/signin/services/android:java",
@@ -90,12 +89,17 @@ android_library("javatests") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//chrome/browser/flags:java",
-    "//chrome/browser/privacy_guide:privacy_guide_settings_states_enum_java",
     "//chrome/browser/profiles/android:java",
+    "//chrome/browser/safe_browsing/android:java",
     "//chrome/browser/settings:test_support_java",
     "//chrome/browser/signin/services/android:java",
     "//chrome/browser/sync/android:java",
     "//chrome/test/android:chrome_java_test_support_common",
+    "//components/browser_ui/site_settings/android:java",
+    "//components/content_settings/android:content_settings_enums_java",
+    "//components/prefs/android:java",
+    "//components/sync/android:sync_java",
+    "//components/user_prefs/android:java",
     "//content/public/test/android:content_java_test_support",
     "//third_party/android_deps:espresso_java",
     "//third_party/androidx:androidx_test_runner_java",
@@ -112,22 +116,22 @@ android_resources("java_resources") {
     "java/res/drawable/inactive_tab_circle.xml",
     "java/res/drawable/privacy_guide_cookies_image.xml",
     "java/res/drawable/privacy_guide_done_image.xml",
+    "java/res/drawable/privacy_guide_history_sync_image.xml",
     "java/res/drawable/privacy_guide_illustration.xml",
     "java/res/drawable/privacy_guide_msbb_image.xml",
     "java/res/drawable/privacy_guide_sb_image.xml",
-    "java/res/drawable/privacy_guide_sync_image.xml",
     "java/res/drawable/tab_selector.xml",
     "java/res/layout/privacy_guide_cookies_step.xml",
     "java/res/layout/privacy_guide_done.xml",
     "java/res/layout/privacy_guide_explanation_heading.xml",
     "java/res/layout/privacy_guide_explanation_item.xml",
     "java/res/layout/privacy_guide_fragment.xml",
+    "java/res/layout/privacy_guide_history_sync_step.xml",
     "java/res/layout/privacy_guide_msbb_step.xml",
     "java/res/layout/privacy_guide_sb_enhanced_explanation.xml",
     "java/res/layout/privacy_guide_sb_standard_explanation.xml",
     "java/res/layout/privacy_guide_sb_step.xml",
     "java/res/layout/privacy_guide_steps.xml",
-    "java/res/layout/privacy_guide_sync_step.xml",
     "java/res/layout/privacy_guide_welcome.xml",
     "java/res/menu/privacy_guide_toolbar_menu.xml",
     "java/res/values/attrs.xml",

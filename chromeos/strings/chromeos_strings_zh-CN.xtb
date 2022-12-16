@@ -140,7 +140,6 @@
 <translation id="2161394479394250669">取消打印任务</translation>
 <translation id="2163937499206714165">开启深色模式</translation>
 <translation id="2180197493692062006">出了点问题。请尝试重新打开此应用。</translation>
-<translation id="2184005227776731758">APN</translation>
 <translation id="2209788852729124853">重置流量计数器</translation>
 <translation id="2212733584906323460">域名解析</translation>
 <translation id="2217935453350629363">当前速度</translation>
@@ -492,6 +491,7 @@
 <translation id="5519195206574732858">LTE</translation>
 <translation id="554517032089923082">GTC</translation>
 <translation id="5559898619118303662">日落时自动切换到深色主题</translation>
+<translation id="5571714952674387371">查看和修改详细信息</translation>
 <translation id="5578477003638479617">UMTS</translation>
 <translation id="5578519639599103840">重新扫描</translation>
 <translation id="5583640892426849032">退格</translation>
@@ -561,6 +561,7 @@
 <translation id="6189418609903030344">电池容量会随使用时长的增加而减少</translation>
 <translation id="6191293864534840972">域名服务器格式不正确</translation>
 <translation id="6213737986933151570">CDMA1XRTT</translation>
+<translation id="6223066887782788441">退出全屏模式</translation>
 <translation id="6223752125779001553">没有可用的扫描仪</translation>
 <translation id="6232017090690406397">电池</translation>
 <translation id="6235460611964961764">手动重置流量使用情况</translation>
@@ -688,11 +689,12 @@
 <translation id="741244894080940828">换算</translation>
 <translation id="7415801143053185905">HTTPS 延迟时间非常长</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
-<translation id="7435977162516949853">{NUMBER_OF_PAGES,plural, =1{已完成扫描。扫描了 1 页}other{已完成扫描。扫描了 {NUMBER_OF_PAGES} 页}}</translation>
+<translation id="7458970041932198923">若要查看和设置头像，请连接到网络并重新加载此页面。</translation>
 <translation id="7469648432129124067">检测到门户</translation>
 <translation id="7481312909269577407">前进</translation>
 <translation id="7487067081878637334">技术</translation>
 <translation id="7490813197707563893">MAC 地址</translation>
+<translation id="7491478667760509108">退出悬浮模式</translation>
 <translation id="7497215489070763236">服务器 CA 证书</translation>
 <translation id="7502658306369382406">IPv6 地址</translation>
 <translation id="7515998400212163428">Android</translation>
@@ -793,6 +795,7 @@
 <translation id="8498220429738806196">流量计数器</translation>
 <translation id="8503813439785031346">用户名</translation>
 <translation id="8503836310948963452">只需再等几分钟…</translation>
+<translation id="8508640263392900755">APN 详细信息</translation>
 <translation id="8528615187455571738">Crosvm</translation>
 <translation id="8575298406870537639">您的运营商可能会要求您启用此选项以连接到其网络。如需了解详情，请联系您的运营商。</translation>
 <translation id="8576249514688522074">未初始化</translation>
@@ -843,6 +846,7 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8987565828374052507">{NUMBER_OF_PAGES,plural, =0{扫描}=1{扫描 {NUMBER_OF_PAGES} 个页面}other{扫描 {NUMBER_OF_PAGES} 个页面}}</translation>
 <translation id="8997710128084572139">设备电池电量为 <ph name="BATTERY_PERCENTAGE" />%。</translation>
+<translation id="8998289560386111590">在您的设备上不可用</translation>
 <translation id="9003704114456258138">频率</translation>
 <translation id="9025198690966128418">用作个人设备</translation>
 <translation id="9028832514430399253">将切换开关上的滑块滑至开启位置即可选择屏保选项</translation>
@@ -867,6 +871,7 @@
 <translation id="9173638680043580060">还剩不到 1 分钟</translation>
 <translation id="917720651393141712">测试</translation>
 <translation id="9188992814426075118">键盘可自动与您的壁纸匹配</translation>
+<translation id="9193744392140377127">APN*</translation>
 <translation id="9204237731135241582">无法从 Android 应用连接网关</translation>
 <translation id="9211490828691860325">所有桌面</translation>
 <translation id="932327136139879170">首页</translation>

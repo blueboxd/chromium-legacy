@@ -164,7 +164,7 @@ public class LocationBarModelUnitTest {
     private static class TestIncognitoLocationBarModel extends LocationBarModel {
         public TestIncognitoLocationBarModel(Tab tab, SearchEngineLogoUtils searchEngineLogoUtils) {
             super(new ContextThemeWrapper(
-                          ContextUtils.getApplicationContext(), R.style.ColorOverlay),
+                          ContextUtils.getApplicationContext(), R.style.Theme_BrowserUI_DayNight),
                     NewTabPageDelegate.EMPTY, url -> url.getSpec(),
                     IncognitoUtils::getNonPrimaryOTRProfileFromWindowAndroid, OFFLINE_STATUS,
                     searchEngineLogoUtils);
@@ -175,7 +175,7 @@ public class LocationBarModelUnitTest {
     private static class TestRegularLocationBarModel extends LocationBarModel {
         public TestRegularLocationBarModel(Tab tab, SearchEngineLogoUtils searchEngineLogoUtils) {
             super(new ContextThemeWrapper(
-                          ContextUtils.getApplicationContext(), R.style.ColorOverlay),
+                          ContextUtils.getApplicationContext(), R.style.Theme_BrowserUI_DayNight),
                     NewTabPageDelegate.EMPTY, url -> url.getSpec(),
                     IncognitoUtils::getNonPrimaryOTRProfileFromWindowAndroid, OFFLINE_STATUS,
                     searchEngineLogoUtils);
@@ -297,7 +297,26 @@ public class LocationBarModelUnitTest {
         verify(mLocationBarDataObserver, never()).onPrimaryColorChanged();
         verify(mLocationBarDataObserver, never()).onSecurityStateChanged();
 
-        regularLocationBarModel.setIsShowingTabSwitcher(true);
+        regularLocationBarModel.updateForNonStaticLayout(true, false);
+        verify(mLocationBarDataObserver).onTitleChanged();
+        verify(mLocationBarDataObserver).onUrlChanged();
+        verify(mLocationBarDataObserver).onPrimaryColorChanged();
+        verify(mLocationBarDataObserver).onSecurityStateChanged();
+    }
+
+    @Test
+    @MediumTest
+    public void testObserversNotified_setIsShowingStartSurface() {
+        LocationBarModel regularLocationBarModel =
+                new TestRegularLocationBarModel(null, mSearchEngineLogoUtils);
+        regularLocationBarModel.addObserver(mLocationBarDataObserver);
+
+        verify(mLocationBarDataObserver, never()).onTitleChanged();
+        verify(mLocationBarDataObserver, never()).onUrlChanged();
+        verify(mLocationBarDataObserver, never()).onPrimaryColorChanged();
+        verify(mLocationBarDataObserver, never()).onSecurityStateChanged();
+
+        regularLocationBarModel.updateForNonStaticLayout(false, true);
         verify(mLocationBarDataObserver).onTitleChanged();
         verify(mLocationBarDataObserver).onUrlChanged();
         verify(mLocationBarDataObserver).onPrimaryColorChanged();
@@ -429,7 +448,7 @@ public class LocationBarModelUnitTest {
                 .getUrlOfVisibleNavigationEntry(Mockito.anyLong(), Mockito.any());
         Assert.assertNotEquals(regularLocationBarModel.getCurrentGurl(), UrlConstants.ntpGurl());
 
-        regularLocationBarModel.setIsShowingTabSwitcher(true);
+        regularLocationBarModel.updateForNonStaticLayout(true, false);
         verify(mLocationBarDataObserver).onUrlChanged();
         regularLocationBarModel.setStartSurfaceState(StartSurfaceState.SHOWN_HOMEPAGE);
 

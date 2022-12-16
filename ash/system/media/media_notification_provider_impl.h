@@ -44,7 +44,8 @@ class ASH_EXPORT MediaNotificationProviderImpl
   bool HasActiveNotifications() override;
   bool HasFrozenNotifications() override;
   std::unique_ptr<views::View> GetMediaNotificationListView(
-      int separator_thickness) override;
+      int separator_thickness,
+      bool should_clip_height) override;
   std::unique_ptr<views::View> GetActiveMediaNotificationView() override;
   void OnBubbleClosing() override;
   void SetColorTheme(
@@ -55,6 +56,10 @@ class ASH_EXPORT MediaNotificationProviderImpl
       const std::string& id,
       base::WeakPtr<media_message_center::MediaNotificationItem> item) override;
   void HideMediaItem(const std::string& id) override;
+  void RefreshMediaItem(
+      const std::string& id,
+      base::WeakPtr<media_message_center::MediaNotificationItem> item)
+      override {}
   void HideMediaDialog() override {}
   void Focus() override {}
 

@@ -15,6 +15,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
+#include "base/values.h"
 #include "base/version.h"
 #include "extensions/buildflags/buildflags.h"
 #include "extensions/common/extension_guid.h"
@@ -30,11 +31,6 @@
 #if !BUILDFLAG(ENABLE_EXTENSIONS)
 #error "Extensions must be enabled"
 #endif
-
-namespace base {
-class DictAdapterForMigration;
-class DictionaryValue;
-}
 
 namespace extensions {
 class HashedExtensionId;
@@ -99,10 +95,11 @@ class Extension final : public base::RefCountedThreadSafe<Extension> {
     // Chrome Web Store.
     FROM_WEBSTORE = 1 << 3,
 
-    // |FROM_BOOKMARK| indicates the extension is a bookmark app which has been
-    // generated from a web page. Bookmark apps have no permissions or extent
-    // and launch the web page they are created from when run.
-    FROM_BOOKMARK = 1 << 4,
+    // DEPRECATED - |FROM_BOOKMARK| indicates the extension is a bookmark app
+    // which has been generated from a web page. Bookmark apps have no
+    // permissions or extent and launch the web page they are created from when
+    // run.
+    // FROM_BOOKMARK = 1 << 4,
 
     // |FOLLOW_SYMLINKS_ANYWHERE| means that resources can be symlinks to
     // anywhere in the filesystem, rather than being restricted to the
@@ -156,22 +153,20 @@ class Extension final : public base::RefCountedThreadSafe<Extension> {
   Extension(const Extension&) = delete;
   Extension& operator=(const Extension&) = delete;
 
-  static scoped_refptr<Extension> Create(
-      const base::FilePath& path,
-      mojom::ManifestLocation location,
-      const base::DictAdapterForMigration& value,
-      int flags,
-      std::string* error);
+  static scoped_refptr<Extension> Create(const base::FilePath& path,
+                                         mojom::ManifestLocation location,
+                                         const base::Value::Dict& value,
+                                         int flags,
+                                         std::string* error);
 
   // In a few special circumstances, we want to create an Extension and give it
   // an explicit id. Most consumers should just use the other Create() method.
-  static scoped_refptr<Extension> Create(
-      const base::FilePath& path,
-      mojom::ManifestLocation location,
-      const base::DictAdapterForMigration& value,
-      int flags,
-      const ExtensionId& explicit_id,
-      std::string* error);
+  static scoped_refptr<Extension> Create(const base::FilePath& path,
+                                         mojom::ManifestLocation location,
+                                         const base::Value::Dict& value,
+                                         int flags,
+                                         const ExtensionId& explicit_id,
+                                         std::string* error);
 
   // Valid schemes for web extent URLPatterns.
   static const int kValidWebExtentSchemes;
@@ -307,9 +302,7 @@ class Extension final : public base::RefCountedThreadSafe<Extension> {
   const std::vector<InstallWarning>& install_warnings() const {
     return install_warnings_;
   }
-  const extensions::Manifest* manifest() const {
-    return manifest_.get();
-  }
+  const extensions::Manifest* manifest() const { return manifest_.get(); }
   bool wants_file_access() const { return wants_file_access_; }
   // TODO(rdevlin.cronin): This is needed for ContentScriptsHandler, and should
   // be moved out as part of crbug.com/159265. This should not be used anywhere
@@ -319,11 +312,6 @@ class Extension final : public base::RefCountedThreadSafe<Extension> {
   }
   int creation_flags() const { return creation_flags_; }
   bool from_webstore() const { return (creation_flags_ & FROM_WEBSTORE) != 0; }
-  // TODO(crbug.com/1065748): Retire this function when there are no old
-  // entries.
-  bool from_deprecated_bookmark() const {
-    return (creation_flags_ & FROM_BOOKMARK) != 0;
-  }
   bool may_be_untrusted() const {
     return (creation_flags_ & MAY_BE_UNTRUSTED) != 0;
   }
@@ -344,7 +332,7 @@ class Extension final : public base::RefCountedThreadSafe<Extension> {
   bool is_extension() const;            // Regular browser extension, not an app
   bool is_shared_module() const;        // Shared module
   bool is_theme() const;                // Theme
-  bool is_login_screen_extension() const;  // Extension on login screen.
+  bool is_login_screen_extension() const;     // Extension on login screen.
   bool is_chromeos_system_extension() const;  // ChromeOS System Extension.
 
   // True if this is a platform app, hosted app, or legacy packaged app.
@@ -371,8 +359,8 @@ class Extension final : public base::RefCountedThreadSafe<Extension> {
   // Initialize the extension from a parsed manifest.
   // TODO(aa): Rename to just Init()? There's no Value here anymore.
   // TODO(aa): It is really weird the way this class essentially contains a copy
-  // of the underlying DictionaryValue in its members. We should decide to
-  // either wrap the DictionaryValue and go with that only, or we should parse
+  // of the underlying base::Value::Dict in its members. We should decide to
+  // either wrap the base::Value::Dict and go with that only, or we should parse
   // into strong types and discard the value. But doing both is bad.
   bool InitFromValue(int flags, std::u16string* error);
 
@@ -493,11 +481,11 @@ class Extension final : public base::RefCountedThreadSafe<Extension> {
   base::GUID guid_;
 };
 
-typedef std::vector<scoped_refptr<const Extension> > ExtensionList;
+typedef std::vector<scoped_refptr<const Extension>> ExtensionList;
 
 // Handy struct to pass core extension info around.
 struct ExtensionInfo {
-  ExtensionInfo(const base::DictionaryValue* manifest,
+  ExtensionInfo(const base::Value::Dict* manifest,
                 const ExtensionId& id,
                 const base::FilePath& path,
                 mojom::ManifestLocation location);
@@ -507,7 +495,7 @@ struct ExtensionInfo {
 
   // Note: This may be null (e.g. for unpacked extensions retrieved from the
   // Preferences file).
-  std::unique_ptr<base::DictionaryValue> extension_manifest;
+  std::unique_ptr<base::Value::Dict> extension_manifest;
 
   ExtensionId extension_id;
   base::FilePath extension_path;

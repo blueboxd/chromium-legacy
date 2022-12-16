@@ -25,6 +25,7 @@
 #include "base/process/launch.h"
 #include "base/strings/pattern.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/sequenced_task_runner.h"
@@ -42,6 +43,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/services/file_util/public/cpp/zip_file_creator.h"
+#include "chromeos/ash/components/drivefs/drivefs_pin_manager.h"
 #include "components/download/content/public/all_download_item_notifier.h"
 #include "components/download/public/common/download_item.h"
 #include "components/drive/drive_notification_manager.h"
@@ -88,6 +90,56 @@ size_t LogMarkToLogLevelNameIndex(char mark) {
       return 1;
     default:
       return 2;
+  }
+}
+
+std::string BulkPinSetupStageToString(drivefs::pinning::SetupStage stage) {
+  using drivefs::pinning::SetupStage;
+  switch (stage) {
+    case SetupStage::kFinishedSetup:
+      return "kFinishedSetup";
+    case SetupStage::kFinishedSetupWithError:
+      return "kFinishedSetupWithError";
+    case SetupStage::kCalculatedFreeLocalDiskSpace:
+      return "kCalculatedFreeLocalDiskSpace";
+    case SetupStage::kCalculatedRequiredDiskSpace:
+      return "kCalculatedRequiredDiskSpace";
+    case SetupStage::kNotStarted:
+      return "kNotStarted";
+    case SetupStage::kStarted:
+      return "kStarted";
+    default:
+      return "SetupStage(Unknown)";
+  }
+}
+
+std::string BulkPinSetupErrorToString(drivefs::pinning::SetupError error) {
+  using drivefs::pinning::SetupError;
+  switch (error) {
+    case SetupError::kSuccess:
+      return "kSuccess";
+    case SetupError::kManagerDisabled:
+      return "kManagerDisabled";
+    case SetupError::kErrorCalculatingFreeDiskSpace:
+      return "kErrorCalculatingFreeDiskSpace";
+    case SetupError::kErrorRetrievingSearchResults:
+      return "kErrorRetrievingSearchResults";
+    case SetupError::kErrorResultsReturnedInvalid:
+      return "kErrorResultsReturnedInvalid";
+    case SetupError::kErrorNotEnoughFreeSpace:
+      return "kErrorNotEnoughFreeSpace";
+    case SetupError::kErrorRetrievingSearchResultsForPinning:
+      return "kErrorRetrievingSearchResultsForPinning";
+    case SetupError::kErrorResultsReturnedInvalidForPinning:
+      return "kErrorResultsReturnedInvalidForPinning";
+    case SetupError::kErrorFailedToPinItem:
+      return "kErrorFailedToPinItem";
+    case SetupError::kErrorSearchQueryNotBound:
+      return "kErrorSearchQueryNotBound";
+    case SetupError::kErrorManagerStopped:
+      return "kErrorManagerStopped";
+    default:
+      return "SetupError(Unknown)";
   }
 }
 
@@ -229,7 +281,9 @@ void ZipLogs(Profile* profile,
              base::WeakPtr<DriveInternalsWebUIHandler> drive_internals);
 
 // Class to handle messages from chrome://drive-internals.
-class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
+class DriveInternalsWebUIHandler
+    : public content::WebUIMessageHandler,
+      public drivefs::pinning::DriveFsBulkPinObserver {
  public:
   DriveInternalsWebUIHandler() : last_sent_event_id_(-1) {}
 
@@ -601,6 +655,25 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
     MaybeCallJavascript("updateBulkPinning", base::Value(bulk_pinning_enabled));
   }
 
+  void OnSetupProgress(
+      const drivefs::pinning::SetupProgress& progress) override {
+    base::Value::Dict setup_progress;
+    setup_progress.Set("stage", BulkPinSetupStageToString(progress.stage));
+    if (progress.stage ==
+        drivefs::pinning::SetupStage::kFinishedSetupWithError) {
+      setup_progress.Set("setupError",
+                         BulkPinSetupErrorToString(progress.error));
+    }
+    setup_progress.Set("availableDiskSpace",
+                       base::NumberToString(progress.available_disk_space));
+    setup_progress.Set("requiredDiskSpace",
+                       base::NumberToString(progress.required_disk_space));
+    setup_progress.Set("pinnedDiskSpace",
+                       base::NumberToString(progress.pinned_disk_space));
+    MaybeCallJavascript("onBulkPinningProgress",
+                        base::Value(std::move(setup_progress)));
+  }
+
   // Called when GetDeveloperMode() is complete.
   void OnGetDeveloperMode(bool enabled) {
     developer_mode_ = enabled;
@@ -806,6 +879,15 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
       bool enabled = args[0].GetBool();
       profile()->GetPrefs()->SetBoolean(
           drive::prefs::kDriveFsBulkPinningEnabled, enabled);
+      auto* pin_manager = integration_service->GetDriveFsPinManager();
+      if (!pin_manager) {
+        return;
+      }
+      if (enabled) {
+        pin_manager->AddObserver(this);
+      } else {
+        pin_manager->RemoveObserver(this);
+      }
     }
   }
 

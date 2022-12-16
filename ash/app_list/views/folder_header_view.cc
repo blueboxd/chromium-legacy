@@ -15,6 +15,7 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_id.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/cursor/cursor.h"
@@ -96,20 +97,21 @@ class FolderHeaderView::FolderNameView : public views::Textfield,
     Textfield::OnThemeChanged();
 
     const bool is_active = has_mouse_already_entered_ || HasFocus();
-    const views::Widget* app_list_widget = GetWidget();
+    const views::Widget* const app_list_widget = GetWidget();
     SetBackground(views::CreateRoundedRectBackground(
         GetFolderBackgroundColor(is_active, app_list_widget),
         kFolderNameBorderRadius, kFolderNameBorderThickness));
 
-    AppListColorProvider* color_provider = AppListColorProvider::Get();
+    const ui::ColorProvider* const color_provider =
+        app_list_widget->GetColorProvider();
     set_placeholder_text_color(
-        color_provider->GetFolderHintTextColor(app_list_widget));
+        color_provider->GetColor(kColorAshTextColorSecondary));
     const SkColor text_color =
-        color_provider->GetFolderTitleTextColor(app_list_widget);
+        color_provider->GetColor(kColorAshTextColorPrimary);
     SetTextColor(text_color);
     SetSelectionTextColor(text_color);
     SetSelectionBackgroundColor(
-        color_provider->GetFolderNameSelectionColor(app_list_widget));
+        color_provider->GetColor(kColorAshFocusAuraColor));
     SetNameViewBorderAndBackground(is_active);
   }
 
@@ -258,14 +260,15 @@ class FolderHeaderView::FolderNameView : public views::Textfield,
   bool has_mouse_already_entered_ = false;
 };
 
-FolderHeaderView::FolderHeaderView(FolderHeaderViewDelegate* delegate)
+FolderHeaderView::FolderHeaderView(FolderHeaderViewDelegate* delegate,
+                                   bool tablet_mode)
     : folder_item_(nullptr),
       folder_name_placeholder_text_(
           ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
               IDS_APP_LIST_FOLDER_NAME_PLACEHOLDER)),
       delegate_(delegate),
       folder_name_visible_(true),
-      is_tablet_mode_(false) {
+      is_tablet_mode_(tablet_mode) {
   folder_name_view_ = AddChildView(std::make_unique<FolderNameView>(this));
   folder_name_view_->SetPlaceholderText(folder_name_placeholder_text_);
   folder_name_view_->set_controller(this);

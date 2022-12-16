@@ -31,6 +31,10 @@ struct DIPSRedirectChainInfo {
   // initial_site == final_site, cached.
   const bool initial_and_final_sites_same;
   const int length;
+
+  // These properties aren't known at the time of creation, and are filled in
+  // later:
+  absl::optional<DIPSCookieMode> cookie_mode;
 };
 
 // Properties of one URL within a redirect chain.
@@ -41,13 +45,15 @@ struct DIPSRedirectInfo {
                    DIPSRedirectType redirect_type,
                    CookieAccessType access_type,
                    int index,
-                   ukm::SourceId source_id);
+                   ukm::SourceId source_id,
+                   base::Time time);
   // Constructor for client-side redirects.
   DIPSRedirectInfo(const GURL& url,
                    DIPSRedirectType redirect_type,
                    CookieAccessType access_type,
                    int index,
                    ukm::SourceId source_id,
+                   base::Time time,
                    base::TimeDelta client_bounce_delay,
                    bool has_sticky_activation);
   ~DIPSRedirectInfo();
@@ -60,6 +66,11 @@ struct DIPSRedirectInfo {
   // Index of this URL within the overall chain.
   const int index;
   const ukm::SourceId source_id;
+  const base::Time time;
+
+  // These properties aren't known at the time of creation, and are filled in
+  // later:
+  absl::optional<bool> has_interaction;
 
   // The following properties are only applicable for client-side redirects:
 
@@ -70,11 +81,14 @@ struct DIPSRedirectInfo {
   const bool has_sticky_activation;
 };
 
-using DIPSRedirectHandler =
-    base::RepeatingCallback<void(const DIPSRedirectInfo&,
-                                 const DIPSRedirectChainInfo&)>;
-
 // a movable DIPSRedirectInfo, essentially
 using DIPSRedirectInfoPtr = std::unique_ptr<DIPSRedirectInfo>;
+
+// a movable DIPSRedirectChainInfo, essentially
+using DIPSRedirectChainInfoPtr = std::unique_ptr<DIPSRedirectChainInfo>;
+
+using DIPSRedirectChainHandler =
+    base::RepeatingCallback<void(std::vector<DIPSRedirectInfoPtr>,
+                                 DIPSRedirectChainInfoPtr)>;
 
 #endif  // CHROME_BROWSER_DIPS_DIPS_REDIRECT_INFO_H_

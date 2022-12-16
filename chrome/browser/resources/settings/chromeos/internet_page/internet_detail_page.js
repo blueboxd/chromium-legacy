@@ -30,48 +30,61 @@ import '../../controls/controlled_button.js';
 import '../../controls/settings_toggle_button.js';
 import '../../prefs/prefs.js';
 import './cellular_roaming_toggle_button.js';
-import './internet_shared_css.js';
+import './internet_shared.css.js';
 import './network_proxy_section.js';
 import './settings_traffic_counters.js';
 import './tether_connection_dialog.js';
 
+import {assert} from 'chrome://resources/ash/common/assert.js';
 import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/ash/common/i18n_behavior.js';
+import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
 import {isActiveSim, processDeviceState} from 'chrome://resources/ash/common/network/cellular_utils.js';
 import {CrPolicyNetworkBehaviorMojo, CrPolicyNetworkBehaviorMojoInterface} from 'chrome://resources/ash/common/network/cr_policy_network_behavior_mojo.js';
 import {MojoInterfaceProvider, MojoInterfaceProviderImpl} from 'chrome://resources/ash/common/network/mojo_interface_provider.js';
 import {NetworkListenerBehavior, NetworkListenerBehaviorInterface} from 'chrome://resources/ash/common/network/network_listener_behavior.js';
 import {OncMojo} from 'chrome://resources/ash/common/network/onc_mojo.js';
 import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/ash/common/web_ui_listener_behavior.js';
-import {assert} from 'chrome://resources/js/assert.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {ActivationStateType, ApnProperties, ConfigProperties, CrosNetworkConfigRemote, FilterType, GlobalPolicy, HiddenSsidMode, IPConfigProperties, ManagedProperties, NetworkStateProperties, NO_LIMIT, ProxySettings, SecurityType, VpnType} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-webui.js';
 import {ConnectionStateType, DeviceStateType, IPConfigType, NetworkType, OncSource, PolicySource, PortalState} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/network_types.mojom-webui.js';
 import {afterNextRender, flush, html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
 import {SyncBrowserProxyImpl} from '../../people_page/sync_browser_proxy.js';
-import {Route, Router} from '../router.js';
 import {DeepLinkingBehavior, DeepLinkingBehaviorInterface} from '../deep_linking_behavior.js';
 import {recordSettingChange} from '../metrics_recorder.js';
 import {OsSyncBrowserProxy, OsSyncBrowserProxyImpl, OsSyncPrefs} from '../os_people_page/os_sync_browser_proxy.js';
 import {routes} from '../os_route.js';
 import {RouteObserverBehavior, RouteObserverBehaviorInterface} from '../route_observer_behavior.js';
+import {Route, Router} from '../router.js';
 
 import {InternetPageBrowserProxy, InternetPageBrowserProxyImpl} from './internet_page_browser_proxy.js';
-import {TetherConnectionDialogElement} from './tether_connection_dialog.js';
 
+// TODO(crbug/1315757) The following type definitions are only needed for
+// Closure compiler and can be removed when this file is converted to TS.
 /**
- * TODO(crbug/1315757) The following type definitions are only needed for
- * Closure compiler and can be removed when this file is converted to TS.
- *
  * @constructor
  * @extends {HTMLElement}
  */
-export function CellularRoamingToggleButtonElement() {}
-
+function CellularRoamingToggleButtonElement() {}
 /** @return {?CrToggleElement} */
 CellularRoamingToggleButtonElement.prototype.getCellularRoamingToggle =
     function() {};
+
+/**
+ * @constructor
+ * @extends {HTMLElement}
+ */
+function TetherConnectionDialogElement() {}
+TetherConnectionDialogElement.prototype.open = function() {};
+TetherConnectionDialogElement.prototype.close = function() {};
+
+/**
+ * @constructor
+ * @extends {HTMLElement}
+ */
+function NetworkProxySectionElement() {}
+/** @return {?CrToggleElement} */
+NetworkProxySectionElement.prototype.getAllowSharedToggle = function() {};
 
 /**
  * @constructor
@@ -565,7 +578,8 @@ class SettingsInternetDetailPageElement extends
       this.proxyExpanded_ = true;
       this.afterRenderShowDeepLink(
           settingId,
-          () => this.shadowRoot.querySelector('network-proxy-section')
+          () => /** @type {NetworkProxySectionElement} */ (
+                    this.shadowRoot.querySelector('network-proxy-section'))
                     .getAllowSharedToggle());
       return false;
     }

@@ -350,9 +350,11 @@ class API_AVAILABLE(macosx(10.12)) SSLPlatformKeySecKey
   base::ScopedCFTypeRef<SecKeyRef> key_;
 };
 
+}  // namespace
+
 scoped_refptr<SSLPrivateKey> CreateSSLPrivateKeyForSecKey(
     const X509Certificate* certificate,
-    SecKeyRef private_key) {
+    SecKeyRef key) {
   bssl::UniquePtr<EVP_PKEY> pubkey = GetClientCertPublicKey(certificate);
   if (!pubkey)
     return nullptr;

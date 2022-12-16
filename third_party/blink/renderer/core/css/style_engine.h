@@ -96,7 +96,7 @@ class StyleResolver;
 class StyleResolverStats;
 class StyleRuleFontFace;
 class StyleRuleFontPaletteValues;
-class StyleRuleFontFeatureValues;
+class FontFeatureValuesStorage;
 class StyleRuleKeyframes;
 class StyleRuleUsageTracker;
 class StyleSheet;
@@ -234,6 +234,8 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   mojom::blink::ColorScheme GetOwnerColorScheme() const {
     return owner_color_scheme_;
   }
+  mojom::blink::PreferredColorScheme ResolveColorSchemeForEmbedding(
+      const ComputedStyle* embedder_style) const;
   void ViewportStyleSettingChanged();
 
   void InjectSheet(const StyleSheetKey&,
@@ -529,7 +531,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
       AtomicString palette_name,
       AtomicString font_family);
 
-  StyleRuleFontFeatureValues* FontFeatureValuesForFamily(
+  const FontFeatureValuesStorage* FontFeatureValuesForFamily(
       AtomicString font_family);
 
   CounterStyleMap* GetUserCounterStyleMap() { return user_counter_style_map_; }
@@ -934,9 +936,8 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   // multiple @font-feature-values rules are defined for a given family, the
   // resulting values definitions are the union of the definitions contained
   // within these rules.
-  using FontFeatureValuesRuleMap =
-      HeapHashMap<String, Member<StyleRuleFontFeatureValues>>;
-  FontFeatureValuesRuleMap font_feature_values_rule_map_;
+  using FontFeatureValuesRuleMap = HashMap<String, FontFeatureValuesStorage>;
+  FontFeatureValuesRuleMap font_feature_values_storage_map_;
 
   Member<CounterStyleMap> user_counter_style_map_;
 

@@ -41,12 +41,6 @@ BASE_FEATURE(kDetectFormSubmissionOnFormClear,
 #endif
 );
 
-// Force enables password change capabilities for every domain, regardless of
-// the server response. The flag is meant for end-to-end testing purposes only.
-BASE_FEATURE(kForceEnablePasswordDomainCapabilities,
-             "ForceEnablePasswordDomainCapabilities",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enables the overwriting of prefilled username fields if the server predicted
 // the field to contain a placeholder value.
 BASE_FEATURE(kEnableOverwritingPlaceholderUsernames,
@@ -150,40 +144,15 @@ BASE_FEATURE(kLeakDetectionUnauthenticated,
              "LeakDetectionUnauthenticated",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enables automatic password change flow from leaked password dialog.
-BASE_FEATURE(kPasswordChange,
-             "PasswordChange",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables password change flow from bulk leak check in settings.
-BASE_FEATURE(kPasswordChangeInSettings,
-             "PasswordChangeInSettings",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables automatic password change for account store credentials.
-BASE_FEATURE(kPasswordChangeAccountStoreUsers,
-             "PasswordChangeAccountStoreUsers",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enables .well-known based password change flow from leaked password dialog.
 BASE_FEATURE(kPasswordChangeWellKnown,
              "PasswordChangeWellKnown",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables fetching credentials capabilities from server for the
-// |PasswordChangeInSettings| and |PasswordChange| features.
-BASE_FEATURE(kPasswordDomainCapabilitiesFetching,
-             "PasswordDomainCapabilitiesFetching",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Controls the ability to import passwords from Chrome's settings page.
+// Enables import passwords flow from Chrome's settings page.
 BASE_FEATURE(kPasswordImport,
              "PasswordImport",
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
              base::FEATURE_ENABLED_BY_DEFAULT);
-#else
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#endif
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 BASE_FEATURE(kPasswordManagerRedesign,
@@ -339,19 +308,6 @@ const char kGenerationRequirementsPrefixLength[] = "prefix_length";
 // high values is not strong.
 // Default to 5000 ms.
 const char kGenerationRequirementsTimeout[] = "timeout";
-
-// Enables showing leaked dialog after every successful form submission.
-const char kPasswordChangeWithForcedDialogAfterEverySuccessfulSubmission[] =
-    "should_force_dialog_after_every_sucessful_form_submission";
-
-// Enables showing leaked warning for every site while doing bulk leak check in
-// settings.
-const char kPasswordChangeInSettingsWithForcedWarningForEverySite[] =
-    "should_force_warning_for_every_site_in_settings";
-
-bool IsPasswordScriptsFetchingEnabled() {
-  return base::FeatureList::IsEnabled(kPasswordDomainCapabilitiesFetching);
-}
 
 #if BUILDFLAG(IS_ANDROID)
 bool UsesUnifiedPasswordManagerUi() {

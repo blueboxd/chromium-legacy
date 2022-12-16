@@ -254,6 +254,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="AccessCodeCast.Session.RouteDuration" units="ms"
+    expires_after="2023-06-12">
+  <owner>bzielinski@google.com</owner>
+  <owner>cros-edu-eng@google.com</owner>
+  <summary>
+    The amount of time in milliseconds that a route to an access code device
+    lasts. Recorded at the end of a local access code route; not recorded for
+    non-local routes. Logged only on desktop platforms.
+  </summary>
+</histogram>
+
 <histogram name="AccessCodeCast.Ui.AccessCodeInputTime" units="ms"
     expires_after="2023-05-14">
   <owner>bzielinski@google.com</owner>
@@ -318,6 +329,33 @@ chromium-metrics-reviews@google.com.
   <summary>
     The location from which the AccessCodeCast dialog is opened. Recorded after
     the dialog opens. Only logged on desktop platforms.
+  </summary>
+</histogram>
+
+<histogram name="AccessCodeCast.Ui.TabSwitcherUsageType"
+    enum="AccessCodeCastUiTabSwitcherUsage" expires_after="2023-12-12">
+  <owner>ahmedmoussa@google.com</owner>
+  <owner>takumif@chromium.org</owner>
+  <owner>openscreen-eng@google.com</owner>
+  <summary>
+    This metric is recorded once per AccessCodeCast tab mirroring session. It
+    records the number of times the tab switcher UI was shown and not used,
+    compared to the number of times it was shown and actually used to switch
+    tabs. This would make it possible to compute the % of users who cast a tab
+    who then switch which tab is being cast. Recorded once at the end of a tab
+    mirroring casting session.
+  </summary>
+</histogram>
+
+<histogram name="AccessCodeCast.Ui.TabSwitchingCount" units="count"
+    expires_after="2023-12-12">
+  <owner>ahmedmoussa@google.com</owner>
+  <owner>takumif@chromium.org</owner>
+  <owner>openscreen-eng@google.com</owner>
+  <summary>
+    This metric is recorded once per AccessCodeCast tab mirroring session. It
+    records the number of times the tab switcher UI was used to switch the
+    source tab.
   </summary>
 </histogram>
 
@@ -584,6 +622,16 @@ chromium-metrics-reviews@google.com.
 
     See https://github.com/WICG/turtledove/blob/main/FLEDGE.md for the latest
     version of the FLEDGE explainer.
+  </summary>
+</histogram>
+
+<histogram name="Ads.InterestGroup.Auction.NonKAnonWinnerIsKAnon"
+    enum="Boolean" expires_after="2023-07-31">
+  <owner>behamilton@google.com</owner>
+  <owner>morlovich@chromium.org</owner>
+  <summary>
+    Recorded at the end of a FLEDGE auction when there is a non-k-anonymous
+    winner. True when the non-k-anonymous winner is k-anonymous.
   </summary>
 </histogram>
 
@@ -1597,7 +1645,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BlueZ.NumberOfExistingAdvertisements" units="advertisements"
-    expires_after="2023-04-09">
+    expires_after="2023-06-11">
   <owner>mcchou@chromium.org</owner>
   <owner>chromeos-bt-platform-sw-core@google.com</owner>
   <summary>
@@ -1691,7 +1739,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BlueZ.TimeLengthOfDiscoverable" units="seconds"
-    expires_after="2023-04-09">
+    expires_after="2023-06-11">
   <owner>mcchou@chromium.org</owner>
   <owner>chromeos-bt-platform-sw-core@google.com</owner>
   <summary>
@@ -2912,7 +2960,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ClientHints.Viewport.IsDeviceScaleFactorOne" enum="Boolean"
-    expires_after="2023-03-29">
+    expires_after="2023-06-11">
   <owner>curranmax@chromium.org</owner>
   <summary>
     This records whether or not the device scale factor was exactly 1.0 or not
@@ -3207,7 +3255,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContextMenu.LensSupportStatus" enum="LensSupportStatus"
-    expires_after="2023-04-09">
+    expires_after="2023-06-11">
   <owner>benwgold@google.com</owner>
   <owner>lens-chrome@google.com</owner>
   <summary>
@@ -3342,7 +3390,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContextMenu.TimeToTakeAction.Abandoned" units="ms"
-    expires_after="2023-04-09">
+    expires_after="2023-06-11">
   <owner>twellington@chromium.org</owner>
   <owner>clank-app-team@google.com</owner>
   <summary>
@@ -3971,17 +4019,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Conversions.Storage.GetNextReportTimeSucceeded"
-    units="BooleanSuccess" expires_after="M117">
-  <owner>apaseltiner@chromium.org</owner>
-  <owner>johnidel@chromium.org</owner>
-  <owner>measurement-api-dev+metrics@google.com</owner>
-  <summary>
-    Records whether each GetNextReportTime SQL statement succeeded, regardless
-    of whether it returned any data.
-  </summary>
-</histogram>
-
 <histogram name="Conversions.Storage.MigrationTime" units="ms"
     expires_after="M117">
   <owner>johnidel@chromium.org</owner>
@@ -4058,19 +4095,6 @@ chromium-metrics-reviews@google.com.
     Records events for triggers that may be delayed using a queue by
     AttributionDataHostManagerImpl. A single trigger may emit multiple events if
     it is part of the queue.
-  </summary>
-</histogram>
-
-<histogram name="Conversions.UniqueDestinationLimitForUnexpiredSourcesResult"
-    enum="ConversionDestinationLimitResult" expires_after="M117">
-  <owner>linnan@chromium.org</owner>
-  <owner>johnidel@chromium.org</owner>
-  <owner>measurement-api-dev+metrics@google.com</owner>
-  <summary>
-    Records the result of checking whether an attribution source is allowed by
-    the unique destination limit covered by unexpired sources, compared with the
-    result covered by pending sources. Recorded once for each source
-    registration if there is capacity to store sources.
   </summary>
 </histogram>
 
@@ -4866,7 +4890,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DisplayManager.UnifiedDesktopDisplayCountRange"
-    enum="MultiDisplayModeDisplayCountRanges" expires_after="2023-04-09">
+    enum="MultiDisplayModeDisplayCountRanges" expires_after="2023-06-11">
   <owner>zentaro@chromium.org</owner>
   <owner>cros-peripherals@google.com</owner>
   <summary>
@@ -5064,6 +5088,16 @@ chromium-metrics-reviews@google.com.
   <summary>
     Chrome OS document scan metric that tracks which SANE backend (effectively a
     scanner driver) was used when a scan failed.
+  </summary>
+</histogram>
+
+<histogram name="DocumentScan.ScanFailureProgress" enum="ScanFailureProgress"
+    expires_after="2023-12-14">
+  <owner>rishabhagr@google.com</owner>
+  <owner>project-bolton@google.com</owner>
+  <summary>
+    Chrome OS document scan metric that tracks the stage at which the scan
+    failed.
   </summary>
 </histogram>
 
@@ -5521,7 +5555,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Eche.StreamEvent.ConnectionFail" enum="ConnectionFailReason"
-    expires_after="2023-04-09">
+    expires_after="2023-06-11">
   <owner>paulzchen@google.com</owner>
   <owner>andychou@google.com</owner>
   <owner>exo-core-eng@google.com</owner>
@@ -6256,7 +6290,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FirstPartySets.Database.InitStatus"
-    enum="FirstPartySetsDatabaseInitStatus" expires_after="2022-12-21">
+    enum="FirstPartySetsDatabaseInitStatus" expires_after="2023-08-20">
   <owner>shuuran@google.com</owner>
   <owner>kaustubhag@google.com</owner>
   <summary>
@@ -7110,7 +7144,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Incognito.ClearBrowsingDataDialog.ActionType"
     enum="IncognitoClearBrowsingDataDialogActionType"
-    expires_after="2023-03-19">
+    expires_after="2023-06-11">
   <owner>roagarwal@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
   <summary>
@@ -7311,7 +7345,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InstanceID.GetToken.RequestStatus.FcmInvalidations"
-    enum="GCMRegistrationRequestStatus" expires_after="2023-04-09">
+    enum="GCMRegistrationRequestStatus" expires_after="2023-06-11">
   <owner>peter@chromium.org</owner>
   <owner>rushans@chromium.org</owner>
   <owner>treib@chromium.org</owner>
@@ -7969,7 +8003,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="LoadingPredictor.PreconnectLearningPrecision"
-    units="%" expires_after="2022-12-19">
+    units="%" expires_after="2023-12-12">
   <owner>spelchat@chromium.org</owner>
   <owner>chrome-brapp-loading@chromium.org</owner>
   <summary>
@@ -8004,7 +8038,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="LoadingPredictor.PreresolveCount" units="hosts"
-    expires_after="2022-12-19">
+    expires_after="2023-12-12">
   <owner>spelchat@chromium.org</owner>
   <owner>chrome-brapp-loading@chromium.org</owner>
   <summary>
@@ -8015,7 +8049,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="LoadingPredictor.PreresolveHitsPercentage" units="%"
-    expires_after="2022-12-19">
+    expires_after="2023-12-12">
   <owner>spelchat@chromium.org</owner>
   <owner>chrome-brapp-loading@chromium.org</owner>
   <summary>
@@ -8305,16 +8339,6 @@ chromium-metrics-reviews@google.com.
     expires_after="M85">
   <owner>pmonette@chromium.org</owner>
   <summary>The result of writing the updated module blocklist cache.</summary>
-</histogram>
-
-<histogram name="ModuleIntegrityVerification.BytesModified" units="bytes"
-    expires_after="M85">
-  <owner>anthonyvd@chromium.org</owner>
-  <summary>
-    Represents the amount of bytes in a module that are different on disk and in
-    memory. Logged when the ModuleIntegrityVerifier determines that a module is
-    different on disk and in memory after being triggered by an incident.
-  </summary>
 </histogram>
 
 <histogram name="ModuleIntegrityVerification.RelocationsUnordered"
@@ -10423,7 +10447,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Process.Sandbox.StartSandboxedWin.{Event}Duration"
-    units="microseconds" expires_after="2023-01-21">
+    units="microseconds" expires_after="2023-05-21">
   <owner>ajgo@chromium.org</owner>
   <owner>src/sandbox/policy/win/OWNERS</owner>
   <summary>
@@ -10798,7 +10822,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ReadingList.Read.AgeOnFirstRead" units="hours"
-    expires_after="2022-12-18">
+    expires_after="2023-12-13">
   <owner>thegreenfrog@chromium.org</owner>
   <owner>olivierrobin@google.com</owner>
   <summary>
@@ -11576,20 +11600,22 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Rollback.OobeRestoreResult" enum="Rollback_OobeRestoreResult"
-    expires_after="2022-04-01">
+    expires_after="2023-11-30">
   <owner>mpolzer@google.com</owner>
-  <owner>managed-platforms@google.com</owner>
+  <owner>crisguerrero@chromium.org</owner>
+  <owner>chromeos-commercial-remote-management@google.com</owner>
   <summary>
-    The result when attempting to restore data during a Chrome OS rollback.
+    The result when attempting to restore data during a ChromeOS rollback.
   </summary>
 </histogram>
 
 <histogram name="Rollback.RollbackSaveResult"
-    enum="Rollback_RollbackSaveResult" expires_after="2022-04-01">
+    enum="Rollback_RollbackSaveResult" expires_after="2023-11-30">
   <owner>mpolzer@google.com</owner>
-  <owner>managed-platforms@google.com</owner>
+  <owner>crisguerrero@chromium.org</owner>
+  <owner>chromeos-commercial-remote-management@google.com</owner>
   <summary>
-    The result when attempting to save data during a Chrome OS rollback.
+    The result when attempting to save data during a ChromeOS rollback.
   </summary>
 </histogram>
 
@@ -11740,7 +11766,7 @@ Safe Browsing lookups, which is critical for security. -->
 </histogram>
 
 <histogram name="SB2.RemoteCall.Result" enum="SB2RemoteCallResult"
-    expires_after="2023-04-09">
+    expires_after="2023-06-11">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -13517,7 +13543,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="Tablet.WindowDrag.DragEndEventType"
-    enum="WindowDragEndEventType" expires_after="2023-04-09">
+    enum="WindowDragEndEventType" expires_after="2023-06-11">
   <owner>minch@chromium.org</owner>
   <owner>omrilio@chromium.org</owner>
   <summary>
@@ -14330,9 +14356,10 @@ should be kept until we use this API.  -->
 </histogram>
 
 <histogram name="UpgradeDetector.RollbackReason"
-    enum="UpgradeDetectorRollbackReason" expires_after="2022-05-01">
+    enum="UpgradeDetectorRollbackReason" expires_after="2023-11-30">
   <owner>mpolzer@google.com</owner>
-  <owner>managed-platforms@google.com</owner>
+  <owner>crisguerrero@chromium.org</owner>
+  <owner>chromeos-commercial-remote-management@google.com</owner>
   <summary>
     Tracks what is the reason we're doing a rollback instead of an update (going
     to a more stable channel or admin-initiated enterprise rollback). We're
@@ -14341,7 +14368,7 @@ should be kept until we use this API.  -->
     Sent when the device finished installing the rollback image, shows the
     notification and is waiting for reboot.
 
-    This metric is specific to Chrome OS.
+    This metric is specific to ChromeOS.
   </summary>
 </histogram>
 
@@ -14969,7 +14996,7 @@ regressions. -->
 </histogram>
 
 <histogram name="VoiceInteraction.VoiceResultConfidenceValue" units="%"
-    expires_after="2023-06-04">
+    expires_after="2023-06-11">
   <owner>basiaz@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>

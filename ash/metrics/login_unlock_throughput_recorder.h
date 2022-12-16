@@ -17,6 +17,7 @@
 #include "base/time/time.h"
 #include "cc/metrics/frame_sequence_metrics.h"
 #include "chromeos/ash/components/login/login_state/login_state.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/compositor/total_animation_throughput_reporter.h"
 
 namespace ui {
@@ -70,6 +71,16 @@ class ASH_EXPORT LoginUnlockThroughputRecorder : public SessionObserver,
   // This is called when the list of shelf icons is updated.
   void UpdateShelfIconList(const ShelfModel* model);
 
+  // This is called when ARC++ becomes enabled.
+  void OnArcOptedIn();
+
+  // This is called when list of ARC++ apps is updated.
+  void OnArcAppListReady();
+
+  // This is true if we need to report Ash.ArcAppInitialAppsInstallDuration
+  // histogram in this session but it has not been reported yet.
+  bool NeedReportArcAppListReady() const;
+
   void ResetScopedThroughputReporterBlockerForTesting();
 
   const ui::TotalAnimationThroughputReporter*
@@ -77,7 +88,32 @@ class ASH_EXPORT LoginUnlockThroughputRecorder : public SessionObserver,
     return login_animation_throughput_reporter_.get();
   }
 
+  // Add a time marker for login animations events. A timeline will be sent to
+  // tracing after login is done.
+  void AddLoginTimeMarker(const std::string& marker_name);
+
  private:
+  class TimeMarker {
+   public:
+    explicit TimeMarker(const std::string& name);
+    TimeMarker(const TimeMarker& other) = default;
+    ~TimeMarker() = default;
+
+    const std::string& name() const { return name_; }
+    base::TimeTicks time() const { return time_; }
+
+    // Comparator for sorting.
+    bool operator<(const TimeMarker& other) const {
+      return time_ < other.time_;
+    }
+
+   private:
+    friend class std::vector<TimeMarker>;
+
+    const std::string name_;
+    const base::TimeTicks time_ = base::TimeTicks::Now();
+  };
+
   void OnLoginAnimationFinish(
       base::TimeTicks start,
       const cc::FrameSequenceMetrics::CustomReportData& data);
@@ -112,6 +148,10 @@ class ASH_EXPORT LoginUnlockThroughputRecorder : public SessionObserver,
 
   bool user_logged_in_ = false;
 
+  bool arc_app_list_ready_reported_ = false;
+
+  absl::optional<base::TimeTicks> arc_opt_in_time_;
+
   base::WeakPtr<ui::TotalAnimationThroughputReporter>
       login_animation_throughput_reporter_;
 
@@ -120,6 +160,8 @@ class ASH_EXPORT LoginUnlockThroughputRecorder : public SessionObserver,
       scoped_throughput_reporter_blocker_;
 
   base::flat_set<ShelfID> expected_shelf_icons_;
+
+  std::vector<TimeMarker> login_time_markers_;
 
   base::WeakPtrFactory<LoginUnlockThroughputRecorder> weak_ptr_factory_{this};
 };

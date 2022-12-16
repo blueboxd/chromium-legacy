@@ -198,6 +198,7 @@
 #include "third_party/blink/renderer/core/html/canvas/canvas_font_cache.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
+#include "third_party/blink/renderer/core/html/collection_type.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_definition.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_descriptor.h"
@@ -2607,12 +2608,6 @@ void Document::LayoutUpdated() {
     // TODO(dcheng): If we create FrameWidget before Frame then we could move
     // this to Document::Initialize().
     AttachCompositorTimeline(Timeline().CompositorTimeline());
-
-    frame->Client()->DidObserveLayoutNg(
-        layout_blocks_counter_, layout_blocks_counter_ng_,
-        layout_calls_counter_, layout_calls_counter_ng_);
-    layout_blocks_counter_ = layout_blocks_counter_ng_ = layout_calls_counter_ =
-        layout_calls_counter_ng_ = 0;
   }
 
   Markers().InvalidateRectsForAllTextMatchMarkers();
@@ -3994,7 +3989,8 @@ void Document::DispatchUnloadEvents(UnloadEventTimingInfo* unload_timing_info) {
     const base::TimeTicks pagehide_event_end = base::TimeTicks::Now();
     DEFINE_STATIC_LOCAL(
         CustomCountHistogram, pagehide_histogram,
-        ("DocumentEventTiming.PageHideDuration", 0, 10000000, 50));
+        ("DocumentEventTiming.PageHideDuration", kTimeBasedHistogramMinSample,
+         kTimeBasedHistogramMaxSample, kTimeBasedHistogramBucketCount));
     pagehide_histogram.CountMicroseconds(pagehide_event_end -
                                          pagehide_event_start);
   }
@@ -4015,7 +4011,9 @@ void Document::DispatchUnloadEvents(UnloadEventTimingInfo* unload_timing_info) {
         base::TimeTicks::Now();
     DEFINE_STATIC_LOCAL(
         CustomCountHistogram, pagevisibility_histogram,
-        ("DocumentEventTiming.PageVibilityHiddenDuration", 0, 10000000, 50));
+        ("DocumentEventTiming.PageVibilityHiddenDuration",
+         kTimeBasedHistogramMinSample, kTimeBasedHistogramMaxSample,
+         kTimeBasedHistogramBucketCount));
     pagevisibility_histogram.CountMicroseconds(
         pagevisibility_hidden_event_end - pagevisibility_hidden_event_start);
     DispatchEvent(
@@ -4036,7 +4034,8 @@ void Document::DispatchUnloadEvents(UnloadEventTimingInfo* unload_timing_info) {
     // Record unload event timing when navigating cross-document.
     DEFINE_STATIC_LOCAL(
         CustomCountHistogram, unload_histogram,
-        ("DocumentEventTiming.UnloadDuration", 0, 10000000, 50));
+        ("DocumentEventTiming.UnloadDuration", kTimeBasedHistogramMinSample,
+         kTimeBasedHistogramMaxSample, kTimeBasedHistogramBucketCount));
     unload_histogram.CountMicroseconds(unload_event_end - unload_event_start);
 
     auto& timing = unload_timing_info->unload_timing.emplace();
@@ -4054,8 +4053,10 @@ void Document::DispatchFreezeEvent() {
   DispatchEvent(*Event::Create(event_type_names::kFreeze));
   SetFreezingInProgress(false);
   const base::TimeTicks freeze_event_end = base::TimeTicks::Now();
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, freeze_histogram,
-                      ("DocumentEventTiming.FreezeDuration", 0, 10000000, 50));
+  DEFINE_STATIC_LOCAL(
+      CustomCountHistogram, freeze_histogram,
+      ("DocumentEventTiming.FreezeDuration", kTimeBasedHistogramMinSample,
+       kTimeBasedHistogramMaxSample, kTimeBasedHistogramBucketCount));
   freeze_histogram.CountMicroseconds(freeze_event_end - freeze_event_start);
   UseCounter::Count(*this, WebFeature::kPageLifeCycleFreeze);
 }
@@ -6405,12 +6406,14 @@ FragmentDirective& Document::fragmentDirective() const {
 ScriptPromise Document::hasTrustToken(ScriptState* script_state,
                                       const String& issuer,
                                       ExceptionState& exception_state) {
-  return hasPrivateStateToken(script_state, issuer, exception_state);
+  return hasPrivateToken(script_state, issuer, "private-state-token",
+                         exception_state);
 }
 
-ScriptPromise Document::hasPrivateStateToken(ScriptState* script_state,
-                                             const String& issuer,
-                                             ExceptionState& exception_state) {
+ScriptPromise Document::hasPrivateToken(ScriptState* script_state,
+                                        const String& issuer,
+                                        const String& type,
+                                        ExceptionState& exception_state) {
   ScriptPromiseResolver* resolver =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
 
@@ -6425,9 +6428,16 @@ ScriptPromise Document::hasPrivateStateToken(ScriptState* script_state,
   if (!issuer_url.ProtocolIsInHTTPFamily() ||
       !issuer_origin->IsPotentiallyTrustworthy()) {
     exception_state.ThrowTypeError(
-        "hasPrivateStateToken: Trust token issuer origins must be both HTTP(S) "
-        "and "
-        "secure (\"potentially trustworthy\").");
+        "hasPrivateToken: Private Token issuer origins must be both HTTP(S) "
+        "and secure (\"potentially trustworthy\").");
+    resolver->Reject(exception_state);
+    return promise;
+  }
+
+  if (type != "private-state-token") {
+    exception_state.ThrowTypeError(
+        "hasPrivateToken: Private Token types other than "
+        "private-state-token are unsupported.");
     resolver->Reject(exception_state);
     return promise;
   }
@@ -6440,7 +6450,7 @@ ScriptPromise Document::hasPrivateStateToken(ScriptState* script_state,
     // case there are other situations in which the top frame origin might be
     // absent.
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "hasPrivateStateToken: Cannot execute in "
+                                      "hasPrivateToken: Cannot execute in "
                                       "documents lacking top-frame origins.");
     resolver->Reject(exception_state);
     return promise;
@@ -6451,7 +6461,7 @@ ScriptPromise Document::hasPrivateStateToken(ScriptState* script_state,
       top_frame_origin->Protocol() != url::kHttpScheme) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotAllowedError,
-        "hasPrivateStateToken: Cannot execute in "
+        "hasPrivateToken: Cannot execute in "
         "documents without secure, HTTP(S), top-frame origins.");
     resolver->Reject(exception_state);
     return promise;
@@ -6490,7 +6500,7 @@ ScriptPromise Document::hasPrivateStateToken(ScriptState* script_state,
               ScriptState::Scope scope(state);
               resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
                   state->GetIsolate(), DOMExceptionCode::kOperationError,
-                  "Failed to retrieve hasPrivateStateToken response. (Would "
+                  "Failed to retrieve hasPrivateToken response. (Would "
                   "associating the given issuer with this top-level origin "
                   "have exceeded its number-of-issuers limit?)"));
             }
@@ -6505,6 +6515,7 @@ ScriptPromise Document::hasPrivateStateToken(ScriptState* script_state,
 
 ScriptPromise Document::hasRedemptionRecord(ScriptState* script_state,
                                             const String& issuer,
+                                            const String& type,
                                             ExceptionState& exception_state) {
   ScriptPromiseResolver* resolver =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
@@ -6520,9 +6531,16 @@ ScriptPromise Document::hasRedemptionRecord(ScriptState* script_state,
   if (!issuer_url.ProtocolIsInHTTPFamily() ||
       !issuer_origin->IsPotentiallyTrustworthy()) {
     exception_state.ThrowTypeError(
-        "hasRedemptionRecord: Trust token issuer origins must be both HTTP(S) "
-        "and "
-        "secure (\"potentially trustworthy\").");
+        "hasRedemptionRecord: Private Token issuer origins must be both "
+        "HTTP(S) and secure (\"potentially trustworthy\").");
+    resolver->Reject(exception_state);
+    return promise;
+  }
+
+  if (type != "private-state-token") {
+    exception_state.ThrowTypeError(
+        "hasRedemptionRecord: Private Token types other than "
+        "private-state-token are unsupported.");
     resolver->Reject(exception_state);
     return promise;
   }
@@ -7083,6 +7101,10 @@ DocumentNameCollection* Document::DocumentNamedItems(const AtomicString& name) {
 HTMLCollection* Document::DocumentAllNamedItems(const AtomicString& name) {
   return EnsureCachedCollection<DocumentAllNameCollection>(
       kDocumentAllNamedItems, name);
+}
+
+HTMLCollection* Document::PopoverInvokers() {
+  return EnsureCachedCollection<HTMLCollection>(kPopoverInvokers);
 }
 
 void Document::IncrementLazyAdsFrameCount() {

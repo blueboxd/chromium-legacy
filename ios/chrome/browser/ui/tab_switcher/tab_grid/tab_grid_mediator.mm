@@ -194,6 +194,11 @@ Browser* GetBrowserForTabWithId(BrowserList* browser_list,
   return nullptr;
 }
 
+// Records the number of Tabs closed after a bulk or a "Close All" operation.
+void RecordTabGridCloseTabsCount(int count) {
+  base::UmaHistogramCounts100("IOS.TabGrid.CloseTabs", count);
+}
+
 }  // namespace
 
 @interface TabGridMediator () <CRWWebStateObserver,
@@ -474,6 +479,9 @@ Browser* GetBrowserForTabWithId(BrowserList* browser_list,
     // is being selected, make sure that the consumer update its selected item.
     [self.consumer selectItemWithID:itemID];
     return;
+  } else {
+    base::RecordAction(
+        base::UserMetricsAction("MobileTabGridMoveToExistingTab"));
   }
 
   // Avoid a reentrant activation. This is a fix for crbug.com/1134663, although
@@ -490,6 +498,15 @@ Browser* GetBrowserForTabWithId(BrowserList* browser_list,
   if (index == WebStateList::kInvalidIndex)
     return NO;
   return index == self.webStateList->active_index();
+}
+
+- (void)pinItemWithID:(NSString*)itemID {
+  int index = GetIndexOfTabWithId(self.webStateList, itemID);
+  if (index == WebStateList::kInvalidIndex) {
+    return;
+  }
+
+  self.webStateList->SetWebStatePinnedAt(index, true);
 }
 
 - (void)closeItemWithID:(NSString*)itemID {
@@ -525,6 +542,7 @@ Browser* GetBrowserForTabWithId(BrowserList* browser_list,
   __block bool allTabsClosed = true;
 
   base::UmaHistogramCounts100("IOS.TabGrid.Selection.CloseTabs", itemIDs.count);
+  RecordTabGridCloseTabsCount(itemIDs.count);
 
   self.webStateList->PerformBatchOperation(
       base::BindOnce(^(WebStateList* list) {
@@ -549,6 +567,7 @@ Browser* GetBrowserForTabWithId(BrowserList* browser_list,
 }
 
 - (void)closeAllItems {
+  RecordTabGridCloseTabsCount(self.webStateList->count());
   if (!self.browserState->IsOffTheRecord()) {
     base::RecordAction(
         base::UserMetricsAction("MobileTabGridCloseAllRegularTabs"));
@@ -562,8 +581,10 @@ Browser* GetBrowserForTabWithId(BrowserList* browser_list,
 }
 
 - (void)saveAndCloseAllItems {
+  RecordTabGridCloseTabsCount(self.webStateList->count());
   base::RecordAction(
       base::UserMetricsAction("MobileTabGridCloseAllRegularTabs"));
+
   if (self.webStateList->empty())
     return;
   self.closedSessionWindow = SerializeWebStateList(self.webStateList, nil);

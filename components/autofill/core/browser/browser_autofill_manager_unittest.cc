@@ -426,7 +426,7 @@ class BrowserAutofillManagerTest : public testing::Test {
         std::make_unique<autofill::TestFormDataImporter>(
             &autofill_client_, payments_client_,
             std::unique_ptr<CreditCardSaveManager>(credit_card_save_manager),
-            &personal_data(), "en-US");
+            /*iban_save_manager=*/nullptr, &personal_data(), "en-US");
     test_form_data_importer_ = test_form_data_importer.get();
     autofill_client_.set_test_form_data_importer(
         std::move(test_form_data_importer));
@@ -5876,7 +5876,8 @@ const ProfileMatchingTypesTestCase kProfileMatchingTypesTestCases[] = {
     {"RCA", {COMPANY_NAME}},
     {"3734 Elvis Presley Blvd.", {ADDRESS_HOME_LINE1}},
     {"3734", {ADDRESS_HOME_HOUSE_NUMBER}},
-    {"Elvis Presley Blvd.", {ADDRESS_HOME_STREET_NAME}},
+    {"Elvis Presley Blvd.",
+     {ADDRESS_HOME_STREET_NAME, ADDRESS_HOME_STREET_AND_DEPENDENT_STREET_NAME}},
     {"Apt. 10", {ADDRESS_HOME_LINE2, ADDRESS_HOME_SUBPREMISE}},
     {"Memphis", {ADDRESS_HOME_CITY}},
     {"Tennessee", {ADDRESS_HOME_STATE}},

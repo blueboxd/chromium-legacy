@@ -12,7 +12,6 @@
 <translation id="1062628064301375934">ウェブにおけるプライバシーの強化にご協力ください</translation>
 <translation id="107147699690128016">ファイル拡張子を変更すると、ファイルが別のアプリケーションで開かれる可能性があり、場合によってはデバイスに損害が生じます。</translation>
 <translation id="1089606299949659462">確認が終わりました</translation>
-<translation id="1091604859693995976">更新して表示</translation>
 <translation id="1095761715416917775">同期データに常にアクセスできるようにしてください</translation>
 <translation id="1100066534610197918">新しいタブをグループで開く</translation>
 <translation id="1103142993930332957">Chrome の改善にご協力ください</translation>
@@ -761,6 +760,7 @@
 <translation id="510275257476243843">残り 1 時間</translation>
 <translation id="5115811374190515607"><ph name="PRODUCT_NAME" /> に移動</translation>
 <translation id="5118713593561876160">興味 / 関心</translation>
+<translation id="5122378528687922675">わからないことがあるときは、保護者の方（<ph name="PARENT_NAME_1" /> または <ph name="PARENT_NAME_2" />）に聞いてください</translation>
 <translation id="5123685120097942451">シークレット タブ</translation>
 <translation id="5126510351761255129">カードの確認</translation>
 <translation id="5132942445612118989">すべてのデバイスでパスワード、履歴、その他の設定を同期する</translation>
@@ -1106,7 +1106,6 @@
 <translation id="6903907808598579934">同期を有効にする</translation>
 <translation id="6908998565271542516">ウェブサイトを承認するかどうかを決定するオプション（最大の高さで表示）</translation>
 <translation id="6909589135458168665">ページをプリロードする</translation>
-<translation id="692924882724759447">フォロー中のサイトがここに表示されます</translation>
 <translation id="6942665639005891494">デフォルトのダウンロード保存先は [設定] メニューでいつでも変更できます</translation>
 <translation id="694267552845942083">同期の設定をカスタマイズしています。同期を有効にしたら、画面の下部にある [確認] をタップしてください。上へ移動</translation>
 <translation id="6945221475159498467">選択</translation>
@@ -1148,6 +1147,7 @@
 <translation id="7177466738963138057">これは後から [設定] で変更できます</translation>
 <translation id="7177873915659574692">QR コードを作成できません。URL が <ph name="CHARACTER_LIMIT" /> 文字を超えています。</translation>
 <translation id="7177959540995930968">これらの機能について詳しくは、Chrome の設定をご覧ください。</translation>
+<translation id="7180611975245234373">更新</translation>
 <translation id="718226107353899806">最大 <ph name="MAX_NUM_REACTIONS" /> 件のリアクションを追加できます</translation>
 <translation id="7183693674623539380">タブグループ - <ph name="TITLE_OF_GROUP" /></translation>
 <translation id="7187993566681480880">ログイン時に、Chrome を安全に利用できるようにするほか、他の Google アプリのセキュリティ強化に使用されることがあります。</translation>
@@ -1331,6 +1331,7 @@
 <translation id="8084285576995584326">Google アカウントのデータを管理します</translation>
 <translation id="808747664143081553">デバイスに接続しました</translation>
 <translation id="8088176524274673045">近くのユーザーと共有するには、この QR コードをスキャンしてもらいます</translation>
+<translation id="8090732854597034573">わからないことがあるときは、保護者の方に聞いてください</translation>
 <translation id="8100969750121413114">自分の設定で Chrome を使用するにはログインしてください</translation>
 <translation id="8103578431304235997">シークレット タブ</translation>
 <translation id="8105613260829665809">続行すると、<ph name="BEGIN_TOS_LINK" />利用規約<ph name="END_TOS_LINK" />に同意されたものとみなされます。\nアプリを改善するため、Chrome では使用状況とクラッシュに関するデータが Google に送信されます。<ph name="BEGIN_UMA_LINK" />管理<ph name="END_UMA_LINK" /></translation>
@@ -1339,6 +1340,7 @@
 <translation id="8109613176066109935">お使いのどのデバイスでも同じブックマークを使用するには、同期を有効にします</translation>
 <translation id="8110024788458304985">Chrome の機能と動作の改善に協力する</translation>
 <translation id="8110087112193408731">Chrome のアクティビティを Digital Wellbeing で表示しますか？</translation>
+<translation id="8118117428362942925">わからないことがあるときは、保護者の方（<ph name="PARENT_NAME" />）に聞いてください</translation>
 <translation id="8127542551745560481">ホームページを編集</translation>
 <translation id="8130309322784422030">保存されているログイン情報が最新でない可能性があります。</translation>
 <translation id="813082847718468539">サイト情報を表示</translation>

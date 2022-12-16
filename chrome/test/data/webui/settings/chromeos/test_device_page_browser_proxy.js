@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 import {NoteAppLockScreenSupport} from 'chrome://os-settings/chromeos/os_settings.js';
-import {assert} from 'chrome://resources/js/assert.js';
-import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {assert} from 'chrome://resources/ash/common/assert.js';
+import {webUIListenerCallback} from 'chrome://resources/ash/common/cr.m.js';
 import {assertEquals} from 'chrome://webui-test/chai_assert.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 

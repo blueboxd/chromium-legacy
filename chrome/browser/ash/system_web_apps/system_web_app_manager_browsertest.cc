@@ -32,6 +32,8 @@
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ash/accessibility/speech_monitor.h"
+#include "chrome/browser/ash/app_list/app_list_client_impl.h"
+#include "chrome/browser/ash/app_list/app_list_model_updater.h"
 #include "chrome/browser/ash/app_list/test/chrome_app_list_test_support.h"
 #include "chrome/browser/ash/extensions/default_app_order.h"
 #include "chrome/browser/ash/file_manager/file_manager_test_util.h"
@@ -43,8 +45,6 @@
 #include "chrome/browser/policy/system_features_disable_list_policy_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
-#include "chrome/browser/ui/app_list/app_list_client_impl.h"
-#include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller_util.h"
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -125,7 +125,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerBrowserTestBasicInstall, Install) {
 
   Profile* profile = app_browser->profile();
   web_app::WebAppRegistrar& registrar =
-      web_app::WebAppProvider::GetForTest(profile)->registrar();
+      web_app::WebAppProvider::GetForTest(profile)->registrar_unsafe();
 
   EXPECT_EQ("Test System App", registrar.GetAppShortName(app_id));
   EXPECT_EQ(SkColorSetRGB(0, 0xFF, 0), registrar.GetAppThemeColor(app_id));
@@ -1271,7 +1271,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerChromeUntrustedTest, Install) {
 
   Profile* profile = app_browser->profile();
   web_app::WebAppRegistrar& registrar =
-      web_app::WebAppProvider::GetForTest(profile)->registrar();
+      web_app::WebAppProvider::GetForTest(profile)->registrar_unsafe();
 
   EXPECT_EQ("Test System App", registrar.GetAppShortName(app_id));
   EXPECT_EQ(SkColorSetRGB(0, 0xFF, 0), registrar.GetAppThemeColor(app_id));

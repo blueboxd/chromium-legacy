@@ -1861,6 +1861,32 @@ TEST_F(CookieMonsterTest, SetCookieableSchemes) {
               {CookieInclusionStatus::EXCLUDE_NONCOOKIEABLE_SCHEME}));
 }
 
+TEST_F(CookieMonsterTest, SetCookieableSchemes_StoreInitialized) {
+  auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get());
+  // Initializes the cookie store.
+  this->GetCookies(cm.get(), https_www_foo_.url(),
+                   CookiePartitionKeyCollection());
+
+  std::vector<std::string> schemes;
+  schemes.push_back("foo");
+  ResultSavingCookieCallback<bool> cookie_scheme_callback;
+  cm->SetCookieableSchemes(schemes, cookie_scheme_callback.MakeCallback());
+  cookie_scheme_callback.WaitUntilDone();
+  EXPECT_FALSE(cookie_scheme_callback.result());
+
+  base::Time now = base::Time::Now();
+  absl::optional<base::Time> server_time = absl::nullopt;
+  GURL foo_url("foo://host/path");
+  EXPECT_TRUE(
+      SetCanonicalCookieReturnAccessResult(
+          cm.get(),
+          CanonicalCookie::Create(foo_url, "y=1", now, server_time,
+                                  absl::nullopt /* cookie_partition_key */),
+          foo_url, false /*modify_httponly*/)
+          .status.HasExactlyExclusionReasonsForTesting(
+              {CookieInclusionStatus::EXCLUDE_NONCOOKIEABLE_SCHEME}));
+}
+
 TEST_F(CookieMonsterTest, GetAllCookiesForURL) {
   auto cm = std::make_unique<CookieMonster>(nullptr, kLastAccessThreshold,
                                             net::NetLog::Get());
@@ -2258,6 +2284,41 @@ TEST_F(CookieMonsterTest, DeleteExpiredPartitionedCookiesOnlyOnGet) {
       GetAllCookiesForURL(cm.get(), https_www_bar_.url(),
                           CookiePartitionKeyCollection(cookie_partition_key));
   EXPECT_EQ(1u, cookies.size());
+}
+
+TEST_F(CookieMonsterTest, DeletePartitionedCookie) {
+  auto cm = std::make_unique<CookieMonster>(
+      /*store=*/nullptr, net::NetLog::Get());
+  auto cookie_partition_key =
+      CookiePartitionKey::FromURLForTesting(GURL("https://toplevelsite.com"));
+
+  EXPECT_TRUE(SetCookie(cm.get(), https_www_bar_.url(),
+                        "__Host-A=B; secure; path=/; partitioned",
+                        cookie_partition_key));
+  // Set another partitioned and an unpartitioned cookie and make sure they are
+  // unaffected.
+  EXPECT_TRUE(SetCookie(cm.get(), https_www_bar_.url(),
+                        "__Host-C=D; secure; path=/; partitioned",
+                        cookie_partition_key));
+  EXPECT_TRUE(SetCookie(cm.get(), https_www_bar_.url(),
+                        "__Host-E=F; secure; path=/", absl::nullopt));
+
+  auto cookie = CanonicalCookie::Create(
+      https_www_bar_.url(), "__Host-A=B; secure; path=/; partitioned",
+      /*creation_time=*/Time::Now(), /*server_time=*/absl::nullopt,
+      cookie_partition_key);
+  ASSERT_TRUE(cookie);
+
+  ResultSavingCookieCallback<unsigned int> delete_callback;
+  cm->DeleteCanonicalCookieAsync(*cookie, delete_callback.MakeCallback());
+  delete_callback.WaitUntilDone();
+
+  CookieList cookies =
+      GetAllCookiesForURL(cm.get(), https_www_bar_.url(),
+                          CookiePartitionKeyCollection(cookie_partition_key));
+  EXPECT_EQ(2u, cookies.size());
+  EXPECT_EQ(cookies[0].Name(), "__Host-C");
+  EXPECT_EQ(cookies[1].Name(), "__Host-E");
 }
 
 // Tests importing from a persistent cookie store that contains duplicate

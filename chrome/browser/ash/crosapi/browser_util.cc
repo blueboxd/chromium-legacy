@@ -61,12 +61,16 @@ absl::optional<LacrosAvailability> g_lacros_availability_cache;
 absl::optional<LacrosDataBackwardMigrationMode>
     g_lacros_data_backward_migration_mode;
 
+// At session start the value for LacrosSelection logic is applied and the
+// result is stored in this variable which is used after that as a cache.
+absl::optional<LacrosSelectionPolicy> g_lacros_selection_cache;
+
 // The rootfs lacros-chrome metadata keys.
 constexpr char kLacrosMetadataContentKey[] = "content";
 constexpr char kLacrosMetadataVersionKey[] = "version";
 
 // The conversion map for LacrosAvailability policy data. The values must match
-// the ones from policy_templates.json.
+// the ones from LacrosAvailability.yaml.
 constexpr auto kLacrosAvailabilityMap =
     base::MakeFixedFlatMap<base::StringPiece, LacrosAvailability>({
         {"user_choice", LacrosAvailability::kUserChoice},
@@ -88,6 +92,15 @@ constexpr auto kLacrosDataBackwardMigrationModeMap =
          LacrosDataBackwardMigrationMode::kKeepSafeData},
         {kLacrosDataBackwardMigrationModePolicyKeepAll,
          LacrosDataBackwardMigrationMode::kKeepAll},
+    });
+
+// The conversion map for LacrosSelection policy data. The values must match
+// the ones from LacrosSelection.yaml.
+constexpr auto kLacrosSelectionPolicyMap =
+    base::MakeFixedFlatMap<base::StringPiece, LacrosSelectionPolicy>({
+        {"user_choice", LacrosSelectionPolicy::kUserChoice},
+        {"rootfs", LacrosSelectionPolicy::kRootfs},
+        {"stateful", LacrosSelectionPolicy::kStateful},
     });
 
 // Some account types require features that aren't yet supported by lacros.
@@ -904,6 +917,51 @@ void CacheLacrosDataBackwardMigrationMode(const policy::PolicyMap& map) {
       value ? value->GetString() : base::StringPiece());
 }
 
+void CacheLacrosSelection(const policy::PolicyMap& map) {
+  if (g_lacros_selection_cache.has_value()) {
+    // Some browser tests might call this multiple times.
+    LOG(ERROR) << "Trying to cache LacrosSelection and the value was set";
+    return;
+  }
+
+  const base::Value* value =
+      map.GetValue(policy::key::kLacrosSelection, base::Value::Type::STRING);
+  g_lacros_selection_cache = ParseLacrosSelectionPolicy(
+      value ? value->GetString() : base::StringPiece());
+}
+
+LacrosSelectionPolicy GetCachedLacrosSelectionPolicy() {
+  if (g_lacros_selection_cache)
+    return g_lacros_selection_cache.value();
+
+  return LacrosSelectionPolicy::kUserChoice;
+}
+
+absl::optional<LacrosSelection> DetermineLacrosSelection() {
+  switch (GetCachedLacrosSelectionPolicy()) {
+    case LacrosSelectionPolicy::kRootfs:
+      return LacrosSelection::kRootfs;
+    case LacrosSelectionPolicy::kStateful:
+      return LacrosSelection::kStateful;
+    case LacrosSelectionPolicy::kUserChoice:
+      break;
+  }
+
+  const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
+
+  if (!cmdline->HasSwitch(browser_util::kLacrosSelectionSwitch))
+    return absl::nullopt;
+
+  auto value =
+      cmdline->GetSwitchValueASCII(browser_util::kLacrosSelectionSwitch);
+  if (value == browser_util::kLacrosSelectionRootfs)
+    return LacrosSelection::kRootfs;
+  if (value == browser_util::kLacrosSelectionStateful)
+    return LacrosSelection::kStateful;
+
+  return absl::nullopt;
+}
+
 ComponentInfo GetLacrosComponentInfoForChannel(version_info::Channel channel) {
   // We default to the Dev component for UNKNOWN channels.
   static const auto kChannelToComponentInfoMap =
@@ -976,6 +1034,10 @@ void ClearLacrosAvailabilityCacheForTest() {
 
 void ClearLacrosDataBackwardMigrationModeCacheForTest() {
   g_lacros_data_backward_migration_mode.reset();
+}
+
+void ClearLacrosSelectionCacheForTest() {
+  g_lacros_selection_cache.reset();
 }
 
 MigrationMode GetMigrationMode(const user_manager::User* user,
@@ -1110,6 +1172,16 @@ absl::optional<LacrosAvailability> ParseLacrosAvailability(
   return absl::nullopt;
 }
 
+absl::optional<LacrosSelectionPolicy> ParseLacrosSelectionPolicy(
+    base::StringPiece value) {
+  auto* it = kLacrosSelectionPolicyMap.find(value);
+  if (it != kLacrosSelectionPolicyMap.end())
+    return it->second;
+
+  LOG(ERROR) << "Unknown LacrosSelection policy value is passed: " << value;
+  return absl::nullopt;
+}
+
 base::StringPiece GetLacrosAvailabilityPolicyName(LacrosAvailability value) {
   for (const auto& entry : kLacrosAvailabilityMap) {
     if (entry.second == value)
@@ -1134,6 +1206,16 @@ ParseLacrosDataBackwardMigrationMode(base::StringPiece value) {
 base::StringPiece GetLacrosDataBackwardMigrationModeName(
     LacrosDataBackwardMigrationMode value) {
   for (const auto& entry : kLacrosDataBackwardMigrationModeMap) {
+    if (entry.second == value)
+      return entry.first;
+  }
+
+  NOTREACHED();
+  return base::StringPiece();
+}
+
+base::StringPiece GetLacrosSelectionPolicyName(LacrosSelectionPolicy value) {
+  for (const auto& entry : kLacrosSelectionPolicyMap) {
     if (entry.second == value)
       return entry.first;
   }

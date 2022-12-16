@@ -74,6 +74,14 @@ const char kAutofillIOSDelayBetweenFieldsDescription[] =
     "Delay between the different fields of a form being autofilled. In "
     "milliseconds.";
 
+const char kAutofillOfferToSaveCardWithSameLastFourName[] =
+    "Offer credit card save for cards with same last-4 but different "
+    "expiration dates";
+const char kAutofillOfferToSaveCardWithSameLastFourDescription[] =
+    "Offer credit card save when Chrome detects a card number with the same "
+    "last 4 digits as an existing server card, but a different expiration "
+    "date.";
+
 const char kAutofillParseIBANFieldsName[] = "Parse IBAN fields in forms";
 const char kAutofillParseIBANFieldsDescription[] =
     "When enabled, Autofill will attempt to find International Bank Account "
@@ -655,6 +663,13 @@ const char kPasswordReuseDetectionName[] =
 const char kPasswordReuseDetectionDescription[] =
     "Displays warning when user types or pastes a saved password into a "
     "phishing website.";
+
+const char kIPHPriceNotificationsWhileBrowsingName[] =
+    "Price Tracking IPH Display";
+const char kIPHPriceNotificationsWhileBrowsingDescription[] =
+    "Always displays the Price Tracking IPH when the user navigates to a "
+    "product "
+    "webpage that supports price tracking.";
 
 const char kRecordSnapshotSizeName[] =
     "Record the size of image and PDF snapshots in UMA histograms";

@@ -12,8 +12,8 @@
 #include "ui/gfx/gpu_fence_handle.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_image.h"
-#include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/gl_surface_overlay.h"
+#include "ui/gl/presenter.h"
 #include "ui/gl/scoped_binders.h"
 #include "ui/ozone/platform/drm/gpu/drm_overlay_plane.h"
 
@@ -30,7 +30,7 @@ class GbmSurfaceFactory;
 // displaying happens directly through NativePixmap buffers. CC would call into
 // SurfaceFactoryOzone to allocate the buffers and then call
 // ScheduleOverlayPlane(..) to schedule the buffer for presentation.
-class GbmSurfaceless : public gl::SurfacelessEGL {
+class GbmSurfaceless : public gl::Presenter {
  public:
   GbmSurfaceless(GbmSurfaceFactory* surface_factory,
                  gl::GLDisplayEGL* display,
@@ -45,7 +45,7 @@ class GbmSurfaceless : public gl::SurfacelessEGL {
   // gl::GLSurface:
   bool Initialize(gl::GLSurfaceFormat format) override;
   gfx::SwapResult SwapBuffers(PresentationCallback callback,
-                              gl::FrameData data) override;
+                              gfx::FrameData data) override;
   bool ScheduleOverlayPlane(
       gl::OverlayImage image,
       std::unique_ptr<gfx::GpuFence> gpu_fence,
@@ -63,17 +63,17 @@ class GbmSurfaceless : public gl::SurfacelessEGL {
                                 int width,
                                 int height,
                                 PresentationCallback callback,
-                                gl::FrameData data) override;
+                                gfx::FrameData data) override;
   void SwapBuffersAsync(SwapCompletionCallback completion_callback,
                         PresentationCallback presentation_callback,
-                        gl::FrameData data) override;
+                        gfx::FrameData data) override;
   void PostSubBufferAsync(int x,
                           int y,
                           int width,
                           int height,
                           SwapCompletionCallback completion_callback,
                           PresentationCallback presentation_callback,
-                          gl::FrameData data) override;
+                          gfx::FrameData data) override;
   EGLConfig GetConfig() override;
   void SetRelyOnImplicitSync() override;
   void SetForceGlFlushOnSwapBuffers() override;

@@ -13,28 +13,6 @@
     </issue>
 
     <issue
-        id="GestureBackNavigation"
-        message="If intercepting back events, this should be handled through the registration of callbacks on the window level; Please see https://developer.android.com/about/versions/13/features/predictive-back-gesture"
-        errorLine1="            if (keyCode == KeyEvent.KEYCODE_BACK) {"
-        errorLine2="                           ~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../chrome/android/java/src/org/chromium/chrome/browser/findinpage/FindToolbar.java"
-            line="138"
-            column="28"/>
-    </issue>
-
-    <issue
-        id="GestureBackNavigation"
-        message="If intercepting back events, this should be handled through the registration of callbacks on the window level; Please see https://developer.android.com/about/versions/13/features/predictive-back-gesture"
-        errorLine1="        } else if (keyCode == KeyEvent.KEYCODE_BACK) {"
-        errorLine2="                              ~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../chrome/browser/ui/android/omnibox/java/src/org/chromium/chrome/browser/omnibox/LocationBarMediator.java"
-            line="1143"
-            column="31"/>
-    </issue>
-
-    <issue
         id="ResourceType"
         message="Expected resource of type styleable"
         errorLine1="                R.style.SelectPopupDialog, SELECT_DIALOG_ATTRS);"
@@ -5563,17 +5541,6 @@
 
     <issue
         id="WrongConstant"
-        message="Must be one of: UpdateState.NONE, UpdateState.UPDATE_AVAILABLE, UpdateState.UNSUPPORTED_OS_VERSION"
-        errorLine1="                    &quot;GoogleUpdate.StartUp.State&quot;, mStatus.updateState, UpdateState.NUM_ENTRIES);"
-        errorLine2="                                                                                   ~~~~~~~~~~~">
-        <location
-            file="../../chrome/android/java/src/org/chromium/chrome/browser/omaha/UpdateStatusProvider.java"
-            line="224"
-            column="84"/>
-    </issue>
-
-    <issue
-        id="WrongConstant"
         message="Must be one of: ImageFormat.UNKNOWN, ImageFormat.RGB_565, ImageFormat.YV12, ImageFormat.Y8, ImageFormat.NV16, ImageFormat.NV21, ImageFormat.YUY2, ImageFormat.JPEG, ImageFormat.DEPTH_JPEG, ImageFormat.YUV_420_888, ImageFormat.YUV_422_888, ImageFormat.YUV_444_888, ImageFormat.FLEX_RGB_888, ImageFormat.FLEX_RGBA_8888, ImageFormat.RAW_SENSOR, ImageFormat.RAW_PRIVATE, ImageFormat.RAW10, ImageFormat.RAW12, ImageFormat.DEPTH16, ImageFormat.DEPTH_POINT_CLOUD, ImageFormat.PRIVATE, ImageFormat.HEIC"
         errorLine1="                    mCaptureFormat.getHeight(), mCaptureFormat.getPixelFormat(), 2 /* maxImages */);"
         errorLine2="                                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
@@ -5845,17 +5812,6 @@
             file="../../android_webview/glue/java/src/com/android/webview/chromium/WebViewChromium.java"
             line="243"
             column="94"/>
-    </issue>
-
-    <issue
-        id="WrongConstant"
-        message="Must be one of: SafeModeExecutionResult.SUCCESS, SafeModeExecutionResult.UNKNOWN_ERROR, SafeModeExecutionResult.ACTION_FAILED"
-        errorLine1="                &quot;Android.WebView.SafeMode.ExecutionResult&quot;, result, SafeModeExecutionResult.COUNT);"
-        errorLine2="                                                                                            ~~~~~">
-        <location
-            file="../../android_webview/glue/java/src/com/android/webview/chromium/WebViewChromiumFactoryProvider.java"
-            line="541"
-            column="93"/>
     </issue>
 
     <issue

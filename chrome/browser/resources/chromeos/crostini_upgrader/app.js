@@ -8,10 +8,11 @@ import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
 import 'chrome://resources/polymer/v3_0/paper-progress/paper-progress.js';
 import './strings.m.js';
 
-import {assert, assertNotReached} from 'chrome://resources/js/assert.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {assert, assertNotReached} from 'chrome://resources/ash/common/assert.js';
+import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
+import {Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {getTemplate} from './app.html.js';
 import {BrowserProxy} from './browser_proxy.js';
 
 /**
@@ -40,7 +41,7 @@ const kMaxUpgradeAttempts = 3;
 Polymer({
   is: 'crostini-upgrader-app',
 
-  _template: html`{__html_template__}`,
+  _template: getTemplate(),
 
   properties: {
     /** @private {State} */

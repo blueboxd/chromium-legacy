@@ -745,7 +745,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="OptimizationGuide.PageContentAnnotationsService.ContentAnnotationsStorageStatus"
     enum="OptimizationGuidePageContentAnnotationsStorageStatus"
-    expires_after="2023-06-04">
+    expires_after="2023-06-11">
   <owner>sophiechang@chromium.org</owner>
   <owner>mcrouse@chromium.org</owner>
   <summary>
@@ -958,7 +958,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="OptimizationGuide.PageTopicsOverrideList.FileLoadResult"
     enum="OptimizationGuidePageTopicsOverrideListFileLoadResult"
-    expires_after="2023-01-22">
+    expires_after="M112">
   <owner>robertogden@chromium.org</owner>
   <owner>chrome-intelligence-core@google.com</owner>
   <summary>
@@ -971,7 +971,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OptimizationGuide.PageTopicsOverrideList.GotFile"
-    enum="Boolean" expires_after="2023-01-22">
+    enum="Boolean" expires_after="M112">
   <owner>robertogden@chromium.org</owner>
   <owner>chrome-intelligence-core@google.com</owner>
   <summary>
@@ -981,7 +981,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OptimizationGuide.PageTopicsOverrideList.UsedOverride"
-    enum="Boolean" expires_after="2023-06-04">
+    enum="Boolean" expires_after="2023-06-11">
   <owner>robertogden@chromium.org</owner>
   <owner>chrome-intelligence-core@google.com</owner>
   <summary>
@@ -1189,7 +1189,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OptimizationGuide.PredictionModelFetcher.GetModelsResponse.NetErrorCode"
-    enum="NetErrorCodes" expires_after="2023-06-04">
+    enum="NetErrorCodes" expires_after="2023-06-11">
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -1219,7 +1219,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OptimizationGuide.PredictionModelFetcher.GetModelsResponse.Status"
-    enum="HttpResponseCode" expires_after="2023-06-04">
+    enum="HttpResponseCode" expires_after="2023-06-11">
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -1272,6 +1272,30 @@ chromium-metrics-reviews@google.com.
     Records the result of loading the host model features metadata while
     initializing the OptimizationGuideStore.
   </summary>
+</histogram>
+
+<histogram
+    name="OptimizationGuide.PredictionModelStore.ModelCount.{OptimizationTarget}"
+    units="counts" expires_after="M112">
+  <owner>sophiechang@chromium.org</owner>
+  <owner>rajendrant@chromium.org</owner>
+  <summary>
+    The total number of model directories in the prediction model store for
+    {OptimizationTarget}. Recorded once at startup.
+  </summary>
+  <token key="OptimizationTarget" variants="OptimizationTarget"/>
+</histogram>
+
+<histogram
+    name="OptimizationGuide.PredictionModelStore.TotalDirectorySize.{OptimizationTarget}"
+    units="MB" expires_after="M112">
+  <owner>sophiechang@chromium.org</owner>
+  <owner>rajendrant@chromium.org</owner>
+  <summary>
+    The total disk usage of the prediction model store attributed to
+    {OptimizationTarget}. Recorded once at startup.
+  </summary>
+  <token key="OptimizationTarget" variants="OptimizationTarget"/>
 </histogram>
 
 <histogram

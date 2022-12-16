@@ -68,8 +68,7 @@ class ASH_EXPORT ProjectorControllerImpl
   // ProjectorController:
   void StartProjectorSession(const std::string& storage_dir) override;
   void SetClient(ProjectorClient* client) override;
-  void OnSpeechRecognitionAvailabilityChanged(
-      SpeechRecognitionAvailability availability) override;
+  void OnSpeechRecognitionAvailabilityChanged() override;
   void OnTranscription(const media::SpeechRecognitionResult& result) override;
   void OnTranscriptionError() override;
   void OnSpeechRecognitionStopped() override;
@@ -196,9 +195,9 @@ class ASH_EXPORT ProjectorControllerImpl
   std::unique_ptr<ProjectorUiController> ui_controller_;
   std::unique_ptr<ProjectorMetadataController> metadata_controller_;
 
-  // Whether SODA is available on the device.
-  SpeechRecognitionAvailability on_device_speech_recognition_availability_ =
-      SpeechRecognitionAvailability::kOnDeviceSpeechRecognitionNotSupported;
+  // Whether ProjectorController has informed its client to stop
+  // speech recognition.
+  bool pending_speech_recognition_stop_ = false;
 
   // Whether speech recognition is taking place or not.
   bool is_speech_recognition_on_ = false;

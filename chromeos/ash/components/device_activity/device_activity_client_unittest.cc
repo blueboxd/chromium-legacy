@@ -25,9 +25,10 @@
 #include "chromeos/ash/components/device_activity/fresnel_pref_names.h"
 #include "chromeos/ash/components/device_activity/fresnel_service.pb.h"
 #include "chromeos/ash/components/device_activity/monthly_use_case_impl.h"
+#include "chromeos/ash/components/device_activity/twenty_eight_day_active_use_case_impl.h"
 #include "chromeos/ash/components/network/network_state_handler_observer.h"
 #include "chromeos/ash/components/network/network_state_test_helper.h"
-#include "chromeos/system/fake_statistics_provider.h"
+#include "chromeos/ash/components/system/fake_statistics_provider.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/version_info/channel.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -207,6 +208,27 @@ class FirstActiveUseCaseImplUnderTest : public FirstActiveUseCaseImpl {
   ~FirstActiveUseCaseImplUnderTest() override = default;
 };
 
+class TwentyEightDayActiveUseCaseImplUnderTest
+    : public TwentyEightDayActiveUseCaseImpl {
+ public:
+  TwentyEightDayActiveUseCaseImplUnderTest(
+      PrefService* local_state,
+      const psm_rlwe::PrivateMembershipRlweClientRegressionTestData::TestCase&
+          test_case)
+      : TwentyEightDayActiveUseCaseImpl(
+            kFakePsmDeviceActiveSecret,
+            kFakeChromeParameters,
+            local_state,
+            std::make_unique<FakePsmDelegate>(test_case.ec_cipher_key(),
+                                              test_case.seed(),
+                                              GetPlaintextIds(test_case))) {}
+  TwentyEightDayActiveUseCaseImplUnderTest(
+      const TwentyEightDayActiveUseCaseImplUnderTest&) = delete;
+  TwentyEightDayActiveUseCaseImplUnderTest& operator=(
+      const TwentyEightDayActiveUseCaseImplUnderTest&) = delete;
+  ~TwentyEightDayActiveUseCaseImplUnderTest() override = default;
+};
+
 }  // namespace
 
 // TODO(crbug/1317652): Refactor checking if current use case local pref is
@@ -366,10 +388,14 @@ class DeviceActivityClientTest : public testing::Test {
         &statistics_provider_);
 
     SetUpDeviceActivityClient(
-        {features::kDeviceActiveClientMonthlyCheckIn,
-         features::kDeviceActiveClientDailyCheckMembership,
-         features::kDeviceActiveClientMonthlyCheckMembership,
-         features::kDeviceActiveClientFirstActiveCheckMembership},
+        {
+            features::kDeviceActiveClientMonthlyCheckIn,
+            features::kDeviceActiveClientDailyCheckMembership,
+            features::kDeviceActiveClientMonthlyCheckMembership,
+            features::kDeviceActiveClientFirstActiveCheckMembership,
+            features::kDeviceActiveClient28DayActiveCheckIn,
+            features::kDeviceActiveClient28DayActiveCheckMembership,
+        },
         GetPsmNonMemberTestCase(),
         GetPrivateComputingRegressionTestCase(
             private_computing::PrivateComputingClientRegressionTestData::
@@ -440,6 +466,14 @@ class DeviceActivityClientTest : public testing::Test {
       use_cases.push_back(std::make_unique<FirstActiveUseCaseImplUnderTest>(
           &local_state_, psm_test_case));
     }
+    if (base::FeatureList::IsEnabled(
+            features::kDeviceActiveClient28DayActiveCheckIn) ||
+        base::FeatureList::IsEnabled(
+            features::kDeviceActiveClient28DayActiveCheckMembership)) {
+      use_cases.push_back(
+          std::make_unique<TwentyEightDayActiveUseCaseImplUnderTest>(
+              &local_state_, psm_test_case));
+    }
 
     device_activity_client_ = std::make_unique<DeviceActivityClient>(
         network_state_test_helper_->network_state_handler(),
@@ -456,6 +490,8 @@ class DeviceActivityClientTest : public testing::Test {
         prefs::kDeviceActiveLastKnownMonthlyPingTimestamp);
     local_state_.RemoveUserPref(
         prefs::kDeviceActiveLastKnownFirstActivePingTimestamp);
+    local_state_.RemoveUserPref(
+        prefs::kDeviceActiveLastKnown28DayActivePingTimestamp);
   }
 
   void SimulateOprfResponse(const std::string& serialized_response_body,
@@ -488,7 +524,7 @@ class DeviceActivityClientTest : public testing::Test {
        << "wifi_guid"
        << "\","
        << "  \"Type\": \"" << shill::kTypeWifi << "\","
-       << "  \"State\": \"" << shill::kStateOffline << "\""
+       << "  \"State\": \"" << shill::kStateIdle << "\""
        << "}";
 
     wifi_network_service_path_ =
@@ -529,6 +565,10 @@ class DeviceActivityClientTest : public testing::Test {
   base::HistogramTester histogram_tester_;
   chromeos::system::FakeStatisticsProvider statistics_provider_;
 };
+
+TEST_F(DeviceActivityClientTest, ValidateActiveUseCases) {
+  EXPECT_EQ(static_cast<int>(device_activity_client_->GetUseCases().size()), 4);
+}
 
 TEST_F(DeviceActivityClientTest,
        StayIdleIfSystemClockServiceUnavailableOnNetworkConnection) {
@@ -719,7 +759,7 @@ TEST_F(DeviceActivityClientTest, NetworkRequestsUseFakeApiKey) {
 // so the client is expected to go back to |kIdle| state.
 TEST_F(DeviceActivityClientTest,
        FireTimerWithoutNetworkKeepsClientinIdleState) {
-  SetWifiNetworkState(shill::kStateOffline);
+  SetWifiNetworkState(shill::kStateIdle);
   FireTimer();
 
   EXPECT_EQ(device_activity_client_->GetState(),
@@ -747,7 +787,7 @@ TEST_F(DeviceActivityClientTest, NetworkReconnectsAfterSuccessfulCheckIn) {
   }
 
   // Reconnecting network connection triggers |TransitionOutOfIdle|.
-  SetWifiNetworkState(shill::kStateOffline);
+  SetWifiNetworkState(shill::kStateIdle);
   SetWifiNetworkState(shill::kStateOnline);
 
   // Check that no additional network requests are pending since all use cases
@@ -901,11 +941,9 @@ TEST_F(DeviceActivityClientTest, DailyCheckInFailsButRemainingUseCasesSucceed) {
 
       // Failed to update the local state since the OPRF response was invalid.
       EXPECT_FALSE(use_case->IsLastKnownPingTimestampSet());
-    } else if (use_case->GetPsmUseCase() ==
-                   psm_rlwe::RlweUseCase::CROS_FRESNEL_MONTHLY ||
-               use_case->GetPsmUseCase() ==
-                   psm_rlwe::RlweUseCase::CROS_FRESNEL_FIRST_ACTIVE) {
-      // Monthly use case will return valid psm network request responses.
+    } else {
+      // All remaining use cases will return valid psm network request
+      // responses.
       SimulateOprfResponse(GetFresnelOprfResponse(GetPsmNonMemberTestCase()),
                            net::HTTP_OK);
       SimulateQueryResponse(GetFresnelQueryResponse(GetPsmNonMemberTestCase()),
@@ -917,9 +955,6 @@ TEST_F(DeviceActivityClientTest, DailyCheckInFailsButRemainingUseCasesSucceed) {
       // Successfully imported and updated the last ping timestamp to the
       // current mocked time for this test.
       EXPECT_EQ(use_case->GetLastKnownPingTimestamp(), base::Time::Now());
-    } else {
-      // Currently we only support daily, monthly, and first active use cases.
-      NOTREACHED() << "Invalid Use Case.";
     }
   }
 
@@ -946,10 +981,17 @@ TEST_F(DeviceActivityClientTest,
               DeviceActivityClient::State::kCheckingMembershipOprf);
 
     if (use_case->GetPsmUseCase() ==
-            psm_rlwe::RlweUseCase::CROS_FRESNEL_DAILY ||
-        use_case->GetPsmUseCase() ==
-            psm_rlwe::RlweUseCase::CROS_FRESNEL_FIRST_ACTIVE) {
-      // Daily use case will return valid psm network request responses.
+        psm_rlwe::RlweUseCase::CROS_FRESNEL_MONTHLY) {
+      // Monthly use case will terminate while failing to parse
+      // this invalid OPRF response.
+      SimulateOprfResponse(std::string(), net::HTTP_OK);
+
+      task_environment_.RunUntilIdle();
+
+      // Failed to update the local state since the OPRF response was invalid.
+      EXPECT_FALSE(use_case->IsLastKnownPingTimestampSet());
+    } else {
+      // Remaining use cases will return valid psm network request responses.
       SimulateOprfResponse(GetFresnelOprfResponse(GetPsmNonMemberTestCase()),
                            net::HTTP_OK);
       SimulateQueryResponse(GetFresnelQueryResponse(GetPsmNonMemberTestCase()),
@@ -961,19 +1003,6 @@ TEST_F(DeviceActivityClientTest,
       // Successfully imported and updated the last ping timestamp to the
       // current mocked time for this test.
       EXPECT_EQ(use_case->GetLastKnownPingTimestamp(), base::Time::Now());
-    } else if (use_case->GetPsmUseCase() ==
-               psm_rlwe::RlweUseCase::CROS_FRESNEL_MONTHLY) {
-      // Monthly use case will terminate while failing to parse
-      // this invalid OPRF response.
-      SimulateOprfResponse(std::string(), net::HTTP_OK);
-
-      task_environment_.RunUntilIdle();
-
-      // Failed to update the local state since the OPRF response was invalid.
-      EXPECT_FALSE(use_case->IsLastKnownPingTimestampSet());
-    } else {
-      // Currently we only support daily, monthly, and first active use cases.
-      NOTREACHED() << "Invalid Use Case.";
     }
   }
 
@@ -1003,7 +1032,7 @@ TEST_F(DeviceActivityClientTest, StayIdleIfTimerFiresWithoutNetworkConnected) {
   EXPECT_EQ(device_activity_client_->GetState(),
             DeviceActivityClient::State::kIdle);
 
-  SetWifiNetworkState(shill::kStateOffline);
+  SetWifiNetworkState(shill::kStateIdle);
   FireTimer();
 
   // Verify that no network requests were sent.
@@ -1055,7 +1084,7 @@ TEST_F(DeviceActivityClientTest, NetworkDisconnectsWhileWaitingForResponse) {
   EXPECT_GT(test_url_loader_factory_.NumPending(), 0);
 
   // Disconnect network.
-  SetWifiNetworkState(shill::kStateOffline);
+  SetWifiNetworkState(shill::kStateIdle);
 
   // All pending requests should be cancelled, and our device activity client
   // should get set back to |kIdle|.
@@ -1080,7 +1109,7 @@ TEST_F(DeviceActivityClientTest,
   EXPECT_NE(first_use_case->GetPsmRlweClient(), nullptr);
 
   // While waiting for OPRF request, simulate network disconnection.
-  SetWifiNetworkState(shill::kStateOffline);
+  SetWifiNetworkState(shill::kStateIdle);
 
   // Network offline should cancel all pending use cases, and clear the saved
   // state of the attempted pings.
@@ -1163,7 +1192,7 @@ TEST_F(DeviceActivityClientTest, NetworkDisconnectionClearsUseCaseState) {
   EXPECT_NE(first_use_case->GetPsmRlweClient(), nullptr);
 
   // While waiting for OPRF response, simulate network disconnection.
-  SetWifiNetworkState(shill::kStateOffline);
+  SetWifiNetworkState(shill::kStateIdle);
 
   // Network offline should cancel all pending use cases, and clear the saved
   // state of the attempted pings.
@@ -1222,13 +1251,23 @@ TEST_F(DeviceActivityClientTest, CheckInAfterNextUtcMidnight) {
   EXPECT_EQ(device_activity_client_->GetState(),
             DeviceActivityClient::State::kCheckingIn);
 
-  // Return well formed Import response body for the DAILY use case.
-  // The time was forwarded by 1 day, which means only the daily use case will
-  // report actives again.
-  SimulateImportResponse(std::string(), net::HTTP_OK);
-  task_environment_.RunUntilIdle();
+  // Return well formed Import response body for the daily and nday use cases.
+  // The time was forwarded by 1 day, which only require daily and nday use
+  // cases to report active again.
+  for (auto* use_case : device_activity_client_->GetUseCases()) {
+    psm_rlwe::RlweUseCase psm_use_case = use_case->GetPsmUseCase();
+    SCOPED_TRACE(testing::Message()
+                 << "PSM use case: "
+                 << psm_rlwe::RlweUseCase_Name(psm_use_case));
+    if (psm_use_case == psm_rlwe::RlweUseCase::CROS_FRESNEL_DAILY ||
+        psm_use_case == psm_rlwe::RlweUseCase::CROS_FRESNEL_28DAY_ACTIVE) {
+      SimulateImportResponse(std::string(), net::HTTP_OK);
+      task_environment_.RunUntilIdle();
+    }
+  }
 
-  // Return back to |kIdle| state after successful check-in of daily use case.
+  // Return back to |kIdle| state after another successful check-in of
+  // the daily and nday use cases.
   EXPECT_EQ(device_activity_client_->GetState(),
             DeviceActivityClient::State::kIdle);
 }
@@ -1322,7 +1361,8 @@ TEST_F(DeviceActivityClientTest, CheckInAfterNextUtcMonth) {
                  << psm_rlwe::RlweUseCase_Name(psm_use_case));
 
     if (psm_use_case == psm_rlwe::RlweUseCase::CROS_FRESNEL_DAILY ||
-        psm_use_case == psm_rlwe::RlweUseCase::CROS_FRESNEL_MONTHLY) {
+        psm_use_case == psm_rlwe::RlweUseCase::CROS_FRESNEL_MONTHLY ||
+        psm_use_case == psm_rlwe::RlweUseCase::CROS_FRESNEL_28DAY_ACTIVE) {
       EXPECT_EQ(device_activity_client_->GetState(),
                 DeviceActivityClient::State::kCheckingIn);
 

@@ -52,6 +52,7 @@
 #include "net/ssl/ssl_info.h"
 #include "net/third_party/quiche/src/quiche/quic/core/http/quic_client_promised_info.h"
 #include "net/third_party/quiche/src/quiche/quic/core/http/spdy_server_push_utils.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_stream_priority.h"
 #include "net/third_party/quiche/src/quiche/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quiche/quic/platform/api/quic_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -1172,11 +1173,11 @@ void QuicChromiumClientSession::UnregisterStreamPriority(quic::QuicStreamId id,
 
 void QuicChromiumClientSession::UpdateStreamPriority(
     quic::QuicStreamId id,
-    const spdy::SpdyStreamPrecedence& new_precedence) {
+    const quic::QuicStreamPriority& new_priority) {
   if (headers_include_h2_stream_dependency_ ||
       VersionUsesHttp3(connection()->transport_version())) {
-    auto updates = priority_dependency_state_.OnStreamUpdate(
-        id, new_precedence.spdy3_priority());
+    auto updates =
+        priority_dependency_state_.OnStreamUpdate(id, new_priority.urgency);
     for (auto update : updates) {
       if (!VersionUsesHttp3(connection()->transport_version())) {
         WritePriority(update.id, update.parent_stream_id, update.weight,
@@ -1184,7 +1185,7 @@ void QuicChromiumClientSession::UpdateStreamPriority(
       }
     }
   }
-  quic::QuicSpdySession::UpdateStreamPriority(id, new_precedence);
+  quic::QuicSpdySession::UpdateStreamPriority(id, new_priority);
 }
 
 void QuicChromiumClientSession::OnHttp3GoAway(uint64_t id) {
@@ -3790,9 +3791,10 @@ bool QuicChromiumClientSession::HandlePromised(
         VersionUsesHttp3(connection()->transport_version())) {
       // Even though the promised stream will not be created until after the
       // push promise headers are received, send a PRIORITY frame for the
-      // promised stream ID. Send |kDefaultPriority| since that will be the
+      // promised stream ID. Send |kDefaultUrgency| since that will be the
       // initial spdy::SpdyPriority of the push promise stream when created.
-      const spdy::SpdyPriority priority = quic::QuicStream::kDefaultPriority;
+      const spdy::SpdyPriority priority =
+          quic::QuicStreamPriority::kDefaultUrgency;
       spdy::SpdyStreamId parent_stream_id = 0;
       int weight = 0;
       bool exclusive = false;

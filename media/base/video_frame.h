@@ -16,10 +16,10 @@
 #include "base/callback.h"
 #include "base/check_op.h"
 #include "base/hash/md5.h"
-#include "base/memory/free_deleter.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/ref_counted.h"
+#include "base/process/memory.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
 #include "base/time/time.h"
@@ -782,7 +782,9 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer_;
 #endif
 
-  std::vector<base::OnceClosure> done_callbacks_;
+  base::Lock done_callbacks_lock_;
+  std::vector<base::OnceClosure> done_callbacks_
+      GUARDED_BY(done_callbacks_lock_);
 
   base::TimeDelta timestamp_;
 
@@ -801,7 +803,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   absl::optional<gpu::VulkanYCbCrInfo> ycbcr_info_;
 
   // Allocation which makes up |data_| planes for self-allocated frames.
-  std::unique_ptr<uint8_t, base::FreeDeleter> private_data_;
+  std::unique_ptr<uint8_t, base::UncheckedFreeDeleter> private_data_;
 };
 
 }  // namespace media

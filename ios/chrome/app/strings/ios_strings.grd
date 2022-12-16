@@ -684,6 +684,9 @@ See your search engine’s instructions for deleting your search history, if app
       <message name="IDS_IOS_CONTENT_CONTEXT_SELECTTABS" desc="The iOS context menu item for entering into the selection mode, where users can select tabs to perform bulk actions on them.[iOS only]">
         Select Tabs
       </message>
+      <message name="IDS_IOS_CONTENT_CONTEXT_PINTAB" desc="The iOS context menu item for pinning a tab.[iOS only]">
+        Pin Tab
+      </message>
       <message name="IDS_IOS_CONTENT_SUGGESTIONS_ACCESSIBILITY_LABEL_SUGGESTION" desc="The accessibility label of a suggestion. Summarizes fields in the reading list entry (title, publisher informations, status and informations). Read by Text-to-Speech.">
         <ph name="TITLE"><ex>Learn about the new Chromium Projects</ex>$1</ph>, <ph name="PUBLISHER_INFORMATION"><ex>The Chromium organization</ex>$2</ph>, <ph name="PUBLICATION_DATE"><ex>January 1 2017</ex>$3</ph>
       </message>
@@ -914,6 +917,18 @@ See your search engine’s instructions for deleting your search history, if app
       </message>
       <message name="IDS_IOS_FACETIME_BUTTON" desc="Text in the confirmation dialog button that will initiate a FaceTime call for the presented number. [Length: 10em] [iOS only]">
         FaceTime
+      </message>
+      <message name="IDS_IOS_FEED_CARD_SIGN_IN_PROMO_CANCEL_BUTTON" desc="Text of the cancel button in the feed card sign-in promo UI. [iOS only]">
+        Cancel
+      </message>
+      <message name="IDS_IOS_FEED_CARD_SIGN_IN_PROMO_CONTINUE_BUTTON" desc="Text of the continue button in the feed card sign-in promo UI. [iOS only]">
+        Continue
+      </message>
+      <message name="IDS_IOS_FEED_CARD_SIGN_IN_PROMO_DESC" desc="Description of the feed card sign-in promo UI. [iOS only]">
+        To personalize your Discover feed and Chrome, sign in and turn on sync.
+      </message>
+      <message name="IDS_IOS_FEED_CARD_SIGN_IN_PROMO_TITLE" desc="Title of the feed card sign-in promo UI. [iOS only]">
+        Sign in to manage the content you see
       </message>
       <message name="IDS_IOS_FEED_CUSTOM_SEARCH_ENGINE_LABEL" desc="Message informing users with custom search engines that the feed is provided by Google.">
         Provided by Google
@@ -1734,6 +1749,9 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_PRICE_NOTIFICATIONS_PRICE_TRACK_TITLE" desc="Title for Price Notifications table view.">
         Track Price
       </message>
+      <message name="IDS_IOS_PRICE_NOTIFICATIONS_PRICE_TRACK_TOAST_IPH_TEXT" desc="Text for Price tracking toast IPH.">
+        Track price here
+      </message>
       <message name="IDS_IOS_PRICE_NOTIFICATIONS_PRICE_TRACK_TRACKABLE_SECTION_HEADER" desc="Section header for a Price Notifications table view section that lists items available on the current page to have their prices tracked.">
         Current Site
       </message>
@@ -2129,30 +2147,6 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_READING_LIST_CANCEL_BUTTON" desc="Label of the button to stop editing the reading list entries (delete, mark as read/unread) [Length: 25em]" meaning="Stop editing. [Length: 25em]">
         Cancel
       </message>
-      <message name="IDS_IOS_READING_LIST_MESSAGES_IPH" desc="In-product help that points at the tools menu where the user can find the entry point to Reading List. [Length: 35em]">
-        When you're ready, find your reading list here
-      </message>
-      <message name="IDS_IOS_READING_LIST_MESSAGES_BANNER_SUBTITLE" desc="Subtitle of the banner indicating the estimated time to read of the page [iOS only]">
-          <ph name="TIME">$1</ph> minute read
-      </message>
-      <message name="IDS_IOS_READING_LIST_MESSAGES_BANNER_TITLE" desc="Title of the banner asking the user to add the current page to Reading List [iOS only]">
-          Add to Reading List for Later?
-      </message>
-      <message name="IDS_IOS_READING_LIST_MESSAGES_MAIN_ACTION" desc="Button text to indicate the user to add this page to Reading List [iOS only]">
-        Add
-      </message>
-      <message name="IDS_IOS_READING_LIST_MESSAGES_MODAL_DESCRIPTION" desc="Informational text explaining the utility of Reading List. [iOS only]">
-          You can save pages to read later or offline. Chrome will ask if you want to save long pages.
-        </message>
-      <message name="IDS_IOS_READING_LIST_MESSAGES_MODAL_NEVER_ASK" desc="Button text to indicate the user wants to be never shown the Add to Reading List prompt [iOS only]">
-        Never Ask
-      </message>
-      <message name="IDS_IOS_READING_LIST_MESSAGES_MODAL_TITLE" desc="Title of the Add to Reading List Messages Modal [Length: 25em] [iOS only]">
-        Add to Reading List
-      </message>
-      <message name="IDS_IOS_READING_LIST_MESSAGES_SETTING_TITLE" desc="Title of the setting to toggle the Add to Reading List Messages prompt on and off [iOS only]">
-        Ask to Add to Reading List
-      </message>
       <message name="IDS_IOS_SCANNER_ALERT_CANCEL" desc="Title for a button to cancel a Scanner error dialog. The dialog will be dismissed and no action will be taken. [Length: 20em] [iOS only]" meaning="A button to cancel a Scanner error dialog.">
         Cancel
       </message>
@@ -2212,6 +2206,12 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       </message>
       <message name="IDS_IOS_TOOLS_MENU_NEW_WINDOW" desc="The iOS menu item for opening a new window [iOS only]" meaning="[Length: unlimited]">
         New Window
+      </message>
+      <message name="IDS_IOS_TOOLS_MENU_PIN_TAB" desc="The iOS menu item for pinning a tab [iOS only]" meaning="[Length: unlimited]">
+        Pin Tab
+      </message>
+      <message name="IDS_IOS_TOOLS_MENU_UNPIN_TAB" desc="The iOS menu item for unpinning a tab [iOS only]" meaning="[Length: unlimited]">
+        Unpin Tab
       </message>
       <message name="IDS_IOS_READING_LIST_CONTENT_CONTEXT_OFFLINE" desc="Title of the button to display the Offline version instead of the Online one. [Length: 50em]">
         View Offline Version in New Tab
@@ -3358,7 +3358,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
         Create new Incognito tab.
       </message>
       <message name="IDS_IOS_TAB_GRID_CREATE_NEW_TAB" desc="The accessibility label for the button that creates new regular tabs (as opposed to Incognito tabs). [iOS only]">
-        Create new tab.
+        Create New Tab
       </message>
       <message name="IDS_IOS_TAB_STRIP_ENTER_TAB_SWITCHER" desc="The accessibility label of the tab strip button to enter the tab switcher. The tab switcher is a view showing the opened tabs, and allows users to switch, close, and open new tabs. [iOS only]">
         Enter Tab Switcher

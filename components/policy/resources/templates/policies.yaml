@@ -1041,6 +1041,11 @@ policies:
   1040: ''
   1041: NewBaseUrlInheritanceBehaviorAllowed
   1042: ShowCastSessionsStartedByOtherDevices
+  1043: CloudAPAuthEnabled
+  1044: UsbDetectorNotificationEnabled
+  1045: LacrosSelection
+  1046: UseMojoVideoDecoderForPepperAllowed
+  1047: PPAPISharedImagesSwapChainAllowed
 atomic_groups:
   1: Homepage
   2: RemoteAccess

@@ -104,9 +104,10 @@ class AutoclickBrowserTest : public InProcessBrowserTest {
     base::ScopedAllowBlockingForTesting allow_blocking;
     std::string script = base::StringPrintf(R"JS(
       (async function() {
-        window.accessibilityCommon.setAutoclickLoadCallbackForTest(() => {
-            window.domAutomationController.send('ready');
-          });
+        window.accessibilityCommon.setFeatureLoadCallbackForTest('autoclick',
+            () => {
+              window.domAutomationController.send('ready');
+            });
       })();
     )JS");
     std::string result =
@@ -334,7 +335,8 @@ IN_PROC_BROWSER_TEST_F(AutoclickBrowserTest, LongDelay) {
   EXPECT_GT(timer.Elapsed().InMilliseconds(), 500);
 }
 
-IN_PROC_BROWSER_TEST_F(AutoclickBrowserTest, ShortDelay) {
+// TODO(crbug.com/1401529): Flaky.
+IN_PROC_BROWSER_TEST_F(AutoclickBrowserTest, DISABLED_ShortDelay) {
   SetAutoclickDelayMs(5);
   LoadURLAndAutoclick(R"(
         data:text/html;charset=utf-8,

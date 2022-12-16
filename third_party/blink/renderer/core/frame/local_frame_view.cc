@@ -144,7 +144,6 @@
 #include "third_party/blink/renderer/core/paint/block_paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/cull_rect_updater.h"
 #include "third_party/blink/renderer/core/paint/frame_painter.h"
-#include "third_party/blink/renderer/core/paint/old_cull_rect_updater.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -2005,9 +2004,8 @@ Color LocalFrameView::DocumentBackgroundColor() {
   if (background_source->StyleRef().ColorSchemeForced()) {
     // TODO(https://crbug.com/1351544): The DarkModeFilter operate on SkColor4f,
     // and DocumentBackgroundColor should return an SkColor4f.
-    doc_bg = Color::FromSkColor(EnsureDarkModeFilter().InvertColorIfNeeded(
-        doc_bg.ToSkColorDeprecated(),
-        DarkModeFilter::ElementRole::kBackground));
+    doc_bg = Color::FromSkColor4f(EnsureDarkModeFilter().InvertColorIfNeeded(
+        doc_bg.toSkColor4f(), DarkModeFilter::ElementRole::kBackground));
   }
   if (blend_with_base)
     return result.Blend(doc_bg);
@@ -2486,6 +2484,8 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
 
     {
       ScriptForbiddenScope::AllowUserAgentScript allow_script;
+      base::AutoReset<DocumentLifecycle::LifecycleState> saved_target_state(
+          &target_state_, DocumentLifecycle::kUninitialized);
       needs_to_repeat_lifecycle = RunResizeObserverSteps(target_state);
     }
     // Only run the rest of the steps here if resize observer is done.
@@ -2718,14 +2718,6 @@ bool LocalFrameView::RunPrePaintLifecyclePhase(
                 layout_view->DescendantBlockingWheelEventHandlerChanged()) {
               owner->MarkDescendantBlockingWheelEventHandlerChanged();
             }
-            if (!RuntimeEnabledFeatures::ScrollUpdateOptimizationsEnabled()) {
-              // Issue additional invalidations for the old cull rect updater.
-              if (layout_view->Layer()->NeedsCullRectUpdate() ||
-                  layout_view->Layer()->DescendantNeedsCullRectUpdate()) {
-                layout_view->Layer()
-                    ->MarkCompositingContainerChainForNeedsCullRectUpdate();
-              }
-            }
           }
         }
       },
@@ -2918,10 +2910,7 @@ bool LocalFrameView::PaintTree(PaintBenchmarkMode benchmark_mode,
   auto* layout_view = GetLayoutView();
   DCHECK(layout_view);
 
-  if (RuntimeEnabledFeatures::ScrollUpdateOptimizationsEnabled())
-    CullRectUpdater(*layout_view->Layer()).Update();
-  else
-    OldCullRectUpdater(*layout_view->Layer()).Update();
+  CullRectUpdater(*layout_view->Layer()).Update();
 
   bool debug_info_newly_enabled =
       UpdateLayerDebugInfoEnabled() && PaintDebugInfoEnabled();
@@ -3655,6 +3644,14 @@ void LocalFrameView::ScheduleAnimation(base::TimeDelta delay,
     client->ScheduleAnimation(this, delay);
 }
 
+void LocalFrameView::OnCommitRequested() {
+  DCHECK(frame_->IsLocalRoot());
+  if (frame_->GetDocument() &&
+      !frame_->GetDocument()->IsInitialEmptyDocument() && GetUkmAggregator()) {
+    GetUkmAggregator()->OnCommitRequested();
+  }
+}
+
 void LocalFrameView::AddScrollAnchoringScrollableArea(
     PaintLayerScrollableArea* scrollable_area) {
   DCHECK(scrollable_area);
@@ -4068,8 +4065,6 @@ void LocalFrameView::PaintOutsideOfLifecycle(GraphicsContext& context,
   {
     OverriddenCullRectScope force_cull_rect(*GetLayoutView()->Layer(),
                                             cull_rect);
-    OverriddenOldCullRectScope force_old_cull_rect(*GetLayoutView()->Layer(),
-                                                   cull_rect);
     PaintControllerCycleScope cycle_scope(context.GetPaintController(),
                                           PaintDebugInfoEnabled());
     PaintFrame(context, paint_flags);
@@ -4091,10 +4086,7 @@ void LocalFrameView::PaintOutsideOfLifecycleWithThrottlingAllowed(
 void LocalFrameView::PaintForTest(const CullRect& cull_rect) {
   AllowThrottlingScope allow_throttling(*this);
   Lifecycle().AdvanceTo(DocumentLifecycle::kInPaint);
-  if (RuntimeEnabledFeatures::ScrollUpdateOptimizationsEnabled())
-    CullRectUpdater(*GetLayoutView()->Layer()).UpdateForTesting(cull_rect);
-  OverriddenOldCullRectScope force_old_cull_rect(*GetLayoutView()->Layer(),
-                                                 cull_rect);
+  CullRectUpdater(*GetLayoutView()->Layer()).UpdateForTesting(cull_rect);
   PaintController& paint_controller = EnsurePaintController();
   if (GetLayoutView()->Layer()->SelfOrDescendantNeedsRepaint()) {
     PaintControllerCycleScope cycle_scope(paint_controller,
@@ -4104,10 +4096,8 @@ void LocalFrameView::PaintForTest(const CullRect& cull_rect) {
     paint_controller.CommitNewDisplayItems();
   }
   Lifecycle().AdvanceTo(DocumentLifecycle::kPaintClean);
-  if (RuntimeEnabledFeatures::ScrollUpdateOptimizationsEnabled()) {
-    CullRectUpdater(*GetLayoutView()->Layer())
-        .UpdateForTesting(CullRect::Infinite());
-  }
+  CullRectUpdater(*GetLayoutView()->Layer())
+      .UpdateForTesting(CullRect::Infinite());
 }
 
 sk_sp<PaintRecord> LocalFrameView::GetPaintRecord() const {
@@ -4923,7 +4913,6 @@ PaintLayer* LocalFrameView::GetXROverlayLayer() const {
 }
 
 void LocalFrameView::PropagateCullRectNeedsUpdateForFrames() {
-  DCHECK(RuntimeEnabledFeatures::ScrollUpdateOptimizationsEnabled());
   ForAllNonThrottledLocalFrameViews(
       [](LocalFrameView& frame_view) {
         // Propagate child frame PaintLayer NeedsCullRectUpdate flag into the

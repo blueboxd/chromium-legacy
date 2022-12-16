@@ -23,6 +23,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 #include "base/win/registry.h"
+#include "base/win/scoped_localalloc.h"
 #include "chrome/updater/constants.h"
 #include "chrome/updater/updater_branding.h"
 #include "chrome/updater/updater_scope.h"
@@ -167,24 +168,28 @@ AppCommandRunner& AppCommandRunner::operator=(const AppCommandRunner&) =
     default;
 AppCommandRunner::~AppCommandRunner() = default;
 
-HRESULT AppCommandRunner::LoadAppCommand(UpdaterScope scope,
-                                         const std::wstring& app_id,
-                                         const std::wstring& command_id,
-                                         AppCommandRunner& app_command_runner) {
+HResultOr<AppCommandRunner> AppCommandRunner::LoadAppCommand(
+    UpdaterScope scope,
+    const std::wstring& app_id,
+    const std::wstring& command_id) {
   std::wstring command_format;
   HRESULT hr = LoadAppCommandFormat(scope, app_id, command_id, command_format);
   if (FAILED(hr)) {
     if (IsSystemInstall(scope)) {
       hr = LoadLegacyProcessLauncherFormat(app_id, command_id, command_format);
     }
-
     if (FAILED(hr))
-      return hr;
+      return base::unexpected(hr);
   }
 
-  return GetAppCommandFormatComponents(scope, command_format,
-                                       app_command_runner.executable_,
-                                       app_command_runner.parameters_);
+  AppCommandRunner app_command_runner;
+  hr = GetAppCommandFormatComponents(scope, command_format,
+                                     app_command_runner.executable_,
+                                     app_command_runner.parameters_);
+  if (FAILED(hr))
+    return base::unexpected(hr);
+
+  return app_command_runner;
 }
 
 std::vector<AppCommandRunner>
@@ -211,9 +216,10 @@ AppCommandRunner::LoadAutoRunOnOsUpgradeAppCommands(
       continue;
     }
 
-    AppCommandRunner runner;
-    if (SUCCEEDED(LoadAppCommand(scope, app_id, it.Name(), runner)))
-      app_command_runners.push_back(runner);
+    HResultOr<AppCommandRunner> runner =
+        LoadAppCommand(scope, app_id, it.Name());
+    if (runner.has_value())
+      app_command_runners.push_back(*runner);
   }
 
   return app_command_runners;
@@ -250,7 +256,9 @@ HRESULT AppCommandRunner::StartProcess(const base::FilePath& executable,
   options.start_hidden = true;
 
   process = base::LaunchProcess(
-      base::StrCat({L"\"", executable.value(), L"\" ", parameters}), options);
+      base::StrCat(
+          {QuoteForCommandLineToArgvW(executable.value()), L" ", parameters}),
+      options);
   if (!process.IsValid()) {
     const HRESULT hr = HRESULTFromLastError();
     LOG(ERROR) << __func__ << "base::LaunchProcess failed: " << hr;
@@ -269,14 +277,14 @@ HRESULT AppCommandRunner::GetAppCommandFormatComponents(
   VLOG(2) << __func__ << ": " << scope << ": " << command_format;
 
   int num_args = 0;
-  ScopedLocalAlloc args(::CommandLineToArgvW(&command_format[0], &num_args));
-  if (!args.is_valid() || num_args < 1) {
-    LOG(ERROR) << __func__ << "!args.is_valid() || num_args < 1: " << num_args;
+  base::win::ScopedLocalAllocTyped<wchar_t*> argv(
+      ::CommandLineToArgvW(&command_format[0], &num_args));
+  if (!argv || num_args < 1) {
+    LOG(ERROR) << __func__ << "!argv || num_args < 1: " << num_args;
     return E_INVALIDARG;
   }
 
-  const wchar_t** argv = reinterpret_cast<const wchar_t**>(args.get());
-  const base::FilePath exe = base::FilePath(argv[0]);
+  const base::FilePath exe = base::FilePath(argv.get()[0]);
   if (!IsSecureAppCommandExePath(scope, exe)) {
     LOG(WARNING) << __func__
                  << ": !IsSecureAppCommandExePath(scope, exe): " << exe;
@@ -286,7 +294,7 @@ HRESULT AppCommandRunner::GetAppCommandFormatComponents(
   executable = exe;
   parameters.clear();
   for (int i = 1; i < num_args; ++i)
-    parameters.push_back(argv[i]);
+    parameters.push_back(argv.get()[i]);
 
   return S_OK;
 }

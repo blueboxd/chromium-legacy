@@ -5,8 +5,8 @@
 #include "chrome/browser/ash/app_list/test/test_app_list_controller.h"
 
 #include "ash/public/cpp/app_list/app_list_controller_observer.h"
-#include "chrome/browser/ui/app_list/app_list_client_impl.h"
-#include "chrome/browser/ui/app_list/app_list_model_updater.h"
+#include "chrome/browser/ash/app_list/app_list_client_impl.h"
+#include "chrome/browser/ash/app_list/app_list_model_updater.h"
 
 namespace test {
 
@@ -33,8 +33,14 @@ aura::Window* TestAppListController::GetWindow() {
 }
 
 void TestAppListController::ShowAppList(ash::AppListShowSource source) {
+  last_open_source_ = source;
   visible_ = true;
   NotifyAppListVisibilityChanged();
+}
+
+ash::AppListShowSource TestAppListController::LastAppListShowSource() {
+  DCHECK(last_open_source_.has_value());
+  return last_open_source_.value();
 }
 
 void TestAppListController::DismissAppList() {

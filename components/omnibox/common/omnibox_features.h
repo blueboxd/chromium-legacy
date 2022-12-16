@@ -40,7 +40,6 @@ BASE_DECLARE_FEATURE(kUIExperimentMaxAutocompleteMatches);
 extern const bool kOmniboxMaxURLMatchesEnabledByDefault;
 BASE_DECLARE_FEATURE(kOmniboxMaxURLMatches);
 BASE_DECLARE_FEATURE(kDynamicMaxAutocomplete);
-BASE_DECLARE_FEATURE(kRetainSuggestionsWithHeaders);
 
 // Entity suggestion disambiguation.
 BASE_DECLARE_FEATURE(kDisambiguateEntitySuggestions);
@@ -52,15 +51,16 @@ BASE_DECLARE_FEATURE(kClobberTriggersContextualWebZeroSuggest);
 BASE_DECLARE_FEATURE(kClobberTriggersSRPZeroSuggest);
 BASE_DECLARE_FEATURE(kFocusTriggersContextualWebZeroSuggest);
 BASE_DECLARE_FEATURE(kFocusTriggersSRPZeroSuggest);
+BASE_DECLARE_FEATURE(kKeepSecondaryZeroSuggest);
 BASE_DECLARE_FEATURE(kLocalHistorySuggestRevamp);
 BASE_DECLARE_FEATURE(kLocalHistoryZeroSuggestBeyondNTP);
 BASE_DECLARE_FEATURE(kOmniboxLocalZeroSuggestAgeThreshold);
 BASE_DECLARE_FEATURE(kOmniboxOnClobberFocusTypeOnContent);
+BASE_DECLARE_FEATURE(kZeroSuggestInMemoryCaching);
 BASE_DECLARE_FEATURE(kZeroSuggestOnNTPForSignedOutUsers);
 BASE_DECLARE_FEATURE(kZeroSuggestPrefetching);
 BASE_DECLARE_FEATURE(kZeroSuggestPrefetchingOnSRP);
 BASE_DECLARE_FEATURE(kZeroSuggestPrefetchingOnWeb);
-BASE_DECLARE_FEATURE(kZeroSuggestInMemoryCaching);
 // Related, kMaxZeroSuggestMatches.
 
 // On Device Suggest.
@@ -91,20 +91,15 @@ BASE_DECLARE_FEATURE(kAdaptiveSuggestionsCount);
 BASE_DECLARE_FEATURE(kClipboardSuggestionContentHidden);
 BASE_DECLARE_FEATURE(kSuggestionAnswersColorReverse);
 BASE_DECLARE_FEATURE(kMostVisitedTiles);
-BASE_DECLARE_FEATURE(kMostVisitedTilesDynamicSpacing);
 BASE_DECLARE_FEATURE(kMostVisitedTilesTitleWrapAround);
 BASE_DECLARE_FEATURE(kRichAutocompletion);
 BASE_DECLARE_FEATURE(kNtpRealboxPedals);
 BASE_DECLARE_FEATURE(kOmniboxFuzzyUrlSuggestions);
 BASE_DECLARE_FEATURE(kOmniboxDefaultBrowserPedal);
-BASE_DECLARE_FEATURE(kOmniboxHeaderPaddingUpdate);
 BASE_DECLARE_FEATURE(kOmniboxMatchToolbarAndStatusBarColor);
-BASE_DECLARE_FEATURE(kOmniboxRemoveSuggestionHeaderCapitalization);
-BASE_DECLARE_FEATURE(kOmniboxRemoveSuggestionHeaderChevron);
 BASE_DECLARE_FEATURE(kOmniboxMostVisitedTilesAddRecycledViewPool);
-BASE_DECLARE_FEATURE(kOmniboxMostVisitedTilesFadingOnTablet);
-BASE_DECLARE_FEATURE(kOmniboxMostVisitedTilesOnSrp);
 BASE_DECLARE_FEATURE(kUniformRowHeight);
+BASE_DECLARE_FEATURE(kWebUIOmniboxPopup);
 
 // Omnibox UI - these affect the UI or function of the location bar (not the
 // popup).

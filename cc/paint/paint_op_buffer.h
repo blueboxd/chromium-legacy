@@ -48,13 +48,20 @@ struct CC_PAINT_EXPORT PlaybackParams {
   using CustomDataRasterCallback =
       base::RepeatingCallback<void(SkCanvas* canvas, uint32_t id)>;
   using DidDrawOpCallback = base::RepeatingCallback<void()>;
+  // This callback returns
+  // - &op if no conversion;
+  // - a pointer (owned by the callback) to a new op;
+  // - null if the op should be discarded.
+  using ConvertOpCallback =
+      base::RepeatingCallback<const PaintOp*(const PaintOp& op)>;
 
   explicit PlaybackParams(ImageProvider* image_provider);
   PlaybackParams(
       ImageProvider* image_provider,
       const SkM44& original_ctm,
       CustomDataRasterCallback custom_callback = CustomDataRasterCallback(),
-      DidDrawOpCallback did_draw_op_callback = DidDrawOpCallback());
+      DidDrawOpCallback did_draw_op_callback = DidDrawOpCallback(),
+      ConvertOpCallback convert_op_callback = ConvertOpCallback());
   ~PlaybackParams();
 
   PlaybackParams(const PlaybackParams& other);
@@ -67,6 +74,7 @@ struct CC_PAINT_EXPORT PlaybackParams {
   SkM44 original_ctm;
   CustomDataRasterCallback custom_callback;
   DidDrawOpCallback did_draw_op_callback;
+  ConvertOpCallback convert_op_callback;
   absl::optional<bool> save_layer_alpha_should_preserve_lcd_text;
   bool is_analyzing = false;
 };
@@ -216,9 +224,6 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
   bool has_effects_preventing_lcd_text_for_save_layer_alpha() const {
     return has_effects_preventing_lcd_text_for_save_layer_alpha_;
   }
-  bool are_ops_destroyed() const { return are_ops_destroyed_; }
-  void MarkOpsDestroyed() { are_ops_destroyed_ = true; }
-
   bool NeedsAdditionalInvalidationForLCDText(
       const PaintOpBuffer& old_buffer) const;
 
@@ -302,6 +307,12 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
   class CompositeIterator;
   class PlaybackFoldingIterator;
 
+  // STL-like container support:
+  using value_type = PaintOp;
+  using const_iterator = Iterator;
+  Iterator begin() const;
+  Iterator end() const;
+
  private:
   friend class DisplayItemList;
   friend class PaintOp;
@@ -352,7 +363,6 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
   bool has_save_layer_ops_ : 1;
   bool has_save_layer_alpha_ops_ : 1;
   bool has_effects_preventing_lcd_text_for_save_layer_alpha_ : 1;
-  bool are_ops_destroyed_ : 1;
 };
 
 }  // namespace cc

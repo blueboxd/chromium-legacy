@@ -65,6 +65,8 @@ class GPU_GLES2_EXPORT AbstractTexture {
   // It is not required to SetCleared() if one binds an image.
   //
   // The context must be current.
+  // TODO(crbug.com/1310020): Simplify this interface/implementation for fact
+  // that we now always pass |nullptr| for |image| in production.
   virtual void BindStreamTextureImage(gl::GLImage* image,
                                       GLuint service_id) = 0;
 #endif
@@ -79,7 +81,7 @@ class GPU_GLES2_EXPORT AbstractTexture {
   //
   // The context must be current.
   virtual void SetUnboundImage(gl::GLImage* image) = 0;
-#else
+#elif !BUILDFLAG(IS_ANDROID)
   // Attaches |image| to the AbstractTexture. The decoder does not call
   // GLImage::Copy/Bind. Further, the decoder guarantees that
   // ScheduleOverlayPlane will be called if the texture is ever promoted to an

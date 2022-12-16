@@ -3280,6 +3280,12 @@ be describing additional metrics about the same event.
       Paint, in microseconds.
     </summary>
   </metric>
+  <metric name="VisualUpdateDelay">
+    <summary>
+      Time elapsed, in microseconds, between when an animation update is first
+      scheduled and when the resulting BeginMainFrame starts.
+    </summary>
+  </metric>
   <metric name="WaitForCommit">
     <summary>
       The time spent waiting for the compositor thread to begin processing a
@@ -4626,6 +4632,18 @@ be describing additional metrics about the same event.
       sampled frame, in microseconds.
     </summary>
   </metric>
+  <metric name="VisualUpdateDelay">
+    <summary>
+      Time elapsed between when an animation update is first scheduled and when
+      the resulting BeginMainFrame starts.
+    </summary>
+  </metric>
+  <metric name="VisualUpdateDelayBeginMainFrame">
+    <summary>
+      Time elapsed between when an animation update is first scheduled and when
+      the resulting BeginMainFrame starts.
+    </summary>
+  </metric>
   <metric name="WaitForCommit">
     <summary>
       The time spent waiting for the compositor thread to begin processing a
@@ -5052,6 +5070,26 @@ be describing additional metrics about the same event.
       A unique number that represent order of an event. Used combined with
       &quot;SmartCharging&quot;'s EventId to reconstruct charge history.
     </summary>
+  </metric>
+</event>
+
+<event name="ChromeOS.DeviceManagement">
+  <owner>siakabaro@google.com</owner>
+  <summary>
+    Records the ChromeOS device management state. This event is recorded once
+    per UKM report and is not associated with a source URL.
+  </summary>
+  <metric name="EnrollmentStatus" enum="EnrollmentStatus">
+    <summary>
+      An enum value representing the enrollment status of a ChromeOS device.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 

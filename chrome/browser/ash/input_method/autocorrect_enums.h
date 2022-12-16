@@ -35,7 +35,8 @@ enum class AutocorrectPrefStateTransition {
   kDefaultToForceEnabled = 5,
   kForceEnabledToDisabled = 6,
   kForceEnabledToDefault = 7,
-  kMaxValue = kForceEnabledToDefault,
+  kForceEnabledToEnabled = 8,
+  kMaxValue = kForceEnabledToEnabled,
 };
 
 // Must match with IMEAutocorrectCompatibilitySummary in enums.xml
@@ -57,6 +58,28 @@ enum class AutocorrectCompatibilitySummary {
   kVeryFastExitField = 11,
   kFastExitField = 12,
   kMaxValue = kFastExitField,
+};
+
+// Must match with IMEAutocorrectRejectionBreakdown in enums.xml
+//
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class AutocorrectRejectionBreakdown {
+  kSuggestionRejected = 0,
+  kRejectionOther = 1,
+  kUndoWithoutKeyboard = 2,
+  kUndoWithKeyboard = 3,
+  kUndoCtrlZ = 4,
+  kRejectedBackspace = 5,
+  kRejectedCtrlBackspace = 6,
+  kRejectedTypingFull = 7,
+  kRejectedTypingPartial = 8,
+  kRejectedTypingFullWithExternal = 9,
+  kRejectedTypingPartialWithExternal = 10,
+  kRemovedLetters = 11,
+  kRejectedTypingNoSelection = 12,
+  kRejectedSelectedInvalidRange = 13,
+  kMaxValue = kRejectedSelectedInvalidRange,
 };
 
 }  // namespace input_method

@@ -42,7 +42,6 @@
 #include "weblayer/common/weblayer_paths.h"
 #include "weblayer/public/common/switches.h"
 #include "weblayer/renderer/content_renderer_client_impl.h"
-#include "weblayer/utility/content_utility_client_impl.h"
 
 #if BUILDFLAG(IS_ANDROID)
 #include "base/android/apk_assets.h"
@@ -195,9 +194,6 @@ absl::optional<int> ContentMainDelegateImpl::BasicStartupComplete() {
     &blink::features::kAnonymousIframeOriginTrial,
 
 #if BUILDFLAG(IS_ANDROID)
-    // TODO(crbug.com/1131016): Support Picture in Picture API on WebLayer.
-    &media::kPictureInPictureAPI,
-
     &::features::kDynamicColorGamut,
 #else
     // WebOTP is supported only on Android in WebLayer.
@@ -450,12 +446,6 @@ content::ContentRendererClient*
 ContentMainDelegateImpl::CreateContentRendererClient() {
   renderer_client_ = std::make_unique<ContentRendererClientImpl>();
   return renderer_client_.get();
-}
-
-content::ContentUtilityClient*
-ContentMainDelegateImpl::CreateContentUtilityClient() {
-  utility_client_ = std::make_unique<ContentUtilityClientImpl>();
-  return utility_client_.get();
 }
 
 }  // namespace weblayer

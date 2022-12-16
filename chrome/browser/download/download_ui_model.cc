@@ -334,17 +334,17 @@ std::u16string DownloadUIModel::GetWarningText(const std::u16string& filename,
       break;
   }
 
-  switch (GetMixedContentStatus()) {
-    case download::DownloadItem::MixedContentStatus::BLOCK:
-      return l10n_util::GetStringFUTF16(
-          IDS_PROMPT_DOWNLOAD_MIXED_CONTENT_BLOCKED, filename, offset);
-    case download::DownloadItem::MixedContentStatus::WARN:
-      return l10n_util::GetStringFUTF16(
-          IDS_PROMPT_DOWNLOAD_MIXED_CONTENT_WARNING, filename, offset);
-    case download::DownloadItem::MixedContentStatus::UNKNOWN:
-    case download::DownloadItem::MixedContentStatus::SAFE:
-    case download::DownloadItem::MixedContentStatus::VALIDATED:
-    case download::DownloadItem::MixedContentStatus::SILENT_BLOCK:
+  switch (GetInsecureDownloadStatus()) {
+    case download::DownloadItem::InsecureDownloadStatus::BLOCK:
+      return l10n_util::GetStringFUTF16(IDS_PROMPT_DOWNLOAD_INSECURE_BLOCKED,
+                                        filename, offset);
+    case download::DownloadItem::InsecureDownloadStatus::WARN:
+      return l10n_util::GetStringFUTF16(IDS_PROMPT_DOWNLOAD_INSECURE_WARNING,
+                                        filename, offset);
+    case download::DownloadItem::InsecureDownloadStatus::UNKNOWN:
+    case download::DownloadItem::InsecureDownloadStatus::SAFE:
+    case download::DownloadItem::InsecureDownloadStatus::VALIDATED:
+    case download::DownloadItem::InsecureDownloadStatus::SILENT_BLOCK:
       break;
   }
 
@@ -407,7 +407,7 @@ bool DownloadUIModel::IsMalicious() const {
   return false;
 }
 
-bool DownloadUIModel::IsMixedContent() const {
+bool DownloadUIModel::IsInsecure() const {
   return false;
 }
 
@@ -468,9 +468,9 @@ DownloadFileType::DangerLevel DownloadUIModel::GetDangerLevel() const {
 void DownloadUIModel::SetDangerLevel(
     DownloadFileType::DangerLevel danger_level) {}
 
-download::DownloadItem::MixedContentStatus
-DownloadUIModel::GetMixedContentStatus() const {
-  return download::DownloadItem::MixedContentStatus::UNKNOWN;
+download::DownloadItem::InsecureDownloadStatus
+DownloadUIModel::GetInsecureDownloadStatus() const {
+  return download::DownloadItem::InsecureDownloadStatus::UNKNOWN;
 }
 
 void DownloadUIModel::OpenUsingPlatformHandler() {}
@@ -623,7 +623,7 @@ bool DownloadUIModel::IsCommandEnabled(
     case DownloadCommands::KEEP:
     case DownloadCommands::LEARN_MORE_SCANNING:
     case DownloadCommands::LEARN_MORE_INTERRUPTED:
-    case DownloadCommands::LEARN_MORE_MIXED_CONTENT:
+    case DownloadCommands::LEARN_MORE_INSECURE_DOWNLOAD:
     case DownloadCommands::DEEP_SCAN:
     case DownloadCommands::BYPASS_DEEP_SCANNING:
     case DownloadCommands::REVIEW:
@@ -653,7 +653,7 @@ bool DownloadUIModel::IsCommandChecked(
     case DownloadCommands::KEEP:
     case DownloadCommands::LEARN_MORE_SCANNING:
     case DownloadCommands::LEARN_MORE_INTERRUPTED:
-    case DownloadCommands::LEARN_MORE_MIXED_CONTENT:
+    case DownloadCommands::LEARN_MORE_INSECURE_DOWNLOAD:
     case DownloadCommands::COPY_TO_CLIPBOARD:
     case DownloadCommands::DEEP_SCAN:
     case DownloadCommands::BYPASS_DEEP_SCANNING:
@@ -692,9 +692,9 @@ void DownloadUIModel::ExecuteCommand(DownloadCommands* download_commands,
           content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
           ui::PAGE_TRANSITION_LINK, false));
       break;
-    case DownloadCommands::LEARN_MORE_MIXED_CONTENT:
+    case DownloadCommands::LEARN_MORE_INSECURE_DOWNLOAD:
       download_commands->GetBrowser()->OpenURL(content::OpenURLParams(
-          GURL(chrome::kMixedContentDownloadBlockingLearnMoreUrl),
+          GURL(chrome::kInsecureDownloadBlockingLearnMoreUrl),
           content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
           ui::PAGE_TRANSITION_LINK, false));
       break;
@@ -908,9 +908,9 @@ DownloadUIModel::BubbleUIInfo DownloadUIModel::GetBubbleUIInfoForInterrupted(
 DownloadUIModel::BubbleUIInfo
 DownloadUIModel::GetBubbleUIInfoForInProgressOrComplete(
     bool is_download_bubble_v2) const {
-  switch (GetMixedContentStatus()) {
-    case download::DownloadItem::MixedContentStatus::BLOCK:
-    case download::DownloadItem::MixedContentStatus::WARN:
+  switch (GetInsecureDownloadStatus()) {
+    case download::DownloadItem::InsecureDownloadStatus::BLOCK:
+    case download::DownloadItem::InsecureDownloadStatus::WARN:
       return DownloadUIModel::BubbleUIInfo(
                  l10n_util::GetStringUTF16(
                      IDS_DOWNLOAD_BUBBLE_WARNING_SUBPAGE_SUMMARY_INSECURE))
@@ -923,10 +923,10 @@ DownloadUIModel::GetBubbleUIInfoForInProgressOrComplete(
           .AddSubpageButton(
               l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_CONTINUE),
               DownloadCommands::Command::KEEP, /*is_prominent=*/false);
-    case download::DownloadItem::MixedContentStatus::UNKNOWN:
-    case download::DownloadItem::MixedContentStatus::SAFE:
-    case download::DownloadItem::MixedContentStatus::VALIDATED:
-    case download::DownloadItem::MixedContentStatus::SILENT_BLOCK:
+    case download::DownloadItem::InsecureDownloadStatus::UNKNOWN:
+    case download::DownloadItem::InsecureDownloadStatus::SAFE:
+    case download::DownloadItem::InsecureDownloadStatus::VALIDATED:
+    case download::DownloadItem::InsecureDownloadStatus::SILENT_BLOCK:
       break;
   }
 
@@ -1355,15 +1355,15 @@ DownloadUIModel::BubbleStatusTextBuilder::GetBubbleWarningStatusText() const {
         l10n_util::GetStringUTF16(detail_message_id));
   };
 
-  switch (model_->GetMixedContentStatus()) {
-    case download::DownloadItem::MixedContentStatus::BLOCK:
-    case download::DownloadItem::MixedContentStatus::WARN:
+  switch (model_->GetInsecureDownloadStatus()) {
+    case download::DownloadItem::InsecureDownloadStatus::BLOCK:
+    case download::DownloadItem::InsecureDownloadStatus::WARN:
       // "Blocked • Insecure download"
       return get_blocked_warning(IDS_DOWNLOAD_BUBBLE_WARNING_STATUS_INSECURE);
-    case download::DownloadItem::MixedContentStatus::UNKNOWN:
-    case download::DownloadItem::MixedContentStatus::SAFE:
-    case download::DownloadItem::MixedContentStatus::VALIDATED:
-    case download::DownloadItem::MixedContentStatus::SILENT_BLOCK:
+    case download::DownloadItem::InsecureDownloadStatus::UNKNOWN:
+    case download::DownloadItem::InsecureDownloadStatus::SAFE:
+    case download::DownloadItem::InsecureDownloadStatus::VALIDATED:
+    case download::DownloadItem::InsecureDownloadStatus::SILENT_BLOCK:
       break;
   }
 
@@ -1780,3 +1780,33 @@ bool DownloadUIModel::ShouldShowDropdown() const {
 void DownloadUIModel::DetermineAndSetShouldPreferOpeningInBrowser(
     const base::FilePath& target_path,
     bool is_filetype_handled_safely) {}
+
+std::u16string DownloadUIModel::GetInProgressAccessibleAlertText() const {
+  // Prefer to announce the time remaining, if known.
+  base::TimeDelta remaining;
+  if (TimeRemaining(&remaining)) {
+    // If complete, skip this round: a completion status update is coming soon.
+    if (remaining.is_zero())
+      return std::u16string();
+
+    const std::u16string remaining_string =
+        ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_REMAINING,
+                               ui::TimeFormat::LENGTH_SHORT, remaining);
+    return l10n_util::GetStringFUTF16(
+        IDS_DOWNLOAD_STATUS_TIME_REMAINING_ACCESSIBLE_ALERT, remaining_string);
+  }
+
+  // Time remaining is unknown, try to announce percent remaining.
+  if (PercentComplete() > 0) {
+    DCHECK_LE(PercentComplete(), 100);
+    return l10n_util::GetStringFUTF16Int(
+        IDS_DOWNLOAD_STATUS_PERCENT_COMPLETE_ACCESSIBLE_ALERT,
+        100 - PercentComplete());
+  }
+
+  // Percent remaining is also unknown, announce bytes to download.
+  return l10n_util::GetStringFUTF16(
+      IDS_DOWNLOAD_STATUS_IN_PROGRESS_ACCESSIBLE_ALERT,
+      ui::FormatBytes(GetTotalBytes()),
+      GetFileNameToReportUser().LossyDisplayName());
+}

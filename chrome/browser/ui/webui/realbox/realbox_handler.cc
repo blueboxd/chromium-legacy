@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_stats.h"
 #include "chrome/browser/ui/omnibox/omnibox_pedal_implementations.h"
 #include "chrome/browser/ui/search/omnibox_utils.h"
+#include "chrome/browser/ui/webui/metrics_reporter/metrics_reporter.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/new_tab_page_resources.h"
@@ -259,7 +260,9 @@ std::vector<omnibox::mojom::AutocompleteMatchPtr> CreateAutocompleteMatches(
           std::u16string(), kTabIconResourceName);
     }
 
-    if (match.action &&
+    // Omit actions that takeover the whole match, because the C++ handler
+    // remaps the navigation to execute the action. (Doesn't happen in the JS.)
+    if (match.action && !match.action->TakesOverMatch() &&
         base::FeatureList::IsEnabled(omnibox::kNtpRealboxPedals)) {
       const OmniboxAction::LabelStrings& label_strings =
           match.action->GetLabelStrings();
@@ -499,9 +502,11 @@ std::string RealboxHandler::PedalVectorIconToResourceName(
 RealboxHandler::RealboxHandler(
     mojo::PendingReceiver<omnibox::mojom::PageHandler> pending_page_handler,
     Profile* profile,
-    content::WebContents* web_contents)
+    content::WebContents* web_contents,
+    MetricsReporter* metrics_reporter)
     : profile_(profile),
       web_contents_(web_contents),
+      metrics_reporter_(metrics_reporter),
       page_handler_(this, std::move(pending_page_handler)) {
   controller_emitter_observation_.Observe(
       OmniboxControllerEmitter::GetForBrowserContext(profile_));
@@ -581,6 +586,11 @@ void RealboxHandler::OpenAutocompleteMatch(
   }
 
   AutocompleteMatch match(autocomplete_controller_->result().match_at(line));
+  if (match.action && match.action->TakesOverMatch()) {
+    return ExecuteAction(line, base::TimeTicks::Now(), mouse_button, alt_key,
+                         ctrl_key, meta_key, shift_key);
+  }
+
   if (match.destination_url != url) {
     // TODO(https://crbug.com/1020025): this could be malice or staleness.
     // Either way: don't navigate.
@@ -695,7 +705,7 @@ void RealboxHandler::OpenAutocompleteMatch(
 void RealboxHandler::OnNavigationLikely(
     uint8_t line,
     omnibox::mojom::NavigationPredictor navigation_predictor) {
-  if (line > autocomplete_controller_->result().size())
+  if (line >= autocomplete_controller_->result().size())
     return;
   if (auto* search_prefetch_service =
           SearchPrefetchServiceFactory::GetForProfile(profile_)) {
@@ -795,6 +805,10 @@ void RealboxHandler::OnResultChanged(AutocompleteController* controller,
   if (!autocomplete_controller_ ||
       autocomplete_controller_.get() != controller) {
     return;
+  }
+
+  if (metrics_reporter_ && !metrics_reporter_->HasLocalMark("ResultChanged")) {
+    metrics_reporter_->Mark("ResultChanged");
   }
 
   page_->AutocompleteResultChanged(CreateAutocompleteResult(

@@ -64,7 +64,7 @@
 <translation id="2701330563083355633"><ph name="DEVICE_NAME" /> నుండి షేర్ చేయబడింది</translation>
 <translation id="271033894570825754">కొత్తది</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 సంవత్సరం క్రితం}other{# సంవత్సరాల క్రితం}}</translation>
-<translation id="2878511608894704031">అన్నీ తొలగించు</translation>
+<translation id="2878511608894704031">అన్నీ తొలగించండి</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{1 రోజులో}other{# రోజులో}}</translation>
 <translation id="2922712708897119705"><ph name="COLUMN_NAME" /> నిలువు వరుస అవరోహణ క్రమపద్ధతిలో అమర్చబడింది.</translation>
 <translation id="3036649622769666520">ఫైళ్ళను తెరువు</translation>
@@ -100,7 +100,7 @@
 <translation id="4031910098617850788">F5</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 చదవని నోటిఫికేషన్ ఉంది}other{# చదవని నోటిఫికేషన్‌లు ఉన్నాయి}}</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 నెల క్రితం}other{# నెలల క్రితం}}</translation>
-<translation id="4289300219472526559">మాట్లాడటాన్ని ప్రారంభించు</translation>
+<translation id="4289300219472526559">మాట్లాడటాన్ని ప్రారంభించండి</translation>
 <translation id="4289540628985791613">స్థూలదృష్టి</translation>
 <translation id="4306392492252714209">క్లిప్‌బోర్డ్ నుండి తీసివేయండి.</translation>
 <translation id="4491109536499578614">చిత్రం</translation>

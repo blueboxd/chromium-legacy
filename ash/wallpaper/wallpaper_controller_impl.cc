@@ -1139,6 +1139,13 @@ void WallpaperControllerImpl::SetOnlineWallpaperIfExists(
     return;
   }
 
+  if (current_wallpaper_ && current_wallpaper_->wallpaper_info().MatchesAsset(
+                                WallpaperInfo(params))) {
+    DVLOG(1) << "Detected no change in online wallpaper";
+    std::move(callback).Run(/*success=*/true);
+    return;
+  }
+
   for (auto& observer : observers_)
     observer.OnOnlineWallpaperSet(params);
 
@@ -1160,30 +1167,6 @@ void WallpaperControllerImpl::SetOnlineWallpaperIfExists(
             set_wallpaper_weak_factory_.GetWeakPtr(), std::move(callback),
             params));
   }
-}
-
-void WallpaperControllerImpl::SetOnlineWallpaperFromData(
-    const OnlineWallpaperParams& params,
-    const std::string& image_data,
-    SetWallpaperCallback callback) {
-  if (!Shell::Get()->session_controller()->IsActiveUserSessionStarted() ||
-      !CanSetUserWallpaper(params.account_id)) {
-    std::move(callback).Run(/*success=*/false);
-    return;
-  }
-
-  image_util::DecodeImageCallback decoded_callback =
-      base::BindOnce(&WallpaperControllerImpl::OnOnlineWallpaperDecoded,
-                     weak_factory_.GetWeakPtr(), params, /*save_file=*/true,
-                     std::move(callback));
-  if (bypass_decode_for_testing_) {
-    std::move(decoded_callback)
-        .Run(CreateSolidColorWallpaper(kDefaultWallpaperColor));
-    return;
-  }
-  image_util::DecodeImageData(std::move(decoded_callback),
-                              data_decoder::mojom::ImageCodec::kDefault,
-                              image_data);
 }
 
 void WallpaperControllerImpl::SetGooglePhotosWallpaper(
@@ -3084,7 +3067,7 @@ void WallpaperControllerImpl::SyncLocalAndRemotePrefs(
     HandleWallpaperInfoSyncedIn(account_id, synced_info);
     return;
   }
-  if (synced_info == local_info)
+  if (synced_info.MatchesSelection(local_info))
     return;
   if (synced_info.date >= local_info.date) {
     // If synced is newer or the same age, it wins.

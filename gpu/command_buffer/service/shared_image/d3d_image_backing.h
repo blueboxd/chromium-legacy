@@ -88,7 +88,8 @@ class GPU_GLES2_EXPORT D3DImageBacking
       SkAlphaType alpha_type,
       uint32_t usage,
       Microsoft::WRL::ComPtr<ID3D11Texture2D> d3d11_texture,
-      scoped_refptr<gles2::TexturePassthrough> gl_texture);
+      scoped_refptr<gles2::TexturePassthrough> gl_texture,
+      size_t array_slice);
 
   // Helper used by D3D11VideoDecoder to create backings directly.
   static std::vector<std::unique_ptr<SharedImageBacking>>
@@ -131,6 +132,8 @@ class GPU_GLES2_EXPORT D3DImageBacking
   void EndAccessDawn(WGPUDevice device, WGPUTexture texture);
 #endif
 
+  absl::optional<gl::DCLayerOverlayImage> GetDCLayerOverlayImage();
+
   scoped_refptr<DXGISharedHandleState> dxgi_shared_handle_state_for_testing()
       const {
     return dxgi_shared_handle_state_;
@@ -163,6 +166,11 @@ class GPU_GLES2_EXPORT D3DImageBacking
       SharedImageManager* manager,
       MemoryTypeTracker* tracker,
       scoped_refptr<SharedContextState> context_state) override;
+
+  std::unique_ptr<VideoDecodeImageRepresentation> ProduceVideoDecode(
+      SharedImageManager* manager,
+      MemoryTypeTracker* tracker,
+      VideoDecodeDevice device) override;
 
  private:
 #if BUILDFLAG(USE_DAWN)

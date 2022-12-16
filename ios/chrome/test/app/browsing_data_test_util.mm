@@ -62,9 +62,9 @@ bool ClearBrowsingHistory() {
                            BrowsingDataRemoveMask::REMOVE_HISTORY);
 }
 
-bool ClearBrowsingCookies() {
+bool ClearCookiesAndSiteData() {
   return ClearBrowsingData(/*off_the_record=*/false,
-                           BrowsingDataRemoveMask::REMOVE_COOKIES);
+                           BrowsingDataRemoveMask::REMOVE_SITE_DATA);
 }
 
 bool ClearAllBrowsingData(bool off_the_record) {

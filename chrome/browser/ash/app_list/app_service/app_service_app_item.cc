@@ -22,11 +22,11 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
+#include "chrome/browser/ash/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ash/app_list/app_service/app_service_context_menu.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/remote_apps/remote_apps_manager.h"
 #include "chrome/browser/ash/remote_apps/remote_apps_manager_factory.h"
-#include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 
@@ -61,6 +61,7 @@ bool IsNewInstall(const apps::AppUpdate& app_update) {
     case apps::AppType::kWeb:
     case apps::AppType::kPluginVm:
     case apps::AppType::kBorealis:
+    case apps::AppType::kBruschetta:
     case apps::AppType::kStandaloneBrowserChromeApp:
     case apps::AppType::kStandaloneBrowserExtension:
       // Other app types are user-installed.

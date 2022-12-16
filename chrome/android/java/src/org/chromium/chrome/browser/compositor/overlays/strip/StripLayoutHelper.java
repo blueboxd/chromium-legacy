@@ -51,10 +51,14 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiThemeProvider;
+import org.chromium.components.browser_ui.styles.ChromeColors;
+import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.components.browser_ui.widget.animation.Interpolators;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.LocalizationUtils;
+import org.chromium.ui.util.ColorUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -128,14 +132,22 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     private static final float REORDER_EDGE_SCROLL_START_MIN_DP = 87.4f;
     private static final float REORDER_EDGE_SCROLL_START_MAX_DP = 18.4f;
     private static final float NEW_TAB_BUTTON_Y_OFFSET_DP = 10.f;
+    private static final float NEW_TAB_BUTTON_BACKGROUND_Y_OFFSET_DP = 0.f;
     private static final float NEW_TAB_BUTTON_CLICK_SLOP_DP = 12.f;
     private static final float NEW_TAB_BUTTON_WIDTH_DP = 24.f;
     private static final float NEW_TAB_BUTTON_HEIGHT_DP = 24.f;
+    private static final float NEW_TAB_BUTTON_BACKGROUND_WIDTH_DP_FOLIO = 36.f;
+    private static final float NEW_TAB_BUTTON_BACKGROUND_HEIGHT_DP_FOLIO = 36.f;
+    private static final float NEW_TAB_BUTTON_BACKGROUND_WIDTH_DP_DETACHED = 38.f;
+    private static final float NEW_TAB_BUTTON_BACKGROUND_HEIGHT_DP_DETACHED = 38.f;
     private static final float NEW_TAB_BUTTON_PADDING_DP = 24.f;
     private static final float NEW_TAB_BUTTON_TOUCH_TARGET_OFFSET = 12.f;
     private static final float FOLIO_ATTACHED_BOTTOM_MARGIN_DP = 0.f;
     private static final float FOLIO_ANIM_INTERMEDIATE_MARGIN_DP = -12.f;
     private static final float FOLIO_DETACHED_BOTTOM_MARGIN_DP = 4.f;
+    private static final float NEW_TAB_BUTTON_DESIRED_TOUCH_TARGET_SIZE = 48.f;
+    private static final float NEW_TAB_BUTTON_DEFAULT_PRESSED_OPACITY = 0.2f;
+    private static final float NEW_TAB_BUTTON_DARK_DETACHED_OPACITY = 0.15f;
     static final float BACKGROUND_TAB_BRIGHTNESS_DEFAULT = 1.f;
     static final float BACKGROUND_TAB_BRIGHTNESS_DIMMED = 0.65f;
     static final float DIVIDER_HIDDEN_OPACITY = 0.f;
@@ -242,7 +254,15 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     public StripLayoutHelper(Context context, LayoutUpdateHost updateHost,
             LayoutRenderHost renderHost, boolean incognito, CompositorButton modelSelectorButton) {
         mTabOverlapWidth = TAB_OVERLAP_WIDTH_DP;
-        mNewTabButtonWidth = NEW_TAB_BUTTON_WIDTH_DP;
+        if (ChromeFeatureList.sTabStripRedesign.isEnabled()) {
+            if (TabUiFeatureUtilities.isTabStripFolioEnabled()) {
+                mNewTabButtonWidth = NEW_TAB_BUTTON_BACKGROUND_WIDTH_DP_FOLIO;
+            } else {
+                mNewTabButtonWidth = NEW_TAB_BUTTON_BACKGROUND_WIDTH_DP_DETACHED;
+            }
+        } else {
+            mNewTabButtonWidth = NEW_TAB_BUTTON_WIDTH_DP;
+        }
         mModelSelectorButton = modelSelectorButton;
         mTabStripImpEnabled = ChromeFeatureList.sTabStripImprovements.isEnabled();
 
@@ -264,14 +284,78 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
                 handleNewTabClick();
             }
         };
-        mNewTabButton = new TintedCompositorButton(context, NEW_TAB_BUTTON_WIDTH_DP,
-                NEW_TAB_BUTTON_HEIGHT_DP, newTabClickHandler, R.drawable.ic_new_tab_button);
 
-        mNewTabButton.setTintResources(R.color.new_tab_button_tint_list,
-                R.color.new_tab_button_pressed_tint_list, R.color.modern_white,
-                R.color.default_icon_color_blue_light);
+        if (ChromeFeatureList.sTabStripRedesign.isEnabled()) {
+            // Set new tab button background resource based on which TSR is enabled, background has
+            // different size.
+            if (TabUiFeatureUtilities.isTabStripFolioEnabled()) {
+                // Tab strip redesign folio enabled, bg size 36 * 36.
+                mNewTabButton = new TintedCompositorButton(context,
+                        NEW_TAB_BUTTON_BACKGROUND_WIDTH_DP_FOLIO,
+                        NEW_TAB_BUTTON_BACKGROUND_HEIGHT_DP_FOLIO, newTabClickHandler,
+                        R.drawable.ic_new_tab_button);
+                mNewTabButton.setBackgroundResourceId(R.drawable.bg_circle_new_tab_button_folio);
+            } else {
+                // Tab strip redesign detached enabled, bg size 38 * 38.
+                mNewTabButton = new TintedCompositorButton(context,
+                        NEW_TAB_BUTTON_BACKGROUND_WIDTH_DP_DETACHED,
+                        NEW_TAB_BUTTON_BACKGROUND_HEIGHT_DP_DETACHED, newTabClickHandler,
+                        R.drawable.ic_new_tab_button);
+                mNewTabButton.setBackgroundResourceId(R.drawable.bg_circle_new_tab_button_detached);
+            }
+
+            // Primary container for default bg color.
+            int defaultBackgroundTint = TabUiThemeProvider.getDefaultContainerColor(context);
+
+            // Primary @ 20% for default pressed bg color.
+            int pressedBackgroundTint = androidx.core.graphics.ColorUtils.setAlphaComponent(
+                    SemanticColorUtils.getDefaultIconColorAccent1(context),
+                    (int) (NEW_TAB_BUTTON_DEFAULT_PRESSED_OPACITY * 255));
+
+            // Surface 2 baseline for folio, surface 3 baseline for detached incognito bg color.
+            int incognitoBackgroundTint = TabUiFeatureUtilities.isTabStripFolioEnabled()
+                    ? context.getResources().getColor(R.color.default_bg_color_dark_elev_2_baseline)
+                    : context.getResources().getColor(
+                            R.color.default_bg_color_dark_elev_3_baseline);
+
+            // surface 5 baseline for incognito pressed bg color
+            int incognitoBackgroundPressedTint =
+                    context.getResources().getColor(R.color.default_bg_color_dark_elev_5_baseline);
+
+            // Tab strip redesign new tab button night mode bg color.
+            if (ColorUtils.inNightMode(context)) {
+                // Surface 1 for folio night mode bg color.
+                if (TabUiFeatureUtilities.isTabStripFolioEnabled()) {
+                    defaultBackgroundTint =
+                            ChromeColors.getSurfaceColor(context, R.dimen.default_elevation_1);
+                } else {
+                    // Primary @ 15% for detached night mode bg color.
+                    defaultBackgroundTint = androidx.core.graphics.ColorUtils.setAlphaComponent(
+                            SemanticColorUtils.getDefaultIconColorAccent1(context),
+                            (int) (NEW_TAB_BUTTON_DARK_DETACHED_OPACITY * 255));
+                }
+                // Surface 5 for pressed night mode bg color.
+                pressedBackgroundTint =
+                        ChromeColors.getSurfaceColor(context, R.dimen.default_elevation_5);
+            }
+            mNewTabButton.setBackgroundTint(defaultBackgroundTint, pressedBackgroundTint,
+                    incognitoBackgroundTint, incognitoBackgroundPressedTint);
+
+            // No pressed state color change for new tab button icon when TSR enabled.
+            mNewTabButton.setTintResources(R.color.default_icon_color_tint_list,
+                    R.color.default_icon_color_tint_list, R.color.modern_white,
+                    R.color.modern_white);
+            mNewTabButton.setY(NEW_TAB_BUTTON_BACKGROUND_Y_OFFSET_DP);
+        } else {
+            // when TSR disabled
+            mNewTabButton = new TintedCompositorButton(context, NEW_TAB_BUTTON_WIDTH_DP,
+                    NEW_TAB_BUTTON_HEIGHT_DP, newTabClickHandler, R.drawable.ic_new_tab_button);
+            mNewTabButton.setTintResources(R.color.new_tab_button_tint_list,
+                    R.color.new_tab_button_pressed_tint_list, R.color.modern_white,
+                    R.color.default_icon_color_blue_light);
+            mNewTabButton.setY(NEW_TAB_BUTTON_Y_OFFSET_DP);
+        }
         mNewTabButton.setIncognito(incognito);
-        mNewTabButton.setY(NEW_TAB_BUTTON_Y_OFFSET_DP);
         mNewTabButton.setClickSlop(NEW_TAB_BUTTON_CLICK_SLOP_DP);
         Resources res = context.getResources();
         mNewTabButton.setAccessibilityDescription(
@@ -352,6 +436,11 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
      */
     public float getNewTabButtonTouchTargetOffset() {
         boolean isRtl = LocalizationUtils.isLayoutRtl();
+        if (ChromeFeatureList.sTabStripRedesign.isEnabled()) {
+            float newTabButtonTouchTargetOffsetTSR =
+                    (NEW_TAB_BUTTON_DESIRED_TOUCH_TARGET_SIZE - mNewTabButtonWidth) / 2;
+            return isRtl ? newTabButtonTouchTargetOffsetTSR : -newTabButtonTouchTargetOffsetTSR;
+        }
         return isRtl ? NEW_TAB_BUTTON_TOUCH_TARGET_OFFSET : -NEW_TAB_BUTTON_TOUCH_TARGET_OFFSET;
     }
 
@@ -1583,7 +1672,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         // 2. Get offset from strip stacker.
         float offset = mStripStacker.computeNewTabButtonOffset(mStripTabs, mTabOverlapWidth,
                 mLeftMargin, mRightMargin, mWidth, mNewTabButtonWidth,
-                NEW_TAB_BUTTON_TOUCH_TARGET_OFFSET, mCachedTabWidth, animate);
+                Math.abs(getNewTabButtonTouchTargetOffset()), mCachedTabWidth, animate);
 
         // 3. Hide the new tab button if it's not visible on the screen.
         boolean isRtl = LocalizationUtils.isLayoutRtl();
@@ -1601,7 +1690,6 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         } else {
             mNewTabButton.setX(offset);
         }
-
         return null;
     }
 
@@ -1740,16 +1828,15 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         return tab == mStripTabsVisuallyOrdered[mStripTabsVisuallyOrdered.length - 1];
     }
 
-    private void updateFolioTabAttachState(StripLayoutTab tab, boolean attached) {
-        finishAnimationsAndPushTabUpdates();
-
+    private void updateFolioTabAttachState(
+            StripLayoutTab tab, boolean attached, ArrayList<Animator> animationList) {
         float startValue =
                 attached ? FOLIO_DETACHED_BOTTOM_MARGIN_DP : FOLIO_ATTACHED_BOTTOM_MARGIN_DP;
         float intermediateValue = FOLIO_ANIM_INTERMEDIATE_MARGIN_DP;
         float endValue =
                 attached ? FOLIO_ATTACHED_BOTTOM_MARGIN_DP : FOLIO_DETACHED_BOTTOM_MARGIN_DP;
 
-        ArrayList<Animator> animationList = new ArrayList<>();
+        ArrayList<Animator> attachAnimationList = new ArrayList<>();
         CompositorAnimator dropAnimation = CompositorAnimator.ofFloatProperty(
                 mUpdateHost.getAnimationHandler(), tab, StripLayoutTab.BOTTOM_MARGIN, startValue,
                 intermediateValue, ANIM_FOLIO_DETACH_MS, Interpolators.EMPHASIZED_ACCELERATE);
@@ -1763,13 +1850,17 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
                 tab.setFolioAttached(attached);
             }
         });
-        animationList.add(dropAnimation);
-        animationList.add(riseAnimation);
+        attachAnimationList.add(dropAnimation);
+        attachAnimationList.add(riseAnimation);
 
         AnimatorSet set = new AnimatorSet();
-        set.playSequentially(animationList);
-        mRunningAnimator = set;
-        mRunningAnimator.start();
+        set.playSequentially(attachAnimationList);
+
+        if (animationList == null) {
+            set.end();
+        } else {
+            animationList.add(set);
+        }
     }
 
     @VisibleForTesting
@@ -1790,7 +1881,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     }
 
     private void startReorderMode(long time, float currentX, float startX) {
-        if (mInReorderMode || mTabGroupMarginAnimRunning) return;
+        if (mInReorderMode) return;
         RecordUserAction.record("MobileToolbarStartReorderTab");
         // 1. Reset the last pressed close button state.
         if (mLastPressedCloseButton != null && mLastPressedCloseButton.isPressed()) {
@@ -1803,6 +1894,9 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         if (mInteractingTab == null || mInteractingTab.isDying()) return;
 
         // 3. Set initial state parameters.
+        finishAnimationsAndPushTabUpdates();
+        ArrayList<Animator> animationList =
+                mAnimationsDisabledForTesting ? null : new ArrayList<>();
         mLastReorderScrollTime = INVALID_TIME;
         mHoverStartTime = INVALID_TIME;
         mHoverStartOffset = 0;
@@ -1829,22 +1923,27 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
                     getExpandDuration());
         } else if (TabUiFeatureUtilities.isTabletTabGroupsEnabled(mContext)) {
             Tab tab = getTabById(mInteractingTab.getId());
-            computeAndUpdateTabGroupMargins(true, true);
+            computeAndUpdateTabGroupMargins(true, animationList);
             setTabGroupDimmed(mTabGroupModelFilter.getRootId(tab), false);
             performHapticFeedback(tab);
         }
 
         // 7. Lift the TSR folio container off the toolbar.
         if (TabUiFeatureUtilities.isTabStripFolioEnabled()) {
-            updateFolioTabAttachState(mInteractingTab, false);
+            updateFolioTabAttachState(mInteractingTab, false, animationList);
         }
 
-        // 8. Request an update.
+        // 8. Kick-off animations and request an update.
+        if (animationList != null) {
+            startAnimationList(animationList, getTabGroupMarginAnimatorListener(false));
+        }
         mUpdateHost.requestUpdate();
     }
 
     private void stopReorderMode() {
         if (!mInReorderMode) return;
+        ArrayList<Animator> animationList = null;
+        if (!mAnimationsDisabledForTesting) animationList = new ArrayList<>();
 
         // 1. Reset the state variables.
         mReorderState = REORDER_SCROLL_NONE;
@@ -1852,24 +1951,30 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
 
         // 2. Clear any drag offset.
         finishAnimationsAndPushTabUpdates();
-        mRunningAnimator = CompositorAnimator.ofFloatProperty(mUpdateHost.getAnimationHandler(),
-                mInteractingTab, StripLayoutTab.X_OFFSET, mInteractingTab.getOffsetX(), 0f,
-                ANIM_TAB_MOVE_MS);
-        mRunningAnimator.start();
+        if (animationList != null) {
+            animationList.add(CompositorAnimator.ofFloatProperty(mUpdateHost.getAnimationHandler(),
+                    mInteractingTab, StripLayoutTab.X_OFFSET, mInteractingTab.getOffsetX(), 0f,
+                    ANIM_TAB_MOVE_MS));
+        } else {
+            mInteractingTab.setOffsetX(0f);
+        }
 
         // 3. Un-dim the background tabs and fade-in the new tab & model selector buttons.
         setBackgroundTabsDimmed(false);
         setCompositorButtonsVisible(true);
 
         // 4. Clear any tab group margins if they are enabled.
-        if (TabUiFeatureUtilities.isTabletTabGroupsEnabled(mContext)) resetTabGroupMargins();
+        if (TabUiFeatureUtilities.isTabletTabGroupsEnabled(mContext)) {
+            resetTabGroupMargins(animationList);
+        }
 
         // 5. Reattach the TSR folio container to the toolbar.
         if (TabUiFeatureUtilities.isTabStripFolioEnabled()) {
-            updateFolioTabAttachState(mInteractingTab, true);
+            updateFolioTabAttachState(mInteractingTab, true, animationList);
         }
 
         // 6. Request an update.
+        startAnimationList(animationList, getTabGroupMarginAnimatorListener(true));
         mUpdateHost.requestUpdate();
     }
 
@@ -1885,10 +1990,9 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
             StripLayoutTab tab, float trailingMargin, List<Animator> animationList) {
         if (tab.getTrailingMargin() != trailingMargin) {
             if (animationList != null) {
-                CompositorAnimator animator = CompositorAnimator.ofFloatProperty(
+                animationList.add(CompositorAnimator.ofFloatProperty(
                         mUpdateHost.getAnimationHandler(), tab, StripLayoutTab.TRAILING_MARGIN,
-                        tab.getTrailingMargin(), trailingMargin, ANIM_TAB_SLIDE_OUT_MS);
-                animationList.add(animator);
+                        tab.getTrailingMargin(), trailingMargin, ANIM_TAB_SLIDE_OUT_MS));
             } else {
                 tab.setTrailingMargin(trailingMargin);
             }
@@ -1921,10 +2025,8 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         }
 
         if (animationList != null) {
-            CompositorAnimator scrollAnimator =
-                    CompositorAnimator.ofFloatProperty(mUpdateHost.getAnimationHandler(), this,
-                            SCROLL_OFFSET, startValue, endValue, ANIM_TAB_SLIDE_OUT_MS);
-            animationList.add(scrollAnimator);
+            animationList.add(CompositorAnimator.ofFloatProperty(mUpdateHost.getAnimationHandler(),
+                    this, SCROLL_OFFSET, startValue, endValue, ANIM_TAB_SLIDE_OUT_MS));
         } else {
             mScrollOffset = endValue;
         }
@@ -1945,10 +2047,8 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         };
     }
 
-    private void computeAndUpdateTabGroupMargins(boolean autoScroll, boolean animate) {
-        ArrayList<Animator> animationList = null;
-        if (animate && !mAnimationsDisabledForTesting) animationList = new ArrayList<>();
-
+    private void computeAndUpdateTabGroupMargins(
+            boolean autoScroll, ArrayList<Animator> animationList) {
         // 1. Update the trailing margins for each tab.
         boolean pastInteractingTab = false;
         int numMarginsToSlide = 0;
@@ -1993,17 +2093,11 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         }
 
         // 4. Begin slide-out and scroll animation. Update tab positions.
-        if (animationList != null) {
-            startAnimationList(animationList, getTabGroupMarginAnimatorListener(false));
-        } else {
-            computeTabInitialPositions();
-        }
+        if (animationList == null) computeTabInitialPositions();
     }
 
-    private void resetTabGroupMargins() {
+    private void resetTabGroupMargins(ArrayList<Animator> animationList) {
         assert !mInReorderMode;
-        ArrayList<Animator> animationList = null;
-        if (!mAnimationsDisabledForTesting) animationList = new ArrayList<>();
 
         // 1. Update the trailing margins for each tab.
         boolean pastInteractingTab = false;
@@ -2021,9 +2115,6 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         autoScrollForTabGroupMargins(
                 -mStripStartMarginForReorder, numMarginsToSlide, animationList);
         mStripStartMarginForReorder = 0f;
-
-        // 3. Begin slide-out and scroll animation.
-        startAnimationList(animationList, getTabGroupMarginAnimatorListener(true));
     }
 
     private void setCompositorButtonsVisible(boolean visible) {
@@ -2271,7 +2362,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
             float oldIdealX = mInteractingTab.getIdealX();
             float oldOffset = mScrollOffset;
             if (TabUiFeatureUtilities.isTabletTabGroupsEnabled(mContext)) {
-                computeAndUpdateTabGroupMargins(false, false);
+                computeAndUpdateTabGroupMargins(false, null);
             }
 
             // 3.d. Since we just moved the tab we're dragging, adjust its offset so it stays in

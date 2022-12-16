@@ -69,8 +69,9 @@ void ReadingListManagerImpl::ReadingListModelLoaded(
     const ReadingListModel* model) {
   // Constructs the bookmark tree.
   root_->DeleteAll();
-  for (const auto& url : model->Keys())
+  for (const auto& url : model->GetKeys()) {
     AddOrUpdateBookmark(model->GetEntryByURL(url));
+  }
 
   loaded_ = true;
 
@@ -98,6 +99,15 @@ void ReadingListManagerImpl::ReadingListDidMoveEntry(
   const auto* moved_entry = reading_list_model_->GetEntryByURL(url);
   DCHECK(moved_entry);
   AddOrUpdateBookmark(moved_entry);
+}
+
+void ReadingListManagerImpl::ReadingListDidUpdateEntry(
+    const ReadingListModel* model,
+    const GURL& url) {
+  DCHECK(reading_list_model_->loaded());
+  const auto* updated_entry = reading_list_model_->GetEntryByURL(url);
+  DCHECK(updated_entry);
+  AddOrUpdateBookmark(updated_entry);
 }
 
 void ReadingListManagerImpl::ReadingListDidApplyChanges(
@@ -137,8 +147,9 @@ const BookmarkNode* ReadingListManagerImpl::Add(const GURL& url,
     return nullptr;
 
   // Add or swap the reading list entry.
-  const auto& new_entry = reading_list_model_->AddEntry(
-      url, title, reading_list::ADDED_VIA_CURRENT_APP);
+  const auto& new_entry = reading_list_model_->AddOrReplaceEntry(
+      url, title, reading_list::ADDED_VIA_CURRENT_APP,
+      /*estimated_read_time=*/base::TimeDelta());
   const auto* node = FindBookmarkByURL(new_entry.URL());
   return node;
 }
@@ -210,13 +221,28 @@ size_t ReadingListManagerImpl::unread_size() const {
   return reading_list_model_->unread_size();
 }
 
+void ReadingListManagerImpl::SetTitle(const GURL& url,
+                                      const std::u16string& title) {
+  DCHECK(reading_list_model_->loaded());
+  const auto* entry = reading_list_model_->GetEntryByURL(url);
+  if (!entry)
+    return;
+
+  std::string str_title;
+  if (!base::UTF16ToUTF8(title.c_str(), title.size(), &str_title)) {
+    LOG(ERROR) << "Failed to convert the following title to string16:" << title;
+    return;
+  }
+  reading_list_model_->SetEntryTitleIfExists(url, str_title);
+}
+
 void ReadingListManagerImpl::SetReadStatus(const GURL& url, bool read) {
   DCHECK(reading_list_model_->loaded());
   const auto* entry = reading_list_model_->GetEntryByURL(url);
   if (!entry)
     return;
 
-  reading_list_model_->SetReadStatus(url, read);
+  reading_list_model_->SetReadStatusIfExists(url, read);
   auto* node = FindBookmarkByURL(url);
   if (node) {
     node->SetMetaInfo(kReadStatusKey,

@@ -152,7 +152,6 @@ class SchemeHostPort;
 namespace content {
 
 class AgentSchedulingGroup;
-class AXTreeDistiller;
 class BlinkInterfaceRegistryImpl;
 class DocumentState;
 class MediaPermissionDispatcher;
@@ -597,10 +596,6 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::UseCounterFeature& feature) override;
   void DidObserveSoftNavigation(uint32_t count) override;
   void DidObserveLayoutShift(double score, bool after_input_or_scroll) override;
-  void DidObserveLayoutNg(uint32_t all_block_count,
-                          uint32_t ng_block_count,
-                          uint32_t all_call_count,
-                          uint32_t ng_call_count) override;
   void DidCreateScriptContext(v8::Local<v8::Context> context,
                               int world_id) override;
   void WillReleaseScriptContext(v8::Local<v8::Context> context,
@@ -869,8 +864,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void SnapshotAccessibilityTree(
       mojom::SnapshotAccessibilityTreeParamsPtr params,
       SnapshotAccessibilityTreeCallback callback) override;
-  void SnapshotAndDistillAXTree(
-      SnapshotAndDistillAXTreeCallback callback) override;
   void GetSerializedHtmlWithLocalLinks(
       const base::flat_map<GURL, base::FilePath>& url_map,
       const base::flat_map<blink::FrameToken, base::FilePath>& frame_token_map,
@@ -1430,9 +1423,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // Contains a representation of the accessibility tree stored in content for
   // use inside of Blink.
   std::unique_ptr<blink::WebComputedAXTree> computed_ax_tree_;
-
-  // The AXTreeDistiller for this render frame.
-  std::unique_ptr<AXTreeDistiller> ax_tree_distiller_;
 
   // Used for tracking a frame's main frame document intersection and
   // replicating it to the browser when it changes.

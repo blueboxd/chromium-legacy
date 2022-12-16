@@ -15,8 +15,8 @@
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_surface.h"
-#include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/gpu_switching_observer.h"
+#include "ui/gl/presenter.h"
 
 @class CAContext;
 @class CALayer;
@@ -32,7 +32,7 @@ class GLFence;
 
 namespace gpu {
 
-class ImageTransportSurfaceOverlayMacEGL : public gl::GLSurfaceEGL,
+class ImageTransportSurfaceOverlayMacEGL : public gl::Presenter,
                                            public ui::GpuSwitchingObserver {
  public:
   ImageTransportSurfaceOverlayMacEGL(
@@ -49,17 +49,17 @@ class ImageTransportSurfaceOverlayMacEGL : public gl::GLSurfaceEGL,
               bool has_alpha) override;
   bool IsOffscreen() override;
   gfx::SwapResult SwapBuffers(gl::GLSurface::PresentationCallback callback,
-                              gl::FrameData data) override;
+                              gfx::FrameData data) override;
   void SwapBuffersAsync(
       gl::GLSurface::SwapCompletionCallback completion_callback,
       gl::GLSurface::PresentationCallback presentation_callback,
-      gl::FrameData data) override;
+      gfx::FrameData data) override;
   gfx::SwapResult PostSubBuffer(int x,
                                 int y,
                                 int width,
                                 int height,
                                 gl::GLSurface::PresentationCallback callback,
-                                gl::FrameData data) override;
+                                gfx::FrameData data) override;
   void PostSubBufferAsync(
       int x,
       int y,
@@ -67,14 +67,14 @@ class ImageTransportSurfaceOverlayMacEGL : public gl::GLSurfaceEGL,
       int height,
       gl::GLSurface::SwapCompletionCallback completion_callback,
       gl::GLSurface::PresentationCallback presentation_callback,
-      gl::FrameData data) override;
+      gfx::FrameData data) override;
   gfx::SwapResult CommitOverlayPlanes(
       gl::GLSurface::PresentationCallback callback,
-      gl::FrameData data) override;
+      gfx::FrameData data) override;
   void CommitOverlayPlanesAsync(
       gl::GLSurface::SwapCompletionCallback completion_callback,
       gl::GLSurface::PresentationCallback presentation_callback,
-      gl::FrameData data) override;
+      gfx::FrameData data) override;
 
   bool SupportsPostSubBuffer() override;
   bool SupportsCommitOverlayPlanes() override;

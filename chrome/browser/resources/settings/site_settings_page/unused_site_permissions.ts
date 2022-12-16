@@ -18,19 +18,28 @@ import './site_review_shared.css.js';
 import {CrToastElement} from 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
-import {assert} from 'chrome://resources/js/assert_ts.js';
+import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
 import {PluralStringProxyImpl} from 'chrome://resources/js/plural_string_proxy.js';
 import {DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {ContentSettingsTypes, MODEL_UPDATE_DELAY_MS} from '../site_settings/constants.js';
 import {SiteSettingsMixin} from '../site_settings/site_settings_mixin.js';
 import {SiteSettingsPermissionsBrowserProxy, SiteSettingsPermissionsBrowserProxyImpl, UnusedSitePermissions} from '../site_settings/site_settings_permissions_browser_proxy.js';
+import {TooltipMixin} from '../tooltip_mixin.js';
 
+import {getLocalizationStringForContentType} from './site_settings_page_util.js';
 import {getTemplate} from './unused_site_permissions.html.js';
 
 export interface SettingsUnusedSitePermissionsElement {
   $: {
     undoToast: CrToastElement,
   };
+}
+
+/** Actions the user can perform to review their unused site permissions. */
+enum Action {
+  ALLOW_AGAIN = 'allow_again',
+  GOT_IT = 'got_it',
 }
 
 /**
@@ -41,8 +50,8 @@ interface UnusedSitePermissionsDisplay extends UnusedSitePermissions {
   visible: boolean;
 }
 
-const SettingsUnusedSitePermissionsElementBase =
-    I18nMixin(WebUiListenerMixin(SiteSettingsMixin(PolymerElement)));
+const SettingsUnusedSitePermissionsElementBase = TooltipMixin(
+    I18nMixin(WebUiListenerMixin(SiteSettingsMixin(PolymerElement))));
 
 export class SettingsUnusedSitePermissionsElement extends
     SettingsUnusedSitePermissionsElementBase {
@@ -59,10 +68,25 @@ export class SettingsUnusedSitePermissionsElement extends
       /* The string for the primary header label. */
       headerString_: String,
 
-      /* The last origin that the user interacted with. */
-      lastOrigin_: {
-        type: String,
-        observer: 'updateUndoToastText_',
+      /** Most recent site permissions the user has allowed again. */
+      lastUnusedSitePermissionsAllowedAgain_: {
+        type: Object,
+        value: null,
+      },
+
+      /** Most recent site permissions list the user has acknowledged. */
+      lastUnusedSitePermissionsListAcknowledged_: {
+        type: Array,
+        value: null,
+      },
+
+      /**
+       * Last action the user has taken, determines the function of the undo
+       * button in the toast.
+       */
+      lastUserAction_: {
+        type: Action,
+        value: null,
       },
 
       /**
@@ -101,7 +125,11 @@ export class SettingsUnusedSitePermissionsElement extends
   private browserProxy_: SiteSettingsPermissionsBrowserProxy =
       SiteSettingsPermissionsBrowserProxyImpl.getInstance();
   private headerString_: string;
-  private lastOrigin_: string;
+  private lastUnusedSitePermissionsAllowedAgain_: UnusedSitePermissions|null;
+  private lastUnusedSitePermissionsListAcknowledged_: UnusedSitePermissions[]|
+      null;
+  private lastUserAction_: Action|null;
+  private modelUpdateDelayMsForTesting_: number|null = null;
   private sites_: UnusedSitePermissionsDisplay[]|null;
   private shouldShowCompletionInfo_: boolean;
   private subtitleString_: string;
@@ -131,6 +159,52 @@ export class SettingsUnusedSitePermissionsElement extends
         'safetyCheckUnusedSitePermissionsAllowAgainAriaLabel', origin);
   }
 
+  // TODO(crbug.com/1393005): Refactor common code across this and
+  // review_notification_permissions.ts.
+  private getModelUpdateDelayMs_() {
+    return this.modelUpdateDelayMsForTesting_ === null ?
+        MODEL_UPDATE_DELAY_MS :
+        this.modelUpdateDelayMsForTesting_;
+  }
+
+  /**
+   * Text that describes which permissions have been revoked for an origin.
+   * Permissions are listed explicitly when there are up to and including 3. For
+   * 4 or more, the two first permissions are listed explicitly and for the
+   * remaining ones a count is shown, e.g. 'and 2 more'.
+   */
+  private getPermissionsText_(permissions: ContentSettingsTypes[]): string {
+    assert(
+        permissions.length > 0,
+        'There is no permission for the user to review.');
+
+    const permissionsI18n = permissions.map(permission => {
+      const localizationString =
+          getLocalizationStringForContentType(permission);
+      assert(localizationString !== null);
+      return this.i18n(localizationString);
+    });
+
+    if (permissionsI18n.length === 1) {
+      return this.i18n(
+          'safetyCheckUnusedSitePermissionsRemovedOnePermissionLabel',
+          ...permissionsI18n);
+    }
+    if (permissionsI18n.length === 2) {
+      return this.i18n(
+          'safetyCheckUnusedSitePermissionsRemovedTwoPermissionsLabel',
+          ...permissionsI18n);
+    }
+    if (permissionsI18n.length === 3) {
+      return this.i18n(
+          'safetyCheckUnusedSitePermissionsRemovedThreePermissionsLabel',
+          ...permissionsI18n);
+    }
+    return this.i18n(
+        'safetyCheckUnusedSitePermissionsRemovedFourOrMorePermissionsLabel',
+        permissionsI18n[0], permissionsI18n[1], permissionsI18n.length - 2);
+  }
+
   private getRowClass_(visible: boolean): string {
     return visible ? '' : 'removed';
   }
@@ -155,10 +229,28 @@ export class SettingsUnusedSitePermissionsElement extends
   private onAllowAgainClick_(event: DomRepeatEvent<UnusedSitePermissions>) {
     event.stopPropagation();
     const item = event.model.item;
-    this.lastOrigin_ = item.origin;
-    this.showUndoToast_();
-    this.hideItem_(this.lastOrigin_);
-    // TODO(crbug.com/1345920): Trigger action in backend.
+    this.lastUserAction_ = Action.ALLOW_AGAIN;
+    this.lastUnusedSitePermissionsAllowedAgain_ = item;
+
+    this.showUndoToast_(
+        this.i18n('safetyCheckUnusedSitePermissionsToastLabel', item.origin));
+    this.hideItem_(item.origin);
+    setTimeout(
+        this.browserProxy_.allowPermissionsAgainForUnusedSite.bind(
+            this.browserProxy_, item),
+        this.getModelUpdateDelayMs_());
+  }
+
+  private async onGotItClick_(e: Event) {
+    e.stopPropagation();
+    assert(this.sites_ !== null);
+    this.lastUserAction_ = Action.GOT_IT;
+    this.lastUnusedSitePermissionsListAcknowledged_ = this.sites_;
+
+    this.browserProxy_.acknowledgeRevokedUnusedSitePermissionsList(this.sites_);
+    const toastText = await PluralStringProxyImpl.getInstance().getPluralString(
+        'safetyCheckUnusedSitePermissionsToastBulkLabel', this.sites_.length);
+    this.showUndoToast_(toastText);
   }
 
   /* Repopulate the list when unused site permission list is updated. */
@@ -171,23 +263,9 @@ export class SettingsUnusedSitePermissionsElement extends
 
   private onShowTooltip_(e: Event) {
     e.stopPropagation();
-    const target = e.target!;
     const tooltip = this.shadowRoot!.querySelector('paper-tooltip');
     assert(tooltip);
-    tooltip.target = target;
-    tooltip.updatePosition();
-    const hide = () => {
-      tooltip.hide();
-      target.removeEventListener('mouseleave', hide);
-      target.removeEventListener('blur', hide);
-      target.removeEventListener('click', hide);
-      tooltip.removeEventListener('mouseenter', hide);
-    };
-    target.addEventListener('mouseleave', hide);
-    target.addEventListener('blur', hide);
-    target.addEventListener('click', hide);
-    tooltip.addEventListener('mouseenter', hide);
-    tooltip.show();
+    this.showTooltipAtTarget(tooltip, e.target!);
   }
 
   private async onSitesChanged_() {
@@ -204,7 +282,31 @@ export class SettingsUnusedSitePermissionsElement extends
             this.sites_.length);
   }
 
-  private showUndoToast_() {
+  private onUndoClick_(e: Event) {
+    e.stopPropagation();
+
+    switch (this.lastUserAction_) {
+      case Action.ALLOW_AGAIN:
+        assert(this.lastUnusedSitePermissionsAllowedAgain_ !== null);
+        this.browserProxy_.undoAllowPermissionsAgainForUnusedSite(
+            this.lastUnusedSitePermissionsAllowedAgain_);
+        this.lastUnusedSitePermissionsAllowedAgain_ = null;
+        break;
+      case Action.GOT_IT:
+        assert(this.lastUnusedSitePermissionsListAcknowledged_ !== null);
+        this.browserProxy_.undoAcknowledgeRevokedUnusedSitePermissionsList(
+            this.lastUnusedSitePermissionsListAcknowledged_);
+        this.lastUnusedSitePermissionsListAcknowledged_ = null;
+        break;
+      default:
+        assertNotReached();
+    }
+    this.lastUserAction_ = null;
+    this.$.undoToast.hide();
+  }
+
+  private showUndoToast_(text: string) {
+    this.toastText_ = text;
     // Re-open the toast if one was already open; this resets the timer.
     if (this.$.undoToast.open) {
       this.$.undoToast.hide();
@@ -212,10 +314,10 @@ export class SettingsUnusedSitePermissionsElement extends
     this.$.undoToast.show();
   }
 
-  private updateUndoToastText_() {
-    assert(this.lastOrigin_);
-    this.toastText_ = this.i18n(
-        'safetyCheckUnusedSitePermissionsToastLabel', this.lastOrigin_);
+  // TODO(crbug.com/1393005): Refactor common code across this and
+  // review_notification_permissions.ts.
+  setModelUpdateDelayMsForTesting(delayMs: number) {
+    this.modelUpdateDelayMsForTesting_ = delayMs;
   }
 }
 

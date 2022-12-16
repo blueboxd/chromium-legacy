@@ -38,14 +38,14 @@ TYPED_TEST_P(GLImageZeroInitializeTest, ZeroInitialize) {
   glBindTexture(target, texture);
 
   // Bind |image| to |texture|.
-  bool rv = image->BindTexImage(target);
+  bool rv = image->BindTexImageForTesting(target);
   EXPECT_TRUE(rv);
 
   // Draw |texture| to viewport.
   internal::DrawTextureQuad(target, image_size);
 
   // Release |image| from |texture|.
-  image->ReleaseTexImage(target);
+  image->ReleaseTexImageForTesting(target);
 
   // Read back pixels to check expectations.
   const uint8_t zero_color[] = {0, 0, 0, 0};

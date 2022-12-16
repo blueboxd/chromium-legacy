@@ -24,6 +24,7 @@
 #include "content/browser/process_lock.h"
 #include "content/browser/site_info.h"
 #include "content/browser/site_instance_impl.h"
+#include "content/common/content_navigation_policy.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/site_isolation_policy.h"
@@ -130,6 +131,14 @@ class ChildProcessSecurityPolicyTest : public testing::Test {
   }
 
   void TearDown() override {
+    auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+    {
+      base::AutoLock lock(policy->lock_);
+      EXPECT_EQ(0u, policy->security_state_.size())
+          << "ChildProcessSecurityPolicy should not be tracking any processes "
+          << "at test shutdown.  Did you forget to call Remove() at the end of "
+          << "a test?";
+    }
     test_browser_client_.ClearSchemes();
     SetBrowserClientForTesting(old_browser_client_);
   }
@@ -1175,7 +1184,15 @@ TEST_F(ChildProcessSecurityPolicyTest, RemoveRace) {
 // threads to capture permission state from the UI & IO threads during the
 // removal process. It is intended to simulate pending tasks that could be
 // run on each thread during removal.
+//
+// TODO(crbug.com/1286533): Refactor the test to avoid calls to
+// CanAccessDataForOrigin on the IO thread, by checking for the presence of
+// security state instead.
 TEST_F(ChildProcessSecurityPolicyTest, RemoveRace_CanAccessDataForOrigin) {
+  if (ShouldRestrictCanAccessDataForOriginToUIThread()) {
+    return;
+  }
+
   ChildProcessSecurityPolicyImpl* p =
       ChildProcessSecurityPolicyImpl::GetInstance();
 
@@ -1299,7 +1316,15 @@ TEST_F(ChildProcessSecurityPolicyTest, RemoveRace_CanAccessDataForOrigin) {
 // threads to capture permission state from the UI & IO threads during the
 // removal process. It is intended to simulate pending tasks that could be
 // run on each thread during removal.
+//
+// TODO(crbug.com/1286533): Refactor the test to avoid calls to
+// CanAccessDataForOrigin on the IO thread, by checking for the presence of
+// security state instead.
 TEST_F(ChildProcessSecurityPolicyTest, HandleExtendsSecurityStateLifetime) {
+  if (ShouldRestrictCanAccessDataForOriginToUIThread()) {
+    return;
+  }
+
   ChildProcessSecurityPolicyImpl* p =
       ChildProcessSecurityPolicyImpl::GetInstance();
 
@@ -3221,6 +3246,9 @@ TEST_F(ChildProcessSecurityPolicyTest, CannotLockUsedProcessToSite) {
                        ProcessLock::FromSiteInfo(bar_instance->GetSiteInfo()));
       },
       "Cannot lock an already used process to .*bar\\.com");
+
+  // We need to remove it otherwise other tests may fail.
+  p->Remove(kRendererID);
 }
 
 }  // namespace content

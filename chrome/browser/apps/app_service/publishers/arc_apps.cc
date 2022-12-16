@@ -1090,29 +1090,11 @@ void ArcApps::Connect(
   subscribers_.Add(std::move(subscriber));
 }
 
-void ArcApps::SetResizeLocked(const std::string& app_id,
-                              apps::mojom::OptionalBool locked) {
-  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
-  if (!prefs) {
-    return;
-  }
-  if (locked == apps::mojom::OptionalBool::kUnknown) {
-    return;
-  }
-  prefs->SetResizeLockState(app_id, locked == apps::mojom::OptionalBool::kTrue
-                                        ? arc::mojom::ArcResizeLockState::ON
-                                        : arc::mojom::ArcResizeLockState::OFF);
-}
-
 void ArcApps::PauseApp(const std::string& app_id) {
   if (paused_apps_.MaybeAddApp(app_id)) {
     SetIconEffect(app_id);
   }
 
-  constexpr bool kPaused = true;
-  PublisherBase::Publish(paused_apps_.GetAppWithPauseStatus(
-                             apps::mojom::AppType::kArc, app_id, kPaused),
-                         subscribers_);
   AppPublisher::Publish(paused_apps_.CreateAppWithPauseStatus(
       AppType::kArc, app_id, /*paused=*/true));
   CloseTasks(app_id);
@@ -1123,10 +1105,6 @@ void ArcApps::UnpauseApp(const std::string& app_id) {
     SetIconEffect(app_id);
   }
 
-  constexpr bool kPaused = false;
-  PublisherBase::Publish(paused_apps_.GetAppWithPauseStatus(
-                             apps::mojom::AppType::kArc, app_id, kPaused),
-                         subscribers_);
   AppPublisher::Publish(paused_apps_.CreateAppWithPauseStatus(
       AppType::kArc, app_id, /*paused=*/false));
 }
@@ -1432,9 +1410,6 @@ void ArcApps::OnNotificationUpdated(const std::string& notification_id,
   }
 
   app_notifications_.AddNotification(app_id, notification_id);
-  PublisherBase::Publish(app_notifications_.GetAppWithHasBadgeStatus(
-                             apps::mojom::AppType::kArc, app_id),
-                         subscribers_);
   AppPublisher::Publish(
       app_notifications_.CreateAppWithHasBadgeStatus(AppType::kArc, app_id));
 }
@@ -1449,9 +1424,6 @@ void ArcApps::OnNotificationRemoved(const std::string& notification_id) {
   app_notifications_.RemoveNotification(notification_id);
 
   for (const auto& app_id : app_ids) {
-    PublisherBase::Publish(app_notifications_.GetAppWithHasBadgeStatus(
-                               apps::mojom::AppType::kArc, app_id),
-                           subscribers_);
     AppPublisher::Publish(
         app_notifications_.CreateAppWithHasBadgeStatus(AppType::kArc, app_id));
   }

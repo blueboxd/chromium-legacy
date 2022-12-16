@@ -34,6 +34,7 @@
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/chrome/grit/ios_strings.h"
+#import "ios/public/provider/chrome/browser/user_feedback/user_feedback_api.h"
 #import "ios/web/common/uikit_ui_util.h"
 #import "ios/web/find_in_page/find_in_page_manager_impl.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
@@ -227,7 +228,6 @@ TEST_F(KeyCommandsProviderTest, CanPerform_AlwaysAvailableActions) {
   EXPECT_TRUE(CanPerform(@"keyCommand_openNewWindow"));
   EXPECT_TRUE(CanPerform(@"keyCommand_openNewIncognitoWindow"));
   EXPECT_TRUE(CanPerform(@"keyCommand_showSettings"));
-  EXPECT_TRUE(CanPerform(@"keyCommand_reportAnIssue"));
   EXPECT_TRUE(CanPerform(@"keyCommand_showReadingList"));
   EXPECT_TRUE(CanPerform(@"keyCommand_goToTabGrid"));
   EXPECT_TRUE(CanPerform(@"keyCommand_clearBrowsingData"));
@@ -239,24 +239,16 @@ TEST_F(KeyCommandsProviderTest, CanPerform_TabsActions) {
   // No tabs.
   ASSERT_EQ(web_state_list_->count(), 0);
   NSArray<NSString*>* actions = @[
-    @"keyCommand_openLocation",
-    @"keyCommand_closeTab",
-    @"keyCommand_showBookmarks",
-    @"keyCommand_reload",
-    @"keyCommand_showHistory",
-    @"keyCommand_voiceSearch",
-    @"keyCommand_stop",
-    @"keyCommand_showHelp",
-    @"keyCommand_showDownloads",
-    @"keyCommand_select1",
-    @"keyCommand_select2",
-    @"keyCommand_select3",
-    @"keyCommand_select4",
-    @"keyCommand_select5",
-    @"keyCommand_select6",
-    @"keyCommand_select7",
-    @"keyCommand_select8",
-    @"keyCommand_select9",
+    @"keyCommand_openLocation",  @"keyCommand_closeTab",
+    @"keyCommand_showBookmarks", @"keyCommand_reload",
+    @"keyCommand_showHistory",   @"keyCommand_voiceSearch",
+    @"keyCommand_stop",          @"keyCommand_showHelp",
+    @"keyCommand_showDownloads", @"keyCommand_select1",
+    @"keyCommand_select2",       @"keyCommand_select3",
+    @"keyCommand_select4",       @"keyCommand_select5",
+    @"keyCommand_select6",       @"keyCommand_select7",
+    @"keyCommand_select8",       @"keyCommand_select9",
+    @"keyCommand_showNextTab",   @"keyCommand_showPreviousTab",
   ];
   for (NSString* action in actions) {
     EXPECT_FALSE(CanPerform(action));
@@ -368,38 +360,6 @@ TEST_F(KeyCommandsProviderTest, CanPerform_EditingTextActions) {
 }
 
 // Checks whether KeyCommandsProvider can perform the actions that are only
-// available when there are at least two tabs.
-TEST_F(KeyCommandsProviderTest, CanPerform_ShowPreviousAndNextTab) {
-  // No tabs.
-  ASSERT_EQ(web_state_list_->count(), 0);
-  NSArray<NSString*>* actions = @[
-    @"keyCommand_showNextTab",
-    @"keyCommand_showPreviousTab",
-  ];
-  for (NSString* action in actions) {
-    EXPECT_FALSE(CanPerform(action));
-  }
-
-  // Open a tab.
-  InsertNewWebState(0);
-  for (NSString* action in actions) {
-    EXPECT_FALSE(CanPerform(action));
-  }
-
-  // Open a second tab.
-  InsertNewWebState(1);
-  for (NSString* action in actions) {
-    EXPECT_TRUE(CanPerform(action));
-  }
-
-  // Close the one tab.
-  CloseWebState(0);
-  for (NSString* action in actions) {
-    EXPECT_FALSE(CanPerform(action));
-  }
-}
-
-// Checks whether KeyCommandsProvider can perform the actions that are only
 // available when there are tabs and it is a http or https page.
 TEST_F(KeyCommandsProviderTest, CanPerform_ActionsInHttpPage) {
   // No tabs.
@@ -508,6 +468,12 @@ TEST_F(KeyCommandsProviderTest, CanPerform_ReopenLastClosedTab) {
   // Close a tab.
   CloseWebState(1);
   EXPECT_TRUE(CanPerform(@"keyCommand_reopenLastClosedTab"));
+}
+
+// Checks whether KeyCommandsProvider supports user feedback.
+TEST_F(KeyCommandsProviderTest, CanPerform_ReportAnIssue) {
+  EXPECT_EQ(CanPerform(@"keyCommand_reportAnIssue"),
+            ios::provider::IsUserFeedbackSupported());
 }
 
 #pragma mark - Metrics Tests

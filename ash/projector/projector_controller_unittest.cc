@@ -17,6 +17,7 @@
 #include "ash/projector/test/mock_projector_ui_controller.h"
 #include "ash/public/cpp/projector/projector_new_screencast_precondition.h"
 #include "ash/public/cpp/projector/projector_session.h"
+#include "ash/public/cpp/projector/speech_recognition_availability.h"
 #include "ash/public/cpp/test/mock_projector_client.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -151,9 +152,12 @@ class ProjectorControllerTest : public AshTestBase {
     controller_->SetProjectorMetadataControllerForTest(
         std::move(mock_metadata_controller));
 
+    SpeechRecognitionAvailability availability;
+    availability.on_device_availability =
+        OnDeviceRecognitionAvailability::kAvailable;
+    ON_CALL(mock_client_, GetSpeechRecognitionAvailability)
+        .WillByDefault(testing::Return(availability));
     controller_->SetClient(&mock_client_);
-    controller_->OnSpeechRecognitionAvailabilityChanged(
-        SpeechRecognitionAvailability::kAvailable);
   }
 
   void InitializeRealMetadataController() {
@@ -237,23 +241,46 @@ TEST_F(ProjectorControllerTest, OnAudioNodesChanged) {
 }
 
 TEST_F(ProjectorControllerTest, OnSpeechRecognitionAvailabilityChanged) {
+  SpeechRecognitionAvailability availability;
+
+  // Soda is not available.
+  availability.use_on_device = true;
+  availability.on_device_availability =
+      OnDeviceRecognitionAvailability::kSodaNotAvailable;
+  ON_CALL(mock_client_, GetSpeechRecognitionAvailability)
+      .WillByDefault(testing::Return(availability));
+  ON_CALL(mock_client_, IsDriveFsMounted())
+      .WillByDefault(testing::Return(true));
   EXPECT_CALL(mock_client_,
               OnNewScreencastPreconditionChanged(NewScreencastPrecondition(
                   NewScreencastPreconditionState::kDisabled,
                   {NewScreencastPreconditionReason::
                        kOnDeviceSpeechRecognitionNotSupported})));
-  controller_->OnSpeechRecognitionAvailabilityChanged(
-      SpeechRecognitionAvailability::kOnDeviceSpeechRecognitionNotSupported);
+  controller_->OnSpeechRecognitionAvailabilityChanged();
 
-  ON_CALL(mock_client_, IsDriveFsMounted())
-      .WillByDefault(testing::Return(true));
-
+  // Soda is available.
+  availability.on_device_availability =
+      OnDeviceRecognitionAvailability::kAvailable;
+  ON_CALL(mock_client_, GetSpeechRecognitionAvailability)
+      .WillByDefault(testing::Return(availability));
   EXPECT_CALL(mock_client_,
               OnNewScreencastPreconditionChanged(NewScreencastPrecondition(
                   NewScreencastPreconditionState::kEnabled,
                   {NewScreencastPreconditionReason::kEnabledBySoda})));
-  controller_->OnSpeechRecognitionAvailabilityChanged(
-      SpeechRecognitionAvailability::kAvailable);
+  controller_->OnSpeechRecognitionAvailabilityChanged();
+
+  // Server based available.
+  availability.use_on_device = false;
+  availability.server_based_availability =
+      ServerBasedRecognitionAvailability::kAvailable;
+  ON_CALL(mock_client_, GetSpeechRecognitionAvailability)
+      .WillByDefault(testing::Return(availability));
+  EXPECT_CALL(mock_client_,
+              OnNewScreencastPreconditionChanged(NewScreencastPrecondition(
+                  NewScreencastPreconditionState::kEnabled,
+                  {NewScreencastPreconditionReason::
+                       kEnabledByServerSideSpeechRecognition})));
+  controller_->OnSpeechRecognitionAvailabilityChanged();
 }
 
 TEST_F(ProjectorControllerTest, EnableAnnotatorTool) {
@@ -573,49 +600,5 @@ TEST_F(ProjectorControllerTest, SuppressDriveNotification) {
       }));
   run_loop.Run();
 }
-
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-
-class ProjectorControllerTestServerBased : public ProjectorControllerTest {
- public:
-  ProjectorControllerTestServerBased() = default;
-  ProjectorControllerTestServerBased(
-      const ProjectorControllerTestServerBased&) = delete;
-  ProjectorControllerTestServerBased& operator=(
-      const ProjectorControllerTestServerBased&) = delete;
-  ~ProjectorControllerTestServerBased() override = default;
-
-  void InitFeatureFlags() override {
-    scoped_feature_list_.InitWithFeatures(
-        {features::kProjector, features::kProjectorAnnotator,
-         features::kForceEnableServerSideSpeechRecognitionForDev},
-        {});
-  }
-};
-
-TEST_F(ProjectorControllerTestServerBased, GetNewScreencastPrecondition) {
-  InitFakeMic(/*mic_present=*/true);
-  ON_CALL(mock_client_, IsDriveFsMountFailed())
-      .WillByDefault(testing::Return(false));
-  ON_CALL(mock_client_, IsDriveFsMounted())
-      .WillByDefault(testing::Return(true));
-  UErrorCode error_code = U_ZERO_ERROR;
-
-  icu::Locale::setDefault(icu::Locale::getUS(), error_code);
-  auto precondition = controller_->GetNewScreencastPrecondition();
-  EXPECT_EQ(precondition, NewScreencastPrecondition(
-                              NewScreencastPreconditionState::kEnabled,
-                              {NewScreencastPreconditionReason::
-                                   kEnabledByServerSideSpeechRecognition}));
-
-  icu::Locale::setDefault(icu::Locale::getRoot(), error_code);
-  precondition = controller_->GetNewScreencastPrecondition();
-  EXPECT_EQ(precondition,
-            NewScreencastPrecondition(
-                NewScreencastPreconditionState::kDisabled,
-                {NewScreencastPreconditionReason::kUserLocaleNotSupported}));
-}
-
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 }  // namespace ash

@@ -41,7 +41,7 @@ GbmSurfaceless::GbmSurfaceless(GbmSurfaceFactory* surface_factory,
                                gl::GLDisplayEGL* display,
                                std::unique_ptr<DrmWindowProxy> window,
                                gfx::AcceleratedWidget widget)
-    : SurfacelessEGL(display, gfx::Size()),
+    : Presenter(display, gfx::Size()),
       surface_factory_(surface_factory),
       window_(std::move(window)),
       widget_(widget),
@@ -64,7 +64,7 @@ bool GbmSurfaceless::Initialize(gl::GLSurfaceFormat format) {
 }
 
 gfx::SwapResult GbmSurfaceless::SwapBuffers(PresentationCallback callback,
-                                            gl::FrameData data) {
+                                            gfx::FrameData data) {
   NOTREACHED();
   return gfx::SwapResult::SWAP_FAILED;
 }
@@ -109,7 +109,7 @@ gfx::SwapResult GbmSurfaceless::PostSubBuffer(int x,
                                               int width,
                                               int height,
                                               PresentationCallback callback,
-                                              gl::FrameData data) {
+                                              gfx::FrameData data) {
   // The actual sub buffer handling is handled at higher layers.
   NOTREACHED();
   return gfx::SwapResult::SWAP_FAILED;
@@ -118,7 +118,7 @@ gfx::SwapResult GbmSurfaceless::PostSubBuffer(int x,
 void GbmSurfaceless::SwapBuffersAsync(
     SwapCompletionCallback completion_callback,
     PresentationCallback presentation_callback,
-    gl::FrameData data) {
+    gfx::FrameData data) {
   TRACE_EVENT0("drm", "GbmSurfaceless::SwapBuffersAsync");
   // If last swap failed, don't try to schedule new ones.
   if (!last_swap_buffers_result_) {
@@ -182,10 +182,10 @@ void GbmSurfaceless::PostSubBufferAsync(
     int height,
     SwapCompletionCallback completion_callback,
     PresentationCallback presentation_callback,
-    gl::FrameData data) {
+    gfx::FrameData data) {
   // The actual sub buffer handling is handled at higher layers.
   SwapBuffersAsync(std::move(completion_callback),
-                   std::move(presentation_callback), std::move(data));
+                   std::move(presentation_callback), data);
 }
 
 EGLConfig GbmSurfaceless::GetConfig() {

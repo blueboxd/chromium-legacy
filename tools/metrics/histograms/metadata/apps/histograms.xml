@@ -25,6 +25,7 @@ chromium-metrics-reviews@google.com.
 <variants name="AppType">
   <variant name="Arc" summary="Android apps"/>
   <variant name="Borealis" summary="Borealis apps"/>
+  <variant name="Bruschetta" summary="Bruschetta apps"/>
   <variant name="BuiltIn" summary="BuiltIn apps"/>
   <variant name="ChromeApp" summary="Chrome apps"/>
   <variant name="ChromeBrowser" summary="Chrome browsers"/>
@@ -46,6 +47,7 @@ chromium-metrics-reviews@google.com.
 <variants name="AppTypeV2">
   <variant name="Arc" summary="Android apps"/>
   <variant name="Borealis" summary="Borealis apps"/>
+  <variant name="Bruschetta" summary="Bruschetta apps"/>
   <variant name="BuiltIn" summary="BuiltIn apps"/>
   <variant name="ChromeAppTab" summary="Chrome apps opened in tabs"/>
   <variant name="ChromeAppWindow"
@@ -113,6 +115,15 @@ chromium-metrics-reviews@google.com.
   <variant name="System" summary="Installed with the system"/>
   <variant name="Unknown" summary="Installed with unknown source"/>
   <variant name="User" summary="Installed by user"/>
+</variants>
+
+<variants name="LauncherSearchEntryPoint">
+  <variant name="HomeButton"
+      summary="Open launcher by activationg home button"/>
+  <variant name="Others" summary="Open launcher using a source we don't track"/>
+  <variant name="Scroll" summary="Open launcher by scrolling on the shelf"/>
+  <variant name="SearchKey" summary="Open launcher by pressing search key"/>
+  <variant name="Swipe" summary="Open launcher by swiping on the shelf"/>
 </variants>
 
 <variants name="LauncherUISurface">
@@ -841,7 +852,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppList.Search.Error" enum="AppListUserEventError"
-    expires_after="2023-04-09">
+    expires_after="2023-06-11">
   <owner>wrong@chromium.org</owner>
   <owner>thanhdng@chromium.org</owner>
   <owner>tby@chromium.org</owner>
@@ -849,6 +860,46 @@ chromium-metrics-reviews@google.com.
     Records errors in processing other Apps.AppList.Search.* metrics. These are
     expected to be rare and bucket proportion is not meaningful.
   </summary>
+</histogram>
+
+<histogram name="Apps.AppList.Search.Session.Error"
+    enum="AppListUserEventError" expires_after="2023-01-31">
+  <owner>yulunwu@chromium.org</owner>
+  <owner>tby@chromium.org</owner>
+  <owner>wrong@chromium.org</owner>
+  <owner>tbarzic@chromium.org</owner>
+  <summary>
+    Records errors in processing other Apps.AppList.Search.Session.* metrics.
+    These are expected to be rare and bucket proportion is not meaningful.
+  </summary>
+</histogram>
+
+<histogram name="Apps.AppList.Search.Session.{LauncherSearchEntryPoint}"
+    enum="LauncherSearchSessionResult" expires_after="2023-01-31">
+  <owner>yulunwu@chromium.org</owner>
+  <owner>tby@chromium.org</owner>
+  <owner>wrong@chromium.org</owner>
+  <owner>tbarzic@chromium.org</owner>
+  <summary>
+    Tracks search result launches, answer card impressions, and search session
+    abandons for launcher search sessions.
+
+    A search session is started when a query is entered into the bubble launcher
+    search box or when the tablet mode device enters the kFullscreenSearch
+    AppListViewState. Each search session must conclude one of following ways:
+
+    Quit: Recorded when ending a search session without launching a result and
+    no answer card was shown long enough to have make an impression.
+
+    Launch: Recorded when a search session is ended by launching a result. An
+    answer card may or may not have been shown long enough to make an
+    impression.
+
+    AnswerCardImpression: An answer card was shown long enough to the user to
+    have made an impression at some point during the search session. The answer
+    card may or may not be shown at the moment the search session ended.
+  </summary>
+  <token key="LauncherSearchEntryPoint" variants="LauncherSearchEntryPoint"/>
 </histogram>
 
 <histogram name="Apps.AppList.Search.{SearchView}" enum="AppListSearchAction"
@@ -1230,7 +1281,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppListAppLaunchedV2{AppListState}"
-    enum="AppListLaunchedFrom" expires_after="2022-12-19">
+    enum="AppListLaunchedFrom" expires_after="2023-12-19">
   <owner>tbarzic@chromium.org</owner>
   <owner>mmourgos@chromium.org</owner>
   <owner>newcomer@chromium.org</owner>
@@ -1306,7 +1357,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppListBubbleShowSource" enum="AppListShowSource"
-    expires_after="2023-04-10">
+    expires_after="2023-06-11">
   <owner>tbarzic@chromium.org</owner>
   <owner>newcomer@chromium.org</owner>
   <owner>chromeos-launcher@google.com</owner>
@@ -1657,7 +1708,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppListShowSource" enum="AppListShowSource"
-    expires_after="2023-04-10">
+    expires_after="2023-06-11">
   <owner>tbarzic@chromium.org</owner>
   <owner>newcomer@chromium.org</owner>
   <summary>
@@ -2479,18 +2530,12 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
-<histogram name="Apps.PaginationTransition.AnimationSmoothness" units="%"
-    expires_after="2023-04-16">
-<!-- Name completed by histogram_suffixes name="TabletOrClamshellMode" -->
-
+<histogram name="Apps.PaginationTransition.AnimationSmoothness.TabletMode"
+    units="%" expires_after="2023-04-16">
   <owner>tbarzic@chromium.org</owner>
   <owner>newcomer@chromium.org</owner>
   <owner>wutao@chromium.org</owner>
   <summary>
-    Base name is deprecated as of 3/2019 in favor of
-    Apps.PaginationTransition.AnimationSmoothness.ClamshellMode and
-    Apps.PaginationTransition.AnimationSmoothness.TabletMode
-
     Relative smoothness of animations of launcher pagination transitions. 100%
     represents ideally smooth 60 frames per second. 50% represents only 30
     frames per second is achieved during the animations. 0% should not happen.
@@ -2734,30 +2779,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Apps.StateTransition.AnimationSmoothness{AppListTargetState}"
-    units="%" expires_after="2022-12-30">
+<histogram name="Apps.StateTransition.AnimationSmoothness" units="%"
+    expires_after="2022-12-30">
   <owner>tbarzic@chromium.org</owner>
   <owner>newcomer@chromium.org</owner>
   <owner>src/ash/app_list/OWNERS</owner>
   <summary>
-    Relative smoothness of animations of peeking launcher state transitions.
+    Relative smoothness of animations of tablet mode launcher state transitions.
     100% represents ideally smooth 60 frames per second. 50% represents only 30
     frames per second is achieved during the animations. 0% should not happen.
     This metric is recorded exactly once when the user switches states of the
-    launcher. {AppListTargetState}
+    launcher.
   </summary>
-  <token key="AppListTargetState">
-    <variant name=""/>
-    <variant name=".Close.ClamshellMode" summary="Closing the app list"/>
-    <variant name=".FullscreenAllApps.ClamshellMode"
-        summary="Fullscreen and showing all apps"/>
-    <variant name=".FullscreenSearch.ClamshellMode"
-        summary="Fullscreen with search results"/>
-    <variant name=".Half.ClamshellMode"
-        summary="Half-visible state of the app list"/>
-    <variant name=".Peeking.ClamshellMode"
-        summary="Peek state of the app list"/>
-  </token>
 </histogram>
 
 <histogram name="Apps.TimeBetweenAppInstallAndLaunch{TabletOrClamshell}"

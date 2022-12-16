@@ -229,6 +229,10 @@ class BASE_EXPORT GSL_OWNER Value {
   };
 
   // Adaptors for converting from the old way to the new way and vice versa.
+  // Note: `DictionaryValue` and `ListValue` have been deprecated.
+  // `AsDictionaryValue()` and `AsListValue()` perform a `static_cast` to these
+  // types (as opposed to the preferred `GetDict()` and `GetList()` APIs - which
+  // use a variant lookup `absl::get<>()`).
   static Value FromUniquePtrValue(std::unique_ptr<Value> val);
   static std::unique_ptr<Value> ToUniquePtrValue(Value val);
   static const DictionaryValue& AsDictionaryValue(const Value& val);
@@ -415,7 +419,7 @@ class BASE_EXPORT GSL_OWNER Value {
     bool contains(base::StringPiece key) const;
 
     // Removes all entries from this dictionary.
-    void clear();
+    REINITIALIZES_AFTER_MOVE void clear();
 
     // Removes the entry referenced by `pos` in this dictionary and returns an
     // iterator to the entry following the removed entry.
@@ -619,7 +623,7 @@ class BASE_EXPORT GSL_OWNER Value {
     Value& operator[](size_t index);
 
     // Removes all value from this list.
-    void clear();
+    REINITIALIZES_AFTER_MOVE void clear();
 
     // Removes the value referenced by `pos` in this list and returns an
     // iterator to the value following the removed value.
@@ -967,15 +971,6 @@ class BASE_EXPORT GSL_OWNER Value {
   // DEPRECATED: prefer `Value::Dict::Merge()`.
   void MergeDictionary(const Value* dictionary);
 
-  // These methods allow the convenient retrieval of the contents of the Value.
-  // If the current object can be converted into the given type, the value is
-  // returned through the `out_value` parameter and true is returned;
-  // otherwise, false is returned and `out_value` is unchanged.
-  // DictionaryValue::From is the equivalent for std::unique_ptr conversions.
-  //
-  // DEPRECATED: prefer direct use `base::Value::Dict` where possible, or
-  // `GetIfDict()` otherwise.
-  bool GetAsDictionary(const DictionaryValue** out_value) const;
   // Note: Do not add more types. See the file-level comment above for why.
 
   // Comparison operators so that Values can easily be used with standard

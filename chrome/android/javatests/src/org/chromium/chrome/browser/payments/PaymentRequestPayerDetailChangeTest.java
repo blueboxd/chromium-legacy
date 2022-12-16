@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.payments;
 
 import androidx.test.filters.MediumTest;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,7 +19,6 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.AppPresence;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.FactorySpeed;
-import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 import java.util.concurrent.TimeoutException;
@@ -29,17 +29,17 @@ import java.util.concurrent.TimeoutException;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         PaymentRequestTestRule.ENABLE_EXPERIMENTAL_WEB_PLATFORM_FEATURES})
-public class PaymentRequestPayerDetailChangeTest implements MainActivityStartCallback {
+public class PaymentRequestPayerDetailChangeTest {
     @Rule
     public PaymentRequestTestRule mPaymentRequestTestRule =
-            new PaymentRequestTestRule("payment_request_onpayerdetailchange.html", this);
+            new PaymentRequestTestRule("payment_request_onpayerdetailchange.html");
 
-    @Override
-    public void onMainActivityStarted() throws TimeoutException {
+    @Before
+    public void setUp() throws TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
 
         String billing_address_id = helper.setProfile(
-                new AutofillProfile("", "https://example.com", true, "" /* honorific prefix */,
+                new AutofillProfile("", "https://example.test", true, "" /* honorific prefix */,
                         "Jon Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "",
                         "US", "333-333-3333", "jon.doe@gmail.com", "en-US"));
     }
@@ -54,7 +54,7 @@ public class PaymentRequestPayerDetailChangeTest implements MainActivityStartCal
         // Install a fake payment app. We only need one as we won't skip the PaymentRequest sheet
         // due to requesting contact info as well.
         mPaymentRequestTestRule.addPaymentAppFactory(
-                "https://bobpay.com", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
+                "https://bobpay.test", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
 
         mPaymentRequestTestRule.triggerUIAndWait(
                 "buy", mPaymentRequestTestRule.getReadyToPay());

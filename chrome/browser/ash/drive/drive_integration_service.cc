@@ -450,8 +450,18 @@ class DriveIntegrationService::PreferenceWatcher
     }
 
     VLOG(1) << "Updating the bulk pinning state";
-    integration_service_->SetBulkPinningEnabled(
-        pref_service_->GetBoolean(prefs::kDriveFsBulkPinningEnabled));
+    auto* pin_manager = integration_service_->GetDriveFsPinManager();
+    if (!pin_manager) {
+      return;
+    }
+    bool enabled = pref_service_->GetBoolean(prefs::kDriveFsBulkPinningEnabled);
+    integration_service_->GetDriveFsPinManager()->SetBulkPinningEnabled(
+        enabled);
+    if (enabled) {
+      pin_manager->Start(base::DoNothing());
+    } else {
+      pin_manager->Stop();
+    }
   }
 
   void AddNetworkPortalDetectorObserver() {
@@ -844,6 +854,15 @@ drivefs::DriveFsHost* DriveIntegrationService::GetDriveFsHost() const {
   return drivefs_holder_->drivefs_host();
 }
 
+drivefs::pinning::DriveFsPinManager*
+DriveIntegrationService::GetDriveFsPinManager() {
+  if (!ash::features::IsDriveFsBulkPinningEnabled()) {
+    return nullptr;
+  }
+
+  return pin_manager_.get();
+}
+
 drivefs::mojom::DriveFs* DriveIntegrationService::GetDriveFsInterface() const {
   return drivefs_holder_->drivefs_host()->GetDriveFsInterface();
 }
@@ -945,6 +964,12 @@ void DriveIntegrationService::RemoveDriveMountPoint() {
     }
   }
   drivefs_holder_->drivefs_host()->Unmount();
+
+  if (ash::features::IsDriveFsBulkPinningEnabled() && pin_manager_) {
+    pin_manager_->Stop();
+    drivefs_holder_->drivefs_host()->RemoveObserver(pin_manager_.get());
+    pin_manager_.reset();
+  }
 }
 
 void DriveIntegrationService::MaybeRemountFileSystem(
@@ -1023,16 +1048,12 @@ void DriveIntegrationService::OnMounted(const base::FilePath& mount_path) {
     pin_manager_ = std::make_unique<drivefs::pinning::DriveFsPinManager>(
         profile_->GetPrefs()->GetBoolean(prefs::kDriveFsBulkPinningEnabled),
         profile_->GetPath(), GetDriveFsInterface());
+    drivefs_holder_->drivefs_host()->AddObserver(pin_manager_.get());
   }
 }
 
 void DriveIntegrationService::OnUnmounted(
     absl::optional<base::TimeDelta> remount_delay) {
-  if (ash::features::IsDriveFsBulkPinningEnabled() && pin_manager_) {
-    pin_manager_->Stop();
-    drivefs_holder_->drivefs_host()->RemoveObserver(pin_manager_.get());
-    pin_manager_.reset();
-  }
   UmaEmitUnmountOutcome(remount_delay ? DriveMountStatus::kTemporaryUnavailable
                                       : DriveMountStatus::kUnknownFailure);
   MaybeRemountFileSystem(remount_delay, false);
@@ -1442,32 +1463,6 @@ void DriveIntegrationService::ForceReSyncFile(const base::FilePath& local_path,
   // TODO(b/234921400): Replace this with a call to DriveFS once implemented.
   base::SequencedTaskRunner::GetCurrentDefault()->PostTask(FROM_HERE,
                                                            std::move(callback));
-}
-
-void DriveIntegrationService::SetBulkPinningEnabled(bool enabled) {
-  if (!ash::features::IsDriveFsBulkPinningEnabled() || !IsMounted() ||
-      !GetDriveFsInterface() || !pin_manager_) {
-    return;
-  }
-
-  VLOG(1) << "Setting bulk pinning enabled: " << enabled;
-  pin_manager_->SetBulkPinningEnabled(enabled);
-
-  if (enabled) {
-    drivefs_holder_->drivefs_host()->AddObserver(pin_manager_.get());
-    pin_manager_->Start(
-        base::BindOnce(&DriveIntegrationService::OnBulkPinningFinished,
-                       weak_ptr_factory_.GetWeakPtr()));
-    return;
-  }
-
-  pin_manager_->Stop();
-  drivefs_holder_->drivefs_host()->RemoveObserver(pin_manager_.get());
-}
-
-void DriveIntegrationService::OnBulkPinningFinished(
-    drivefs::pinning::PinError status) {
-  LOG(ERROR) << "Finished with status: " << static_cast<int>(status);
 }
 
 //===================== DriveIntegrationServiceFactory =======================

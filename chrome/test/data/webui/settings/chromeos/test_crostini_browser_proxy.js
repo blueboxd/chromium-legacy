@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {webUIListenerCallback} from 'chrome://resources/ash/common/cr.m.js';
 
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 
@@ -38,12 +38,18 @@ export class TestCrostiniBrowserProxy extends TestBrowserProxy {
       'setContainerBadgeColor',
       'stopContainer',
       'requestCrostiniExportImportOperationStatus',
+      'openContainerFileSelector',
+      'requestSharedVmDevices',
+      'isVmDeviceShared',
+      'setVmDeviceShared',
     ]);
     this.crostiniMicSharingEnabled = false;
     this.crostiniIsRunning = true;
     this.methodCalls_ = {};
     this.portOperationSuccess = true;
     this.containerInfo = [];
+    this.selectedContainerFileName = '';
+    this.sharedVmDevices = [];
   }
 
   getNewPromiseFor(name) {
@@ -232,5 +238,29 @@ export class TestCrostiniBrowserProxy extends TestBrowserProxy {
   /** @override */
   stopContainer(containerId) {
     this.methodCalled('stopContainer');
+  }
+
+  /** @override */
+  openContainerFileSelector() {
+    this.methodCalled('openContainerFileSelector');
+    return Promise.resolve(this.selectedContainerFileName);
+  }
+
+  /** @override */
+  requestSharedVmDevices() {
+    this.methodCalled('requestSharedVmDevices');
+    webUIListenerCallback('crostini-shared-vmdevices', this.sharedVmDevices);
+  }
+
+  /** @override */
+  isVmDeviceShared(id, device) {
+    this.methodCalled('isVmDeviceShared', id, device);
+    return this.getNewPromiseFor('isVmDeviceShared');
+  }
+
+  /** @override */
+  setVmDeviceShared(id, device, shared) {
+    this.methodCalled('setVmDeviceShared', id, device, shared);
+    return this.getNewPromiseFor('setVmDeviceShared');
   }
 }

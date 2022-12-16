@@ -31,7 +31,7 @@ source_set("base_unittests_filters") {
   testonly = true
 
   data = [
-    "//testing/buildbot/filters/android.emulator.base_unittests.filter",
+    "//testing/buildbot/filters/android.emulator_12.base_unittests.filter",
     "//testing/buildbot/filters/android.pie_tot.base_unittests.filter",
     "//testing/buildbot/filters/fuchsia.lsan.base_unittests.filter",
   ]
@@ -59,12 +59,15 @@ source_set("browser_tests_filters") {
     "//testing/buildbot/filters/fuchsia.browser_tests.filter",
     "//testing/buildbot/filters/linux-chromeos.browser_tests.require_lacros.filter",
     "//testing/buildbot/filters/linux-lacros.browser_tests.filter",
+    "//testing/buildbot/filters/linux.linux-rel-cft.browser_tests.filter",
+    "//testing/buildbot/filters/mac.mac-rel-cft.browser_tests.filter",
+    "//testing/buildbot/filters/mac.mac-rel.browser_tests.filter",
     "//testing/buildbot/filters/mac.mac11-arm64-rel.browser_tests.filter",
     "//testing/buildbot/filters/mac.mac12-arm64-rel.browser_tests.filter",
-    "//testing/buildbot/filters/mac.mac-rel.browser_tests.filter",
     "//testing/buildbot/filters/ozone-linux.wayland_browser_tests.filter",
     "//testing/buildbot/filters/pixel_tests.filter",
     "//testing/buildbot/filters/webrtc_functional.browser_tests.filter",
+    "//testing/buildbot/filters/win.win-rel-cft.browser_tests.filter",
     "//testing/buildbot/filters/win_backuprefptr_fyi.browser_tests.filter",
   ]
 }
@@ -217,6 +220,7 @@ source_set("services_unittests_filters") {
   data = [
     "//testing/buildbot/filters/android.pie_tot.services_unittests.filter",
     "//testing/buildbot/filters/fuchsia.services_unittests.filter",
+    "//testing/buildbot/filters/fuchsia.lsan.services_unittests.filter",
   ]
 }
 
@@ -269,10 +273,8 @@ source_set("gl_tests_filters") {
 source_set("gl_unittests_filters") {
   testonly = true
 
-  data = [
-    "//testing/buildbot/filters/android.emulator_12.gl_unittests.filter",
-    "//testing/buildbot/filters/win.intel.gl_unittests.filter",
-  ]
+  data =
+      [ "//testing/buildbot/filters/android.emulator_12.gl_unittests.filter" ]
 }
 
 source_set("interactive_ui_tests_filters") {
@@ -328,10 +330,7 @@ source_set("ozone_unittests_filters") {
 }
 
 source_set("sandbox_linux_unittests_filters") {
-  data = [
-    "//testing/buildbot/filters/android.emulator.sandbox_linux_unittests.filter",
-    "//testing/buildbot/filters/android.emulator_12.sandbox_linux_unittests.filter",
-  ]
+  data = [ "//testing/buildbot/filters/android.emulator.sandbox_linux_unittests.filter" ]
 }
 
 source_set("unit_tests_filters") {

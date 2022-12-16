@@ -7,6 +7,7 @@
 <translation id="1024364763893396229">שמירה של <ph name="NAME" /></translation>
 <translation id="1032891413405719768">סוללת הסטיילוס חלשה</translation>
 <translation id="1036073649888683237">כדי לנהל את ההתראות, צריך לעבור אל 'הגדרות'</translation>
+<translation id="1036348656032585052">כיבוי</translation>
 <translation id="1036672894875463507">‏אני Google Assistant, ואוכל לעזור לך לכל אורך היום!
 הנה כמה דברים שאפשר לנסות בתור התחלה.</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> נוסף</translation>
@@ -100,6 +101,7 @@
 <translation id="1447641497144572814">שומר המסך מופעל</translation>
 <translation id="1455242230282523554">הצגת הגדרות השפה</translation>
 <translation id="1460620680449458626">צלילים מושתקים.</translation>
+<translation id="14648076227129703">הפעולה הזו מאפשרת גישה למצלמה לאפליקציות <ph name="APP1_NAME" /> וגם <ph name="APP2_NAME" />, ולכל האפליקציות והאתרים שיש להם הרשאת גישה למצלמה</translation>
 <translation id="1467432559032391204">שמאלה</translation>
 <translation id="146902737843070955">האדמין שלך ביקש את השינוי הזה</translation>
 <translation id="147310119694673958">טעינת הסוללה של הטלפון: %<ph name="BATTERY_PERCENTAGE" /></translation>
@@ -159,6 +161,7 @@
 <translation id="1797271123677381264">שכחתי את הסיסמה</translation>
 <translation id="181103072419391116">עוצמת האות: <ph name="SIGNAL_STRENGTH" />, הרשת מנוהלת על ידי מנהל המערכת שלך</translation>
 <translation id="1812997170047690955">מה מופיע במסך שלי?</translation>
+<translation id="1816896987747843206">הפעולה הזו מאפשרת גישה למצלמה לכל האפליקציות והאתרים שיש להם הרשאת גישה למצלמה</translation>
 <translation id="1823280932251546115">מגש הסטטוס, השעה <ph name="TIME" />,
         <ph name="BATTERY" />
         <ph name="CHANNEL" />
@@ -172,10 +175,10 @@
 <translation id="1830308660060964064">ההצמדה של <ph name="ITEM_TITLE" /> בוטלה</translation>
 <translation id="1836215606488044471">‏Assistant (בטעינה...)</translation>
 <translation id="1838895407229022812">תאורת הלילה כבויה.</translation>
+<translation id="1854180393107901205">הפסקת ההעברה</translation>
 <translation id="1862380676329487333">עדכון ויציאה מהחשבון</translation>
 <translation id="1864454756846565995">‏מכשיר עם יציאת USB-C (יציאה אחורית)</translation>
 <translation id="1869497990620230175">קבצים מהירים</translation>
-<translation id="1871703283152909317">הפעלת שתי הרשאות הגישה</translation>
 <translation id="1879018240766558464">בשלב זה, אין תמיכה בחלונות פרטיים. אפליקציות אחרות יישמרו.</translation>
 <translation id="1882814835921407042">אין רשת סלולרית</translation>
 <translation id="1882897271359938046">משקף אל <ph name="DISPLAY_NAME" /></translation>
@@ -213,7 +216,6 @@
 <translation id="2064048859448024834">התצוגה המקדימה של המצלמה מופעלת</translation>
 <translation id="2067602449040652523">בהירות מקלדת</translation>
 <translation id="2078034614700056995">יש להחליק שמאלה עם ארבע אצבעות כדי לעבור לשולחן העבודה הווירטואלי הבא</translation>
-<translation id="2079504693865562705">הסתרת האפליקציות במדף</translation>
 <translation id="2079545284768500474">ביטול הפעולה</translation>
 <translation id="2083190527011054446">לילה טוב <ph name="GIVEN_NAME" />,</translation>
 <translation id="2088116547584365419">משחקים</translation>
@@ -598,6 +600,7 @@
 <translation id="4316910396681052118">כל האפליקציות</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4322742403972824594">‏מקשי הקיצור Ctrl ‏+ ‏Alt + חץ למעלה הוחלפו. כדי לדמות את הפעולה של המקש Home, יש להקיש על <ph name="LAUNCHER_KEY_NAME" /> + החץ שמאלה.</translation>
+<translation id="4324840740119394760">הפעולה הזו מאפשרת גישה למצלמה לאפליקציה <ph name="APP_NAME" /> ולכל האפליקציות והאתרים שיש להם הרשאת גישה למצלמה</translation>
 <translation id="4333628967105022692">‏אין תמיכה בדפדפן Lacros כאשר יש כמה משתמשים מחוברים.</translation>
 <translation id="4338109981321384717">זכוכית מגדלת</translation>
 <translation id="4351433414020964307">‏Assistant בטעינה...</translation>
@@ -664,13 +667,13 @@
 <ph name="QUERY" /></translation>
 <translation id="4659419629803378708">‏ChromeVox הופעל</translation>
 <translation id="4665114317261903604">החלפת מצב 'נא לא להפריע'. <ph name="STATE_TEXT" /></translation>
-<translation id="4666082839192943839">כדי לחסום את כל המצלמות כל הזמן, צריך להשבית את הגישה למצלמה במכשיר הזה.</translation>
 <translation id="4666911709726371538">עוד אפליקציות</translation>
 <translation id="4667099493359681081"><ph name="FILENAME" /> בהורדה</translation>
 <translation id="468293128311738995">אפליקציות מהטלפון שלך</translation>
 <translation id="4690510401873698237">המדף בחלק התחתון</translation>
 <translation id="4696813013609194136">ביטול נעילת המכשיר באמצעות קוד הורה</translation>
 <translation id="4702647871202761252">מסך הפרטיות כבוי</translation>
+<translation id="4706121060329443414">‏יתבצע ניסיון הורדה מאוחר יותר. בינתיים, דיבור יישלח אל Google לעיבוד.</translation>
 <translation id="470644585772471629">היפוך צבעים</translation>
 <translation id="4717575069099566988">‏כבל ה-USB-C שחיברת לא תומך ב-USB4. יכול להיות שביצועי המכשיר יוגבלו.</translation>
 <translation id="4730374152663651037">בשימוש לעתים קרובות</translation>
@@ -696,7 +699,6 @@
 <translation id="485592688953820832">ללא פעולה (השהיה)</translation>
 <translation id="485634149294284819">התפריט להזנת מקלדת</translation>
 <translation id="4860284199500934869">צריך לבדוק את החיבור לרשת כדי להוריד את <ph name="FILENAME" /></translation>
-<translation id="486056901304535126">‏יתבצע ניסיון הורדה מאוחר יותר. הדיבור יישלח אל Google לעיבוד עד שההורדה תושלם.</translation>
 <translation id="4864369630010738180">מתבצעת כניסה...</translation>
 <translation id="4864648187878336334">שולחן עבודה וירטואלי מספר 15</translation>
 <translation id="4868492592575313542">מופעלת</translation>
@@ -791,6 +793,7 @@
 <translation id="5356963482258194581">אפשר להחליף בין עיצוב כהה לעיצוב בהיר. לוחצים לחיצה ימנית על שולחן העבודה ובוחרים באפשרות 'טפט וסגנון'.</translation>
 <translation id="536019650977002321">אין הרשאה מהאדמין להקליט אודיו. צריך לפנות לאדמין לקבלת מידע נוסף.</translation>
 <translation id="5363163447017455357"><ph name="DELIMITER" /> מעבר לכרטיסייה הזו</translation>
+<translation id="5377367976106153749">להפעיל את הגישה למצלמה?</translation>
 <translation id="5379115545237091094">יותר מדי ניסיונות</translation>
 <translation id="5391307769715781764">להחליף את שולחן העבודה השמור?</translation>
 <translation id="5393156353051693207">לוחצים לחיצה ארוכה במקום כלשהו כדי למיין מחדש את האפליקציות</translation>
@@ -922,7 +925,6 @@
 <translation id="6095008505822982596">קצב דיבור</translation>
 <translation id="6099678161144790572">נערך בחודש האחרון</translation>
 <translation id="6103838137565245112">מערכת</translation>
-<translation id="6107292179555508368">הרשאות הגישה למיקרופון ולמצלמה מושבתות במכשיר הזה</translation>
 <translation id="6114505516289286752">הורדת קובצי הדיבור של <ph name="LANGUAGE" /> הסתיימה</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042">אישור ההורדה של <ph name="FILENAME" /></translation>
@@ -949,7 +951,6 @@
 <translation id="6259254695169772643">כדי לבחור יש להשתמש בסטיילוס</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: בהפעלה...</translation>
 <translation id="6274202259872570803">הקלטת מסך</translation>
-<translation id="6282694724099204652">עליך להפעיל את הרשאות הגישה כדי שניתן יהיה להשתמש במיקרופונים ובמצלמות במכשיר הזה באפליקציות ובדפי אינטרנט עם הרשאות.</translation>
 <translation id="6283712521836204486">מצב 'נא לא להפריע' מושבת.</translation>
 <translation id="6284232397434400372">הרזולוציה השתנתה</translation>
 <translation id="6288235558961782912">ניתן יהיה להוסיף את <ph name="USER_EMAIL_ADDRESS" /> מחדש מאוחר יותר לאחר שיתקבל אישור של הורה.</translation>
@@ -1179,7 +1180,6 @@
 <translation id="7564874036684306347">העברת חלונות לשולחן עבודה אחר עלולה לגרום להתנהגות בלתי צפויה.
 
 ייתכן שהודעות, חלונות ותיבות דו-שיח יתפצלו בהמשך בין שולחנות עבודה.</translation>
-<translation id="7567076708801803118">רוצה להשבית את הגישה למצלמה במכשיר הזה?</translation>
 <translation id="7569509451529460200">‏כתב ברייל ו-ChromeVox מופעלים</translation>
 <translation id="7573585051776738856">החלון הפעיל מוצמד לצד שמאל.</translation>
 <translation id="7579778809502851308">צילום מסך</translation>
@@ -1192,7 +1192,6 @@
 <translation id="761736749114493194">החלפת מצב של הפריים האוטומטי במצלמה. <ph name="STATE_TEXT" /></translation>
 <translation id="7624117708979618027">‎<ph name="TEMPERATURE_F" />° F</translation>
 <translation id="7634648064048557203">המצלמה מוצמדת לפינה השמאלית התחתונה</translation>
-<translation id="7641938616688887143">הקלטה</translation>
 <translation id="7642106959537987271">מצב היפוך צבעים</translation>
 <translation id="7642647758716480637">פתיחת ההגדרות של <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (בעלים)</translation>
@@ -1215,7 +1214,6 @@
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{הודעה אחת}one{# הודעות}two{2 הודעות}other{# הודעות}}</translation>
 <translation id="7724603315864178912">חיתוך</translation>
 <translation id="7742327441377685481">אין התראות</translation>
-<translation id="7745560842763881396">הצגת האפליקציות במדף</translation>
 <translation id="7749443890790263709">הגעת למספר המקסימלי של שולחנות עבודה.</translation>
 <translation id="776344839111254542">יש ללחוץ כדי להציג את פרטי העדכון</translation>
 <translation id="7768784765476638775">הקראה</translation>
@@ -1255,6 +1253,7 @@
 <translation id="79341161159229895">החשבון מנוהל על-ידי <ph name="FIRST_PARENT_EMAIL" /> ועל-ידי <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="793716872548410480">‏לצפייה בלוח העריכה, יש ללחוץ על <ph name="SHORTCUT_KEY_NAME" /> + V. בלוח העריכה שמורים חמשת הפריטים האחרונים שהעתקת.</translation>
 <translation id="7942349550061667556">אדום</translation>
+<translation id="7963992254934562106">מ-<ph name="PHONE_NAME" /></translation>
 <translation id="7968693143708939792">בחירת תיקייה…</translation>
 <translation id="7977927628060636163">המערכת מחפשת רשתות סלולריות...</translation>
 <translation id="7982789257301363584">רשת</translation>
@@ -1495,6 +1494,7 @@
 <translation id="954052413789300507">אין מספיק נפח אחסון פנוי בשביל <ph name="FILENAME" />. עליך לפנות מקום.</translation>
 <translation id="974545358917229949">מוצגות <ph name="RESULT_COUNT" /> תוצאות עבור השאילתה: <ph name="QUERY" /></translation>
 <translation id="98515147261107953">לרוחב</translation>
+<translation id="989374776391122812">הפקדים של המצלמה והאודיו</translation>
 <translation id="990277280839877440">החלון <ph name="WINDOW_TITILE" /> נסגר.</translation>
 <translation id="994354411665877646"><ph name="NETWORK_NAME" />,‏ <ph name="SUBTEXT" /></translation>
 <translation id="996204416024568215">קבלה של התכונות ושיפורי האבטחה האחרונים. העדכונים מתבצעים ברקע.</translation>

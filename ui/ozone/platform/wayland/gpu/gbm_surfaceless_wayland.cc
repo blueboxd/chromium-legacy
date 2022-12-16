@@ -109,7 +109,7 @@ GbmSurfacelessWayland::GbmSurfacelessWayland(
     gl::GLDisplayEGL* display,
     WaylandBufferManagerGpu* buffer_manager,
     gfx::AcceleratedWidget widget)
-    : SurfacelessEGL(display, gfx::Size()),
+    : Presenter(display, gfx::Size()),
       buffer_manager_(buffer_manager),
       widget_(widget),
       solid_color_buffers_holder_(std::make_unique<SolidColorBufferHolder>()),
@@ -186,7 +186,7 @@ gfx::SwapResult GbmSurfacelessWayland::PostSubBuffer(
     int width,
     int height,
     PresentationCallback callback,
-    gl::FrameData data) {
+    gfx::FrameData data) {
   // The actual sub buffer handling is handled at higher layers.
   NOTREACHED();
   return gfx::SwapResult::SWAP_FAILED;
@@ -195,7 +195,7 @@ gfx::SwapResult GbmSurfacelessWayland::PostSubBuffer(
 void GbmSurfacelessWayland::SwapBuffersAsync(
     SwapCompletionCallback completion_callback,
     PresentationCallback presentation_callback,
-    gl::FrameData data) {
+    gfx::FrameData data) {
   TRACE_EVENT0("wayland", "GbmSurfacelessWayland::SwapBuffersAsync");
   // If last swap failed, don't try to schedule new ones.
   if (!last_swap_buffers_result_) {
@@ -214,7 +214,7 @@ void GbmSurfacelessWayland::SwapBuffersAsync(
   PendingFrame* frame = unsubmitted_frames_.back().get();
   frame->completion_callback = std::move(completion_callback);
   frame->presentation_callback = std::move(presentation_callback);
-  frame->data = std::move(data);
+  frame->data = data;
 
   unsubmitted_frames_.push_back(
       std::make_unique<PendingFrame>(next_frame_id()));
@@ -256,7 +256,7 @@ void GbmSurfacelessWayland::PostSubBufferAsync(
     int height,
     SwapCompletionCallback completion_callback,
     PresentationCallback presentation_callback,
-    gl::FrameData data) {
+    gfx::FrameData data) {
   SwapBuffersAsync(std::move(completion_callback),
                    std::move(presentation_callback), data);
 }

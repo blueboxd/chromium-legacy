@@ -57,6 +57,7 @@
 #include "chrome/browser/ash/login/screens/arc_terms_of_service_screen.h"
 #include "chrome/browser/ash/login/screens/assistant_optin_flow_screen.h"
 #include "chrome/browser/ash/login/screens/base_screen.h"
+#include "chrome/browser/ash/login/screens/choobe_screen.h"
 #include "chrome/browser/ash/login/screens/consolidated_consent_screen.h"
 #include "chrome/browser/ash/login/screens/cryptohome_recovery_screen.h"
 #include "chrome/browser/ash/login/screens/cryptohome_recovery_setup_screen.h"
@@ -134,6 +135,7 @@
 #include "chrome/browser/ui/webui/ash/login/arc_terms_of_service_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/assistant_optin_flow_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/auto_enrollment_check_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/choobe_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/consolidated_consent_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/cryptohome_recovery_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/cryptohome_recovery_setup_screen_handler.h"
@@ -840,6 +842,14 @@ WizardController::CreateScreens() {
         base::BindRepeating(&WizardController::OnCryptohomeRecoveryScreenExit,
                             weak_factory_.GetWeakPtr())));
   }
+
+  if (features::IsOobeChoobeEnabled()) {
+    append(std::make_unique<ChoobeScreen>(
+        oobe_ui->GetView<ChoobeScreenHandler>()->AsWeakPtr(),
+        base::BindRepeating(&WizardController::OnChoobeScreenExit,
+                            weak_factory_.GetWeakPtr())));
+  }
+
   return result;
 }
 
@@ -1068,6 +1078,12 @@ void WizardController::ShowConsolidatedConsentScreen() {
   SetCurrentScreen(GetScreen(ConsolidatedConsentScreenView::kScreenId));
 }
 
+void WizardController::ShowChoobeScreen() {
+  DCHECK(features::IsOobeChoobeEnabled());
+  GetChoobeFlowController()->Start();
+  SetCurrentScreen(GetScreen(ChoobeScreenView::kScreenId));
+}
+
 void WizardController::ShowCryptohomeRecoverySetupScreen() {
   CHECK(features::IsCryptohomeRecoverySetupEnabled());
   SetCurrentScreen(GetScreen(CryptohomeRecoverySetupScreenView::kScreenId));
@@ -1178,6 +1194,10 @@ void WizardController::OnGaiaScreenExit(GaiaScreen::Result result) {
       break;
     case GaiaScreen::Result::START_CONSUMER_KIOSK:
       LoginDisplayHost::default_host()->AttemptShowEnableConsumerKioskScreen();
+      break;
+    case GaiaScreen::Result::LOGIN_SUCCESS:
+      LoginDisplayHost::default_host()->CompleteLogin(
+          *wizard_context_->extra_factors_auth_session);
       break;
   }
 }
@@ -1378,17 +1398,36 @@ void WizardController::OnCryptohomeRecoveryScreenExit() {
   NOTREACHED();
 }
 
+void WizardController::OnChoobeScreenExit(ChoobeScreen::Result result) {
+  OnScreenExit(ChoobeScreenView::kScreenId,
+               ChoobeScreen::GetResultString(result));
+
+  switch (result) {
+    case ChoobeScreen::Result::SELECTED:
+    case ChoobeScreen::Result::NOT_APPLICABLE:
+      ShowThemeSelectionScreen();
+      break;
+    case ChoobeScreen::Result::SKIPPED:
+      ShowMarketingOptInScreen();
+      break;
+  }
+}
+
 void WizardController::SkipToLoginForTesting() {
   VLOG(1) << "WizardController::SkipToLoginForTesting()";
   if (current_screen_ && current_screen_->screen_id() == GaiaView::kScreenId)
     return;
   wizard_context_->skip_to_login_for_tests = true;
 
-  if (!features::IsOobeConsolidatedConsentEnabled())
-    StartupUtils::MarkEulaAccepted();
+  if (LoginDisplayHost::default_host()->HasUserPods()) {
+    AdvanceToSigninScreen();
+  } else {
+    if (!features::IsOobeConsolidatedConsentEnabled())
+      StartupUtils::MarkEulaAccepted();
 
-  PerformPostNetworkScreenActions();
-  OnDeviceDisabledChecked(false /* device_disabled */);
+    PerformPostNetworkScreenActions();
+    OnDeviceDisabledChecked(false /* device_disabled */);
+  }
 }
 
 void WizardController::OnScreenExit(OobeScreenId screen,
@@ -1910,7 +1949,10 @@ void WizardController::OnGestureNavigationScreenExit(
     GestureNavigationScreen::Result result) {
   OnScreenExit(GestureNavigationScreenView::kScreenId,
                GestureNavigationScreen::GetResultString(result));
-  ShowThemeSelectionScreen();
+  if (features::IsOobeChoobeEnabled())
+    ShowChoobeScreen();
+  else
+    ShowThemeSelectionScreen();
 }
 
 void WizardController::OnMarketingOptInScreenExit(

@@ -7,9 +7,10 @@
 #include "base/atomic_sequence_num.h"
 #include "base/notreached.h"
 #include "build/build_config.h"
+#include "printing/buildflags/buildflags.h"
 #include "printing/units.h"
 
-#if defined(USE_CUPS) && (BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS))
+#if BUILDFLAG(USE_CUPS) && (BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS))
 #include <cups/cups.h>
 #endif
 
@@ -26,7 +27,7 @@ mojom::ColorModel ColorModeToColorModel(int color_mode) {
   return static_cast<mojom::ColorModel>(color_mode);
 }
 
-#if defined(USE_CUPS)
+#if BUILDFLAG(USE_CUPS)
 void GetColorModelForModel(mojom::ColorModel color_model,
                            std::string* color_setting_name,
                            std::string* color_value) {
@@ -188,7 +189,7 @@ std::string GetIppColorModelForModel(mojom::ColorModel color_model) {
                           : CUPS_PRINT_COLOR_MODE_MONOCHROME;
 }
 #endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS)
-#endif  // defined(USE_CUPS)
+#endif  // BUILDFLAG(USE_CUPS)
 
 absl::optional<bool> IsColorModelSelected(mojom::ColorModel color_model) {
   switch (color_model) {
@@ -281,6 +282,7 @@ PrintSettings& PrintSettings::operator=(const PrintSettings& settings) {
   username_ = settings.username_;
   oauth_token_ = settings.oauth_token_;
   pin_value_ = settings.pin_value_;
+  client_infos_ = settings.client_infos_;
 #endif  // BUILDFLAG(IS_CHROMEOS)
   return *this;
 }
@@ -321,6 +323,7 @@ void PrintSettings::Clear() {
   username_.clear();
   oauth_token_.clear();
   pin_value_.clear();
+  client_infos_.clear();
 #endif  // BUILDFLAG(IS_CHROMEOS)
 }
 

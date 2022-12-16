@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.privacy.settings;
 
+import static org.chromium.components.content_settings.PrefNames.COOKIE_CONTROLS_MODE;
+
 import android.os.Build;
 import android.os.Bundle;
 import android.text.SpannableString;
@@ -15,6 +17,7 @@ import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncherImpl;
@@ -23,6 +26,7 @@ import org.chromium.chrome.browser.incognito.reauth.IncognitoReauthSettingSwitch
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.prefetch.settings.PreloadPagesSettingsFragment;
 import org.chromium.chrome.browser.privacy.secure_dns.SecureDnsSettings;
+import org.chromium.chrome.browser.privacy_guide.PrivacyGuideInteractions;
 import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxBridge;
 import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxReferrer;
 import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxSettingsBaseFragment;
@@ -39,6 +43,8 @@ import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
+import org.chromium.components.browser_ui.site_settings.ContentSettingsResources;
+import org.chromium.components.browser_ui.site_settings.SingleCategorySettings;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.user_prefs.UserPrefs;
@@ -62,6 +68,7 @@ public class PrivacySettings
     private static final String PREF_PRIVACY_SANDBOX = "privacy_sandbox";
     private static final String PREF_PRIVACY_GUIDE = "privacy_guide";
     private static final String PREF_INCOGNITO_LOCK = "incognito_lock";
+    private static final String PREF_THIRD_PARTY_COOKIES = "third_party_cookies";
 
     private ManagedPreferenceDelegate mManagedPreferenceDelegate;
     private IncognitoLockSettings mIncognitoLockSettings;
@@ -95,6 +102,9 @@ public class PrivacySettings
         // Record the launch of PG from the S&P link-row entry point
         privacyGuidePreference.setOnPreferenceClickListener(preference -> {
             RecordUserAction.record("Settings.PrivacyGuide.StartPrivacySettings");
+            RecordHistogram.recordEnumeratedHistogram("Settings.PrivacyGuide.EntryExit",
+                    PrivacyGuideInteractions.SETTINGS_LINK_ROW_ENTRY,
+                    PrivacyGuideInteractions.MAX_VALUE);
             return false;
         });
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.PRIVACY_GUIDE)) {
@@ -137,6 +147,14 @@ public class PrivacySettings
 
         Preference syncAndServicesLink = findPreference(PREF_SYNC_AND_SERVICES_LINK);
         syncAndServicesLink.setSummary(buildSyncAndServicesLink());
+
+        Preference thirdPartyCookies = findPreference(PREF_THIRD_PARTY_COOKIES);
+        if (thirdPartyCookies != null) {
+            thirdPartyCookies.getExtras().putString(
+                    SingleCategorySettings.EXTRA_CATEGORY, thirdPartyCookies.getKey());
+            thirdPartyCookies.getExtras().putString(
+                    SingleCategorySettings.EXTRA_TITLE, thirdPartyCookies.getTitle().toString());
+        }
 
         updatePreferences();
     }
@@ -248,6 +266,12 @@ public class PrivacySettings
         }
 
         mIncognitoLockSettings.updateIncognitoReauthPreferenceIfNeeded(getActivity());
+
+        Preference thirdPartyCookies = findPreference(PREF_THIRD_PARTY_COOKIES);
+        if (thirdPartyCookies != null) {
+            thirdPartyCookies.setSummary(ContentSettingsResources.getThirdPartyCookieListSummary(
+                    prefService.getInteger(COOKIE_CONTROLS_MODE)));
+        }
     }
 
     private ChromeManagedPreferenceDelegate createManagedPreferenceDelegate() {

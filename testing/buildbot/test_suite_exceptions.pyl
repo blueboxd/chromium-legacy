@@ -35,6 +35,10 @@
         },
       },
       'android-12-x64-rel': {
+        # TODO(crbug.com/1225851): Remove experiment and ci_only
+        # once the test suite is stable.
+        'ci_only': True,
+        'experiment_percentage': 100,
         'args': [
           # https://crbug.com/1289764
           '--gtest_filter=-All/ChromeBrowsingDataLifetimeManagerScheduledRemovalTest.History/*',
@@ -123,6 +127,7 @@
       # Disabling MSan tests since linux-chromeos chrome crashes on MSan build.
       # TODO(crbug.com/1376064): Re-enable.
       'Linux ChromiumOS MSan Tests',
+      'Linux ChromiumOS MSan Focal',
     ]
   },
   'aura_unittests amd64-generic': {
@@ -144,15 +149,9 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.pie_tot.base_unittests.filter',
         ],
       },
-      'android-11-x86-rel': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.base_unittests.filter',
-        ],
-      },
       'android-12-x64-rel': {
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.base_unittests.filter',
-          '--gtest_filter=-ModuleCacheTest.CheckAgainstProcMaps',  # crbug.com/1260521
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12.base_unittests.filter',
         ],
       },
       'fuchsia-code-coverage': {
@@ -1083,6 +1082,11 @@
           'shards': 20,
         },
       },
+      'linux-rel-cft': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/linux.linux-rel-cft.browser_tests.filter',
+        ],
+      },
       'mac-code-coverage': {
         'args': [
           '--coverage-continuous-mode=1',
@@ -1092,6 +1096,11 @@
         'swarming': {
           'shards': 12,
         },
+      },
+      'mac-rel-cft': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/mac.mac-rel-cft.browser_tests.filter',
+        ],
       },
       'mac11-arm64-rel-tests': {
         'args': [
@@ -1122,6 +1131,11 @@
       'win-backuprefptr-x64-fyi-rel': {
        'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/win_backuprefptr_fyi.browser_tests.filter',
+        ],
+      },
+      'win-rel-cft': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/win.win-rel-cft.browser_tests.filter',
         ],
       },
       'win10-rel-no-external-ip': {
@@ -1683,6 +1697,10 @@
         },
       },
       'android-12-x64-rel': {
+        # TODO(crbug.com/1225851): Remove experiment and ci_only
+        # once the test suite is stable.
+        'ci_only': True,
+        'experiment_percentage': 100,
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12.content_browsertests.filter',
         ],
@@ -2206,6 +2224,11 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12.gl_tests.filter',
         ],
       },
+      'android-arm64-proguard-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.arm64_proguard_rel.gl_tests.filter', # https://crbug.com/1034007
+        ],
+      },
       'android-nougat-x86-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n.gl_tests.filter',
@@ -2237,11 +2260,6 @@
       'Linux MSan Tests',
     ],
     'modifications': {
-      'Win10 FYI x64 Exp Release (Intel HD 630)': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/win.intel.gl_unittests.filter',
-        ],
-      },
       'android-12-x64-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12.gl_unittests.filter',
@@ -3103,11 +3121,6 @@
   },
   'sandbox_linux_unittests': {
     'modifications': {
-      'android-12-x64-rel': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12.sandbox_linux_unittests.filter',
-        ]
-      },
       'android-nougat-x86-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.sandbox_linux_unittests.filter',
@@ -3222,6 +3235,11 @@
           'shards': 7,
         },
       },
+      'fuchsia-fyi-x64-asan': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.lsan.services_unittests.filter',
+        ],
+      },
     }
   },
   'snapshot_unittests': {
@@ -3259,6 +3277,9 @@
         },
       },
       'Mac12 Tests': {
+        'precommit_args': [
+            '--gtest_filter=-*',
+        ],
         'swarming': {
           'shards': 4,
         },
@@ -3625,6 +3646,17 @@
       'android-pie-x86-rel',
       'VR Linux',
     ],
+  },
+  'vulkan_pixel_skia_gold_test': {
+    'replacements': {
+      # The V8 builders pass the V8 revision for ${got_revision}, so instead
+      # use ${got_cr_revision}, which is only set on the V8 bots.
+      'Linux V8 FYI Release (NVIDIA)': {
+        'args': {
+          '--git-revision': '${got_cr_revision}',
+        },
+      },
+    },
   },
   'wayland_client_perftests': {
     'remove_from': [
@@ -4025,6 +4057,14 @@
   },
   'wpt_tests_suite': {
     'modifications': {
+      'linux-wpt-content-shell-asan-fyi-rel': {
+        'args': [
+          '--enable-sanitizer',
+        ],
+        'swarming': {
+          'shards': 8,
+        },
+      },
       'win10-wpt-content-shell-fyi-rel': {
         'args': [
           '--target',

@@ -41,6 +41,22 @@ std::string GetStringFromDictionary(const base::Value& dict, const char* key) {
   return stringp ? *stringp : std::string();
 }
 
+bool IsValidConnectionState(const std::string& connection_state) {
+  return connection_state == shill::kStateIdle ||
+         connection_state == shill::kStateAssociation ||
+         connection_state == shill::kStateConfiguration ||
+         connection_state == shill::kStateReady ||
+         connection_state == shill::kStateNoConnectivity ||
+         connection_state == shill::kStateRedirectFound ||
+         connection_state == shill::kStatePortalSuspected ||
+         connection_state == shill::kStateOnline ||
+         connection_state == shill::kStateFailure ||
+         connection_state == shill::kStateDisconnect ||
+         // TODO(b/260792466): Empty should not be a valid state,
+         // but e.g. new tether NetworkStates and unit tests use it currently.
+         connection_state.empty();
+}
+
 }  // namespace
 
 namespace ash {
@@ -385,36 +401,22 @@ void NetworkState::ClearError() {
 std::string NetworkState::connection_state() const {
   if (!visible())
     return shill::kStateIdle;
-  DCHECK(connection_state_ == shill::kStateIdle ||
-         connection_state_ == shill::kStateAssociation ||
-         connection_state_ == shill::kStateConfiguration ||
-         connection_state_ == shill::kStateReady ||
-         connection_state_ == shill::kStateNoConnectivity ||
-         connection_state_ == shill::kStateRedirectFound ||
-         connection_state_ == shill::kStatePortalSuspected ||
-         // TODO(https://crbug.com/552190): Remove kStateOffline from this list
-         // when occurrences in chromium code have been eliminated.
-         connection_state_ == shill::kStateOffline ||
-         connection_state_ == shill::kStateOnline ||
-         connection_state_ == shill::kStateFailure ||
-         connection_state_ == shill::kStateDisconnect ||
-         // TODO(https://crbug.com/552190): Empty should not be a valid state,
-         // but e.g. new tether NetworkStates and unit tests use it currently.
-         connection_state_.empty());
 
   return connection_state_;
 }
 
 void NetworkState::SetConnectionState(const std::string& connection_state) {
+  DCHECK(IsValidConnectionState(connection_state)) << connection_state;
+
   if (connection_state == connection_state_)
     return;
-  last_connection_state_ = connection_state_;
+  const std::string prev_connection_state = connection_state_;
   connection_state_ = connection_state;
   if (StateIsConnected(connection_state_) ||
-      StateIsConnecting(last_connection_state_)) {
+      StateIsConnecting(prev_connection_state)) {
     // If connected or previously connecting, clear |connect_requested_|.
     connect_requested_ = false;
-  } else if (StateIsConnected(last_connection_state_) &&
+  } else if (StateIsConnected(prev_connection_state) &&
              StateIsConnecting(connection_state_)) {
     // If transitioning from a connected state to a connecting state, set
     // |connect_requested_| so that the UI knows the connecting state is
@@ -648,6 +650,13 @@ bool NetworkState::UpdateName(const base::Value& properties) {
 }
 
 void NetworkState::UpdateCaptivePortalState(const base::Value& properties) {
+  if (!IsConnectedState()) {
+    // Unconnected networks are in an unknown portal state and should not
+    // update histograms.
+    shill_portal_state_ = PortalState::kUnknown;
+    return;
+  }
+
   int status_code =
       properties.FindIntKey(shill::kPortalDetectionFailedStatusCodeProperty)
           .value_or(0);

@@ -21,7 +21,6 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.AppPresence;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.AppSpeed;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.FactorySpeed;
-import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 import java.util.concurrent.TimeoutException;
@@ -31,20 +30,18 @@ import java.util.concurrent.TimeoutException;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-public class PaymentRequestShowPromiseUSOnlyShippingTest implements MainActivityStartCallback {
+public class PaymentRequestShowPromiseUSOnlyShippingTest {
     @Rule
     public PaymentRequestTestRule mRule =
-            new PaymentRequestTestRule("show_promise/us_only_shipping.html", this);
-
-    @Override
-    public void onMainActivityStarted() {}
+            new PaymentRequestTestRule("show_promise/us_only_shipping.html");
 
     @Test
     @MediumTest
     @DisabledTest(message = "crbug.com/1182234")
     @Feature({"Payments"})
     public void testCannotShipWithFastApp() throws TimeoutException {
-        mRule.addPaymentAppFactory("basic-card", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
+        mRule.addPaymentAppFactory(
+                "https://example.test", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
         runCannotShipTest();
     }
 
@@ -53,17 +50,17 @@ public class PaymentRequestShowPromiseUSOnlyShippingTest implements MainActivity
     @DisabledTest(message = "crbug.com/1182234")
     @Feature({"Payments"})
     public void testCannotShipWithSlowApp() throws TimeoutException {
-        mRule.addPaymentAppFactory(
-                "basic-card", AppPresence.HAVE_APPS, FactorySpeed.SLOW_FACTORY, AppSpeed.SLOW_APP);
+        mRule.addPaymentAppFactory("https://example.test", AppPresence.HAVE_APPS,
+                FactorySpeed.SLOW_FACTORY, AppSpeed.SLOW_APP);
         runCannotShipTest();
     }
 
     private void runCannotShipTest() throws TimeoutException {
         AutofillTestHelper autofillTestHelper = new AutofillTestHelper();
-        autofillTestHelper.setProfile(new AutofillProfile("", "https://example.com", true,
+        autofillTestHelper.setProfile(new AutofillProfile("", "https://example.test", true,
                 "" /* honorific prefix */, "Jon Doe", "Google", "51 Breithaupt St", "ON",
                 "Kitchener", "", "N2H 5G5", "", "CA", "555-222-2222", "", "en-CA"));
-        mRule.triggerUIAndWait(mRule.getReadyForInput());
+        mRule.triggerUIAndWait("buy", mRule.getReadyForInput());
         Assert.assertEquals("USD $1.00", mRule.getOrderSummaryTotal());
         mRule.clickInShippingAddressAndWait(R.id.payments_section, mRule.getReadyForInput());
         Assert.assertEquals("To see shipping methods and requirements, select an address",
@@ -80,7 +77,8 @@ public class PaymentRequestShowPromiseUSOnlyShippingTest implements MainActivity
     @DisabledTest(message = "crbug.com/1182234")
     @Feature({"Payments"})
     public void testCanShipWithFastApp() throws TimeoutException {
-        mRule.addPaymentAppFactory("basic-card", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
+        mRule.addPaymentAppFactory(
+                "https://example.test", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
         runCanShipTest();
     }
 
@@ -89,17 +87,17 @@ public class PaymentRequestShowPromiseUSOnlyShippingTest implements MainActivity
     @DisabledTest(message = "crbug.com/1182234")
     @Feature({"Payments"})
     public void testCanShipWithSlowApp() throws TimeoutException {
-        mRule.addPaymentAppFactory(
-                "basic-card", AppPresence.HAVE_APPS, FactorySpeed.SLOW_FACTORY, AppSpeed.SLOW_APP);
+        mRule.addPaymentAppFactory("https://example.test", AppPresence.HAVE_APPS,
+                FactorySpeed.SLOW_FACTORY, AppSpeed.SLOW_APP);
         runCanShipTest();
     }
 
     private void runCanShipTest() throws TimeoutException {
         AutofillTestHelper autofillTestHelper = new AutofillTestHelper();
-        autofillTestHelper.setProfile(new AutofillProfile("", "https://example.com", true,
+        autofillTestHelper.setProfile(new AutofillProfile("", "https://example.test", true,
                 "" /* honorific prefix */, "Jane Smith", "Google", "340 Main St", "California",
                 "Los Angeles", "", "90291", "", "US", "555-111-1111", "", "en-US"));
-        mRule.triggerUIAndWait(mRule.getReadyForInput());
+        mRule.triggerUIAndWait("buy", mRule.getReadyForInput());
         Assert.assertEquals("USD $1.00", mRule.getOrderSummaryTotal());
         mRule.clickInShippingAddressAndWait(R.id.payments_section, mRule.getReadyForInput());
         Assert.assertEquals("To see shipping methods and requirements, select an address",

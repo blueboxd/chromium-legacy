@@ -131,10 +131,15 @@ FastPairPairerImpl::FastPairPairerImpl(
   // If this is a v1 pairing, we pass off the responsibility to the Bluetooth
   // pairing dialog, and will listen for the
   // BluetoothAdapter::Observer::DevicePairedChanged event before firing the
-  // |paired_callback|.
+  // |paired_callback|. V1 devices only support the "initial pairing" protocol,
+  // not the "retroactive" or "subsequent" pairing protocols, so only
+  // "initial pairing" metrics are emitted to here.
   if (device_->version().value() == DeviceFastPairVersion::kV1) {
     RecordInitialSuccessFunnelFlow(
         FastPairInitialSuccessFunnelEvent::kV1DeviceDetected);
+    RecordFastPairInitializePairingProcessEvent(
+        *device_,
+        FastPairInitializePairingProcessEvent::kPassedToPairingDialog);
     Shell::Get()->system_tray_model()->client()->ShowBluetoothPairingDialog(
         device_->ble_address);
     return;
@@ -148,6 +153,8 @@ FastPairPairerImpl::FastPairPairerImpl(
     if (fast_pair_handshake_->completed_successfully()) {
       QP_LOG(VERBOSE) << __func__
                       << ": Reusing handshake for retried pair attempt.";
+      RecordFastPairInitializePairingProcessEvent(
+          *device_, FastPairInitializePairingProcessEvent::kHandshakeReused);
       OnHandshakeComplete(device_, /*failure=*/absl::nullopt);
       return;
     }
@@ -170,9 +177,14 @@ FastPairPairerImpl::FastPairPairerImpl(
 void FastPairPairerImpl::OnHandshakeComplete(
     scoped_refptr<Device> device,
     absl::optional<PairFailure> failure) {
+  // TODO(b/259429032) : Log with `RecordInitializationRetriesBeforeSuccess`
+  // the number of handshake retries occurred before success. Log with
+  // `FastPairInitializePairingProcessEvent` if we have exhausted the retries.
+
   if (failure.has_value()) {
     QP_LOG(WARNING) << __func__ << ": Handshake failed with " << device
                     << " because: " << failure.value();
+    RecordInitializationFailureReason(*device, failure.value());
     std::move(pair_failed_callback_).Run(device_, failure.value());
     // |this| may be destroyed after this line.
     return;
@@ -181,6 +193,7 @@ void FastPairPairerImpl::OnHandshakeComplete(
   // During handshake, the device address can be set to null.
   if (!device_->classic_address()) {
     QP_LOG(WARNING) << __func__ << ": Device lost during handshake.";
+    RecordInitializationFailureReason(*device, PairFailure::kPairingDeviceLost);
     std::move(pair_failed_callback_)
         .Run(device_, PairFailure::kPairingDeviceLost);
     // |this| may be destroyed after this line.
@@ -205,30 +218,12 @@ void FastPairPairerImpl::OnHandshakeComplete(
 
 FastPairPairerImpl::~FastPairPairerImpl() {
   adapter_->RemovePairingDelegate(this);
-  device::BluetoothDevice* bt_device = nullptr;
-  if (device_->classic_address())
-    bt_device = adapter_->GetDevice(device_->classic_address().value());
-  if (!bt_device) {
-    QP_LOG(VERBOSE)
-        << __func__
-        << ": No device found in destructor for failed pairing attempt.";
-    return;
-  }
-
-  if (!bt_device->IsPaired()) {
-    QP_LOG(INFO)
-        << __func__
-        << ": Cancelling pairing in destructor for failed pair attempt.";
-    bt_device->CancelPairing();
-    return;
-  }
-
-  QP_LOG(VERBOSE) << __func__
-                  << ": Not cancelling pairing in destructor for successful "
-                     "pair attempt.";
 }
 
 void FastPairPairerImpl::StartPairing() {
+  RecordProtocolPairingStep(FastPairProtocolPairingSteps::kPairingStarted,
+                            *device_);
+
   std::string device_address = device_->classic_address().value();
   device::BluetoothDevice* bt_device = adapter_->GetDevice(device_address);
   switch (device_->protocol) {
@@ -247,13 +242,15 @@ void FastPairPairerImpl::StartPairing() {
         QP_LOG(INFO) << __func__
                      << ": Trying to pair to device that is already paired; "
                         "returning success.";
-        std::move(paired_callback_).Run(device_);
-
-        // In addition to recording kPairingSuccess in the callback above,
-        // also record that the device was already paired.
+        RecordProtocolPairingStep(FastPairProtocolPairingSteps::kAlreadyPaired,
+                                  *device_);
+        RecordProtocolPairingStep(
+            FastPairProtocolPairingSteps::kPairingComplete, *device_);
         AttemptRecordingFastPairEngagementFlow(
             *device_,
             FastPairEngagementFlowEvent::kPairingSucceededAlreadyPaired);
+
+        std::move(paired_callback_).Run(device_);
         AttemptSendAccountKey();
         return;
       }
@@ -308,6 +305,8 @@ void FastPairPairerImpl::OnPairConnected(
     return;
   }
 
+  RecordProtocolPairingStep(FastPairProtocolPairingSteps::kBondSuccessful,
+                            *device_);
   ask_confirm_passkey_initial_time_ = base::TimeTicks::Now();
 }
 
@@ -316,6 +315,8 @@ void FastPairPairerImpl::OnConnectDevice(device::BluetoothDevice* device) {
     return;
 
   QP_LOG(INFO) << __func__;
+  RecordProtocolPairingStep(FastPairProtocolPairingSteps::kBondSuccessful,
+                            *device_);
   ask_confirm_passkey_initial_time_ = base::TimeTicks::Now();
   RecordConnectDeviceResult(/*success=*/true);
   // The device ID can change between device discovery and connection, so
@@ -336,6 +337,8 @@ void FastPairPairerImpl::OnConnectError(const std::string& error_message) {
 void FastPairPairerImpl::ConfirmPasskey(device::BluetoothDevice* device,
                                         uint32_t passkey) {
   QP_LOG(INFO) << __func__;
+  RecordProtocolPairingStep(FastPairProtocolPairingSteps::kPasskeyNegotiated,
+                            *device_);
   RecordConfirmPasskeyAskTime(base::TimeTicks::Now() -
                               ask_confirm_passkey_initial_time_);
   confirm_passkey_initial_time_ = base::TimeTicks::Now();
@@ -370,6 +373,8 @@ void FastPairPairerImpl::OnPasskeyResponse(
     absl::optional<PairFailure> failure) {
   QP_LOG(INFO) << __func__;
   RecordWritePasskeyCharacteristicResult(/*success=*/!failure.has_value());
+  RecordProtocolPairingStep(
+      FastPairProtocolPairingSteps::kRecievedPasskeyResponse, *device_);
 
   if (failure) {
     QP_LOG(WARNING) << __func__
@@ -410,6 +415,9 @@ void FastPairPairerImpl::OnParseDecryptedPasskey(
     return;
   }
 
+  RecordProtocolPairingStep(FastPairProtocolPairingSteps::kPasskeyValidated,
+                            *device_);
+
   if (passkey->passkey != expected_passkey_) {
     QP_LOG(ERROR) << "Passkeys do not match. Expected: " << expected_passkey_
                   << ". Actual: " << passkey->passkey;
@@ -420,6 +428,8 @@ void FastPairPairerImpl::OnParseDecryptedPasskey(
     return;
   }
 
+  RecordProtocolPairingStep(FastPairProtocolPairingSteps::kPasskeyConfirmed,
+                            *device_);
   RecordPasskeyCharacteristicDecryptResult(/*success=*/true);
   RecordPasskeyCharacteristicDecryptTime(base::TimeTicks::Now() -
                                          decrypt_start_time);
@@ -482,8 +492,11 @@ void FastPairPairerImpl::AttemptSendAccountKey() {
   // be.
   if (!ShouldBeEnabledForLoginStatus(
           Shell::Get()->session_controller()->login_status())) {
-    RecordInitialSuccessFunnelFlow(
-        FastPairInitialSuccessFunnelEvent::kGuestModeDetected);
+    if (device_->protocol == Protocol::kFastPairInitial) {
+      RecordInitialSuccessFunnelFlow(
+          FastPairInitialSuccessFunnelEvent::kGuestModeDetected);
+    }
+
     QP_LOG(VERBOSE) << __func__ << ": No logged in user to save account key to";
     std::move(pairing_procedure_complete_).Run(device_);
     return;
@@ -541,8 +554,12 @@ void FastPairPairerImpl::OnIsDeviceSavedToAccount(
     QP_LOG(INFO) << __func__
                  << ": Device is already saved, skipping write account key. "
                     "Pairing procedure complete.";
-    RecordInitialSuccessFunnelFlow(
-        FastPairInitialSuccessFunnelEvent::kDeviceAlreadyAssociatedToAccount);
+
+    if (device_->protocol == Protocol::kFastPairInitial) {
+      RecordInitialSuccessFunnelFlow(
+          FastPairInitialSuccessFunnelEvent::kDeviceAlreadyAssociatedToAccount);
+    }
+
     std::move(pairing_procedure_complete_).Run(device_);
     return;
   }
@@ -561,8 +578,11 @@ void FastPairPairerImpl::WriteAccountKey() {
   RAND_bytes(account_key.data(), account_key.size());
   account_key[0] = 0x04;
 
-  RecordInitialSuccessFunnelFlow(
-      FastPairInitialSuccessFunnelEvent::kPreparingToWriteAccountKey);
+  if (device_->protocol == Protocol::kFastPairInitial) {
+    RecordInitialSuccessFunnelFlow(
+        FastPairInitialSuccessFunnelEvent::kPreparingToWriteAccountKey);
+  }
+
   fast_pair_gatt_service_client_->WriteAccountKey(
       account_key, fast_pair_handshake_->fast_pair_data_encryptor(),
       base::BindOnce(&FastPairPairerImpl::OnWriteAccountKey,
@@ -603,8 +623,12 @@ void FastPairPairerImpl::OnWriteAccountKey(
   QP_LOG(INFO)
       << __func__
       << ": Account key written to device. Pairing procedure complete.";
-  RecordInitialSuccessFunnelFlow(
-      FastPairInitialSuccessFunnelEvent::kAccountKeyWritten);
+
+  if (device_->protocol == Protocol::kFastPairInitial) {
+    RecordInitialSuccessFunnelFlow(
+        FastPairInitialSuccessFunnelEvent::kAccountKeyWritten);
+  }
+
   std::move(pairing_procedure_complete_).Run(device_);
 }
 
@@ -656,6 +680,9 @@ void FastPairPairerImpl::DevicePairedChanged(device::BluetoothAdapter* adapter,
   if (device->GetAddress() == device_->ble_address ||
       device->GetAddress() == device_->classic_address()) {
     QP_LOG(INFO) << __func__ << ": Completing pairing procedure " << device_;
+    RecordProtocolPairingStep(FastPairProtocolPairingSteps::kPairingComplete,
+                              *device_);
+
     std::move(paired_callback_).Run(device_);
 
     // For V2 devices we still need to remove the Pairing Delegate and write the

@@ -10,9 +10,13 @@ source_set("feed_promos") {
   ]
   deps = [
     ":feed_promos_ui",
+    "//ios/chrome/browser/discover_feed",
+    "//ios/chrome/browser/discover_feed:discover_feed_factory",
     "//ios/chrome/browser/main:public",
+    "//ios/chrome/browser/ntp:features",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
+    "//ios/chrome/browser/ui/ntp/metrics",
     "//ios/chrome/common/ui/confirmation_alert",
   ]
 }
@@ -26,6 +30,7 @@ source_set("feed_promos_ui") {
   deps = [
     "resources:sign_in_promo_logo",
     "//base",
+    "//ios/chrome/app/strings",
     "//ios/chrome/common/ui/colors",
     "//ios/chrome/common/ui/confirmation_alert",
     "//ui/base",

@@ -319,13 +319,13 @@ class WaylandBufferManagerTest : public WaylandTest {
   void CommitBuffer(gfx::AcceleratedWidget widget,
                     uint32_t frame_id,
                     uint32_t buffer_id,
-                    gl::FrameData data,
+                    gfx::FrameData data,
                     const gfx::Rect& bounds_rect,
                     const gfx::RoundedCornersF& corners,
                     float surface_scale_factor,
                     const gfx::Rect& damage_region) {
-    buffer_manager_gpu_->CommitBuffer(widget, frame_id, buffer_id,
-                                      std::move(data), bounds_rect, corners,
+    buffer_manager_gpu_->CommitBuffer(widget, frame_id, buffer_id, data,
+                                      bounds_rect, corners,
                                       surface_scale_factor, damage_region);
     // Let the mojo message to be processed.
     base::RunLoop().RunUntilIdle();
@@ -371,7 +371,7 @@ TEST_P(WaylandBufferManagerTest, VerifyModifiers) {
     });
 
     auto buffer_formats =
-        connection_->wayland_buffer_factory()->GetSupportedBufferFormats();
+        connection_->buffer_factory()->GetSupportedBufferFormats();
     ASSERT_EQ(buffer_formats.size(), 1u);
     ASSERT_EQ(buffer_formats.begin()->first,
               GetBufferFormatFromFourCCFormat(kFourccFormatR8));
@@ -477,7 +477,8 @@ TEST_P(WaylandBufferManagerTest, CreateAndDestroyBuffer) {
     CreateDmabufBasedBufferAndSetTerminateExpectation(false /*fail*/,
                                                       kBufferId1);
 
-    CommitBuffer(widget, kBufferId1, kBufferId1, gl::FrameData(),
+    CommitBuffer(widget, kBufferId1, kBufferId1,
+                 gfx::FrameData(delegate_.viz_seq()),
                  window_->GetBoundsInPixels(), gfx::RoundedCornersF(),
                  kDefaultScale, gfx::Rect(window_->size_px()));
 
@@ -503,7 +504,8 @@ TEST_P(WaylandBufferManagerTest, CreateAndDestroyBuffer) {
     CreateDmabufBasedBufferAndSetTerminateExpectation(false /*fail*/,
                                                       kBufferId1);
 
-    CommitBuffer(widget, kBufferId1, kBufferId1, gl::FrameData(),
+    CommitBuffer(widget, kBufferId1, kBufferId1,
+                 gfx::FrameData(delegate_.viz_seq()),
                  window_->GetBoundsInPixels(), gfx::RoundedCornersF(),
                  kDefaultScale, gfx::Rect(window_->size_px()));
 
@@ -531,7 +533,8 @@ TEST_P(WaylandBufferManagerTest, CreateAndDestroyBuffer) {
     CreateDmabufBasedBufferAndSetTerminateExpectation(false /*fail*/,
                                                       kBufferId1);
     // Attach to a surface.
-    CommitBuffer(widget, kBufferId1, kBufferId1, gl::FrameData(),
+    CommitBuffer(widget, kBufferId1, kBufferId1,
+                 gfx::FrameData(delegate_.viz_seq()),
                  window_->GetBoundsInPixels(), gfx::RoundedCornersF(),
                  kDefaultScale, gfx::Rect(window_->size_px()));
 
@@ -574,7 +577,8 @@ TEST_P(WaylandBufferManagerTest, CommitBufferNonExistingBufferId) {
     EXPECT_CALL(*mock_surface, Commit()).Times(kNumberOfCommits);
   });
 
-  CommitBuffer(window_->GetWidget(), 1u, 5u, gl::FrameData(),
+  CommitBuffer(window_->GetWidget(), 1u, 5u,
+               gfx::FrameData(delegate_.viz_seq()),
                window_->GetBoundsInPixels(), gfx::RoundedCornersF(),
                kDefaultScale, gfx::Rect(window_->size_px()));
 
@@ -609,7 +613,8 @@ TEST_P(WaylandBufferManagerTest, CommitOverlaysNonExistingBufferId) {
   // Non-existing buffer id
   overlay_configs.emplace_back(
       CreateBasicWaylandOverlayConfig(0, 2u, window_->GetBoundsInPixels()));
-  buffer_manager_gpu_->CommitOverlays(window_->GetWidget(), 1u, gl::FrameData(),
+  buffer_manager_gpu_->CommitOverlays(window_->GetWidget(), 1u,
+                                      gfx::FrameData(delegate_.viz_seq()),
                                       std::move(overlay_configs));
 
   // Let the mojo call to go through.
@@ -641,7 +646,8 @@ TEST_P(WaylandBufferManagerTest, CommitOverlaysWithSameBufferId) {
   overlay_configs.emplace_back(
       CreateBasicWaylandOverlayConfig(1, 1u, window_->GetBoundsInPixels()));
 
-  buffer_manager_gpu_->CommitOverlays(window_->GetWidget(), 1u, gl::FrameData(),
+  buffer_manager_gpu_->CommitOverlays(window_->GetWidget(), 1u,
+                                      gfx::FrameData(delegate_.viz_seq()),
                                       std::move(overlay_configs));
 
   // Let the mojo call to go through.
@@ -660,7 +666,8 @@ TEST_P(WaylandBufferManagerTest, CommitBufferNullWidget) {
 
   // Can't commit for non-existing widget.
   SetTerminateCallbackExpectationAndDestroyChannel(&callback_, true /*fail*/);
-  CommitBuffer(gfx::kNullAcceleratedWidget, 1u, kBufferId, gl::FrameData(),
+  CommitBuffer(gfx::kNullAcceleratedWidget, 1u, kBufferId,
+               gfx::FrameData(delegate_.viz_seq()),
                window_->GetBoundsInPixels(), gfx::RoundedCornersF(),
                kDefaultScale, gfx::Rect(window_->size_px()));
 
@@ -725,7 +732,7 @@ TEST_P(WaylandBufferManagerTest, CommitOverlaysNonsensicalBoundsRect) {
             z_order++, kBufferId2, window_->GetBoundsInPixels()));
       }
       buffer_manager_gpu_->CommitOverlays(window_->GetWidget(), 1u,
-                                          gl::FrameData(),
+                                          gfx::FrameData(delegate_.viz_seq()),
                                           std::move(overlay_configs));
 
       base::RunLoop().RunUntilIdle();
@@ -805,7 +812,8 @@ TEST_P(WaylandBufferManagerTest, EnsureCorrectOrderOfCallbacks) {
   ASSERT_TRUE(!connection_->presentation());
   EXPECT_CALL(mock_surface_gpu, OnPresentation(kBufferId1, _)).Times(1);
 
-  CommitBuffer(widget, kBufferId1, kBufferId1, gl::FrameData(), bounds,
+  CommitBuffer(widget, kBufferId1, kBufferId1,
+               gfx::FrameData(delegate_.viz_seq()), bounds,
                gfx::RoundedCornersF(), kDefaultScale, bounds);
 
   base::RunLoop().RunUntilIdle();
@@ -815,7 +823,8 @@ TEST_P(WaylandBufferManagerTest, EnsureCorrectOrderOfCallbacks) {
   SendFrameCallbackForSurface(surface_id_);
 
   // Commit second buffer now.
-  CommitBuffer(widget, kBufferId2, kBufferId2, gl::FrameData(), bounds,
+  CommitBuffer(widget, kBufferId2, kBufferId2,
+               gfx::FrameData(delegate_.viz_seq()), bounds,
                gfx::RoundedCornersF(), kDefaultScale, bounds);
 
   base::RunLoop().RunUntilIdle();
@@ -847,7 +856,8 @@ TEST_P(WaylandBufferManagerTest, EnsureCorrectOrderOfCallbacks) {
   ASSERT_TRUE(connection_->presentation());
 
   // Commit second buffer now.
-  CommitBuffer(widget, kBufferId1, kBufferId1, gl::FrameData(), bounds,
+  CommitBuffer(widget, kBufferId1, kBufferId1,
+               gfx::FrameData(delegate_.viz_seq()), bounds,
                gfx::RoundedCornersF(), kDefaultScale, bounds);
 
   base::RunLoop().RunUntilIdle();
@@ -925,7 +935,8 @@ TEST_P(WaylandBufferManagerTest,
   EXPECT_CALL(mock_surface_gpu,
               OnSubmission(kBufferId1, gfx::SwapResult::SWAP_ACK, _))
       .Times(1);
-  CommitBuffer(widget, kBufferId1, kBufferId1, gl::FrameData(), bounds,
+  CommitBuffer(widget, kBufferId1, kBufferId1,
+               gfx::FrameData(delegate_.viz_seq()), bounds,
                gfx::RoundedCornersF(), kDefaultScale, bounds);
 
   SendFrameCallbackForSurface(surface_id_);
@@ -942,7 +953,8 @@ TEST_P(WaylandBufferManagerTest,
   testing::Mock::VerifyAndClearExpectations(&mock_surface_gpu);
 
   // Commit second buffer now.
-  CommitBuffer(widget, kBufferId2, kBufferId2, gl::FrameData(), bounds,
+  CommitBuffer(widget, kBufferId2, kBufferId2,
+               gfx::FrameData(delegate_.viz_seq()), bounds,
                gfx::RoundedCornersF(), kDefaultScale, bounds);
 
   SendFrameCallbackForSurface(surface_id_);
@@ -993,7 +1005,8 @@ TEST_P(WaylandBufferManagerTest,
               ::testing::Eq(gfx::PresentationFeedback::Flags::kFailure))))
       .Times(1);
   EXPECT_CALL(mock_surface_gpu, OnPresentation(_, _)).Times(0);
-  CommitBuffer(widget, kBufferId3, kBufferId3, gl::FrameData(), bounds,
+  CommitBuffer(widget, kBufferId3, kBufferId3,
+               gfx::FrameData(delegate_.viz_seq()), bounds,
                gfx::RoundedCornersF(), kDefaultScale, bounds);
   PostToServerAndWait([id = surface_id_](wl::TestWaylandServerThread* server) {
     server->GetObject<wl::MockSurface>(id)->SendFrameCallback();
@@ -1075,7 +1088,8 @@ TEST_P(WaylandBufferManagerTest,
   EXPECT_CALL(mock_surface_gpu, OnPresentation(_, _)).Times(0);
 
   // Commit first buffer
-  CommitBuffer(widget, kBufferId1, kBufferId1, gl::FrameData(), bounds,
+  CommitBuffer(widget, kBufferId1, kBufferId1,
+               gfx::FrameData(delegate_.viz_seq()), bounds,
                gfx::RoundedCornersF(), kDefaultScale, bounds);
 
   // Let the mojo message for OnSubmission go back.
@@ -1098,7 +1112,8 @@ TEST_P(WaylandBufferManagerTest,
   EXPECT_CALL(mock_surface_gpu, OnPresentation(_, _)).Times(0);
 
   // Commit second buffer
-  CommitBuffer(widget, kBufferId2, kBufferId2, gl::FrameData(), bounds,
+  CommitBuffer(widget, kBufferId2, kBufferId2,
+               gfx::FrameData(delegate_.viz_seq()), bounds,
                gfx::RoundedCornersF(), kDefaultScale, bounds);
 
   PostToServerAndWait([id = surface_id_](wl::TestWaylandServerThread* server) {
@@ -1124,7 +1139,8 @@ TEST_P(WaylandBufferManagerTest,
   EXPECT_CALL(mock_surface_gpu, OnPresentation(_, _)).Times(0);
 
   // Commit third buffer
-  CommitBuffer(widget, kBufferId3, kBufferId3, gl::FrameData(), bounds,
+  CommitBuffer(widget, kBufferId3, kBufferId3,
+               gfx::FrameData(delegate_.viz_seq()), bounds,
                gfx::RoundedCornersF(), kDefaultScale, bounds);
 
   PostToServerAndWait([id = surface_id_](wl::TestWaylandServerThread* server) {
@@ -1235,7 +1251,8 @@ TEST_P(WaylandBufferManagerTest, TestCommitBufferConditions) {
     EXPECT_CALL(*mock_surface, Commit()).Times(0);
   });
 
-  CommitBuffer(widget, kDmabufBufferId, kDmabufBufferId, gl::FrameData(),
+  CommitBuffer(widget, kDmabufBufferId, kDmabufBufferId,
+               gfx::FrameData(delegate_.viz_seq()),
                window_->GetBoundsInPixels(), gfx::RoundedCornersF(),
                kDefaultScale, gfx::Rect(window_->size_px()));
 
@@ -1276,7 +1293,8 @@ TEST_P(WaylandBufferManagerTest, TestCommitBufferConditions) {
     EXPECT_CALL(*mock_surface, Commit()).Times(0);
   });
 
-  CommitBuffer(widget, kDmabufBufferId2, kDmabufBufferId2, gl::FrameData(),
+  CommitBuffer(widget, kDmabufBufferId2, kDmabufBufferId2,
+               gfx::FrameData(delegate_.viz_seq()),
                window_->GetBoundsInPixels(), gfx::RoundedCornersF(),
                kDefaultScale, gfx::Rect(window_->size_px()));
 
@@ -1352,7 +1370,8 @@ TEST_P(WaylandBufferManagerTest, TestCommitBufferConditionsAckConfigured) {
           EXPECT_CALL(*mock_surface, Commit()).Times(0);
         });
 
-    CommitBuffer(widget, kDmabufBufferId, kDmabufBufferId, gl::FrameData(),
+    CommitBuffer(widget, kDmabufBufferId, kDmabufBufferId,
+                 gfx::FrameData(delegate_.viz_seq()),
                  window_->GetBoundsInPixels(), gfx::RoundedCornersF(),
                  kDefaultScale, window_->GetBoundsInPixels());
     PostToServerAndWait(
@@ -1367,7 +1386,9 @@ TEST_P(WaylandBufferManagerTest, TestCommitBufferConditionsAckConfigured) {
           EXPECT_CALL(*xdg_surface, AckConfigure(_)).Times(1);
           EXPECT_CALL(*mock_surface, Attach(_, _, _)).Times(1);
           EXPECT_CALL(*mock_surface, Frame(_)).Times(1);
-          EXPECT_CALL(*mock_surface, Commit()).Times(1);
+          // Commit() can be called a second time as part of the configure->ack
+          // sequence.
+          EXPECT_CALL(*mock_surface, Commit()).Times(testing::Between(1, 2));
         });
 
     ActivateSurface(temp_window_surface_id);
@@ -1469,14 +1490,14 @@ TEST_P(WaylandBufferManagerTest,
     EXPECT_CALL(*mock_surface, Commit()).Times(1);
   });
 
-  CommitBuffer(widget, kDmabufBufferId, kDmabufBufferId, gl::FrameData(),
-               gfx::Rect{55, 55}, gfx::RoundedCornersF(), kDefaultScale,
-               gfx::Rect{55, 55});
+  CommitBuffer(widget, kDmabufBufferId, kDmabufBufferId,
+               gfx::FrameData(delegate_.viz_seq() - 1), gfx::Rect{55, 55},
+               gfx::RoundedCornersF(), kDefaultScale, gfx::Rect{55, 55});
   ActivateSurface(surface_id, kActivateSerial);
 
-  CommitBuffer(widget, kDmabufBufferId, kDmabufBufferId, gl::FrameData(),
-               kRestoredBounds, gfx::RoundedCornersF(), kDefaultScale,
-               kRestoredBounds);
+  CommitBuffer(widget, kDmabufBufferId, kDmabufBufferId,
+               gfx::FrameData(delegate_.viz_seq()), kRestoredBounds,
+               gfx::RoundedCornersF(), kDefaultScale, kRestoredBounds);
   SetPointerFocusedWindow(nullptr);
   window.reset();
   DestroyBufferAndSetTerminateExpectation(kDmabufBufferId, false /*fail*/);
@@ -1522,7 +1543,8 @@ TEST_P(WaylandBufferManagerTest, AnonymousBufferAttachedAndReleased) {
   EXPECT_CALL(mock_surface_gpu, OnPresentation(kBufferId1, _)).Times(1);
 
   // Commit second buffer now.
-  CommitBuffer(widget, kBufferId1, kBufferId1, gl::FrameData(), bounds,
+  CommitBuffer(widget, kBufferId1, kBufferId1,
+               gfx::FrameData(delegate_.viz_seq()), bounds,
                gfx::RoundedCornersF(), kDefaultScale, bounds);
 
   SendFrameCallbackForSurface(surface_id_);
@@ -1549,7 +1571,8 @@ TEST_P(WaylandBufferManagerTest, AnonymousBufferAttachedAndReleased) {
   EXPECT_CALL(mock_surface_gpu, OnPresentation(kBufferId2, _)).Times(1);
 
   // Commit second buffer now.
-  CommitBuffer(widget, kBufferId2, kBufferId2, gl::FrameData(), bounds,
+  CommitBuffer(widget, kBufferId2, kBufferId2,
+               gfx::FrameData(delegate_.viz_seq()), bounds,
                gfx::RoundedCornersF(), kDefaultScale, bounds);
 
   PostToServerAndWait([id = surface_id_](wl::TestWaylandServerThread* server) {
@@ -1578,7 +1601,8 @@ TEST_P(WaylandBufferManagerTest, AnonymousBufferAttachedAndReleased) {
       .Times(0);
   EXPECT_CALL(mock_surface_gpu, OnPresentation(kBufferId3, _)).Times(0);
 
-  CommitBuffer(widget, kBufferId3, kBufferId3, gl::FrameData(), bounds,
+  CommitBuffer(widget, kBufferId3, kBufferId3,
+               gfx::FrameData(delegate_.viz_seq()), bounds,
                gfx::RoundedCornersF(), kDefaultScale, bounds);
 
   // Let mojo messages to be processed from host to gpu (if any).
@@ -1621,7 +1645,8 @@ TEST_P(WaylandBufferManagerTest, DestroyBufferForDestroyedWindow) {
   });
   CreateDmabufBasedBufferAndSetTerminateExpectation(false /*fail*/, kBufferId);
 
-  CommitBuffer(widget, kBufferId, kBufferId, gl::FrameData(),
+  CommitBuffer(widget, kBufferId, kBufferId,
+               gfx::FrameData(delegate_.viz_seq()),
                temp_window->GetBoundsInPixels(), gfx::RoundedCornersF(),
                kDefaultScale, temp_window->GetBoundsInPixels());
 
@@ -1653,7 +1678,8 @@ TEST_P(WaylandBufferManagerTest, DestroyedWindowNoSubmissionSingleBuffer) {
 
   temp_window.reset();
 
-  CommitBuffer(widget, kBufferId, kBufferId, gl::FrameData(), bounds,
+  CommitBuffer(widget, kBufferId, kBufferId,
+               gfx::FrameData(delegate_.viz_seq()), bounds,
                gfx::RoundedCornersF(), kDefaultScale, bounds);
 
   DestroyBufferAndSetTerminateExpectation(kBufferId, false /*fail*/);
@@ -1692,7 +1718,8 @@ TEST_P(WaylandBufferManagerTest, DestroyedWindowNoSubmissionMultipleBuffers) {
   EXPECT_CALL(mock_surface_gpu, OnSubmission(_, _, _)).Times(1);
   EXPECT_CALL(mock_surface_gpu, OnPresentation(_, _)).Times(1);
 
-  CommitBuffer(widget, kBufferId1, kBufferId1, gl::FrameData(), bounds,
+  CommitBuffer(widget, kBufferId1, kBufferId1,
+               gfx::FrameData(delegate_.viz_seq()), bounds,
                gfx::RoundedCornersF(), kDefaultScale, bounds);
 
   // Let mojo messages to be processed back to the gpu.
@@ -1716,7 +1743,8 @@ TEST_P(WaylandBufferManagerTest, DestroyedWindowNoSubmissionMultipleBuffers) {
       .Times(1);
   EXPECT_CALL(mock_surface_gpu, OnPresentation(kBufferId2, _)).Times(1);
 
-  CommitBuffer(widget, kBufferId2, kBufferId2, gl::FrameData(), bounds,
+  CommitBuffer(widget, kBufferId2, kBufferId2,
+               gfx::FrameData(delegate_.viz_seq()), bounds,
                gfx::RoundedCornersF(), kDefaultScale, bounds);
 
   PostToServerAndWait(
@@ -1735,7 +1763,8 @@ TEST_P(WaylandBufferManagerTest, DestroyedWindowNoSubmissionMultipleBuffers) {
   EXPECT_CALL(mock_surface_gpu, OnPresentation(_, _)).Times(0);
   temp_window.reset();
 
-  CommitBuffer(widget, kBufferId1, kBufferId1, gl::FrameData(), bounds,
+  CommitBuffer(widget, kBufferId1, kBufferId1,
+               gfx::FrameData(delegate_.viz_seq()), bounds,
                gfx::RoundedCornersF(), kDefaultScale, bounds);
 
   // Let mojo messages to be processed back to the gpu.
@@ -1771,7 +1800,8 @@ TEST_P(WaylandBufferManagerTest, DestroyBufferCommittedTwiceInARow) {
       .Times(1);
   EXPECT_CALL(mock_surface_gpu, OnPresentation(kBufferId1, _)).Times(1);
 
-  CommitBuffer(widget, kBufferId1, kBufferId1, gl::FrameData(), bounds,
+  CommitBuffer(widget, kBufferId1, kBufferId1,
+               gfx::FrameData(delegate_.viz_seq()), bounds,
                gfx::RoundedCornersF(), kDefaultScale, bounds);
 
   SendFrameCallbackForSurface(surface_id_);
@@ -1785,11 +1815,13 @@ TEST_P(WaylandBufferManagerTest, DestroyBufferCommittedTwiceInARow) {
   EXPECT_CALL(mock_surface_gpu, OnSubmission(_, _, _)).Times(0);
   EXPECT_CALL(mock_surface_gpu, OnPresentation(_, _)).Times(0);
 
-  CommitBuffer(widget, kBufferId2, kBufferId2, gl::FrameData(), bounds,
+  CommitBuffer(widget, kBufferId2, kBufferId2,
+               gfx::FrameData(delegate_.viz_seq()), bounds,
                gfx::RoundedCornersF(), kDefaultScale, bounds);
   SendFrameCallbackForSurface(surface_id_);
 
-  CommitBuffer(widget, kBufferId2, kBufferId2, gl::FrameData(), bounds,
+  CommitBuffer(widget, kBufferId2, kBufferId2,
+               gfx::FrameData(delegate_.viz_seq()), bounds,
                gfx::RoundedCornersF(), kDefaultScale, bounds);
   SendFrameCallbackForSurface(surface_id_);
 
@@ -1838,7 +1870,8 @@ TEST_P(WaylandBufferManagerTest, ReleaseBufferCommittedTwiceInARow) {
       .Times(1);
   EXPECT_CALL(mock_surface_gpu, OnPresentation(kBufferId1, _)).Times(1);
 
-  CommitBuffer(widget, kBufferId1, kBufferId1, gl::FrameData(), bounds,
+  CommitBuffer(widget, kBufferId1, kBufferId1,
+               gfx::FrameData(delegate_.viz_seq()), bounds,
                gfx::RoundedCornersF(), kDefaultScale, bounds);
   SendFrameCallbackForSurface(surface_id_);
 
@@ -1855,11 +1888,13 @@ TEST_P(WaylandBufferManagerTest, ReleaseBufferCommittedTwiceInARow) {
   EXPECT_CALL(mock_surface_gpu, OnSubmission(_, _, _)).Times(0);
   EXPECT_CALL(mock_surface_gpu, OnPresentation(_, _)).Times(0);
 
-  CommitBuffer(widget, kBufferId2, kBufferId2, gl::FrameData(), bounds,
+  CommitBuffer(widget, kBufferId2, kBufferId2,
+               gfx::FrameData(delegate_.viz_seq()), bounds,
                gfx::RoundedCornersF(), kDefaultScale, bounds);
   SendFrameCallbackForSurface(surface_id_);
 
-  CommitBuffer(widget, kBufferId2, kBufferId2, gl::FrameData(), bounds,
+  CommitBuffer(widget, kBufferId2, kBufferId2,
+               gfx::FrameData(delegate_.viz_seq()), bounds,
                gfx::RoundedCornersF(), kDefaultScale, bounds);
 
   // Let mojo messages to be processed back to the gpu.
@@ -1916,7 +1951,8 @@ TEST_P(WaylandBufferManagerTest, ReleaseOrderDifferentToCommitOrder) {
         .Times(1);
   });
 
-  CommitBuffer(widget, kBufferId1, kBufferId1, gl::FrameData(), bounds,
+  CommitBuffer(widget, kBufferId1, kBufferId1,
+               gfx::FrameData(delegate_.viz_seq()), bounds,
                gfx::RoundedCornersF(), kDefaultScale, bounds);
 
   SendFrameCallbackForSurface(surface_id_);
@@ -1938,7 +1974,8 @@ TEST_P(WaylandBufferManagerTest, ReleaseOrderDifferentToCommitOrder) {
         .Times(2);
   });
 
-  CommitBuffer(widget, kBufferId2, kBufferId2, gl::FrameData(), bounds,
+  CommitBuffer(widget, kBufferId2, kBufferId2,
+               gfx::FrameData(delegate_.viz_seq()), bounds,
                gfx::RoundedCornersF(), kDefaultScale, bounds);
 
   SendFrameCallbackForSurface(surface_id_);
@@ -1948,7 +1985,8 @@ TEST_P(WaylandBufferManagerTest, ReleaseOrderDifferentToCommitOrder) {
   wl_resource* wl_buffer2 = GetSurfaceAttachedBuffer(surface_id_);
   ASSERT_TRUE(wl_buffer2);
 
-  CommitBuffer(widget, kBufferId3, kBufferId3, gl::FrameData(), bounds,
+  CommitBuffer(widget, kBufferId3, kBufferId3,
+               gfx::FrameData(delegate_.viz_seq()), bounds,
                gfx::RoundedCornersF(), kDefaultScale, bounds);
   SendFrameCallbackForSurface(surface_id_);
 
@@ -2031,7 +2069,8 @@ TEST_P(WaylandBufferManagerTest,
         EXPECT_CALL(*mock_surface, Commit()).Times(1);
       });
 
-  CommitBuffer(widget, kBufferId1, kBufferId1, gl::FrameData(), bounds,
+  CommitBuffer(widget, kBufferId1, kBufferId1,
+               gfx::FrameData(delegate_.viz_seq()), bounds,
                gfx::RoundedCornersF(), kDefaultScale, bounds);
 
   // Let mojo messages to be passed from host to gpu.
@@ -2056,7 +2095,8 @@ TEST_P(WaylandBufferManagerTest,
       });
 
   // Commit second buffer now.
-  CommitBuffer(widget, kBufferId2, kBufferId2, gl::FrameData(), bounds,
+  CommitBuffer(widget, kBufferId2, kBufferId2,
+               gfx::FrameData(delegate_.viz_seq()), bounds,
                gfx::RoundedCornersF(), kDefaultScale, bounds);
 
   // Let mojo messages to be passed from host to gpu.
@@ -2107,7 +2147,8 @@ TEST_P(WaylandBufferManagerTest,
       });
 
   // Commit second buffer now.
-  CommitBuffer(widget, kBufferId2, kBufferId2, gl::FrameData(), bounds,
+  CommitBuffer(widget, kBufferId2, kBufferId2,
+               gfx::FrameData(delegate_.viz_seq()), bounds,
                gfx::RoundedCornersF(), kDefaultScale, bounds);
 
   // Let mojo messages to be passed from host to gpu.
@@ -2151,7 +2192,8 @@ TEST_P(WaylandBufferManagerTest,
         EXPECT_CALL(*mock_surface, Commit()).Times(1);
       });
 
-  CommitBuffer(widget, kBufferId1, kBufferId1, gl::FrameData(), bounds,
+  CommitBuffer(widget, kBufferId1, kBufferId1,
+               gfx::FrameData(delegate_.viz_seq()), bounds,
                gfx::RoundedCornersF(), kDefaultScale, bounds);
 
   // Let mojo messages to be passed from host to gpu.
@@ -2204,7 +2246,8 @@ TEST_P(WaylandBufferManagerTest, OnSubmissionCalledForSingleBuffer) {
       .Times(1);
   EXPECT_CALL(mock_surface_gpu, OnPresentation(kBufferId1, _)).Times(1);
 
-  CommitBuffer(widget, kBufferId1, kBufferId1, gl::FrameData(), bounds,
+  CommitBuffer(widget, kBufferId1, kBufferId1,
+               gfx::FrameData(delegate_.viz_seq()), bounds,
                gfx::RoundedCornersF(), kDefaultScale, bounds);
 
   // Let mojo messages to be passed from host to gpu.
@@ -2258,7 +2301,8 @@ TEST_P(WaylandBufferManagerTest, RootSurfaceIsCommittedLast) {
       CreateBasicWaylandOverlayConfig(0, kBufferId2, bounds));
   overlay_configs.emplace_back(
       CreateBasicWaylandOverlayConfig(1, kBufferId3, bounds));
-  buffer_manager_gpu_->CommitOverlays(window_->GetWidget(), 1u, gl::FrameData(),
+  buffer_manager_gpu_->CommitOverlays(window_->GetWidget(), 1u,
+                                      gfx::FrameData(delegate_.viz_seq()),
                                       std::move(overlay_configs));
   // Let mojo messages from gpu to host to go through.
   base::RunLoop().RunUntilIdle();
@@ -2319,7 +2363,8 @@ TEST_P(WaylandBufferManagerTest, FencedRelease) {
       OnSubmission(kBufferId1, gfx::SwapResult::SWAP_ACK,
                    Truly([](const auto& fence) { return fence.is_null(); })))
       .Times(1);
-  CommitBuffer(widget, kBufferId1, kBufferId1, gl::FrameData(), bounds,
+  CommitBuffer(widget, kBufferId1, kBufferId1,
+               gfx::FrameData(delegate_.viz_seq()), bounds,
                gfx::RoundedCornersF(), kDefaultScale, bounds);
 
   // Let mojo messages from gpu to host to go through.
@@ -2329,7 +2374,8 @@ TEST_P(WaylandBufferManagerTest, FencedRelease) {
   SendFrameCallbackForSurface(surface_id_);
 
   // Commit the second buffer now.
-  CommitBuffer(widget, kBufferId2, kBufferId2, gl::FrameData(), bounds,
+  CommitBuffer(widget, kBufferId2, kBufferId2,
+               gfx::FrameData(delegate_.viz_seq()), bounds,
                gfx::RoundedCornersF(), kDefaultScale, bounds);
 
   SendFrameCallbackForSurface(surface_id_);
@@ -2358,7 +2404,8 @@ TEST_P(WaylandBufferManagerTest, FencedRelease) {
   testing::Mock::VerifyAndClearExpectations(&mock_surface_gpu);
 
   // Commit the third buffer now.
-  CommitBuffer(widget, kBufferId3, kBufferId3, gl::FrameData(), bounds,
+  CommitBuffer(widget, kBufferId3, kBufferId3,
+               gfx::FrameData(delegate_.viz_seq()), bounds,
                gfx::RoundedCornersF(), kDefaultScale, bounds);
 
   SendFrameCallbackForSurface(surface_id_);
@@ -2389,16 +2436,8 @@ TEST_P(WaylandBufferManagerTest, FencedRelease) {
 
 // Tests that destroying a channel doesn't result in resetting surface state
 // and buffers can be attached after the channel has been reinitialized.
-// TODO(crbug.com/1396725): Failing on Linux.
-#if BUILDFLAG(IS_LINUX)
-#define MAYBE_CanSubmitBufferAfterChannelDestroyedAndInitialized \
-  DISABLED_CanSubmitBufferAfterChannelDestroyedAndInitialized
-#else
-#define MAYBE_CanSubmitBufferAfterChannelDestroyedAndInitialized \
-  CanSubmitBufferAfterChannelDestroyedAndInitialized
-#endif
 TEST_P(WaylandBufferManagerTest,
-       MAYBE_CanSubmitBufferAfterChannelDestroyedAndInitialized) {
+       CanSubmitBufferAfterChannelDestroyedAndInitialized) {
   constexpr uint32_t kBufferId1 = 1;
 
   const gfx::AcceleratedWidget widget = window_->GetWidget();
@@ -2427,7 +2466,8 @@ TEST_P(WaylandBufferManagerTest,
       .Times(1);
   EXPECT_CALL(*mock_surface_gpu.get(), OnPresentation(kBufferId1, _)).Times(1);
 
-  CommitBuffer(widget, kBufferId1, kBufferId1, gl::FrameData(), bounds,
+  CommitBuffer(widget, kBufferId1, kBufferId1,
+               gfx::FrameData(delegate_.viz_seq()), bounds,
                gfx::RoundedCornersF(), kDefaultScale, bounds);
 
   // Let mojo messages from host to gpu to go through.
@@ -2449,6 +2489,9 @@ TEST_P(WaylandBufferManagerTest,
   // reset the state of |configured|.
   manager_host_->OnChannelDestroyed();
   manager_host_ = connection_->buffer_manager_host();
+
+  // Let mojo messages from host to gpu go through.
+  base::RunLoop().RunUntilIdle();
 
   // The surface must has the buffer detached and all the buffers are destroyed.
   // Release the fence as there is no further need to hold that as the client
@@ -2486,7 +2529,8 @@ TEST_P(WaylandBufferManagerTest,
       .Times(1);
   EXPECT_CALL(*mock_surface_gpu.get(), OnPresentation(kBufferId1, _)).Times(1);
 
-  CommitBuffer(widget, kBufferId1, kBufferId1, gl::FrameData(), bounds,
+  CommitBuffer(widget, kBufferId1, kBufferId1,
+               gfx::FrameData(delegate_.viz_seq()), bounds,
                gfx::RoundedCornersF(), kDefaultScale, bounds);
 
   // Let mojo messages from host to gpu to go through.
@@ -2528,7 +2572,8 @@ TEST_P(WaylandBufferManagerTest, HidesSubsurfacesOnChannelDestroyed) {
       CreateBasicWaylandOverlayConfig(0, kBufferId2, bounds));
   overlay_configs.emplace_back(
       CreateBasicWaylandOverlayConfig(1, kBufferId3, bounds));
-  buffer_manager_gpu_->CommitOverlays(window_->GetWidget(), 1u, gl::FrameData(),
+  buffer_manager_gpu_->CommitOverlays(window_->GetWidget(), 1u,
+                                      gfx::FrameData(delegate_.viz_seq()),
                                       std::move(overlay_configs));
 
   // Let mojo messages from gpu to host to go through.
@@ -2557,6 +2602,9 @@ TEST_P(WaylandBufferManagerTest, HidesSubsurfacesOnChannelDestroyed) {
   // Pretend that the channel gets destroyed because of some internal reason.
   manager_host_->OnChannelDestroyed();
   manager_host_ = connection_->buffer_manager_host();
+
+  // Let mojo messages from host to gpu go through.
+  base::RunLoop().RunUntilIdle();
 
   // The root surface should still have the buffer attached....
   PostToServerAndWait([id = surface_id_](wl::TestWaylandServerThread* server) {
@@ -2587,7 +2635,8 @@ TEST_P(WaylandBufferManagerTest, HidesSubsurfacesOnChannelDestroyed) {
   std::vector<wl::WaylandOverlayConfig> overlay_configs2;
   overlay_configs2.push_back(
       CreateBasicWaylandOverlayConfig(INT32_MIN, kBufferId1, bounds));
-  buffer_manager_gpu_->CommitOverlays(window_->GetWidget(), 2u, gl::FrameData(),
+  buffer_manager_gpu_->CommitOverlays(window_->GetWidget(), 2u,
+                                      gfx::FrameData(delegate_.viz_seq()),
                                       std::move(overlay_configs2));
 
   base::RunLoop().RunUntilIdle();
@@ -2667,7 +2716,7 @@ TEST_P(WaylandBufferManagerTest, CanSubmitOverlayPriority) {
     }
 
     buffer_manager_gpu_->CommitOverlays(window_->GetWidget(), ++frame_id,
-                                        gl::FrameData(),
+                                        gfx::FrameData(delegate_.viz_seq()),
                                         std::move(overlay_configs));
 
     base::RunLoop().RunUntilIdle();
@@ -2747,7 +2796,7 @@ TEST_P(WaylandBufferManagerTest, CanSetRoundedCorners) {
       }
 
       buffer_manager_gpu_->CommitOverlays(window_->GetWidget(), ++frame_id,
-                                          gl::FrameData(),
+                                          gfx::FrameData(),
                                           std::move(overlay_configs));
 
       base::RunLoop().RunUntilIdle();
@@ -2853,8 +2902,8 @@ TEST_P(WaylandBufferManagerTest, FeedbacksAreDiscardedIfClientMisbehaves) {
     }
 
     CommitBuffer(widget, next_buffer_id_commit, next_buffer_id_commit,
-                 gl::FrameData(), bounds, gfx::RoundedCornersF(), kDefaultScale,
-                 bounds);
+                 gfx::FrameData(delegate_.viz_seq()), bounds,
+                 gfx::RoundedCornersF(), kDefaultScale, bounds);
 
     PostToServerAndWait(
         [id = surface_id_](wl::TestWaylandServerThread* server) {
@@ -2890,9 +2939,9 @@ TEST_P(WaylandBufferManagerTest, ExecutesTasksAfterInitialization) {
   CreateDmabufBasedBufferAndSetTerminateExpectation(false /*fail*/,
                                                     kDmabufBufferId);
   CommitBuffer(window_->GetWidget(), kDmabufBufferId, kDmabufBufferId,
-               gl::FrameData(), window_->GetBoundsInPixels(),
-               gfx::RoundedCornersF(), kDefaultScale,
-               window_->GetBoundsInPixels());
+               gfx::FrameData(delegate_.viz_seq()),
+               window_->GetBoundsInPixels(), gfx::RoundedCornersF(),
+               kDefaultScale, window_->GetBoundsInPixels());
   DestroyBufferAndSetTerminateExpectation(kDmabufBufferId, false /*fail*/);
 
   base::RunLoop().RunUntilIdle();
@@ -2937,7 +2986,8 @@ TEST_P(WaylandBufferManagerTest, DoesNotRequestReleaseForSolidColorBuffers) {
   auto bounds = window_->GetBoundsInPixels();
   overlay_configs.emplace_back(CreateBasicWaylandOverlayConfig(
       INT32_MIN, solid_color_buffer_id, bounds));
-  buffer_manager_gpu_->CommitOverlays(widget_, 1u, gl::FrameData(),
+  buffer_manager_gpu_->CommitOverlays(widget_, 1u,
+                                      gfx::FrameData(delegate_.viz_seq()),
                                       std::move(overlay_configs));
 
   base::RunLoop().RunUntilIdle();
@@ -2988,7 +3038,7 @@ class WaylandBufferManagerViewportTest : public WaylandBufferManagerTest {
     overlay_configs.emplace_back(
         CreateBasicWaylandOverlayConfig(1, kBufferId1, bounds_rect));
     buffer_manager_gpu_->CommitOverlays(temp_window->GetWidget(), 1u,
-                                        gl::FrameData(),
+                                        gfx::FrameData(delegate_.viz_seq()),
                                         std::move(overlay_configs));
 
     base::RunLoop().RunUntilIdle();

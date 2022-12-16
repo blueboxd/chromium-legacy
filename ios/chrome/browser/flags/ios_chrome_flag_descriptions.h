@@ -64,6 +64,12 @@ extern const char kAutofillFillMerchantPromoCodeFieldsDescription[];
 extern const char kAutofillIOSDelayBetweenFieldsName[];
 extern const char kAutofillIOSDelayBetweenFieldsDescription[];
 
+// Title and description for the flag to control whether the autofill should
+// ffer credit card save for cards with same last-4 but different expiration
+// dates.
+extern const char kAutofillOfferToSaveCardWithSameLastFourName[];
+extern const char kAutofillOfferToSaveCardWithSameLastFourDescription[];
+
 // Title and description for the flag to parse IBAN fields in Autofill.
 extern const char kAutofillParseIBANFieldsName[];
 extern const char kAutofillParseIBANFieldsDescription[];
@@ -590,6 +596,11 @@ extern const char kOptimizationTargetPredictionName[];
 // detection.
 extern const char kPasswordReuseDetectionName[];
 extern const char kPasswordReuseDetectionDescription[];
+
+// Title and description for the flag to enable PriceNotifications IPH to be
+// alwayws be displayed.
+extern const char kIPHPriceNotificationsWhileBrowsingName[];
+extern const char kIPHPriceNotificationsWhileBrowsingDescription[];
 
 // Title and description for the flag to native restore web states.
 extern const char kRestoreSessionFromCacheName[];

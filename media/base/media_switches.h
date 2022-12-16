@@ -138,6 +138,8 @@ MEDIA_EXPORT extern const char kCastStreamingForceEnableHardwareH264[];
 // to take effect.
 MEDIA_EXPORT extern const char kCastStreamingForceEnableHardwareVp8[];
 
+MEDIA_EXPORT extern const char kDisableUseMojoVideoDecoderForPepper[];
+
 }  // namespace switches
 
 namespace media {
@@ -281,7 +283,6 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(kMediaDrmPersistentLicense);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kMediaDrmPreprovisioning);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kMediaDrmPreprovisioningAtStartup);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kCanPlayHls);
-MEDIA_EXPORT BASE_DECLARE_FEATURE(kPictureInPictureAPI);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kHlsPlayer);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kRequestSystemAudioFocus);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseAudioLatencyFromHAL);
@@ -378,6 +379,8 @@ MEDIA_EXPORT bool IsVideoCaptureAcceleratedJpegDecodingEnabled();
 #if BUILDFLAG(IS_WIN)
 MEDIA_EXPORT bool IsMediaFoundationD3D11VideoCaptureEnabled();
 #endif
+
+MEDIA_EXPORT bool IsUseMojoVideoDecoderForPepperEnabled();
 
 enum class kCrosGlobalMediaControlsPinOptions {
   kPin,

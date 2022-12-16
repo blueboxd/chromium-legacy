@@ -86,7 +86,7 @@ base::Value BuildInstalledWebAppsJson(web_app::WebAppProvider& provider) {
 
   std::vector<const web_app::WebApp*> web_apps;
   for (const web_app::WebApp& web_app :
-       provider.registrar().GetAppsIncludingStubs()) {
+       provider.registrar_unsafe().GetAppsIncludingStubs()) {
     web_apps.push_back(&web_app);
   }
   base::ranges::sort(web_apps, {}, &web_app::WebApp::untranslated_name);
@@ -335,7 +335,6 @@ void WebAppInternalsSource::BuildWebAppInternalsJson(
 #if BUILDFLAG(IS_MAC)
   root.Append(BuildAppShimRegistryLocalStorageJson());
 #endif
-  root.Append(BuildInstallProcessErrorLogJson(*provider));
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
       base::BindOnce(&BuildWebAppDiskStateJson,

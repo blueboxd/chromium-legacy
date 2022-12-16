@@ -27,6 +27,10 @@ namespace {
 
 constexpr int kMaxFailureRetryCount = 3;
 
+// 1s delay after cancelling pairing was chosen to align with Android's Fast
+// Pair implementation.
+constexpr base::TimeDelta kCancelPairingRetryDelay = base::Seconds(1);
+
 }  // namespace
 
 namespace ash {
@@ -86,6 +90,8 @@ void PairerBrokerImpl::StopPairing() {
 void PairerBrokerImpl::PairFastPairDevice(scoped_refptr<Device> device) {
   if (base::Contains(fast_pair_pairers_, device->ble_address)) {
     QP_LOG(WARNING) << __func__ << ": Already pairing device" << device;
+    RecordFastPairInitializePairingProcessEvent(
+        *device, FastPairInitializePairingProcessEvent::kAlreadyPairingFailure);
     return;
   }
 
@@ -140,11 +146,22 @@ void PairerBrokerImpl::OnFastPairPairingFailure(scoped_refptr<Device> device,
                << ", Failure Count = "
                << pair_failure_counts_[device->ble_address];
 
+  device::BluetoothDevice* bt_device = nullptr;
+  if (device->classic_address()) {
+    bt_device = adapter_->GetDevice(device->classic_address().value());
+  }
+
   if (pair_failure_counts_[device->ble_address] == kMaxFailureRetryCount) {
     QP_LOG(INFO) << __func__
                  << ": Reached max failure count. Notifying observers.";
+    RecordProtocolPairingStep(FastPairProtocolPairingSteps::kExhaustedRetries,
+                              *device);
     for (auto& observer : observers_) {
       observer.OnPairFailure(device, failure);
+    }
+
+    if (bt_device && !bt_device->IsPaired()) {
+      bt_device->CancelPairing();
     }
 
     EraseHandshakeAndFromPairers(device);
@@ -152,6 +169,23 @@ void PairerBrokerImpl::OnFastPairPairingFailure(scoped_refptr<Device> device,
   }
 
   fast_pair_pairers_.erase(device->ble_address);
+
+  if (bt_device && !bt_device->IsPaired()) {
+    QP_LOG(INFO)
+        << __func__
+        << ": Cancelling pairing and scheduling retry for failed pair attempt.";
+    bt_device->CancelPairing();
+
+    // Create a timer to wait |kCancelPairingRetryDelay| after cancelling
+    // pairing to retry the pairing attempt.
+    cancel_pairing_timer_.Start(
+        FROM_HERE, kCancelPairingRetryDelay,
+        base::BindOnce(&PairerBrokerImpl::PairFastPairDevice,
+                       base::Unretained(this), device));
+
+    return;
+  }
+
   PairFastPairDevice(device);
 }
 

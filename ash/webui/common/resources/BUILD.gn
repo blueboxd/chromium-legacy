@@ -93,7 +93,9 @@ web_component_files = [
 ]
 
 non_web_component_files = [
+  "assert.js",
   "cr.js",
+  "cr.m.js",
   "cr_deprecated.js",
   "bluetooth/bluetooth_metrics_utils.js",
   "bluetooth/bluetooth_types.js",
@@ -118,6 +120,7 @@ non_web_component_files = [
   "focus_row_behavior.js",
   "focus_without_ink_js.js",
   "i18n_behavior.js",
+  "load_time_data.m.js",
   "keyboard_shortcut_list_js.js",
   "list_property_update_behavior.js",
   "multidevice_setup/fake_mojo_service.js",
@@ -305,6 +308,7 @@ generate_grd("build_grdp") {
 }
 
 generate_definitions_js_files = [
+  "assert.js",
   "bluetooth/bluetooth_metrics_utils.js",
   "bluetooth/bluetooth_types.js",
   "bluetooth/bluetooth_utils.js",
@@ -341,6 +345,7 @@ generate_definitions_js_files = [
   "quick_unlock/pin_keyboard_icons.html.js",
   "store/store.js",
   "store/store_client.js",
+  "traffic_counters/traffic_counters_adapter.js",
   "util.js",
 ]
 
@@ -359,6 +364,7 @@ ts_definitions("generate_definitions") {
 }
 
 checked_in_dts_files = [
+  "cr.m.d.ts",
   "cr_container_shadow_behavior.d.ts",
   "cr_scrollable_behavior.d.ts",
   "cr_policy_indicator_behavior.d.ts",
@@ -368,6 +374,7 @@ checked_in_dts_files = [
   "i18n_behavior.d.ts",
   "keyboard_diagram.d.ts",
   "keyboard_key.d.ts",
+  "load_time_data.m.d.ts",
   "list_property_update_behavior.d.ts",
 
   "page_toolbar.d.ts",
@@ -402,7 +409,6 @@ checked_in_dts_files = [
   "cr_picture/cr_picture_pane.d.ts",
   "smb_shares/add_smb_share_dialog.d.ts",
   "smb_shares/smb_browser_proxy.d.ts",
-  "traffic_counters/traffic_counters_adapter.d.ts",
   "traffic_counters/traffic_counters.d.ts",
   "quick_unlock/pin_keyboard.d.ts",
   "quick_unlock/setup_pin_keyboard.d.ts",
@@ -452,6 +458,8 @@ group("closure_compile") {
 js_type_check("closure_compile_local") {
   is_polymer3 = true
   deps = [
+    ":assert",
+    ":cr.m",
     ":cr_deprecated",
     ":event_tracker",
     ":fake_method_resolver",
@@ -464,6 +472,7 @@ js_type_check("closure_compile_local") {
     ":keyboard_layouts",
     ":keyboard_shortcut_list_js",
     ":list_property_update_behavior",
+    ":load_time_data.m",
     ":mojo_utils",
     ":navigation_selector",
     ":navigation_view_panel",
@@ -474,16 +483,22 @@ js_type_check("closure_compile_local") {
   ]
 }
 
+js_library("assert") {
+}
+
 js_library("cr_deprecated") {
-  deps = [ "//ui/webui/resources/js:assert" ]
+  deps = [ ":assert" ]
+}
+
+js_library("cr.m") {
 }
 
 js_library("cr_container_shadow_behavior") {
-  deps = [ "//ui/webui/resources/js:assert" ]
+  deps = [ ":assert" ]
 }
 
 js_library("cr_policy_indicator_behavior") {
-  deps = [ "//ui/webui/resources/js:assert" ]
+  deps = [ ":assert" ]
 }
 
 js_library("cr_scrollable_behavior") {
@@ -500,41 +515,41 @@ js_library("event_tracker") {
 }
 
 js_library("fake_observables") {
-  deps = [ "//ui/webui/resources/js:cr.m" ]
+  deps = [ ":cr.m" ]
 }
 
 js_library("fake_method_resolver") {
-  deps = [ "//ui/webui/resources/js:cr.m" ]
+  deps = [ ":cr.m" ]
 }
 
 js_library("focus_row_js") {
   deps = [
+    ":assert",
     ":event_tracker",
     ":util",
-    "//ui/webui/resources/js:assert",
   ]
 }
 
 js_library("focus_row_behavior") {
   deps = [
+    ":assert",
     ":focus_row_js",
     ":focus_without_ink_js",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/js:assert",
   ]
 }
 
 js_library("focus_without_ink_js") {
   deps = [
-    "//ui/webui/resources/js:assert",
-    "//ui/webui/resources/js:cr.m",
+    ":assert",
+    ":cr.m",
   ]
 }
 
 js_library("i18n_behavior") {
   deps = [
+    ":load_time_data.m",
     ":parse_html_subset",
-    "//ui/webui/resources/js:load_time_data.m",
   ]
 }
 
@@ -567,6 +582,9 @@ js_library("list_property_update_behavior") {
   ]
 }
 
+js_library("load_time_data.m") {
+}
+
 js_library("mojo_utils") {
   deps = [ "//ash/webui/common/mojom:mojom_js_library_for_compile" ]
 }
@@ -594,11 +612,11 @@ js_library("parse_html_subset") {
 }
 
 js_library("promise_resolver") {
-  deps = [ "//ui/webui/resources/js:assert" ]
+  deps = [ ":assert" ]
 }
 
 js_library("web_ui_listener_behavior") {
-  deps = [ "//ui/webui/resources/js:cr.m" ]
+  deps = [ ":cr.m" ]
 }
 
 js_library("webui_resource_test") {
@@ -606,5 +624,5 @@ js_library("webui_resource_test") {
 }
 
 js_library("util") {
-  deps = [ "//ui/webui/resources/js:assert" ]
+  deps = [ ":assert" ]
 }

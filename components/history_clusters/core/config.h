@@ -107,6 +107,16 @@ struct Config {
   // every hour.
   int persist_clusters_in_history_db_period_minutes = 60;
 
+  // No effect if `persist_clusters_in_history_db` is disabled. If disabled,
+  // persistence occurs on a timer (see the above 2 params). If enabled, will
+  // instead occur on query like refreshing the keyword cache does. This may
+  // help bound the number of persistence requests. If enabled, will continue to
+  // also be capped to at most 1 request per
+  // `persist_clusters_in_history_db_period_minutes`, but
+  // `persist_clusters_in_history_db_after_startup_delay_minutes` will be
+  // unused.
+  bool persist_on_query = false;
+
   // Hard cap on max clusters to fetch after exhausting unclustered visits and
   // fetching persisted clusters for the get most recent flow. Doesn't affect
   // the update flow, which uses day boundaries as well as
@@ -180,6 +190,20 @@ struct Config {
   // aren't too many strong navigation matches.
   int omnibox_history_cluster_provider_score = 900;
 
+  // If enabled, will inherit the score from the matched search suggestion. This
+  // tries to emulate the ranking of chips, though remains slightly more
+  // conservative in that chips will be shown if the match query is at least the
+  // 8th top scored suggestion, while rows will be shown if the matched query is
+  // at least the 7th top scored suggestion. If enabled,
+  // `omnibox_history_cluster_provider_score` becomes a no-op.
+  bool omnibox_history_cluster_provider_inherit_search_match_score = false;
+
+  // If enabled, ranks the suggestion row below the default suggestion, but
+  // above the searches. Though whether it appears or not will depend on scores.
+  // Otherwise, ranks the suggestion among the search group; the exact position
+  // will depend on scores.
+  bool omnibox_history_cluster_provider_rank_above_searches = false;
+
   // Whether Journey suggestions from the `HistoryClusterProvider` can be
   // surfaced from the shortcuts' provider. They will be scored according to the
   // shortcuts' provider's scoring, which is more aggressive than the default
@@ -193,6 +217,10 @@ struct Config {
   // `omnibox_history_cluster_provider` is disabled.
   bool omnibox_history_cluster_provider_shortcuts = false;
 
+  // Whether journey suggestions from the `ShortcutsProvider` can be default.
+  // Journey suggestions from the `HistoryClusterProvider` can never be default.
+  bool omnibox_history_cluster_provider_allow_default = false;
+
   // If `omnibox_history_cluster_provider_on_navigation_intents` is false, this
   // threshold helps determine when the user is intending to perform a
   // navigation. Meaningless if either `omnibox_history_cluster_provider` is
@@ -204,10 +232,6 @@ struct Config {
   // is intending to perform a navigation. Meaningless if
   // `omnibox_history_cluster_provider` is disabled.
   bool omnibox_history_cluster_provider_on_navigation_intents = false;
-
-  // If enabled, allows the suggestion row to be ranked in any position;
-  // otherwise, always ranked last.
-  bool omnibox_history_cluster_provider_free_ranking = false;
 
   // The `kOnDeviceClusteringKeywordFiltering` feature and child params.
 

@@ -614,6 +614,13 @@
     "args": ["--disable-site-isolation-trials"],
     "expires": "Jul 1, 2023"
   },
+  {
+    "prefix": "not-site-per-process-nonexclusive",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["external/wpt/performance-timeline/tentative"],
+    "args": ["--disable-site-isolation-trials"],
+    "expires": "Jul 1, 2023"
+  },
 
   "----------------------- origin-keyed agent clusters --------------------",
   "Origin-keyed agent clusters web platform tests are for the feature at",
@@ -635,7 +642,6 @@
              "--reset-browsing-instance-between-tests"],
     "expires": "Jul 1, 2023"
   },
-
   {
     "prefix": "focusless-spat-nav",
     "platforms": ["Linux", "Mac", "Win"],
@@ -975,13 +981,15 @@
       "external/wpt/webmessaging/broadcastchannel/cross-partition.https.tentative.html",
       "external/wpt/IndexedDB",
       "external/wpt/webstorage/localstorage-about-blank-3P-iframe-opens-3P-window.partitioned.tentative.html",
+      "external/wpt/secure-contexts/shared-worker-insecure-first.https.html",
+      "external/wpt/secure-contexts/shared-worker-secure-first.https.html",
       "fast/filesystem",
       "external/wpt/html/browsers/windows/post-message",
       "http/tests/inspector-protocol/storage/dom-storage-set-items-by-storage-key.js",
       "http/tests/inspector-protocol/storage/indexed-db-set-items-by-storage-key.js",
       "http/tests/storage/partitioned-storage"
     ],
-    "args": [ "--enable-features=ThirdPartyStoragePartitioning" ],
+    "args": [ "--disable-features=ThirdPartyStoragePartitioning" ],
     "expires": "Jul 1, 2023"
   },
   {
@@ -1064,13 +1072,19 @@
   {
     "prefix": "prerender",
     "platforms": ["Linux", "Mac", "Win"],
-    "bases": [ "external/wpt/speculation-rules/prerender",
-               "wpt_internal/prerender",
-               "http/tests/inspector-protocol/prerender"],
-    "exclusive_tests": ["external/wpt/speculation-rules/prerender/referrer-policy-from-rules.html"],
+    "bases": [
+      "external/wpt/speculation-rules/prerender",
+      "wpt_internal/prerender",
+      "http/tests/inspector-protocol/prerender"
+    ],
+    "exclusive_tests": [
+      "external/wpt/speculation-rules/prerender/referrer-policy-from-rules.html",
+      "external/wpt/speculation-rules/prerender/csp-script-src-elem-inline-speculation-rules.tentative.html",
+      "external/wpt/speculation-rules/prerender/csp-script-src-inline-speculation-rules.tentative.html"
+    ],
     "args": [
       "--enable-blink-features=SpeculationRulesReferrerPolicyKey",
-      "--enable-features=SameSiteCrossOriginForSpeculationRulesPrerender"
+      "--enable-features=SameSiteCrossOriginForSpeculationRulesPrerender,Prerender2ContentSecurityPolicyExtensions"
     ],
     "expires": "Jul 1, 2023"
   },
@@ -1536,9 +1550,22 @@
     ],
     "exclusive_tests": "ALL",
     "args": [
-      "--enable-blink-features=SpeculationRulesPrefetchProxy,SpeculationRulesFetchFromHeader,SpeculationRulesReferrerPolicyKey,SpeculationRulesDocumentRules",
-      "--enable-features=SpeculationRulesPrefetchProxy,PrefetchUseContentRefactor,PrefetchNoVarySearch",
+      "--enable-blink-features=SpeculationRulesPrefetchProxy,SpeculationRulesFetchFromHeader,SpeculationRulesReferrerPolicyKey,SpeculationRulesDocumentRules,NoVarySearchPrefetch",
+      "--enable-features=SpeculationRulesPrefetchProxy,PrefetchUseContentRefactor",
       "--bypass-prefetch-proxy-for-host=not-web-platform.test"
+    ],
+    "expires": "Jul 1, 2023"
+  },
+  {
+    "prefix": "prefetch-no-vary-search",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [
+      "external/wpt/speculation-rules/prefetch/no-vary-search"
+    ],
+    "exclusive_tests": "ALL",
+    "args": [
+      "--enable-blink-features=NoVarySearchPrefetch",
+      "--enable-features=PrefetchUseContentRefactor"
     ],
     "expires": "Jul 1, 2023"
   },

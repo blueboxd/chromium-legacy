@@ -107,6 +107,13 @@ base::TimeDelta PrefetchCanaryCheckTimeout();
 // The number of retries to allow for canary checks.
 int PrefetchCanaryCheckRetries();
 
+// Whether or not to use |PrefetchStreamingURLLoader| to fetch and serve
+// prefetches.
+bool PrefetchUseStreamingURLLoader();
+
+// Returns whether the client is involved in the Holdback Finch
+// experiment group.
+bool IsContentPrefetchHoldback();
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_PRELOADING_PREFETCH_PREFETCH_PARAMS_H_

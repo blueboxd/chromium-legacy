@@ -140,7 +140,6 @@
 <translation id="2161394479394250669">Скасувати завдання друку</translation>
 <translation id="2163937499206714165">Увімкнути темний режим</translation>
 <translation id="2180197493692062006">Сталася помилка. Відкрийте додаток ще раз.</translation>
-<translation id="2184005227776731758">APN</translation>
 <translation id="2209788852729124853">Скинути лічильники трафіку</translation>
 <translation id="2212733584906323460">Перетворення імені</translation>
 <translation id="2217935453350629363">Поточна швидкість</translation>
@@ -492,6 +491,7 @@
 <translation id="5519195206574732858">LTE</translation>
 <translation id="554517032089923082">GTC</translation>
 <translation id="5559898619118303662">Автоматично вмикати темну тему після заходу сонця</translation>
+<translation id="5571714952674387371">Переглянути й відредагувати деталі</translation>
 <translation id="5578477003638479617">Технологія UMTS</translation>
 <translation id="5578519639599103840">Сканувати ще раз</translation>
 <translation id="5583640892426849032">Backspace</translation>
@@ -561,6 +561,7 @@
 <translation id="6189418609903030344">Ємність акумулятора зменшується внаслідок використання</translation>
 <translation id="6191293864534840972">Неправильні сервери імен</translation>
 <translation id="6213737986933151570">CDMA1XRTT</translation>
+<translation id="6223066887782788441">Вийти з повноекранного режиму</translation>
 <translation id="6223752125779001553">Немає доступних сканерів</translation>
 <translation id="6232017090690406397">Акумулятор</translation>
 <translation id="6235460611964961764">Вручну скидати дані про використання трафіку</translation>
@@ -688,12 +689,12 @@
 <translation id="741244894080940828">конвертація</translation>
 <translation id="7415801143053185905">Дуже велика затримка HTTP</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
-<translation id="7435977162516949853">{NUMBER_OF_PAGES,plural, =1{Сканування завершено. Відскановано 1 сторінку}one{Сканування завершено. Відскановано {NUMBER_OF_PAGES} сторінку}few{Сканування завершено. Відскановано {NUMBER_OF_PAGES} сторінки}many{Сканування завершено. Відскановано {NUMBER_OF_PAGES} сторінок}other{Сканування завершено. Відскановано {NUMBER_OF_PAGES} сторінки}}</translation>
 <translation id="7458970041932198923">Щоб переглядати й налаштовувати аватари, підключіться до мережі й оновіть сторінку.</translation>
 <translation id="7469648432129124067">Виявлено портал</translation>
 <translation id="7481312909269577407">Переслати</translation>
 <translation id="7487067081878637334">Технології</translation>
 <translation id="7490813197707563893">MAC-адреса</translation>
+<translation id="7491478667760509108">Закрити плаваюче вікно</translation>
 <translation id="7497215489070763236">Сертифікат ЦС для сервера</translation>
 <translation id="7502658306369382406">Адреса IPv6</translation>
 <translation id="7515998400212163428">Android</translation>
@@ -794,6 +795,7 @@
 <translation id="8498220429738806196">Лічильники трафіку</translation>
 <translation id="8503813439785031346">Ім’я користувача</translation>
 <translation id="8503836310948963452">Залишилося кілька хвилин…</translation>
+<translation id="8508640263392900755">Відомості про APN</translation>
 <translation id="8528615187455571738">Crosvm</translation>
 <translation id="8575298406870537639">Можливо, вам доведеться ввімкнути це налаштування, щоб підключитися до мережі. Щоб дізнатися більше, зверніться до свого оператора.</translation>
 <translation id="8576249514688522074">Не ініціалізовано</translation>
@@ -869,6 +871,7 @@
 <translation id="9173638680043580060">Залишилося менше хвилини</translation>
 <translation id="917720651393141712">Перевірити</translation>
 <translation id="9188992814426075118">Колір підсвічування клавіатури може автоматично підлаштовуватися до фонового малюнка</translation>
+<translation id="9193744392140377127">APN*</translation>
 <translation id="9204237731135241582">Не вдається зв’язатися зі шлюзом із додатків для Android</translation>
 <translation id="9211490828691860325">Усі робочі столи</translation>
 <translation id="932327136139879170">Домашня сторінка</translation>

@@ -183,7 +183,6 @@ component("web_engine_core") {
   assert_no_deps = _disallowed_deps
 
   deps = [
-    ":context_provider",
     ":switches",
     ":web_engine_export_from_implementation",
     "//base",
@@ -318,6 +317,7 @@ component("web_engine_core") {
     "browser/navigation_policy_throttle.h",
     "browser/theme_manager.cc",
     "browser/theme_manager.h",
+    "browser/trace_event.h",
     "browser/url_request_rewrite_type_converters.cc",
     "browser/url_request_rewrite_type_converters.h",
     "browser/web_engine_browser_context.cc",
@@ -386,7 +386,7 @@ source_set("context_provider") {
     "//base",
     "//components/fuchsia_component_support",
     "//fuchsia_web/common",
-    "//fuchsia_web/webinstance_host",
+    "//fuchsia_web/webinstance_host:webinstance_host_v1",
     "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
     "//third_party/fuchsia-sdk/sdk/pkg/sys_inspect_cpp",
   ]
@@ -398,7 +398,8 @@ source_set("context_provider") {
 source_set("switches") {
   visibility += [
     "//fuchsia_web/shell:cast_streaming_shell_exe",
-    "//fuchsia_web/webinstance_host",
+    "//fuchsia_web/webinstance_host:webinstance_host",
+    "//fuchsia_web/webinstance_host:webinstance_host_v1",
   ]
   deps = [ "//base" ]
   public_deps = [ "//build:chromecast_buildflags" ]

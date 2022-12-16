@@ -345,7 +345,12 @@ def execute_gtest_perf_test(command_generator, output_paths, use_xvfb=False,
     traceback.print_exc()
     return_code = 1
   if os.path.exists(output_paths.perf_results):
-    if command_generator.executable_name in GTEST_CONVERSION_WHITELIST:
+    executable_name = command_generator.executable_name
+    if executable_name.startswith('bin/run_'):
+      # The executable is a wrapper used by Fuchsia. Remove the prefix to get
+      # the actual executable name.
+      executable_name = executable_name[8:]
+    if executable_name in GTEST_CONVERSION_WHITELIST:
       with path_util.SysPath(path_util.GetTracingDir()):
         # pylint: disable=no-name-in-module,import-outside-toplevel
         from tracing.value import gtest_json_converter
@@ -498,7 +503,8 @@ class TelemetryCommandGenerator(object):
 
 
 def execute_telemetry_benchmark(
-    command_generator, output_paths, use_xvfb=False):
+    command_generator, output_paths, use_xvfb=False,
+    return_exit_code_zero=False):
   start = time.time()
 
   env = os.environ.copy()
@@ -562,6 +568,10 @@ def execute_telemetry_benchmark(
           'this as a success.' % return_code)
     return 0
   if return_code:
+    if return_exit_code_zero:
+      print ('run_benchmark returned exit code ' + str(return_code)
+             + ' which indicates there were test failures in the run.')
+      return 0
     return return_code
   return 0
 
@@ -628,6 +638,12 @@ def parse_arguments(args):
                       'replace the static shardmap file.',
                       type=str,
                       required=False)
+  parser.add_argument('--ignore-benchmark-exit-code',
+                      help='If set, return an exit code 0 even if there'
+                            + ' are benchmark failures',
+                      action='store_true',
+                      required=False
+                      )
   options, leftover_args = parser.parse_known_args(args)
   options.passthrough_args.extend(leftover_args)
   return options
@@ -698,7 +714,8 @@ def main(sys_args):
             benchmark, options)
         print('\n### {folder} ###'.format(folder=benchmark))
         return_code = execute_telemetry_benchmark(
-            command_generator, output_paths, options.xvfb)
+            command_generator, output_paths, options.xvfb,
+            options.ignore_benchmark_exit_code)
         overall_return_code = return_code or overall_return_code
         test_results_files.append(output_paths.test_results)
       if options.run_ref_build:
@@ -768,7 +785,8 @@ def _run_benchmarks_on_shardmap(
           story_selection_config=story_selection_config)
       print('\n### {folder} ###'.format(folder=benchmark))
       return_code = execute_telemetry_benchmark(
-          command_generator, output_paths, options.xvfb)
+          command_generator, output_paths, options.xvfb,
+          options.ignore_benchmark_exit_code)
       overall_return_code = return_code or overall_return_code
       test_results_files.append(output_paths.test_results)
       if options.run_ref_build:
@@ -785,7 +803,7 @@ def _run_benchmarks_on_shardmap(
         # reference build.
         execute_telemetry_benchmark(
             reference_command_generator, reference_output_paths,
-            options.xvfb)
+            options.xvfb, options.ignore_benchmark_exit_code)
   if 'executables' in shard_configuration:
     names_and_configs = shard_configuration['executables']
     for (name, configuration) in names_and_configs.items():

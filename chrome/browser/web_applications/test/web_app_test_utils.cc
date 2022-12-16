@@ -312,6 +312,30 @@ std::vector<IconSizes> CreateRandomDownloadedShortcutsMenuIconsSizes(
 
 }  // namespace
 
+std::string GetExternalPrefMigrationTestName(
+    const ::testing::TestParamInfo<ExternalPrefMigrationTestCases>& info) {
+  switch (info.param) {
+    case ExternalPrefMigrationTestCases::kDisableMigrationReadPref:
+      return "DisableMigration_ReadFromPrefs";
+    case ExternalPrefMigrationTestCases::kDisableMigrationReadDB:
+      return "DisableMigration_ReadFromDB";
+    case ExternalPrefMigrationTestCases::kEnableMigrationReadPref:
+      return "EnableMigration_ReadFromPrefs";
+    case ExternalPrefMigrationTestCases::kEnableMigrationReadDB:
+      return "EnableMigration_ReadFromDB";
+  }
+}
+
+std::string GetOsIntegrationSubManagersTestName(
+    const ::testing::TestParamInfo<OsIntegrationSubManagersState>& info) {
+  switch (info.param) {
+    case OsIntegrationSubManagersState::kEnabled:
+      return "OSIntegrationSubManagers_Enabled";
+    case OsIntegrationSubManagersState::kDisabled:
+      return "OSIntegrationSubManagers_Disabled";
+  }
+}
+
 std::unique_ptr<WebApp> CreateWebApp(const GURL& start_url,
                                      WebAppManagement::Type source_type) {
   const AppId app_id = GenerateAppId(/*manifest_id=*/absl::nullopt, start_url);

@@ -201,6 +201,9 @@ void QuickPairMetricsLogger::OnDeviceFound(scoped_refptr<Device> device) {
 }
 
 void QuickPairMetricsLogger::OnPairingStart(scoped_refptr<Device> device) {
+  RecordFastPairInitializePairingProcessEvent(
+      *device, FastPairInitializePairingProcessEvent::kInitializationStarted);
+
   switch (device->protocol) {
     case Protocol::kFastPairSubsequent:
       RecordSubsequentSuccessFunnelFlow(
@@ -211,11 +214,16 @@ void QuickPairMetricsLogger::OnPairingStart(scoped_refptr<Device> device) {
           FastPairInitialSuccessFunnelEvent::kInitializationStarted);
       break;
     case Protocol::kFastPairRetroactive:
+      RecordRetroactiveSuccessFunnelFlow(
+          FastPairRetroactiveSuccessFunnelEvent::kInitializationStarted);
       break;
   }
 }
 
 void QuickPairMetricsLogger::OnHandshakeComplete(scoped_refptr<Device> device) {
+  RecordFastPairInitializePairingProcessEvent(
+      *device, FastPairInitializePairingProcessEvent::kInitializationComplete);
+
   switch (device->protocol) {
     case Protocol::kFastPairSubsequent:
       RecordSubsequentSuccessFunnelFlow(
@@ -226,6 +234,8 @@ void QuickPairMetricsLogger::OnHandshakeComplete(scoped_refptr<Device> device) {
           FastPairInitialSuccessFunnelEvent::kPairingStarted);
       break;
     case Protocol::kFastPairRetroactive:
+      RecordRetroactiveSuccessFunnelFlow(
+          FastPairRetroactiveSuccessFunnelEvent::kWritingAccountKey);
       break;
   }
 }
@@ -247,9 +257,14 @@ void QuickPairMetricsLogger::OnPairingComplete(scoped_refptr<Device> device) {
 
 void QuickPairMetricsLogger::OnRetroactivePairFound(
     scoped_refptr<Device> device) {
+  // When a device for the retroactive pairing scenario is detected, the
+  // corresponding "Associate Account" retroactive pairing notification is
+  // presenting to the user.
   AttemptRecordingFastPairRetroactiveEngagementFlow(
       *device,
       FastPairRetroactiveEngagementFlowEvent::kAssociateAccountUiShown);
+  RecordRetroactiveSuccessFunnelFlow(
+      FastPairRetroactiveSuccessFunnelEvent::kDeviceDetected);
 }
 
 void QuickPairMetricsLogger::OnAssociateAccountAction(
@@ -268,6 +283,8 @@ void QuickPairMetricsLogger::OnAssociateAccountAction(
       AttemptRecordingFastPairRetroactiveEngagementFlow(
           *device,
           FastPairRetroactiveEngagementFlowEvent::kAssociateAccountSavePressed);
+      RecordRetroactiveSuccessFunnelFlow(
+          FastPairRetroactiveSuccessFunnelEvent::kSaveRequested);
       break;
     case AssociateAccountAction::kLearnMore:
       // We need to record whether or not the Associate Account UI for this
@@ -341,6 +358,11 @@ void QuickPairMetricsLogger::OnAccountKeyWrite(
       break;
     case Protocol::kFastPairRetroactive:
       RecordRetroactivePairingResult(/*success=*/!error.has_value());
+
+      if (!error.has_value()) {
+        RecordRetroactiveSuccessFunnelFlow(
+            FastPairRetroactiveSuccessFunnelEvent::kAccountKeyWrittenToDevice);
+      }
       break;
   }
 

@@ -295,16 +295,15 @@ void PersistExtensionWithPaths(
               base::WriteFile(file, data.c_str(), data.size()));
   }
 
-  std::unique_ptr<base::DictionaryValue> manifest =
-      DictionaryBuilder()
-          .Set(keys::kName, "Test extension")
-          .Set(keys::kVersion, "1.0")
-          .Set(keys::kManifestVersion, 2)
-          .Build();
+  base::Value::Dict manifest = DictionaryBuilder()
+                                   .Set(keys::kName, "Test extension")
+                                   .Set(keys::kVersion, "1.0")
+                                   .Set(keys::kManifestVersion, 2)
+                                   .BuildDict();
 
   // Persist manifest file.
   base::FilePath manifest_path = extension_dir.Append(kManifestFilename);
-  JSONFileValueSerializer(manifest_path).Serialize(*manifest);
+  JSONFileValueSerializer(manifest_path).Serialize(manifest);
   EXPECT_TRUE(base::PathExists(manifest_path));
 }
 
@@ -3794,8 +3793,8 @@ TEST_F(ExtensionServiceTest, BlockAndUnblockPolicyExtension) {
 
   {
     ManagementPrefUpdater pref(profile_->GetTestingPrefService());
-    // // Blocklist everything.
-    // pref.SetBlocklistedByDefault(true);
+    // Blocklist everything.
+    pref.SetBlocklistedByDefault(true);
     // Mark good.crx for force-installation.
     pref.SetIndividualExtensionAutoInstalled(
         good_crx, "http://example.com/update_url", true);
@@ -3804,18 +3803,12 @@ TEST_F(ExtensionServiceTest, BlockAndUnblockPolicyExtension) {
   // Have policy force-install an extension.
   MockExternalProvider* provider =
       AddMockExternalProvider(ManifestLocation::kExternalPolicyDownload);
-  provider->UpdateOrAddExtension(
-      good_crx, "1.0.0.0", data_dir().AppendASCII("good_crx"));
+  provider->UpdateOrAddExtension(good_crx, "1.0.0.0",
+                                 data_dir().AppendASCII("good.crx"));
 
   // Reloading extensions should find our externally registered extension
   // and install it.
-  // WaitForExternalExtensionInstalled();
-  // Installation actually fails with
-  // "Package is invalid: 'CRX_FILE_NOT_READABLE'"
-  // Thus commenting out the call above.
-  // TODO(crbug.com/1378548): Test seems to be broken as it passes even though
-  // the extension never got installed in the first place. And maybe that was
-  // always the case?
+  WaitForExternalExtensionInstalled(good_crx);
 
   AssertExtensionBlocksAndUnblocks(false, good_crx);
 }
@@ -4099,10 +4092,10 @@ TEST_F(ExtensionServiceTest, ManagementPolicyProhibitsLoadFromPrefs) {
   // Create a fake extension to be loaded as though it were read from prefs.
   base::FilePath path =
       data_dir().AppendASCII("management").AppendASCII("simple_extension");
-  base::DictionaryValue manifest;
-  manifest.SetStringPath(keys::kName, "simple_extension");
-  manifest.SetStringPath(keys::kVersion, "1");
-  manifest.SetIntPath(keys::kManifestVersion, 2);
+  base::Value::Dict manifest;
+  manifest.Set(keys::kName, "simple_extension");
+  manifest.Set(keys::kVersion, "1");
+  manifest.Set(keys::kManifestVersion, 2);
   // UNPACKED is for extensions loaded from a directory. We use it here, even
   // though we're testing loading from prefs, so that we don't need to provide
   // an extension key.
@@ -6048,19 +6041,6 @@ TEST_F(ExtensionServiceTest, ExternalPrefProvider) {
     EXPECT_EQ(0, visitor.Visit(json_data));
   }
 
-  // Test is_bookmark_app.
-  MockProviderVisitor from_bookmark_visitor(
-      base_path, Extension::FROM_BOOKMARK);
-  json_data =
-      "{"
-      "  \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\": {"
-      "    \"external_crx\": \"RandomExtension.crx\","
-      "    \"external_version\": \"1.0\","
-      "    \"is_bookmark_app\": true"
-      "  }"
-      "}";
-  EXPECT_EQ(1, from_bookmark_visitor.Visit(json_data));
-
   // Test is_from_webstore.
   MockProviderVisitor from_webstore_visitor(
       base_path, Extension::FROM_WEBSTORE);
@@ -7644,7 +7624,7 @@ TEST_F(ExtensionServiceTest, CannotDisableSharedModules) {
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("Shared Module")
           .SetManifestPath("export.resources",
-                           ListBuilder().Append("foo.js").Build())
+                           ListBuilder().Append("foo.js").BuildList())
           .AddFlags(Extension::FROM_WEBSTORE)
           .Build();
 

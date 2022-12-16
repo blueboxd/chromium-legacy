@@ -24,7 +24,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/elapsed_timer.h"
-#include "base/values.h"
 #include "base/version.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/common/url_constants.h"
@@ -141,7 +140,7 @@ bool IsManifestSupported(int manifest_version,
 
 // Computes the |extension_id| from the given parameters. On success, returns
 // true. On failure, populates |error| and returns false.
-bool ComputeExtensionID(const base::DictAdapterForMigration& manifest,
+bool ComputeExtensionID(const base::Value::Dict& manifest,
                         const base::FilePath& path,
                         int creation_flags,
                         std::u16string* error,
@@ -222,12 +221,11 @@ void Extension::set_silence_deprecated_manifest_version_warnings_for_testing(
 }
 
 // static
-scoped_refptr<Extension> Extension::Create(
-    const base::FilePath& path,
-    ManifestLocation location,
-    const base::DictAdapterForMigration& value,
-    int flags,
-    std::string* utf8_error) {
+scoped_refptr<Extension> Extension::Create(const base::FilePath& path,
+                                           ManifestLocation location,
+                                           const base::Value::Dict& value,
+                                           int flags,
+                                           std::string* utf8_error) {
   return Extension::Create(path,
                            location,
                            value,
@@ -238,13 +236,12 @@ scoped_refptr<Extension> Extension::Create(
 
 // TODO(sungguk): Continue removing std::string errors and replacing
 // with std::u16string. See http://crbug.com/71980.
-scoped_refptr<Extension> Extension::Create(
-    const base::FilePath& path,
-    ManifestLocation location,
-    const base::DictAdapterForMigration& value,
-    int flags,
-    const std::string& explicit_id,
-    std::string* utf8_error) {
+scoped_refptr<Extension> Extension::Create(const base::FilePath& path,
+                                           ManifestLocation location,
+                                           const base::Value::Dict& value,
+                                           int flags,
+                                           const std::string& explicit_id,
+                                           std::string* utf8_error) {
   base::ElapsedTimer timer;
   DCHECK(utf8_error);
   std::u16string error;
@@ -254,12 +251,6 @@ scoped_refptr<Extension> Extension::Create(
     extension_id = explicit_id;
   } else if (!ComputeExtensionID(value, path, flags, &error, &extension_id)) {
     *utf8_error = base::UTF16ToUTF8(error);
-    return nullptr;
-  }
-
-  if ((flags & FROM_BOOKMARK) != 0) {
-    // Extension-based bookmark apps are no longer supported.
-    // They have been replaced by web apps.
     return nullptr;
   }
 
@@ -658,7 +649,7 @@ bool Extension::LoadRequiredFeatures(std::u16string* error) {
 bool Extension::LoadName(std::u16string* error) {
   const std::string* non_localized_name_ptr =
       manifest_->FindStringPath(keys::kName);
-  if (non_localized_name_ptr == nullptr) {
+  if (non_localized_name_ptr == nullptr || *non_localized_name_ptr == "") {
     *error = errors::kInvalidName16;
     return false;
   }
@@ -858,16 +849,15 @@ bool Extension::LoadShortName(std::u16string* error) {
   return true;
 }
 
-ExtensionInfo::ExtensionInfo(const base::DictionaryValue* manifest,
+ExtensionInfo::ExtensionInfo(const base::Value::Dict* manifest,
                              const std::string& id,
                              const base::FilePath& path,
                              ManifestLocation location)
     : extension_id(id), extension_path(path), extension_location(location) {
   if (manifest)
-    extension_manifest = base::DictionaryValue::From(
-        base::Value::ToUniquePtrValue(manifest->Clone()));
+    extension_manifest = std::make_unique<base::Value::Dict>(manifest->Clone());
 }
 
-ExtensionInfo::~ExtensionInfo() {}
+ExtensionInfo::~ExtensionInfo() = default;
 
 }   // namespace extensions

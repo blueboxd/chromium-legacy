@@ -335,7 +335,7 @@ const char kPrerender2MemoryAcceptablePercentOfSystemMemoryParamName[] =
 
 BASE_FEATURE(kPrerender2InBackground,
              "Prerender2InBackground",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kPrerender2InNewTab,
              "Prerender2InNewTab",
@@ -1462,12 +1462,16 @@ BASE_FEATURE(kFileSystemUrlNavigationForChromeAppsOnly,
 
 BASE_FEATURE(kEarlyExitOnNoopClassOrStyleChange,
              "EarlyExitOnNoopClassOrStyleChange",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // TODO(mahesh.ma): Enable for supported Android versions once feature is ready.
 BASE_FEATURE(kStylusWritingToInput,
              "StylusWritingToInput",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kStylusPointerAdjustment,
+             "StylusPointerAdjustment",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kDisableArrayBufferSizeLimitsForTesting,
              "DisableArrayBufferSizeLimitsForTesting",
@@ -1671,5 +1675,8 @@ BASE_FEATURE(kSpeculationRulesPrefetchFuture,
              "SpeculationRulesPrefetchFuture",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kAllowPageWithIDBConnectionInBFCache,
+             "AllowPageWithIDBConnectionInBFCache",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 }  // namespace features
 }  // namespace blink

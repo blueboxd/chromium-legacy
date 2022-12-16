@@ -33,6 +33,7 @@
 #include "ui/views/test/button_test_api.h"
 
 constexpr int kMemorySavingsKilobytes = 100000;
+constexpr int kSmallMemorySavingsKilobytes = 10;
 
 class DiscardMockNavigationHandle : public content::MockNavigationHandle {
  public:
@@ -246,18 +247,47 @@ TEST_F(HighEfficiencyChipViewTest, ShouldRenderMemorySavingsInDialog) {
                   kMemorySavingsKilobytes * 1024)) != std::string::npos);
 }
 
+//  When the memory savings are lower than 1Mb then they shouldn't be rendered
+//  in the dialog.
+TEST_F(HighEfficiencyChipViewTest, ShouldNotRenderSmallMemorySavingsInDialog) {
+  // Add a new tab with small memory savings.
+  AddTab(browser(), GURL("http://bar"));
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetWebContentsAt(1);
+  TabDiscardTabHelper::CreateForWebContents(contents);
+  performance_manager::user_tuning::UserPerformanceTuningManager::
+      PreDiscardResourceUsage::CreateForWebContents(
+          contents, kSmallMemorySavingsKilobytes);
+
+  // Mark the new tab as discarded.
+  SetTabDiscardState(1, true);
+
+  PageActionIconView* view = GetPageActionIconView();
+
+  ui::MouseEvent e(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                   ui::EventTimeForNow(), 0, 0);
+  views::test::ButtonTestApi test_api(view);
+  test_api.NotifyClick(e);
+
+  views::StyledLabel* label = GetDialogLabel<views::StyledLabel>(
+      HighEfficiencyBubbleView::kHighEfficiencyDialogBodyElementId);
+  EXPECT_TRUE(
+      label->GetText().find(u"Memory Saver freed up memory for other tasks") !=
+      std::string::npos);
+}
+
 // When the previous page was not previously discarded, the icon should not be
 // visible.
-TEST_F(HighEfficiencyChipViewTest, ShouldHideLabelAfterThreeTimes) {
+TEST_F(HighEfficiencyChipViewTest, ShouldHideLabelAfterMultipleDiscards) {
   SetHighEfficiencyModeEnabled(true);
-  // Open the tab 3 times with the label being visible.
-  for (int i = 0; i < 3; i++) {
+  // Open the tab the max number of times for the label to be visible
+  for (int i = 0; i < HighEfficiencyChipView::kChipAnimationCount; i++) {
     SetTabDiscardState(0, true);
     EXPECT_TRUE(GetPageActionIconView()->ShouldShowLabel());
     SetTabDiscardState(0, false);
   }
 
-  // On the 4th time, the label should be hidden.
+  // The label should be hidden on subsequent discards
   SetTabDiscardState(0, true);
   EXPECT_FALSE(GetPageActionIconView()->ShouldShowLabel());
 }

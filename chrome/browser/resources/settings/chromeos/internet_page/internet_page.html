@@ -11,16 +11,27 @@
     margin-inline-end: 16px;
   }
 
-  cr-button iron-icon[icon='cr:add'] {
+  #createCustomApnButton iron-icon {
     --iron-icon-fill-color: var(--text-color);
     margin-inline-end: 8px;
   }
+
+  #createCustomApnButton[disabled] iron-icon {
+    --iron-icon-fill-color: var(--disabled);
+  }
+
+  #apnTooltip {
+    --paper-tooltip-background: var(--cros-tooltip-background-color);
+    --paper-tooltip-text-color: var(--cros-tooltip-label-color);
+    text-align: center;
+  }
+
   #hotspotSubtitle {
     color: var(--cr-secondary-text-color);
     font-size: inherit;
+    left: 56px;
     padding-inline-end: 210px;
     position: relative;
-    left: 56px;
     top: -22px;
   }
 </style>
@@ -123,14 +134,25 @@
   <template is="dom-if" route-path="/apn" restamp>
     <os-settings-subpage page-title="$i18n{internetApnPageTitle}">
       <div slot="subpage-title-extra">
-        <cr-button id="createCustomApnButton"
-            on-click="onCreateCustomApnClicked_"
-            class="cancel-button">
-          <iron-icon icon="cr:add"></iron-icon>
-          $i18n{apnPageAddNewApn}
-        </cr-button>
+        <div id="apnButtonTitle">
+          <cr-button id="createCustomApnButton"
+              on-click="onCreateCustomApnClicked_"
+              class="cancel-button"
+              disabled="[[isCreateCustomApnButtonDisabled_]]">
+            <iron-icon icon="cr:add"></iron-icon>
+            $i18n{apnPageAddNewApn}
+          </cr-button>
+        </div>
+        <!-- TODO(b/162365553) Add a11y support-->
+        <template is="dom-if" if="[[isCreateCustomApnButtonDisabled_]]" restamp>
+          <paper-tooltip id="apnTooltip" for="apnButtonTitle">
+            $i18n{customApnLimitReached}
+          </paper-tooltip>
+        </template>
       </div>
-      <apn-subpage on-show-apn-detail-dialog="onShowApnDetailDialog_">
+      <apn-subpage id="apnSubpage"
+          is-num-custom-apns-limit-reached="{{isCreateCustomApnButtonDisabled_}}"
+      >
       </apn-subpage>
     </os-settings-subpage>
   </template>
@@ -170,11 +192,6 @@
   </internet-config>
 </template>
 
-<template is="dom-if" if="[[shouldShowApnDetailDialog_]]" restamp>
-  <apn-detail-dialog id="apnDetailDialog" on-close="onApnDetailDialogClose_">
-  </apn-detail-dialog>
-</template>
-
 <template is="dom-if" if="[[showCellularSetupDialog_]]" restamp>
   <os-settings-cellular-setup-dialog id="cellularSetupDialog"
       on-close="onCloseCellularSetupDialog_"
@@ -208,6 +225,5 @@
 </template>
 
 <cr-toast id="errorToast" duration="5000">
-  <iron-icon icon="cellular-setup:warning"></iron-icon>
   <span id="errorToastMessage">[[errorToastMessage_]]</span>
 </cr-toast>

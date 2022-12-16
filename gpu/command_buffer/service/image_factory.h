@@ -22,29 +22,17 @@ class GLES2DecoderImpl;
 }
 
 class GPU_EXPORT ImageFactory {
+ public:
+  virtual ~ImageFactory();
+
  protected:
   ImageFactory();
-  virtual ~ImageFactory();
 
  private:
   // This class is used by validating command decoder for NaCL swapchain and
   // IOSurfaceImageBackingFactory for getting IOSurface from GMB.
   friend class gles2::GLES2DecoderImpl;
   friend class IOSurfaceImageBackingFactory;
-
-#if BUILDFLAG(IS_MAC)
-  // Creates a GLImage instance for GPU memory buffer identified by |handle|.
-  // |client_id| should be set to the client requesting the creation of instance
-  // and can be used by factory implementation to verify access rights.
-  virtual scoped_refptr<gl::GLImage> CreateImageForGpuMemoryBuffer(
-      gfx::GpuMemoryBufferHandle handle,
-      const gfx::Size& size,
-      gfx::BufferFormat format,
-      const gfx::ColorSpace& color_space,
-      gfx::BufferPlane plane,
-      int client_id,
-      SurfaceHandle surface_handle) = 0;
-#endif
 
   // Create an anonymous GLImage backed by a GpuMemoryBuffer that doesn't have a
   // client_id. It can't be passed to other processes. Used only by validating

@@ -54,6 +54,7 @@
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
+#include "third_party/blink/public/mojom/runtime_feature_state/runtime_feature_state.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -92,6 +93,7 @@
 #include "third_party/blink/renderer/core/loader/form_submission.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
+#include "third_party/blink/renderer/core/loader/idna_util.h"
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
 #include "third_party/blink/renderer/core/navigation_api/navigation_api.h"
@@ -123,6 +125,7 @@
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
+#include "third_party/blink/renderer/platform/runtime_feature_state/runtime_feature_state_override_context.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
@@ -818,6 +821,25 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
     }
   }
 
+  // Warn if the resource URL's hostname contains IDNA deviation characters.
+  // Only warn if the resource URL's origin is different than its requestor
+  // (we don't want to warn for <img src="faß.de/image.img"> on faß.de).
+  // TODO(crbug.com/1396475): Remove once Non-Transitional mode is shipped.
+  if (resource_request.RequestorOrigin() &&
+      !resource_request.RequestorOrigin()->IsSameOriginWith(
+          SecurityOrigin::Create(url).get()) &&
+      url.HasIDNA2008DeviationCharacter()) {
+    String message = GetConsoleWarningForIDNADeviationCharacters(url);
+    if (!message.empty()) {
+      request.GetOriginWindow()->AddConsoleMessage(
+          MakeGarbageCollected<ConsoleMessage>(
+              mojom::ConsoleMessageSource::kSecurity,
+              mojom::ConsoleMessageLevel::kWarning, message));
+      origin_window->CountUse(
+          WebFeature::kIDNA2008DeviationCharacterInHostnameOfIFrame);
+    }
+  }
+
   Client()->BeginNavigation(
       resource_request, request.GetFrameType(), origin_window,
       nullptr /* document_loader */, navigation_type,
@@ -1005,7 +1027,10 @@ void FrameLoader::CommitNavigation(
   if (!CancelProvisionalLoaderForNewNavigation())
     return;
 
-  if (navigation_params->frame_load_type == WebFrameLoadType::kBackForward) {
+  auto url_origin = SecurityOrigin::Create(navigation_params->url);
+  if (navigation_params->frame_load_type == WebFrameLoadType::kBackForward &&
+      frame_->DomWindow()->GetSecurityOrigin()->IsSameOriginWith(
+          url_origin.get())) {
     auto* params = MakeGarbageCollected<NavigateEventDispatchParams>(
         navigation_params->url, NavigateEventType::kCrossDocument,
         WebFrameLoadType::kBackForward);
@@ -1077,8 +1102,7 @@ void FrameLoader::CommitNavigation(
   // so that the old document can access it and fill in the information as it
   // is being unloaded/swapped out.
   ScopedOldDocumentInfoForCommitCapturer scoped_old_document_info(
-      MakeGarbageCollected<OldDocumentInfoForCommit>(
-          SecurityOrigin::Create(navigation_params->url)));
+      MakeGarbageCollected<OldDocumentInfoForCommit>(url_origin));
 
   FrameSwapScope frame_swap_scope(frame_owner);
   {
@@ -1162,6 +1186,10 @@ void FrameLoader::CommitNavigation(
     policy_container = PolicyContainer::CreateFromWebPolicyContainer(
         std::move(navigation_params->policy_container));
   }
+
+  base::flat_map<mojom::blink::RuntimeFeatureState, bool> override_values =
+      navigation_params->modified_runtime_features;
+
   // TODO(dgozman): get rid of provisional document loader and most of the code
   // below. We should probably call DocumentLoader::CommitNavigation directly.
   DocumentLoader* new_document_loader = MakeGarbageCollected<DocumentLoader>(
@@ -1172,6 +1200,14 @@ void FrameLoader::CommitNavigation(
       new_document_loader,
       ScopedOldDocumentInfoForCommitCapturer::CurrentInfo()->history_item,
       commit_reason);
+
+  // Now that the RuntimeFeatureStateOverrideContext has been created, set the
+  // override values.
+  // TODO(crbug.com/1377000): Move this inside CommitNavigation() and put it
+  // alongside the other state initialization.
+  frame_->DomWindow()
+      ->GetRuntimeFeatureStateOverrideContext()
+      ->ApplyOverrideValuesFromParams(override_values);
 
   RestoreScrollPositionAndViewState();
 

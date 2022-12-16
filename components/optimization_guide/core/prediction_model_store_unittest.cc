@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include "components/optimization_guide/core/prediction_model_store.h"
-#include <memory>
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
 #include "base/rand_util.h"
 #include "base/task/thread_pool.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "components/optimization_guide/core/model_store_metadata_entry.h"
@@ -59,8 +59,9 @@ class PredictionModelStoreTest : public testing::Test {
     ASSERT_TRUE(temp_models_dir_.CreateUniqueTempDir());
     local_state_prefs_ = std::make_unique<TestingPrefServiceSimple>();
     prefs::RegisterLocalStatePrefs(local_state_prefs_->registry());
-    prediction_model_store_ = std::make_unique<PredictionModelStore>(
-        local_state_prefs_.get(), temp_models_dir_.GetPath());
+    prediction_model_store_ =
+        PredictionModelStore::CreatePredictionModelStoreForTesting(
+            local_state_prefs_.get(), temp_models_dir_.GetPath());
   }
 
   void OnPredictionModelLoaded(
@@ -204,6 +205,92 @@ TEST_F(PredictionModelStoreTest, InvalidModelAdditionalFile) {
   RunUntilIdle();
 
   EXPECT_FALSE(last_loaded_prediction_model());
+}
+
+TEST_F(PredictionModelStoreTest, UpdateMetadataForExistingModel) {
+  auto model_cache_key = CreateModelCacheKey(kTestLocaleFoo);
+  auto model_detail =
+      CreateTestModelFiles(kTestOptimizationTargetFoo, model_cache_key, {});
+  prediction_model_store_->UpdateModel(
+      kTestOptimizationTargetFoo, model_cache_key, model_detail.model_info,
+      model_detail.base_model_dir, base::DoNothing());
+  RunUntilIdle();
+
+  EXPECT_TRUE(prediction_model_store_->HasModel(kTestOptimizationTargetFoo,
+                                                model_cache_key));
+  prediction_model_store_->LoadModel(
+      kTestOptimizationTargetFoo, model_cache_key,
+      base::BindOnce(&PredictionModelStoreTest::OnPredictionModelLoaded,
+                     base::Unretained(this)));
+  RunUntilIdle();
+  proto::PredictionModel* loaded_model = last_loaded_prediction_model();
+  EXPECT_TRUE(loaded_model);
+  EXPECT_EQ(kTestOptimizationTargetFoo,
+            loaded_model->model_info().optimization_target());
+  EXPECT_FALSE(loaded_model->model_info().keep_beyond_valid_duration());
+
+  proto::ModelInfo model_info;
+  model_info.set_optimization_target(kTestOptimizationTargetFoo);
+  model_info.set_version(1);
+  model_info.mutable_valid_duration()->set_seconds(
+      base::Minutes(100).InSeconds());
+  model_info.set_keep_beyond_valid_duration(true);
+  prediction_model_store_->UpdateMetadataForExistingModel(
+      kTestOptimizationTargetFoo, model_cache_key, model_info);
+  RunUntilIdle();
+  auto metadata_entry = ModelStoreMetadataEntry::GetModelMetadataEntryIfExists(
+      local_state_prefs_.get(), kTestOptimizationTargetFoo, model_cache_key);
+  EXPECT_LE(base::Minutes(99),
+            metadata_entry->GetExpiryTime() - base::Time::Now());
+  EXPECT_TRUE(metadata_entry->GetKeepBeyondValidDuration());
+}
+
+TEST_F(PredictionModelStoreTest, ModelStorageMetrics) {
+  RunUntilIdle();
+  base::HistogramTester histogram_tester;
+
+  auto model_cache_key = CreateModelCacheKey(kTestLocaleFoo);
+  auto model_detail =
+      CreateTestModelFiles(kTestOptimizationTargetFoo, model_cache_key, {});
+  prediction_model_store_->UpdateModel(
+      kTestOptimizationTargetFoo, model_cache_key, model_detail.model_info,
+      model_detail.base_model_dir, base::DoNothing());
+  RunUntilIdle();
+  model_detail =
+      CreateTestModelFiles(kTestOptimizationTargetBar, model_cache_key, {});
+  prediction_model_store_->UpdateModel(
+      kTestOptimizationTargetBar, model_cache_key, model_detail.model_info,
+      model_detail.base_model_dir, base::DoNothing());
+  RunUntilIdle();
+
+  // Recreate the model store, and that should record model storage metrics.
+  prediction_model_store_ =
+      PredictionModelStore::CreatePredictionModelStoreForTesting(
+          local_state_prefs_.get(), temp_models_dir_.GetPath());
+  RunUntilIdle();
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.PredictionModelStore.ModelCount.PainfulPageLoad", 1,
+      1);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.PredictionModelStore.TotalDirectorySize."
+      "PainfulPageLoad",
+      1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.PredictionModelStore.ModelCount.ModelValidation", 1,
+      1);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.PredictionModelStore.TotalDirectorySize."
+      "ModelValidation",
+      1);
+  EXPECT_EQ(2U, histogram_tester
+                    .GetTotalCountsForPrefix(
+                        "OptimizationGuide.PredictionModelStore.ModelCount.")
+                    .size());
+  EXPECT_EQ(
+      2U, histogram_tester
+              .GetTotalCountsForPrefix(
+                  "OptimizationGuide.PredictionModelStore.TotalDirectorySize.")
+              .size());
 }
 
 }  // namespace optimization_guide

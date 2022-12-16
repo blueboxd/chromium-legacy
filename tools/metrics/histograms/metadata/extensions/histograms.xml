@@ -29,6 +29,8 @@ chromium-metrics-reviews@google.com.
       summary="Execution took between 5ms and 10ms (slow)."/>
   <variant name=".LessThan1ms" summary="Execution took less than 1ms (fast)."/>
   <variant name=".Over10ms" summary="Execution took over 10ms (glacial)."/>
+  <variant name=".Over270s"
+      summary="Execution took over 4 and half minutes, close to timeout."/>
 </variants>
 
 <variants name="ExtensionMessagingPortType">
@@ -1952,7 +1954,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.GuestView.ChangeOwnerWebContentsOnAttach"
-    enum="Boolean" expires_after="2023-04-09">
+    enum="Boolean" expires_after="2023-06-11">
   <owner>mcnee@chromium.org</owner>
   <owner>src/components/guest_view/OWNERS</owner>
   <summary>
@@ -2899,7 +2901,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.ServiceWorkerBackground.RegistrationWhenExpected"
-    enum="Boolean" expires_after="2023-04-01">
+    enum="Boolean" expires_after="2023-06-11">
   <owner>lazyboy@chromium.org</owner>
   <owner>dbertoni@chromium.org</owner>
   <summary>
@@ -3076,6 +3078,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Extensions.UninstallBookmarkApp" enum="Boolean"
     expires_after="2022-12-01">
+  <obsolete>
+    Obsolete in M110.
+  </obsolete>
   <owner>phillis@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>

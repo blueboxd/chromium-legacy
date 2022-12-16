@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.payments;
 import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,7 +19,6 @@ import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.AppSpeed;
-import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.TestPay;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.payments.PaymentAppFactoryDelegate;
@@ -30,16 +30,16 @@ import java.util.concurrent.TimeoutException;
 /** A payment integration test that sorting payment apps by frecency. */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-public class PaymentRequestPaymentAppsSortingTest implements MainActivityStartCallback {
+public class PaymentRequestPaymentAppsSortingTest {
     @Rule
-    public PaymentRequestTestRule mPaymentRequestTestRule = new PaymentRequestTestRule(
-            "payment_request_alicepay_bobpay_charliepay_test.html", this);
+    public PaymentRequestTestRule mPaymentRequestTestRule =
+            new PaymentRequestTestRule("payment_request_alicepay_bobpay_charliepay_test.html");
 
-    @Override
-    public void onMainActivityStarted() throws TimeoutException {
+    @Before
+    public void setUp() throws TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
         String billingAddressId = helper.setProfile(
-                new AutofillProfile("", "https://example.com", true, "" /* honorific prefix */,
+                new AutofillProfile("", "https://example.test", true, "" /* honorific prefix */,
                         "Jon Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "",
                         "US", "310-310-6000", "jon.doe@gmail.com", "en-US"));
     }
@@ -50,9 +50,9 @@ public class PaymentRequestPaymentAppsSortingTest implements MainActivityStartCa
     public void testPaymentAppsSortingByFrecency() throws TimeoutException {
         // Install a payment app with Bob Pay and Alice Pay, and another payment app with Charlie
         // Pay.
-        TestPay appA = new TestPay("https://alicepay.com", AppSpeed.FAST_APP);
-        TestPay appB = new TestPay("https://bobpay.com", AppSpeed.FAST_APP);
-        TestPay appC = new TestPay("https://charliepay.com", AppSpeed.FAST_APP);
+        TestPay appA = new TestPay("https://alicepay.test", AppSpeed.FAST_APP);
+        TestPay appB = new TestPay("https://bobpay.test", AppSpeed.FAST_APP);
+        TestPay appC = new TestPay("https://charliepay.test", AppSpeed.FAST_APP);
         PaymentAppService.getInstance().addFactory(new PaymentAppFactoryInterface() {
             @Override
             public void create(PaymentAppFactoryDelegate delegate) {
@@ -84,16 +84,16 @@ public class PaymentRequestPaymentAppsSortingTest implements MainActivityStartCa
         PaymentPreferencesUtil.setPaymentAppUseCountForTest(charliePayId, 15);
         PaymentPreferencesUtil.setPaymentAppLastUseDate(charliePayId, 15);
 
-        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
+        mPaymentRequestTestRule.triggerUIAndWait("buy", mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickInPaymentMethodAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
 
         // Checks Charlie Pay is listed at the first position.
         Assert.assertEquals(3, mPaymentRequestTestRule.getNumberOfPaymentApps());
         Assert.assertEquals(
-                "https://charliepay.com", mPaymentRequestTestRule.getPaymentAppLabel(0));
-        Assert.assertEquals("https://bobpay.com", mPaymentRequestTestRule.getPaymentAppLabel(1));
-        Assert.assertEquals("https://alicepay.com", mPaymentRequestTestRule.getPaymentAppLabel(2));
+                "https://charliepay.test", mPaymentRequestTestRule.getPaymentAppLabel(0));
+        Assert.assertEquals("https://bobpay.test", mPaymentRequestTestRule.getPaymentAppLabel(1));
+        Assert.assertEquals("https://alicepay.test", mPaymentRequestTestRule.getPaymentAppLabel(2));
 
         // Cancel the Payment Request.
         mPaymentRequestTestRule.clickAndWait(
@@ -111,23 +111,23 @@ public class PaymentRequestPaymentAppsSortingTest implements MainActivityStartCa
         PaymentPreferencesUtil.setPaymentAppUseCountForTest(alicePayId, 20);
         PaymentPreferencesUtil.setPaymentAppLastUseDate(alicePayId, 20);
 
-        mPaymentRequestTestRule.reTriggerUIAndWait("buy", mPaymentRequestTestRule.getReadyToPay());
+        mPaymentRequestTestRule.triggerUIAndWait("buy", mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickInPaymentMethodAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
 
         // Checks Alice Pay is listed at the first position. Checks Bob Pay is listed at the second
         // position together with Alice Pay since they come from the same app.
         Assert.assertEquals(3, mPaymentRequestTestRule.getNumberOfPaymentApps());
-        Assert.assertEquals("https://alicepay.com", mPaymentRequestTestRule.getPaymentAppLabel(0));
+        Assert.assertEquals("https://alicepay.test", mPaymentRequestTestRule.getPaymentAppLabel(0));
         Assert.assertEquals(
-                "https://charliepay.com", mPaymentRequestTestRule.getPaymentAppLabel(1));
-        Assert.assertEquals("https://bobpay.com", mPaymentRequestTestRule.getPaymentAppLabel(2));
+                "https://charliepay.test", mPaymentRequestTestRule.getPaymentAppLabel(1));
+        Assert.assertEquals("https://bobpay.test", mPaymentRequestTestRule.getPaymentAppLabel(2));
 
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getDismissed());
         // Checks Alice Pay is selected as the default payment method.
         mPaymentRequestTestRule.expectResultContains(
-                new String[] {"https://alicepay.com", "\"transaction\"", "1337"});
+                new String[] {"https://alicepay.test", "\"transaction\"", "1337"});
 
         // Checks Alice Pay use count is increased by one after completing a payment request with
         // it.

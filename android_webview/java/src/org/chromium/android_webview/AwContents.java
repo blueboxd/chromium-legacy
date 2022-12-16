@@ -2327,8 +2327,8 @@ public class AwContents implements SmartClipProvider {
         } else if (!mContentsClient.isCachedRendererBackgroundColorValid()) {
             // In force dark mode or the dark style preferred , if background color not set,
             // this cause a white flash, just show black background.
-            // TODO(crbug.com/1253990): Check if dark style is preferred.
-            if (mSettings.isForceDarkApplied() && !mDidInitBackground) {
+            if ((mSettings.isForceDarkApplied() || mSettings.prefersDarkFromTheme())
+                    && !mDidInitBackground) {
                 return Color.BLACK;
             }
             return mBaseBackgroundColor;
@@ -3130,12 +3130,6 @@ public class AwContents implements SmartClipProvider {
     }
 
     void startProcessTextIntent(Intent intent) {
-        // on Android M, WebView is not able to replace the text with the processed text.
-        // So set the readonly flag for M.
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.M) {
-            intent.putExtra(Intent.EXTRA_PROCESS_TEXT_READONLY, true);
-        }
-
         if (ContextUtils.activityFromContext(mContext) == null) {
             mContext.startActivity(intent);
             return;

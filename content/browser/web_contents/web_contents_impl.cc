@@ -4856,7 +4856,7 @@ WebContents* WebContentsImpl::OpenURL(const OpenURLParams& params) {
       // Instead, we just navigate directly on the relevant frame
       // tree.
       if (frame_tree.type() == FrameTree::Type::kPrerender ||
-          frame_tree.type() == FrameTree::Type::kFencedFrame) {
+          frame_tree_node->IsInFencedFrameTree()) {
         DCHECK_EQ(params.disposition, WindowOpenDisposition::CURRENT_TAB);
         frame_tree.controller().LoadURLWithParams(
             NavigationController::LoadURLParams(params));
@@ -5976,10 +5976,10 @@ void WebContentsImpl::DidNavigateMainFramePreCommit(
   TRACE_EVENT1("content,navigation",
                "WebContentsImpl::DidNavigateMainFramePreCommit",
                "navigation_is_within_page", navigation_is_within_page);
-  const bool is_primary =
-      frame_tree_node->frame_tree().type() == FrameTree::Type::kPrimary;
+  const bool is_primary_mainframe =
+      frame_tree_node->GetFrameType() == FrameType::kPrimaryMainFrame;
   // If running for a non-primary main frame, early out.
-  if (!is_primary)
+  if (!is_primary_mainframe)
     return;
 
   // Ensure fullscreen mode is exited before committing the navigation to a
@@ -6024,9 +6024,6 @@ void WebContentsImpl::DidNavigateMainFramePostCommit(
     if (rwhvb)
       rwhvb->OnDidNavigateMainFrameToNewPage();
   }
-
-  if (is_primary_main_frame && delegate_)
-    delegate_->DidNavigatePrimaryMainFramePostCommit(this);
 
   PageImpl& page = render_frame_host->GetPage();
   if (page.IsPrimary()) {
@@ -7973,7 +7970,7 @@ void WebContentsImpl::SetFocusedFrame(FrameTreeNode* node,
   if (inner_contents) {
     // An inner WebContents is not created from Fenced Frames so we
     // shouldn't end up in this branch.
-    DCHECK_NE(FrameTree::Type::kFencedFrame, node->frame_tree().type());
+    DCHECK(!node->IsInFencedFrameTree());
 
     // |this| is an outer WebContents and |node| represents an inner
     // WebContents. Transfer the focus to the inner contents if |this| is
@@ -7989,7 +7986,7 @@ void WebContentsImpl::SetFocusedFrame(FrameTreeNode* node,
     // A GuestView embedding a fenced frame will have an
     // OuterContentsFrameTreeNode. However, it will not have the same site
     // instance because a FencedFrame creates a new BrowsingInstance.
-    DCHECK_NE(FrameTree::Type::kFencedFrame, node->frame_tree().type());
+    DCHECK(!node->IsInFencedFrameTree());
 
     // |this| is an inner WebContents, |node| is its main FrameTreeNode and
     // the outer WebContents FrameTreeNode is at |source|'s SiteInstance.

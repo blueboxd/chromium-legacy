@@ -771,7 +771,7 @@ deps = {
 
   'src/clank': {
     'url': 'https://chrome-internal.googlesource.com/clank/internal/apps.git' + '@' +
-    'ae27c17e171b80a8f598f54143ea7565a85ede7a',
+    '30368bc56d452da29538258b3ddd725bf44c5676',
     'condition': 'checkout_android and checkout_src_internal',
   },
 
@@ -1895,7 +1895,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@1790b469d5595a840691e51591136675c4d0bb61',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@f34f0c2a5411c9ea94a8f3f6d52ea4f491a18f5a',
     'condition': 'checkout_src_internal',
   },
 

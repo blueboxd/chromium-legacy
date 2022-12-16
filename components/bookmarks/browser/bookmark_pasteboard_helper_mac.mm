@@ -145,12 +145,11 @@ bool ReadWebURLsWithTitlesPboardType(
     std::vector<BookmarkNodeData::Element>* elements) {
   NSArray* urls = nil;
   NSArray* titles = nil;
-  if (!ui::ClipboardUtil::URLsAndTitlesFromPasteboard(
-          pb, /*include_files=*/false, &urls, &titles)) {
+  if (!ui::ClipboardUtil::URLsAndTitlesFromPasteboard(pb, &urls, &titles))
     return false;
-  }
 
-  for (NSUInteger i = 0; i < titles.count; ++i) {
+  NSUInteger len = [titles count];
+  for (NSUInteger i = 0; i < len; ++i) {
     std::u16string title = base::SysNSStringToUTF16(titles[i]);
     std::string url = base::SysNSStringToUTF8(urls[i]);
     if (!url.empty()) {

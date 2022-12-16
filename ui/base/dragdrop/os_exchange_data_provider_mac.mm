@@ -7,20 +7,19 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/check_op.h"
-#include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "base/pickle.h"
-#include "base/ranges/algorithm.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "net/base/filename_util.h"
+#import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/clipboard_format_type.h"
 #import "ui/base/clipboard/clipboard_util_mac.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/clipboard/file_info.h"
 #include "ui/base/data_transfer_policy/data_transfer_policy_controller.h"
+#import "ui/base/dragdrop/cocoa_dnd_util.h"
 #include "url/gurl.h"
 
 @interface CrPasteboardItemWrapper : NSObject <NSPasteboardWriting>
@@ -170,13 +169,22 @@ void OSExchangeDataProviderMac::SetURL(const GURL& url,
 }
 
 void OSExchangeDataProviderMac::SetFilename(const base::FilePath& path) {
-  std::vector<FileInfo> filenames(1, ui::FileInfo(path, base::FilePath()));
-  ClipboardUtil::WriteFilesToPasteboard(GetPasteboard(), filenames);
+  [GetPasteboard() setPropertyList:@[ base::SysUTF8ToNSString(path.value()) ]
+                           forType:NSFilenamesPboardType];
 }
 
 void OSExchangeDataProviderMac::SetFilenames(
     const std::vector<FileInfo>& filenames) {
-  ClipboardUtil::WriteFilesToPasteboard(GetPasteboard(), filenames);
+  if (filenames.empty())
+    return;
+
+  NSMutableArray* paths = [NSMutableArray arrayWithCapacity:filenames.size()];
+
+  for (const auto& filename : filenames) {
+    NSString* path = base::SysUTF8ToNSString(filename.path.value());
+    [paths addObject:path];
+  }
+  [GetPasteboard() setPropertyList:paths forType:NSFilenamesPboardType];
 }
 
 void OSExchangeDataProviderMac::SetPickledData(
@@ -211,30 +219,24 @@ bool OSExchangeDataProviderMac::GetURLAndTitle(FilenameToURLPolicy policy,
   DCHECK(url);
   DCHECK(title);
 
-  NSArray<NSString*>* urls;
-  NSArray<NSString*>* titles;
-  if (ui::ClipboardUtil::URLsAndTitlesFromPasteboard(
-          GetPasteboard(), /*include_files=*/false, &urls, &titles)) {
-    *url = GURL(base::SysNSStringToUTF8(urls.firstObject));
-    *title = base::SysNSStringToUTF16(titles.firstObject);
+  if (PopulateURLAndTitleFromPasteboard(url, title, GetPasteboard(), false)) {
     return true;
   }
 
   // If there are no URLs, try to convert a filename to a URL if the policy
   // allows it. The title remains blank.
   //
-  // This could be done in the call to `URLsAndTitlesFromPasteboard` above if
-  // `true` were passed in for the `include_files` parameter, but that function
-  // strips the trailing slashes off of paths and always returns the last path
-  // element as the title whereas no path conversion nor title is wanted.
-  //
-  // TODO(avi): What is going on here? This comment and code was written for the
-  // old pasteboard code; is this still true with the new pasteboard code? What
-  // uses this, and why does it care about titles or path conversion?
+  // This could be done in the call to PopulateURLAndTitleFromPasteboard above
+  // if |true| were passed in as the last parameter, but that function strips
+  // the trailing slashes off of paths and always returns the last path element
+  // as the title whereas no path conversion nor title is wanted.
   base::FilePath path;
   if (policy != FilenameToURLPolicy::DO_NOT_CONVERT_FILENAMES &&
       GetFilename(&path)) {
-    *url = net::FilePathToFileURL(path);
+    NSURL* fileUrl =
+        [NSURL fileURLWithPath:base::SysUTF8ToNSString(path.value())];
+    *url =
+        GURL([[fileUrl absoluteString] stringByStandardizingPath].UTF8String);
     return true;
   }
 
@@ -242,23 +244,25 @@ bool OSExchangeDataProviderMac::GetURLAndTitle(FilenameToURLPolicy policy,
 }
 
 bool OSExchangeDataProviderMac::GetFilename(base::FilePath* path) const {
-  std::vector<ui::FileInfo> files =
-      ui::ClipboardUtil::FilesFromPasteboard(GetPasteboard());
-  if (files.empty()) {
+  NSArray* paths = [GetPasteboard() propertyListForType:NSFilenamesPboardType];
+  if ([paths count] == 0)
     return false;
-  }
 
-  *path = files[0].path;
+  *path = base::FilePath(base::SysNSStringToUTF8(paths[0]));
   return true;
 }
 
 bool OSExchangeDataProviderMac::GetFilenames(
     std::vector<FileInfo>* filenames) const {
-  std::vector<ui::FileInfo> files =
-      ui::ClipboardUtil::FilesFromPasteboard(GetPasteboard());
-  bool result = !files.empty();
-  base::ranges::move(files, std::back_inserter(*filenames));
-  return result;
+  NSArray* paths = [GetPasteboard() propertyListForType:NSFilenamesPboardType];
+  if ([paths count] == 0)
+    return false;
+
+  for (NSString* path in paths)
+    filenames->push_back(
+        {base::FilePath(base::SysNSStringToUTF8(path)), base::FilePath()});
+
+  return true;
 }
 
 bool OSExchangeDataProviderMac::GetPickledData(
@@ -286,12 +290,12 @@ bool OSExchangeDataProviderMac::HasURL(FilenameToURLPolicy policy) const {
 }
 
 bool OSExchangeDataProviderMac::HasFile() const {
-  return [GetPasteboard().types containsObject:NSPasteboardTypeFileURL];
+  return [[GetPasteboard() types] containsObject:NSFilenamesPboardType];
 }
 
 bool OSExchangeDataProviderMac::HasCustomFormat(
     const ClipboardFormatType& format) const {
-  return [GetPasteboard().types containsObject:format.ToNSString()];
+  return [[GetPasteboard() types] containsObject:format.ToNSString()];
 }
 
 void OSExchangeDataProviderMac::SetFileContents(

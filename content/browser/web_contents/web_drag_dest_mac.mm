@@ -8,7 +8,6 @@
 #import <Carbon/Carbon.h>
 
 #include "base/mac/scoped_nsobject.h"
-#include "base/ranges/algorithm.h"
 #include "base/strings/sys_string_conversions.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -23,10 +22,12 @@
 #include "content/public/common/drop_data.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/clipboard_util_mac.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
+#import "ui/base/dragdrop/cocoa_dnd_util.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/point.h"
 
@@ -39,11 +40,12 @@ using remote_cocoa::mojom::DraggingInfo;
 
 namespace content {
 
-DropContext::DropContext(const DropData drop_data,
-                         const gfx::PointF client_pt,
-                         const gfx::PointF screen_pt,
-                         int modifier_flags,
-                         base::WeakPtr<RenderWidgetHostImpl> target_rwh)
+DropContext::DropContext(
+    const content::DropData drop_data,
+    const gfx::PointF client_pt,
+    const gfx::PointF screen_pt,
+    int modifier_flags,
+    base::WeakPtr<content::RenderWidgetHostImpl> target_rwh)
     : drop_data(drop_data),
       client_pt(client_pt),
       screen_pt(screen_pt),
@@ -398,10 +400,10 @@ void DropCompletionCallback(WebDragDest* drag_dest,
 
 namespace content {
 
-DropData PopulateDropDataFromPasteboard(NSPasteboard* pboard) {
+void PopulateDropDataFromPasteboard(content::DropData* data,
+                                    NSPasteboard* pboard) {
+  DCHECK(data);
   DCHECK(pboard);
-  DropData drop_data;
-
   // https://crbug.com/1016740#c21
   base::scoped_nsobject<NSArray> types([[pboard types] retain]);
 
@@ -410,18 +412,14 @@ DropData PopulateDropDataFromPasteboard(NSPasteboard* pboard) {
 
   // Get URL if possible. To avoid exposing file system paths to web content,
   // filenames in the drag are not converted to file URLs.
-
-  NSArray<NSString*>* urls;
-  NSArray<NSString*>* titles;
-  if (ui::ClipboardUtil::URLsAndTitlesFromPasteboard(
-          pboard, /*include_files=*/false, &urls, &titles)) {
-    drop_data.url = GURL(base::SysNSStringToUTF8(urls.firstObject));
-    drop_data.url_title = base::SysNSStringToUTF16(titles.firstObject);
-  }
+  ui::PopulateURLAndTitleFromPasteboard(&data->url,
+                                        &data->url_title,
+                                        pboard,
+                                        NO);
 
   // Get plain text.
   if ([types containsObject:NSPasteboardTypeString]) {
-    drop_data.text =
+    data->text =
         base::SysNSStringToUTF16([pboard stringForType:NSPasteboardTypeString]);
   }
 
@@ -434,11 +432,27 @@ DropData PopulateDropDataFromPasteboard(NSPasteboard* pboard) {
     data->html = base::SysNSStringToUTF16(html);
   } else if ([types containsObject:NSPasteboardTypeRTF]) {
     NSString* html = ui::ClipboardUtil::GetHTMLFromRTFOnPasteboard(pboard);
-    drop_data.html = base::SysNSStringToUTF16(html);
+    data->html = base::SysNSStringToUTF16(html);
   }
 
   // Get files.
-  drop_data.filenames = ui::ClipboardUtil::FilesFromPasteboard(pboard);
+  if ([types containsObject:NSFilenamesPboardType]) {
+    NSArray* files = [pboard propertyListForType:NSFilenamesPboardType];
+    if ([files isKindOfClass:[NSArray class]] && [files count]) {
+      for (NSUInteger i = 0; i < [files count]; i++) {
+        NSString* filename = [files objectAtIndex:i];
+        BOOL exists = [[NSFileManager defaultManager]
+                           fileExistsAtPath:filename];
+        if (exists) {
+          data->filenames.emplace_back(
+              base::FilePath::FromUTF8Unsafe(base::SysNSStringToUTF8(filename)),
+              base::FilePath());
+        }
+      }
+    }
+  }
+
+  // TODO(pinkerton): Get file contents. http://crbug.com/34661
 
   // Get custom MIME data.
   if ([types containsObject:ui::kWebCustomDataPboardType]) {
@@ -447,8 +461,6 @@ DropData PopulateDropDataFromPasteboard(NSPasteboard* pboard) {
                               [customData length],
                               &data->custom_data);
   }
-
-  return drop_data;
 }
 
 }  // namespace content

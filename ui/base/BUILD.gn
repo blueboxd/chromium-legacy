@@ -416,6 +416,8 @@ component("base") {
         "accelerators/platform_accelerator_cocoa.mm",
         "cocoa/bubble_closer.h",
         "cocoa/bubble_closer.mm",
+        "dragdrop/cocoa_dnd_util.h",
+        "dragdrop/cocoa_dnd_util.mm",
       ]
     }
   }
@@ -592,6 +594,8 @@ component("base") {
   }
 
   if (is_mac) {
+    deps += [ "//third_party/mozilla" ]
+
     frameworks = [
       "Accelerate.framework",
       "AppKit.framework",
@@ -1212,7 +1216,10 @@ test("ui_base_unittests") {
   }
 
   if (is_mac) {
-    deps += [ ":ui_unittests_framework" ]
+    deps += [
+      ":ui_unittests_framework",
+      "//third_party/mozilla",
+    ]
   }
 
   if (use_aura || toolkit_views) {

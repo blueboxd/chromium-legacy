@@ -6,6 +6,7 @@
 
 #import <Cocoa/Cocoa.h>
 #include <stdint.h>
+#include "ui/base/clipboard/clipboard.h"
 
 #include <limits>
 
@@ -17,7 +18,6 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/notreached.h"
-#include "base/ranges/algorithm.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -25,6 +25,7 @@
 #include "net/base/filename_util.h"
 #include "skia/ext/skia_utils_base.h"
 #include "skia/ext/skia_utils_mac.h"
+#import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/clipboard_format_type.h"
@@ -135,8 +136,8 @@ bool ClipboardMac::IsFormatAvailable(
   // Safari only places RTF on the pasteboard, never HTML. We can convert RTF
   // to HTML, so the presence of either indicates success when looking for HTML.
   if (format == ClipboardFormatType::HtmlType()) {
-    return [types containsObject:NSPasteboardTypeHTML] ||
-           [types containsObject:NSPasteboardTypeRTF];
+    return [types containsObject:NSHTMLPboardType] ||
+           [types containsObject:NSRTFPboardType];
   }
   // Chrome can retrieve an image from the clipboard as either a bitmap or PNG.
   if (format == ClipboardFormatType::PngType() ||
@@ -266,15 +267,14 @@ void ClipboardMac::ReadHTML(ClipboardBuffer buffer,
 
   NSPasteboard* pb = GetPasteboard();
   NSArray* supportedTypes =
-      @[ NSPasteboardTypeHTML, NSPasteboardTypeRTF, NSPasteboardTypeString ];
+      @[ NSHTMLPboardType, NSRTFPboardType, NSPasteboardTypeString ];
   NSString* bestType = [pb availableTypeFromArray:supportedTypes];
   if (bestType) {
     NSString* contents;
-    if ([bestType isEqualToString:NSPasteboardTypeRTF]) {
+    if ([bestType isEqualToString:NSRTFPboardType])
       contents = ClipboardUtil::GetHTMLFromRTFOnPasteboard(pb);
-    } else {
+    else
       contents = [pb stringForType:bestType];
-    }
     *markup = base::SysNSStringToUTF16(contents);
   }
 
@@ -342,9 +342,11 @@ void ClipboardMac::ReadFilenames(ClipboardBuffer buffer,
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
   RecordRead(ClipboardFormatMetric::kFilenames);
 
-  std::vector<ui::FileInfo> files =
-      ClipboardUtil::FilesFromPasteboard(GetPasteboard());
-  base::ranges::move(files, std::back_inserter(*result));
+  NSArray* paths = [GetPasteboard() propertyListForType:NSFilenamesPboardType];
+  for (NSString* path in paths) {
+    result->push_back(
+        ui::FileInfo(base::mac::NSStringToFilePath(path), base::FilePath()));
+  }
 }
 
 // |data_dst| is not used. It's only passed to be consistent with other
@@ -415,7 +417,7 @@ void ClipboardMac::WriteHTML(const char* markup_data,
   NSString* html_fragment = base::SysUTF8ToNSString(html_fragment_str);
 
   // TODO(avi): url_data?
-  [GetPasteboard() setString:html_fragment forType:NSPasteboardTypeHTML];
+  [GetPasteboard() setString:html_fragment forType:NSHTMLPboardType];
 }
 
 void ClipboardMac::WriteSvg(const char* markup_data, size_t markup_len) {
@@ -429,7 +431,12 @@ void ClipboardMac::WriteRTF(const char* rtf_data, size_t data_len) {
 }
 
 void ClipboardMac::WriteFilenames(std::vector<ui::FileInfo> filenames) {
-  ClipboardUtil::WriteFilesToPasteboard(GetPasteboard(), filenames);
+  NSMutableArray* paths = [NSMutableArray arrayWithCapacity:filenames.size()];
+  for (const ui::FileInfo& file : filenames) {
+    NSString* path = base::mac::FilePathToNSString(file.path);
+    [paths addObject:path];
+  }
+  [GetPasteboard() setPropertyList:paths forType:NSFilenamesPboardType];
 }
 
 void ClipboardMac::WriteBookmark(const char* title_data,

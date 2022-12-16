@@ -701,7 +701,7 @@
   {
     "name": "block-insecure-private-network-requests",
     "owners": [ "titouan", "chrome-security-owp-team@google.com" ],
-    "expiry_milestone": 107
+    "expiry_milestone": 110
   },
   {
     "name": "block-migrated-default-chrome-app-sync",
@@ -2301,7 +2301,12 @@
   {
     "name": "enable-expkit-calendar-text-classifier",
     "owners": [ "chrome-intelligence-core@google.com" ],
-    "expiry_milestone": 107
+    "expiry_milestone": 116
+  },
+  {
+    "name": "enable-expkit-text-classifier",
+    "owners": [ "chrome-intelligence-core@google.com" ],
+    "expiry_milestone": 116
   },
   {
     "name": "enable-external-keyboards-in-diagnostics-app",
@@ -2601,7 +2606,7 @@
   {
     "name": "enable-lens-standalone",
     "owners": [ "stanfield@google.com", "benwgold@google.com", "juanmojica@google.com" ],
-    "expiry_milestone": 107
+    "expiry_milestone": 120
   },
   {
     "name": "enable-libinput-to-handle-touchpad",
@@ -5638,17 +5643,17 @@
   {
     "name": "private-network-access-preflight-short-timeout",
     "owners": [ "lyf", "chrome-security-owp-team@google.com" ],
-    "expiry_milestone": 107
+    "expiry_milestone": 113
   },
   {
     "name": "private-network-access-respect-preflight-results",
     "owners": [ "titouan", "chrome-security-owp-team@google.com" ],
-    "expiry_milestone": 107
+    "expiry_milestone": 113
   },
   {
     "name": "private-network-access-send-preflights",
     "owners": [ "titouan", "chrome-security-owp-team@google.com" ],
-    "expiry_milestone": 107
+    "expiry_milestone": 113
   },
   {
     "name": "productivity-launcher",

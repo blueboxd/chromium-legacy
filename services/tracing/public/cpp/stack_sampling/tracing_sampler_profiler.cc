@@ -17,7 +17,6 @@
 #include "base/memory/raw_ptr.h"
 #include "base/no_destructor.h"
 #include "base/process/process.h"
-#include "base/process/process_handle.h"
 #include "base/profiler/sampling_profiler_thread_token.h"
 #include "base/profiler/stack_sampling_profiler.h"
 #include "base/strings/strcat.h"
@@ -25,6 +24,7 @@
 #include "base/thread_annotations.h"
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/trace_event/trace_event.h"
+#include "base/trace_event/trace_log.h"
 #include "base/trace_event/typed_macros.h"
 #include "build/build_config.h"
 #include "services/tracing/public/cpp/buildflags.h"
@@ -36,6 +36,13 @@
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/process_descriptor.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/thread_descriptor.pbzero.h"
+
+#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_NACL) && !BUILDFLAG(IS_APPLE)
+#include "base/profiler/thread_delegate_posix.h"
+#define INITIALIZE_THREAD_DELEGATE_POSIX 1
+#else  // BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_NACL) && !BUILDFLAG(IS_APPLE)
+#define INITIALIZE_THREAD_DELEGATE_POSIX 0
+#endif  // BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_NACL) && !BUILDFLAG(IS_APPLE)
 
 #if ANDROID_ARM64_UNWINDING_SUPPORTED || ANDROID_CFI_UNWINDING_SUPPORTED
 #include <dlfcn.h>
@@ -499,7 +506,8 @@ void TracingSamplerProfiler::TracingProfileBuilder::WriteSampleToTrace(
       // metadata events to be emitted from the JSON exporter which conflict
       // with the metadata events emitted by the regular TrackEventDataSource.
       auto* thread_descriptor = trace_packet->set_thread_descriptor();
-      thread_descriptor->set_pid(base::GetCurrentProcId());
+      thread_descriptor->set_pid(
+          base::trace_event::TraceLog::GetInstance()->process_id());
       thread_descriptor->set_tid(sampled_thread_id_);
       last_timestamp_ = sample.timestamp;
       thread_descriptor->set_reference_timestamp_us(
@@ -837,6 +845,13 @@ TracingSamplerProfiler::TracingSamplerProfiler(
           std::move(core_unwinders_factory_function)),
       unwinder_type_(unwinder_type) {
   DCHECK_NE(sampled_thread_token_.id, base::kInvalidThreadId);
+#if INITIALIZE_THREAD_DELEGATE_POSIX
+  // Since StackSamplingProfiler is scoped to a tracing session and lives on the
+  // thread where `StartTracing` is called, we use `ThreadDelegatePosix` to
+  // initialize global data, like the thread stack base address, that has to be
+  // created on the profiled thread. See crbug.com/1392158#c26 for details.
+  base::ThreadDelegatePosix::Create(sampled_thread_token_);
+#endif  // INITIALIZE_THREAD_DELEGATE_POSIX
   TracingSamplerProfilerDataSource::Get()->RegisterProfiler(this);
 }
 

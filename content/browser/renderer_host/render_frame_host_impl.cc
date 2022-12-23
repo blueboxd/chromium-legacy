@@ -1492,6 +1492,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(
       perfetto::StaticString{LifecycleStateImplToString(lifecycle_state_)},
       perfetto::Track::FromPointer(this));
 
+  DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
   DCHECK(delegate_);
   DCHECK(lifecycle_state_ == LifecycleStateImpl::kSpeculative ||
          lifecycle_state_ == LifecycleStateImpl::kPrerendering ||
@@ -7131,9 +7132,10 @@ void RenderFrameHostImpl::OpenURL(blink::mojom::OpenURLParamsPtr params) {
     target_frame->frame_tree_node()->navigator().NavigateFromFrameProxy(
         target_frame, validated_params_url,
         base::OptionalToPtr(params->initiator_frame_token),
-        GetProcess()->GetID(), params->initiator_origin, GetSiteInstance(),
-        content::Referrer(), ui::PAGE_TRANSITION_LINK,
-        should_replace_current_entry, download_policy, "GET",
+        GetProcess()->GetID(), params->initiator_origin,
+        params->initiator_base_url, GetSiteInstance(), content::Referrer(),
+        ui::PAGE_TRANSITION_LINK, should_replace_current_entry, download_policy,
+        "GET",
         /*post_body=*/nullptr, params->extra_headers,
         /*blob_url_loader_factory=*/nullptr,
         network::mojom::SourceLocation::New(), /*has_user_gesture=*/false,
@@ -7162,12 +7164,12 @@ void RenderFrameHostImpl::OpenURL(blink::mojom::OpenURLParamsPtr params) {
   }
   owner->GetCurrentNavigator().RequestOpenURL(
       this, validated_url, base::OptionalToPtr(params->initiator_frame_token),
-      GetProcess()->GetID(), params->initiator_origin, params->post_body,
-      params->extra_headers, params->referrer.To<content::Referrer>(),
-      params->disposition, params->should_replace_current_entry,
-      params->user_gesture, params->triggering_event_info,
-      params->href_translate, std::move(blob_url_loader_factory),
-      params->impression);
+      GetProcess()->GetID(), params->initiator_origin,
+      params->initiator_base_url, params->post_body, params->extra_headers,
+      params->referrer.To<content::Referrer>(), params->disposition,
+      params->should_replace_current_entry, params->user_gesture,
+      params->triggering_event_info, params->href_translate,
+      std::move(blob_url_loader_factory), params->impression);
 }
 
 void RenderFrameHostImpl::GetAssociatedInterface(
@@ -7757,8 +7759,8 @@ void RenderFrameHostImpl::DidChangeBaseURL(const GURL& base_url) {
 const GURL& RenderFrameHostImpl::GetBaseUrl() const {
   if (!blink::features::IsNewBaseUrlInheritanceBehaviorEnabled()) {
     NOTREACHED() << __func__
-                 << " should only be invoked when the feature "
-                    "NewBaseUrlInheritanceBehavioris enabled.";
+                 << " should only be invoked when the feature"
+                    " NewBaseUrlInheritanceBehavior is enabled.";
     return GURL::EmptyGURL();
   }
 
@@ -10825,6 +10827,7 @@ std::unique_ptr<NavigationRequest>
 RenderFrameHostImpl::CreateNavigationRequestForSynchronousRendererCommit(
     const GURL& url,
     const url::Origin& origin,
+    const absl::optional<GURL>& initiator_base_url,
     blink::mojom::ReferrerPtr referrer,
     const ui::PageTransition& transition,
     bool should_replace_current_entry,
@@ -10901,10 +10904,11 @@ RenderFrameHostImpl::CreateNavigationRequestForSynchronousRendererCommit(
 
   CHECK(owner_);
   return owner_->CreateNavigationRequestForSynchronousRendererCommit(
-      this, is_same_document, url, origin, isolation_info, std::move(referrer),
-      transition, should_replace_current_entry, method, has_user_gesture,
-      is_overriding_user_agent, redirects, original_request_url,
-      std::move(coep_reporter), std::move(web_bundle_navigation_info),
+      this, is_same_document, url, origin, initiator_base_url, isolation_info,
+      std::move(referrer), transition, should_replace_current_entry, method,
+      has_user_gesture, is_overriding_user_agent, redirects,
+      original_request_url, std::move(coep_reporter),
+      std::move(web_bundle_navigation_info),
       std::move(subresource_web_bundle_navigation_info), http_status_code);
 }
 
@@ -11594,10 +11598,10 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     // TODO(https://crbug.com/1131832): Do not use |params| to get the values,
     // depend on values known at commit time instead.
     navigation_request = CreateNavigationRequestForSynchronousRendererCommit(
-        params->url, params->origin, params->referrer.Clone(),
-        params->transition, should_replace_current_entry,
-        started_with_transient_activation, redirects, params->url,
-        is_same_document_navigation,
+        params->url, params->origin, params->initiator_base_url,
+        params->referrer.Clone(), params->transition,
+        should_replace_current_entry, started_with_transient_activation,
+        redirects, params->url, is_same_document_navigation,
         same_document_params &&
             same_document_params->same_document_navigation_type ==
                 blink::mojom::SameDocumentNavigationType::kHistoryApi);

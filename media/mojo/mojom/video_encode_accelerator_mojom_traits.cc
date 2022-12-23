@@ -82,6 +82,8 @@ bool StructTraits<media::mojom::VideoEncodeAcceleratorSupportedProfileDataView,
     return false;
   out->scalability_modes = std::move(scalability_modes);
 
+  out->is_software_codec = data.is_software_codec();
+
   return true;
 }
 
@@ -233,6 +235,9 @@ bool StructTraits<media::mojom::BitstreamBufferMetadataDataView,
     return false;
   }
   metadata->qp = data.qp();
+  if (!data.ReadEncodedSize(&metadata->encoded_size)) {
+    return false;
+  }
 
   return data.ReadCodecMetadata(metadata);
 }

@@ -43,7 +43,7 @@
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/native_theme.h"
-#include "ui/resources/grit/webui_generated_resources.h"
+#include "ui/resources/grit/webui_resources.h"
 
 namespace {
 const char kSyncBenefitAutofillStringName[] = "syncConfirmationAutofill";
@@ -90,8 +90,8 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
   const GURL& url = web_ui->GetWebContents()->GetVisibleURL();
   const bool is_sync_allowed = SyncServiceFactory::IsSyncAllowed(profile_);
 
-  content::WebUIDataSource* source =
-      content::WebUIDataSource::Create(chrome::kChromeUISyncConfirmationHost);
+  content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
+      profile_, chrome::kChromeUISyncConfirmationHost);
   webui::SetJSModuleDefaults(source);
   webui::EnableTrustedTypesCSP(source);
 
@@ -127,8 +127,6 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
     // so we force it here.
     InitializeMessageHandlerWithBrowser(nullptr);
   }
-
-  content::WebUIDataSource::Add(profile_, source);
 }
 
 SyncConfirmationUI::~SyncConfirmationUI() = default;
@@ -230,8 +228,14 @@ void SyncConfirmationUI::InitializeForSyncConfirmation(
         "images/tangible_sync_window_left_illustration.svg",
         IDR_SIGNIN_SYNC_CONFIRMATION_IMAGES_TANGIBLE_SYNC_WINDOW_LEFT_ILLUSTRATION_SVG);
     source->AddResourcePath(
+        "images/tangible_sync_window_left_illustration_dark.svg",
+        IDR_SIGNIN_SYNC_CONFIRMATION_IMAGES_TANGIBLE_SYNC_WINDOW_LEFT_ILLUSTRATION_DARK_SVG);
+    source->AddResourcePath(
         "images/tangible_sync_window_right_illustration.svg",
         IDR_SIGNIN_SYNC_CONFIRMATION_IMAGES_TANGIBLE_SYNC_WINDOW_RIGHT_ILLUSTRATION_SVG);
+    source->AddResourcePath(
+        "images/tangible_sync_window_right_illustration_dark.svg",
+        IDR_SIGNIN_SYNC_CONFIRMATION_IMAGES_TANGIBLE_SYNC_WINDOW_RIGHT_ILLUSTRATION_DARK_SVG);
   }
 
   // Registering and resolving the strings with placeholders

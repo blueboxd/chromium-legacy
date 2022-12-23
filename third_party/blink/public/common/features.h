@@ -504,11 +504,6 @@ BLINK_COMMON_EXPORT void ClearUnthrottledNestedTimeoutOverrideCacheForTesting();
 BLINK_COMMON_EXPORT bool IsMaxUnthrottledTimeoutNestingLevelEnabled();
 BLINK_COMMON_EXPORT int GetMaxUnthrottledTimeoutNestingLevel();
 
-// If enabled, ContentToVisibleTimeReporter logs
-// Browser.Tabs.TotalSwitchDuration2.* instead of
-// Browser.Tabs.TotalSwitchDuration.*.
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kTabSwitchMetrics2);
-
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kLCPAnimatedImagesReporting);
 
 // If enabled, an absent Origin-Agent-Cluster: header is interpreted as
@@ -778,11 +773,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebRtcMetronome);
 // If enabled, all of FileSystemAccessSyncAccessHandle methods are synchronous.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSyncAccessHandleAllSyncSurface);
 
-// Disables centralized browser-side management of web cache memory limits.
-//
-// TODO(crbug.com/1340565): Remove once the data is available.
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kNoCentralWebCacheLimitControl);
-
 // If enabled, IME updates are computed at the end of a lifecycle update rather
 // than the beginning.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kRunTextInputUpdatePostLifecycle);
@@ -972,6 +962,12 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSpeculationRulesPrefetchFuture);
 // Feature for allowing page with open IDB connection to be stored in
 // back/forward cache.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kAllowPageWithIDBConnectionInBFCache);
+
+// Kill switch for using a custom task runner in the blink scheduler that makes
+// DeleteSoon/ReleaseSoon less prone to memory leaks.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kUseBlinkSchedulerTaskRunnerWithCustomDeleter);
+
 }  // namespace features
 }  // namespace blink
 

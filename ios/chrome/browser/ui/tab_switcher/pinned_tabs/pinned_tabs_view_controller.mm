@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/tab_switcher/pinned_tabs/pinned_tabs_view_controller.h"
 
+#import "base/dcheck_is_on.h"
+#import "base/ios/block_types.h"
 #import "base/ios/ios_util.h"
 #import "base/mac/foundation_util.h"
 #import "base/numerics/safe_conversions.h"
@@ -14,6 +16,8 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_image_data_source.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_item.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/grit/ios_strings.h"
+#import "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -24,15 +28,27 @@ namespace {
 // The number of sections for the pinned collection view.
 NSInteger kNumberOfSectionsInPinnedCollection = 1;
 
+// Creates an NSIndexPath with `index` in section 0.
+NSIndexPath* CreateIndexPath(NSInteger index) {
+  return [NSIndexPath indexPathForItem:index inSection:0];
+}
+
 }  // namespace
 
 @interface PinnedTabsViewController () <UICollectionViewDragDelegate,
                                         UICollectionViewDropDelegate>
+
+// Index of the selected item in `_items`.
+@property(nonatomic, readonly) NSUInteger selectedIndex;
+
 @end
 
 @implementation PinnedTabsViewController {
   // The local model backing the collection view.
   NSMutableArray<TabSwitcherItem*>* _items;
+
+  // Identifier of the selected item.
+  NSString* _selectedItemID;
 
   // Constraints used to update the view during drag and drop actions.
   NSLayoutConstraint* _dragEnabledConstraint;
@@ -41,8 +57,14 @@ NSInteger kNumberOfSectionsInPinnedCollection = 1;
   // Background color of the view.
   UIColor* _backgroundColor;
 
+  // UILabel displayed when the collection view is empty.
+  UILabel* _emptyCollectionViewLabel;
+
   // Tracks if the view is available.
   BOOL _available;
+
+  // Tracks if the view is visible.
+  BOOL _visible;
 
   // Tracks if a drag action is in progress.
   BOOL _isDragActionInProgress;
@@ -61,9 +83,11 @@ NSInteger kNumberOfSectionsInPinnedCollection = 1;
   [super viewDidLoad];
 
   _available = YES;
+  _visible = YES;
   _isDragActionInProgress = NO;
 
   [self configureCollectionView];
+  [self configureEmptyCollectionViewLabel];
 }
 
 #pragma mark - Public
@@ -84,24 +108,177 @@ NSInteger kNumberOfSectionsInPinnedCollection = 1;
 }
 
 - (void)pinnedTabsAvailable:(BOOL)available {
-  // The view is available if  `_items` is not empty or if a drag action is in
-  // progress.
-  available = available && (_items.count || _isDragActionInProgress);
-  if (available == _available)
-    return;
+  _available = available;
 
-  // Show the view if `available` is true to ensure smooth animation.
-  if (available) {
+  // The view is visible if `_items` is not empty or if a drag action is in
+  // progress.
+  bool visible = _available && (_items.count || _isDragActionInProgress);
+  if (visible == _visible) {
+    return;
+  }
+
+  // Show the view if `visible` is true to ensure smooth animation.
+  if (visible) {
     self.view.hidden = NO;
   }
 
   __weak __typeof(self) weakSelf = self;
   [UIView animateWithDuration:kPinnedViewFadeInTime
       animations:^{
-        self.view.alpha = available ? 1.0 : 0.0;
+        self.view.alpha = visible ? 1.0 : 0.0;
       }
       completion:^(BOOL finished) {
-        [weakSelf updatePinnedTabsAvailabilityAfterAnimation:available];
+        [weakSelf updatePinnedTabsVisibilityAfterAnimation:visible];
+      }];
+}
+
+#pragma mark - PinnedTabsCollectionConsumer
+
+- (void)populateItems:(NSArray<TabSwitcherItem*>*)items
+       selectedItemID:(NSString*)selectedItemID {
+#if DCHECK_IS_ON()
+  // Consistency check: ensure no IDs are duplicated.
+  NSMutableSet<NSString*>* identifiers = [[NSMutableSet alloc] init];
+  for (TabSwitcherItem* item in items) {
+    [identifiers addObject:item.identifier];
+  }
+  DCHECK_EQ(identifiers.count, items.count);
+#endif
+
+  _items = [items mutableCopy];
+  _selectedItemID = selectedItemID;
+
+  [self updateEmptyCollectionViewLabelVisibility];
+
+  [self.collectionView reloadData];
+  [self.collectionView
+      selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
+                   animated:YES
+             scrollPosition:UICollectionViewScrollPositionNone];
+}
+
+- (void)insertItem:(TabSwitcherItem*)item
+           atIndex:(NSUInteger)index
+    selectedItemID:(NSString*)selectedItemID {
+  // Consistency check: `item`'s ID is not in `_items`.
+  DCHECK([self indexOfItemWithID:item.identifier] == NSNotFound);
+
+  ProceduralBlock modelUpdates = ^{
+    [self->_items insertObject:item atIndex:index];
+    self->_selectedItemID = selectedItemID;
+  };
+
+  ProceduralBlock collectionViewUpdates = ^{
+    [self.collectionView insertItemsAtIndexPaths:@[ CreateIndexPath(index) ]];
+    [self updateEmptyCollectionViewLabelVisibility];
+  };
+
+  __weak __typeof(self) weakSelf = self;
+  NSString* previousItemID = _selectedItemID;
+  ProceduralBlock collectionViewUpdatesCompletion = ^{
+    [weakSelf updateCollectionViewAfterItemInsertionWithPreviousItemID:
+                  previousItemID];
+  };
+
+  [self.collectionView
+      performBatchUpdates:^{
+        modelUpdates();
+        collectionViewUpdates();
+      }
+      completion:^(BOOL completed) {
+        collectionViewUpdatesCompletion();
+      }];
+}
+
+- (void)removeItemWithID:(NSString*)removedItemID
+          selectedItemID:(NSString*)selectedItemID {
+  NSUInteger index = [self indexOfItemWithID:removedItemID];
+  if (index == NSNotFound) {
+    return;
+  }
+
+  ProceduralBlock modelUpdates = ^{
+    [self->_items removeObjectAtIndex:index];
+    self->_selectedItemID = selectedItemID;
+  };
+
+  ProceduralBlock collectionViewUpdates = ^{
+    [self.collectionView deleteItemsAtIndexPaths:@[ CreateIndexPath(index) ]];
+    [self updateEmptyCollectionViewLabelVisibility];
+  };
+
+  __weak __typeof(self) weakSelf = self;
+  ProceduralBlock collectionViewUpdatesCompletion = ^{
+    [weakSelf updateCollectionViewAfterItemDeletion];
+  };
+
+  [self.collectionView
+      performBatchUpdates:^{
+        modelUpdates();
+        collectionViewUpdates();
+      }
+      completion:^(BOOL completed) {
+        collectionViewUpdatesCompletion();
+      }];
+}
+
+- (void)selectItemWithID:(NSString*)selectedItemID {
+  if ([_selectedItemID isEqualToString:selectedItemID]) {
+    return;
+  }
+
+  [self.collectionView
+      deselectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
+                     animated:NO];
+  _selectedItemID = selectedItemID;
+  [self.collectionView
+      selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
+                   animated:NO
+             scrollPosition:UICollectionViewScrollPositionNone];
+}
+
+- (void)replaceItemID:(NSString*)itemID withItem:(TabSwitcherItem*)item {
+  DCHECK([item.identifier isEqualToString:itemID] ||
+         [self indexOfItemWithID:item.identifier] == NSNotFound);
+
+  NSUInteger index = [self indexOfItemWithID:itemID];
+  _items[index] = item;
+  PinnedCell* cell = base::mac::ObjCCastStrict<PinnedCell>(
+      [self.collectionView cellForItemAtIndexPath:CreateIndexPath(index)]);
+  // `cell` may be nil if it is scrolled offscreen.
+  if (cell) {
+    [self configureCell:cell withItem:item];
+  }
+}
+
+- (void)moveItemWithID:(NSString*)itemID toIndex:(NSUInteger)toIndex {
+  NSUInteger fromIndex = [self indexOfItemWithID:itemID];
+  if (fromIndex == toIndex || fromIndex == NSNotFound) {
+    return;
+  }
+
+  ProceduralBlock modelUpdates = ^{
+    TabSwitcherItem* item = self->_items[fromIndex];
+    [self->_items removeObjectAtIndex:fromIndex];
+    [self->_items insertObject:item atIndex:toIndex];
+  };
+  ProceduralBlock collectionViewUpdates = ^{
+    [self.collectionView moveItemAtIndexPath:CreateIndexPath(fromIndex)
+                                 toIndexPath:CreateIndexPath(toIndex)];
+  };
+
+  __weak __typeof(self) weakSelf = self;
+  ProceduralBlock collectionViewUpdatesCompletion = ^{
+    [weakSelf updateCollectionViewAfterMovingItemToIndex:toIndex];
+  };
+
+  [self.collectionView
+      performBatchUpdates:^{
+        modelUpdates();
+        collectionViewUpdates();
+      }
+      completion:^(BOOL completed) {
+        collectionViewUpdatesCompletion();
       }];
 }
 
@@ -200,12 +377,17 @@ NSInteger kNumberOfSectionsInPinnedCollection = 1;
     performDropWithCoordinator:
         (id<UICollectionViewDropCoordinator>)coordinator {
   // TODO(crbug.com/1382015): Implement this.
-  [self populateFakeItems];
 }
 
 - (BOOL)collectionView:(UICollectionView*)collectionView
     canHandleDropSession:(id<UIDropSession>)session {
   return _available;
+}
+
+#pragma mark - Private properties
+
+- (NSUInteger)selectedIndex {
+  return [self indexOfItemWithID:_selectedItemID];
 }
 
 #pragma mark - Private
@@ -251,6 +433,28 @@ NSInteger kNumberOfSectionsInPinnedCollection = 1;
   _defaultConstraint.active = YES;
 }
 
+// Configures `_emptyCollectionViewLabel`.
+- (void)configureEmptyCollectionViewLabel {
+  _emptyCollectionViewLabel = [[UILabel alloc] init];
+  _emptyCollectionViewLabel.numberOfLines = 0;
+  _emptyCollectionViewLabel.font =
+      [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
+  _emptyCollectionViewLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];
+  _emptyCollectionViewLabel.text =
+      l10n_util::GetNSString(IDS_IOS_PINNED_TABS_DRAG_TO_PIN_LABEL);
+  _emptyCollectionViewLabel.translatesAutoresizingMaskIntoConstraints = NO;
+  [self.view addSubview:_emptyCollectionViewLabel];
+
+  [NSLayoutConstraint activateConstraints:@[
+    [_emptyCollectionViewLabel.centerYAnchor
+        constraintEqualToAnchor:self.view.centerYAnchor],
+    [_emptyCollectionViewLabel.centerXAnchor
+        constraintEqualToAnchor:self.view.centerXAnchor],
+  ]];
+
+  [self updateEmptyCollectionViewLabelVisibility];
+}
+
 // Configures `cell`'s title synchronously, and favicon asynchronously with
 // information from `item`. Updates the `cell`'s theme to this view controller's
 // theme.
@@ -269,28 +473,80 @@ NSInteger kNumberOfSectionsInPinnedCollection = 1;
   }
 }
 
-// Updates the pinned tabs view availability after an animation.
-- (void)updatePinnedTabsAvailabilityAfterAnimation:(BOOL)available {
-  _available = available;
-  if (!_available) {
+// Returns the index in `_items` of the first item whose identifier is
+// `identifier`.
+- (NSUInteger)indexOfItemWithID:(NSString*)identifier {
+  auto selectedTest =
+      ^BOOL(TabSwitcherItem* item, NSUInteger index, BOOL* stop) {
+        return [item.identifier isEqualToString:identifier];
+      };
+  return [_items indexOfObjectPassingTest:selectedTest];
+}
+
+// Updates the pinned tabs view visibility after an animation.
+- (void)updatePinnedTabsVisibilityAfterAnimation:(BOOL)visible {
+  _visible = visible;
+  if (!visible) {
     self.view.hidden = YES;
   }
 }
 
-// Adds fake items to the collection view.
-// TODO(crbug.com/1382015): Remove this when `_items` are correctly populated.
-- (void)populateFakeItems {
-  DCHECK(IsPinnedTabsEnabled());
-  NSMutableArray<TabSwitcherItem*>* items = [[NSMutableArray alloc] init];
-  for (int i = 0; i < 5; i++) {
-    TabSwitcherItem* item = [[TabSwitcherItem alloc]
-        initWithIdentifier:[NSString stringWithFormat:@"item%d", i]];
-    item.title = @"The New York Times - Breaking News";
-    [items addObject:item];
-  }
+// Hides `_emptyCollectionViewLabel` when the collection view is not empty.
+- (void)updateEmptyCollectionViewLabelVisibility {
+  _emptyCollectionViewLabel.hidden = _items.count > 0;
+}
 
-  _items = [items mutableCopy];
-  [self.collectionView reloadData];
+// Updates the collection view after an item insertion with the previously
+// selected item id.
+- (void)updateCollectionViewAfterItemInsertionWithPreviousItemID:
+    (NSString*)previousItemID {
+  [self.collectionView
+      deselectItemAtIndexPath:CreateIndexPath(
+                                  [self indexOfItemWithID:previousItemID])
+                     animated:NO];
+
+  [self.collectionView
+      selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
+                   animated:NO
+             scrollPosition:UICollectionViewScrollPositionNone];
+
+  [self pinnedTabsAvailable:_available];
+}
+
+// Updates the collection view after an item deletion.
+- (void)updateCollectionViewAfterItemDeletion {
+  if (_items.count > 0) {
+    [self.collectionView
+        selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
+                     animated:NO
+               scrollPosition:UICollectionViewScrollPositionNone];
+  } else {
+    [self pinnedTabsAvailable:_available];
+  }
+}
+
+// Updates the collection view after moving an item to the given `index`.
+- (void)updateCollectionViewAfterMovingItemToIndex:(NSUInteger)index {
+  // TODO(crbug.com/1382015): Implement selected halo.
+  // Bring back selected halo only for the moved cell, which lost it during
+  // the move (drag & drop).
+  if (self.selectedIndex != index) {
+    return;
+  }
+  // Force reload of the selected cell now to avoid extra delay for the
+  // blue halo to appear.
+  [UIView
+      animateWithDuration:kPinnedViewMoveAnimationTime
+               animations:^{
+                 [self.collectionView reloadItemsAtIndexPaths:@[
+                   CreateIndexPath(self.selectedIndex)
+                 ]];
+                 [self.collectionView
+                     selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
+                                  animated:NO
+                            scrollPosition:UICollectionViewScrollPositionNone];
+               }
+               completion:nil];
 }
 
 @end

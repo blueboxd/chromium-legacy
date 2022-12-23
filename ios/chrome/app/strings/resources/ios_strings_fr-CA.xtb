@@ -48,6 +48,7 @@ Seule une personne connaissant votre phrase de passe peut lire vos données chif
 <translation id="1265739287306757398">Découvrir comment</translation>
 <translation id="1272079795634619415">Arrêter</translation>
 <translation id="1275718070701477396">Sélectionné</translation>
+<translation id="1279024913354609713">Ne pas autoriser</translation>
 <translation id="1281818060020671000">Gérer les données</translation>
 <translation id="1282311502488501110">Ne pas se connecter</translation>
 <translation id="1283524564873030414">24 dernières heures</translation>
@@ -148,6 +149,7 @@ Seule une personne connaissant votre phrase de passe peut lire vos données chif
 <translation id="2074131957428911366">Vous pouvez toujours choisir les éléments à synchroniser dans les <ph name="BEGIN_LINK" />paramètres<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Annuler</translation>
 <translation id="2080769225927880590">Se connecter au moyen d'un compte valide</translation>
+<translation id="2090878303988764231">Connectez-vous pour gérer le contenu que vous voyez</translation>
 <translation id="2103075008456228677">Ouvrir history.google.com</translation>
 <translation id="21133533946938348">Épingler l'onglet</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> éléments déplacés</translation>
@@ -190,6 +192,7 @@ Les sites ne peuvent pas utiliser de témoins pour voir votre activité de navig
 <translation id="2421044535038393232">Continuer à modifier</translation>
 <translation id="2434405374328098816">Vous avez déjà enregistré un mot de passe pour l'utilisateur « <ph name="USERNAME" /> » sur le site <ph name="WEBSITE" /></translation>
 <translation id="2435457462613246316">Affich. mot de passe</translation>
+<translation id="2451654228769116489">Épingler l'onglet</translation>
 <translation id="2461070143328828326">Paramètres des mots de passe</translation>
 <translation id="2469960372084740698">Désactiver la navigation sécurisée?</translation>
 <translation id="2473876017985765807">Vous avez déjà enregistré un mot de passe pour le site <ph name="WEBSITE" /></translation>
@@ -672,6 +675,7 @@ La fonction de transfert doit également être activée dans la section Généra
 <translation id="6059830886158432458">Gérez vos histoires et votre activité ici</translation>
 <translation id="6064824697233747382">Votre organisation vous demande de désactiver la synchronisation.</translation>
 <translation id="6066301408025741299">Appuyez pour annuler.</translation>
+<translation id="6071409777669089905">Annuler l'épinglage de l'onglet</translation>
 <translation id="60829778314739003">Accepter et continuer</translation>
 <translation id="6084848228346514841">Sélectionner des onglets</translation>
 <translation id="6103540626693881831">Chiffrement sur l'appareil</translation>
@@ -785,6 +789,7 @@ Lorsque vous êtes en mode de navigation privée, les sites ne peuvent pas utili
 <translation id="6710079714193676716">Géré par votre organisation. Certaines fonctionnalités peuvent ne pas être accessibles. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Impossible d'exporter les mots de passe</translation>
+<translation id="6732087373923685049">Appareil photo</translation>
 <translation id="6748108480210050150">De</translation>
 <translation id="6760509555861141183">Revenir au dernier onglet</translation>
 <translation id="6762812039470893796">Tout désélectionner</translation>
@@ -971,6 +976,7 @@ Les sites peuvent utiliser des témoins afin de voir votre activité de navigati
 <translation id="8197543752516192074">Traduire la page</translation>
 <translation id="8205564605687841303">Annuler</translation>
 <translation id="8206354486702514201">Votre administrateur impose la valeur associée à ce paramètre.</translation>
+<translation id="821809831108207540">Pour personnaliser votre flux Découvrir et votre Chrome, connectez-vous et activez la synchronisation.</translation>
 <translation id="8225985093977202398">Images/fich. en cache</translation>
 <translation id="8237382152611443140">Ouvrez Réglages du remplissage automatique des mots de passe</translation>
 <translation id="8261506727792406068">Supprimer</translation>
@@ -1037,6 +1043,7 @@ Les sites peuvent utiliser des témoins afin de voir votre activité de navigati
 <translation id="8764015330924122850">Se désabonner de <ph name="DOMAIN_NAME" /></translation>
 <translation id="8775144690796719618">URL non valide</translation>
 <translation id="8787968206789828143">Recherchez sur le Web</translation>
+<translation id="8792626944327216835">Microphone</translation>
 <translation id="8803639129939845298">Sécuritaire</translation>
 <translation id="8806823403540278281">Votre organisation vous demande de naviguer en mode privé. Les onglets ne sont pas enregistrés en mode de navigation privée.
 <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
@@ -1092,11 +1099,13 @@ Les sites peuvent utiliser des témoins afin de voir votre activité de navigati
 <translation id="9157836665414082580">Supprimer les boîtes de dialogue</translation>
 <translation id="9177438225260810839">Rechercher dans les onglets ouverts</translation>
 <translation id="9188680907066685419">Se déconnecter du compte géré</translation>
+<translation id="9193147658040604536">Faites glisser ici pour épingler l'onglet</translation>
 <translation id="9200875785104711666">il y a <ph name="TIME" /> j</translation>
 <translation id="9203116392574189331">Transférer</translation>
 <translation id="9219154867334666734">Rechercher des onglets…</translation>
 <translation id="9223358826628549784">Rapport de plantage envoyé.</translation>
 <translation id="941747855997058526">Sélectionner un mot de passe…</translation>
+<translation id="948048872540558976">Créer un onglet</translation>
 <translation id="952704832371081537">Annuler</translation>
 <translation id="953008885340860025">Chrome est déconnecté</translation>
 <translation id="959066944189734975">Vous suivez <ph name="CHANNEL_NAME" /></translation>

@@ -198,6 +198,10 @@ enum class AccessPoint : int {
   ACCESS_POINT_NTP_SIGNED_OUT_ICON = 41,
   ACCESS_POINT_NTP_FEED_CARD_MENU_PROMO = 42,
   ACCESS_POINT_NTP_FEED_BOTTOM_PROMO = 43,
+  // TODO(crbug.com/1261772): Not a real access point, as this is an internal
+  // component. We should replace its usage with actual access points once we
+  // find ways to attribute the changes accurately.
+  ACCESS_POINT_DESKTOP_SIGNIN_MANAGER = 44,
   // Add values above this line with a corresponding label to the
   // "SigninAccessPoint" enum in tools/metrics/histograms/enums.xml
   ACCESS_POINT_MAX,  // This must be last.
@@ -330,20 +334,20 @@ enum class Reason : int {
 // Enum values used for "Signin.AccountReconcilorState.OnGaiaResponse"
 // histogram, which records the state of the AccountReconcilor when GAIA returns
 // a specific response.
-enum AccountReconcilorState {
+enum class AccountReconcilorState {
   // The AccountReconcilor has finished running and is up to date.
-  ACCOUNT_RECONCILOR_OK,
+  kOk = 0,
   // The AccountReconcilor is running and gathering information.
-  ACCOUNT_RECONCILOR_RUNNING,
+  kRunning = 1,
   // The AccountReconcilor encountered an error and stopped.
-  ACCOUNT_RECONCILOR_ERROR,
+  kError = 2,
   // The account reconcilor will start running soon.
-  ACCOUNT_RECONCILOR_SCHEDULED,
+  kScheduled = 3,
   // The account reconcilor is inactive, e.g. initializing or disabled.
-  ACCOUNT_RECONCILOR_INACTIVE,
+  kInactive = 4,
 
   // Always the last enumerated type.
-  kMaxValue = ACCOUNT_RECONCILOR_SCHEDULED,
+  kMaxValue = kInactive,
 };
 
 // Values of Signin.AccountType histogram. This histogram records if the user
@@ -489,6 +493,15 @@ void LogSigninAccessPointCompleted(AccessPoint access_point,
 
 // Tracks the reason of sign in.
 void LogSigninReason(Reason reason);
+
+// Logs sync opt-in start events and their associated access points. The
+// completion events are automatically logged when the primary account state
+// changes, see `signin::PrimaryAccountMutator`.
+void LogSyncOptInStarted(AccessPoint access_point);
+
+// Logs that the sync settings were opened at the end of the sync opt-in flow,
+// and the associated access points.
+void LogSyncSettingsOpened(AccessPoint access_point);
 
 // Logs to UMA histograms how many accounts are in the browser for this
 // profile.

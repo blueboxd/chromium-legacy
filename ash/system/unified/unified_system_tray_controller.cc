@@ -186,12 +186,10 @@ UnifiedSystemTrayController::CreateUnifiedQuickSettingsView() {
 }
 
 std::unique_ptr<QuickSettingsView>
-UnifiedSystemTrayController::CreateQuickSettingsView() {
+UnifiedSystemTrayController::CreateQuickSettingsView(int max_height) {
   DCHECK(!quick_settings_view_);
   auto qs_view = std::make_unique<QuickSettingsView>(this);
   quick_settings_view_ = qs_view.get();
-
-  InitFeatureTiles();
 
   if (base::FeatureList::IsEnabled(media::kGlobalMediaControlsForChromeOS) &&
       !Shell::Get()->session_controller()->IsScreenLocked() &&
@@ -210,6 +208,12 @@ UnifiedSystemTrayController::CreateQuickSettingsView() {
       std::make_unique<UnifiedBrightnessSliderController>(model_);
   unified_brightness_view_ = brightness_slider_controller_->CreateView();
   qs_view->AddSliderView(unified_brightness_view_);
+
+  qs_view->SetMaxHeight(max_height);
+
+  // Feature Tiles are added last because the amount of rows depends on the
+  // available height.
+  InitFeatureTiles();
 
   return qs_view;
 }
@@ -474,6 +478,9 @@ void UnifiedSystemTrayController::ShowAudioDetailedView() {
 }
 
 void UnifiedSystemTrayController::ShowNotifierSettingsView() {
+  if (features::IsOsSettingsAppBadgingToggleEnabled())
+    return;
+
   DCHECK(Shell::Get()->session_controller()->ShouldShowNotificationTray());
   DCHECK(!Shell::Get()->session_controller()->IsScreenLocked());
   ShowDetailedView(std::make_unique<UnifiedNotifierSettingsController>(this));
@@ -649,32 +656,37 @@ void UnifiedSystemTrayController::InitFeatureTiles() {
   // TODO(b/252871301): Create each feature's tile.
   auto accessibility_controller =
       std::make_unique<AccessibilityFeaturePodController>(this);
+  auto bluetooth_controller =
+      std::make_unique<BluetoothFeaturePodController>(this);
   auto screen_capture_controller =
       std::make_unique<CaptureModeFeaturePodController>(this);
   auto cast_controller = std::make_unique<CastFeaturePodController>(this);
   auto vpn_controller = std::make_unique<VPNFeaturePodController>(this);
 
   std::vector<std::unique_ptr<FeatureTile>> tiles;
-  tiles.push_back(accessibility_controller->CreateTile());
+  tiles.push_back(bluetooth_controller->CreateTile());
   tiles.push_back(screen_capture_controller->CreateTile());
 
   // Placeholder tile.
   tiles.push_back(
       std::make_unique<FeatureTile>(FeatureTile::TileType::kCompact));
 
+  tiles.push_back(accessibility_controller->CreateTile());
   tiles.push_back(cast_controller->CreateTile());
   tiles.push_back(vpn_controller->CreateTile());
 
   // More placeholder tiles.
-  while (tiles.size() < 9)
+  while (tiles.size() < 10) {
     tiles.push_back(std::make_unique<FeatureTile>());
+  }
 
   quick_settings_view_->AddTiles(std::move(tiles));
 
   // Transfer ownership of controllers to this.
   feature_pod_controllers_.push_back(std::move(accessibility_controller));
-  feature_pod_controllers_.push_back(std::move(screen_capture_controller));
+  feature_pod_controllers_.push_back(std::move(bluetooth_controller));
   feature_pod_controllers_.push_back(std::move(cast_controller));
+  feature_pod_controllers_.push_back(std::move(screen_capture_controller));
   feature_pod_controllers_.push_back(std::move(vpn_controller));
 }
 

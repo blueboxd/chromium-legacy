@@ -116,6 +116,7 @@
 <translation id="1908234395526491708">UDP सम्बन्धी अनुरोध गर्न सकिएन</translation>
 <translation id="1947737735496445907">प्रिन्ट गरियो</translation>
 <translation id="1951012854035635156">सहायक</translation>
+<translation id="1962550982027027473">डिफल्ट APN अनिवार्य रूपमा अन गर्नु पर्छ</translation>
 <translation id="1977994649430373166">Google प्रोफाइल फोटो</translation>
 <translation id="1979103255016296513">पासवर्ड परिवर्तन गर्न ढिला भइसकेको छ</translation>
 <translation id="1999615961760456652">क्याप्टिभ पोर्टल</translation>
@@ -186,6 +187,7 @@
 <translation id="2570743873672969996"><ph name="TEST_NAME" /> परीक्षण गरिँदै छ...</translation>
 <translation id="2584559707064218956">नेटवर्क सेटअप गर्न सेटिङमा जानुहोस्</translation>
 <translation id="2597774443162333062">फाइलहरू डिबग प्रक्रियाका लागि Google मा पठाइने छन्</translation>
+<translation id="2599691907981599502">{NUMBER_OF_PAGES,plural, =1{स्क्यान गर्ने कार्य पूरा भयो। एउटा पेज स्क्यान गरियो}other{स्क्यान गर्ने कार्य पूरा भयो। {NUMBER_OF_PAGES} वटा पेज स्क्यान गरिए}}</translation>
 <translation id="2619761439309613843">दैनिक पुनः ताजा गर्नुहोस्</translation>
 <translation id="2620436844016719705">सिस्टम</translation>
 <translation id="2638662041295312666">प्रोफाइल फोटो</translation>
@@ -392,6 +394,7 @@
 <translation id="4793710386569335688">थप मद्दत चाहिएमा <ph name="BEGIN_LINK" />मद्दत केन्द्र<ph name="END_LINK" /> मा जानुहोस्।</translation>
 <translation id="4793756956024303490">कम्प्रेसनसम्बन्धी एल्गोरिदम</translation>
 <translation id="4794140124556169553">तपाईंले CPU को जाँच गर्नुभयो भने तपाईंको प्रणालीको कार्यसम्पादनमा असर पर्न सक्छ</translation>
+<translation id="4798078634453489142">तपाईं नयाँ APN हाल्न चाहनुहुन्छ भने एउटा APN हटाउनुहोस्</translation>
 <translation id="4800589996161293643">Chromebook समुदाय</translation>
 <translation id="4803391892369051319">IPv4</translation>
 <translation id="4808449224298348341"><ph name="DOCUMENT_TITLE" /> प्रिन्ट गर्ने कार्य रद्द गरियो</translation>
@@ -632,6 +635,7 @@
 <translation id="6791471867139427246">किबोर्डको प्रकाशको रङ</translation>
 <translation id="680983167891198932">की</translation>
 <translation id="6816797338148849397">तपाईंले चयन गर्नुभएको पाठसँग सम्बन्धित जानकारी उपलब्ध छ। उक्त जानकारी प्राप्त गर्न अप एरो की प्रयोग गर्नुहोस्।</translation>
+<translation id="6838167112108853532">यो APN अफ गर्न वा हटाउन मिल्दैन। एट्याच गरिएका APN हरू (अन गरिएका) अफ गरिएका वा हटाइएका छन् भन्ने कुरा सुनिश्चित गर्नुहोस्।</translation>
 <translation id="6853312040151791195">डिस्चार्ज हुने दर</translation>
 <translation id="6889786074662672253">रिस्टार्ट भइरहेका बेला यो बाह्य डिभाइस अनप्लग गर्ने वा कम्प्युटर सट डाउन गर्ने काम नगर्नुहोस्। तपाईं यो विन्डो मिनिमाइज गर्न सक्नुहुन्छ। यो कार्य पूरा हुन केही मिनेट लाग्न सक्छ र यस समयमा तपाईंको बाह्य डिभाइसले काम नगर्न सक्छ।</translation>
 <translation id="6905724422583748843"><ph name="PAGE_NAME" /> मा फर्कनुहोस्</translation>
@@ -721,6 +725,7 @@
 <translation id="7769672763586021400">मोडेलको ID</translation>
 <translation id="7778717409420828014">तपाईंको प्रतिक्रियाले हामीलाई Chromebook मा उपलब्ध सुविधाहरूको स्तर सुधार गर्ने कार्यमा मद्दत गर्छ र हाम्रो टोलीले उक्त प्रतिक्रियाको समीक्षा गर्ने छ। रिपोर्टहरूको सङ्ख्या अत्यन्त धेरै भएकाले हामी जवाफ दिन सक्ने छैनौँ।</translation>
 <translation id="7784116172884276937">कुनै पनि DNS सर्भर सेटअप गरिएको छैन</translation>
+<translation id="7791543448312431591">थप्नुहोस्</translation>
 <translation id="779591286616261875">नयाँ रिपोर्ट पठाउनुहोस्</translation>
 <translation id="7799817062559422778">उज्यालो मोड</translation>
 <translation id="780301667611848630">भयो, धन्यवाद</translation>

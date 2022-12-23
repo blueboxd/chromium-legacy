@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/allocator/partition_alloc_features.h"
+#include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
 #include "base/allocator/partition_allocator/starscan/pcscan.h"
 #include "base/bind.h"
 #include "base/check_op.h"
@@ -110,7 +111,6 @@
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/browser/xr/service/xr_runtime_manager_impl.h"
 #include "content/common/content_switches_internal.h"
-#include "content/common/partition_alloc_support.h"
 #include "content/public/browser/ax_inspect_factory.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
@@ -2645,10 +2645,6 @@ std::unique_ptr<WebContents> WebContentsImpl::DetachFromOuterWebContents() {
   // current one, since the view can be swapped due to a cross-origin
   // navigation.
   std::set<RenderViewHostImpl*> render_view_hosts;
-  // TODO(https://crbug.com/1264031): With MPArch a WebContents might have
-  // multiple FrameTrees. This code probably needs to be rewritten: e.g. we will
-  // need to iterate over all RenderViewHosts when detaching fenced frames
-  // nested within a GuestView.
   for (auto& render_view_host : GetPrimaryFrameTree().render_view_hosts()) {
     if (render_view_host.second->GetWidget() &&
         render_view_host.second->GetWidget()->GetView()) {
@@ -6244,12 +6240,14 @@ void WebContentsImpl::ViewSource(RenderFrameHostImpl* frame) {
   // hit the network, but should be served from the cache instead.
   Referrer referrer_for_view_source;
   absl::optional<url::Origin> initiator_for_view_source = absl::nullopt;
+  absl::optional<GURL> initiator_base_url_for_view_source = absl::nullopt;
   // Do not restore title, derive it from the url.
   std::u16string title_for_view_source;
   auto navigation_entry = std::make_unique<NavigationEntryImpl>(
       site_instance_for_view_source, frame_entry->url(),
       referrer_for_view_source, initiator_for_view_source,
-      title_for_view_source, ui::PAGE_TRANSITION_LINK,
+      initiator_base_url_for_view_source, title_for_view_source,
+      ui::PAGE_TRANSITION_LINK,
       /* is_renderer_initiated = */ false,
       /* blob_url_loader_factory = */ nullptr, /* is_initial_entry = */ false);
   const GURL url(content::kViewSourceScheme + std::string(":") +
@@ -9565,43 +9563,14 @@ void WebContentsImpl::UpdateBrowserControlsState(
 
 void WebContentsImpl::SetTabSwitchStartTime(base::TimeTicks start_time,
                                             bool destination_is_loaded) {
-  // TODO(crbug.com/1164477): Remove this UMA once the TabSwitchMetrics2
-  // experiment ends.
-  //
-  // The experiment is showing a mix shift, with more records received in
-  // the experiment group. The control group should preserve the old
-  // behaviour where Browser.Tabs.* metrics were never recorded if there
-  // was no RenderWidgetHostView at the time of the tab switch. To verify
-  // that this accounts for the mix shift, expect that:
-  //
-  // 1. The difference in Browser.Tabs.* record count between the control
-  //    and enabled groups will match the count of
-  //    Browser.Tabs.TabSwitchHasRWHV == false in the enabled group.
-  //
-  // 2. The count of Browser.Tabs.TabSwitchHasRWHV in the control and
-  //    enabled groups are equal.
-  base::UmaHistogramBoolean("Browser.Tabs.TabSwitchHasRWHV",
-                            GetRenderWidgetHostView());
-
-  auto* trigger = GetVisibleTimeRequestTrigger();
-  if (!trigger)
-    return;
-  trigger->UpdateRequest(start_time, destination_is_loaded,
-                         /*show_reason_tab_switching=*/true,
-                         /*show_reason_bfcache_restore=*/false);
+  GetVisibleTimeRequestTrigger().UpdateRequest(
+      start_time, destination_is_loaded,
+      /*show_reason_tab_switching=*/true,
+      /*show_reason_bfcache_restore=*/false);
 }
 
-VisibleTimeRequestTrigger* WebContentsImpl::GetVisibleTimeRequestTrigger() {
-  if (visible_time_request_trigger_.is_tab_switch_metrics2_feature_enabled())
-    return &visible_time_request_trigger_;
-  // TODO(crbug.com/1164477): Remove this obsolete implementation and return a
-  // reference instead of a pointer once kTabSwitchMetrics2 is validated and
-  // becomes the default.
-  if (auto* view =
-          static_cast<RenderWidgetHostViewBase*>(GetRenderWidgetHostView())) {
-    return view->GetVisibleTimeRequestTrigger();
-  }
-  return nullptr;
+VisibleTimeRequestTrigger& WebContentsImpl::GetVisibleTimeRequestTrigger() {
+  return visible_time_request_trigger_;
 }
 
 std::unique_ptr<PrerenderHandle> WebContentsImpl::StartPrerendering(

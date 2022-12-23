@@ -170,10 +170,9 @@ def _create_groups(properties):
 
 
 def _mark_builder_flags(group):
-    """Mark all fields as builder fields, and set writable."""
+    """Mark all fields as builder fields."""
     for field in group.fields:
         field.builder = True
-        field.writable = True
     for subgroup in group.subgroups:
         _mark_builder_flags(subgroup)
 
@@ -310,6 +309,8 @@ def _create_property_field(property_):
         size = 1 if type_name == 'bool' else property_.field_size
     elif property_.field_template == 'pointer':
         size = None
+    elif property_.field_template == 'derived_flag':
+        size = 2
     else:
         assert property_.field_template == 'monotonic_flag', \
             "Please use a valid value for field_template"
@@ -319,7 +320,6 @@ def _create_property_field(property_):
         'property',
         name_for_methods,
         property_name=property_.name.original,
-        writable=property_.writable,
         inherited=property_.inherited,
         independent=property_.independent,
         semi_independent_variable=property_.semi_independent_variable,
@@ -328,6 +328,7 @@ def _create_property_field(property_):
         field_template=property_.field_template,
         size=size,
         default_value=property_.default_value,
+        derived_from=property_.derived_from,
         custom_copy=property_.custom_copy,
         custom_compare=property_.custom_compare,
         mutable=property_.mutable,
@@ -354,12 +355,12 @@ def _create_inherited_flag_field(property_):
         'inherited_flag',
         name_for_methods,
         property_name=property_.name.original,
-        writable=False,
         type_name='bool',
         wrapper_pointer_name=None,
         field_template='primitive',
         size=1,
         default_value='true',
+        derived_from=None,
         custom_copy=False,
         custom_compare=False,
         mutable=False,

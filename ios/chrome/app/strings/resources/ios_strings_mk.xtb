@@ -48,6 +48,7 @@
 <translation id="1265739287306757398">Дознајте како</translation>
 <translation id="1272079795634619415">Запри</translation>
 <translation id="1275718070701477396">Избран</translation>
+<translation id="1279024913354609713">Не дозволувај</translation>
 <translation id="1281818060020671000">Управувајте со податоците</translation>
 <translation id="1282311502488501110">Не се најавувај</translation>
 <translation id="1283524564873030414">Изминатите 24 часа</translation>
@@ -148,6 +149,7 @@
 <translation id="2074131957428911366">Секогаш може да изберете што да синхронизирате во <ph name="BEGIN_LINK" />Поставки<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Врати</translation>
 <translation id="2080769225927880590">Најавете се со важечка сметка</translation>
+<translation id="2090878303988764231">Најавете се за да управувате со содржините што ги гледате</translation>
 <translation id="2103075008456228677">Отвори ја history.google.com</translation>
 <translation id="21133533946938348">Прикачи картичка</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ставки се преместени</translation>
@@ -190,6 +192,7 @@
 <translation id="2421044535038393232">Продолжи со изменување</translation>
 <translation id="2434405374328098816">Веќе зачувавте лозинка за „<ph name="USERNAME" />“ на <ph name="WEBSITE" /></translation>
 <translation id="2435457462613246316">Прикажи ја лозинката</translation>
+<translation id="2451654228769116489">Прикачи картичка</translation>
 <translation id="2461070143328828326">Поставки за лозинка</translation>
 <translation id="2469960372084740698">Да се исклучи „Безбедно прелистување“?</translation>
 <translation id="2473876017985765807">Веќе зачувавте лозинка за <ph name="WEBSITE" /></translation>
@@ -672,6 +675,7 @@ Handoff мора да биде овозможен и во Општиот дел 
 <translation id="6059830886158432458">Контролирајте ги сториите и активноста тука</translation>
 <translation id="6064824697233747382">Вашата организација бара да ја исклучите синхронизацијата.</translation>
 <translation id="6066301408025741299">Допри за откажување.</translation>
+<translation id="6071409777669089905">Откачи картичка</translation>
 <translation id="60829778314739003">Прифати и продолжи</translation>
 <translation id="6084848228346514841">Изберете картички</translation>
 <translation id="6103540626693881831">Шифрирање на уредот</translation>
@@ -785,6 +789,7 @@ Handoff мора да биде овозможен и во Општиот дел 
 <translation id="6710079714193676716">Управувано од вашата организација. Некои функции можеби се недостапни. <ph name="BEGIN_LINK" />Дознајте повеќе<ph name="END_LINK" /></translation>
 <translation id="6713747756340119864">Апликации на Google</translation>
 <translation id="6730682669179532099">Не може да се извезат лозинките</translation>
+<translation id="6732087373923685049">камера</translation>
 <translation id="6748108480210050150">Од</translation>
 <translation id="6760509555861141183">Вратете се на картичката „Неодамнешни“</translation>
 <translation id="6762812039470893796">Отштиклирај ги сите</translation>
@@ -971,6 +976,7 @@ Handoff мора да биде овозможен и во Општиот дел 
 <translation id="8197543752516192074">Преведи ја страницата</translation>
 <translation id="8205564605687841303">Откажи</translation>
 <translation id="8206354486702514201">Поставката ја наметнува администраторот.</translation>
+<translation id="821809831108207540">За да ја персонализирате активноста на Discover и Chrome, најавете се и вклучете синхронизација.</translation>
 <translation id="8225985093977202398">Кеш: слики, датотеки</translation>
 <translation id="8237382152611443140">Отворете ги поставките за автоматско пополнување лозинки</translation>
 <translation id="8261506727792406068">Избриши</translation>
@@ -1037,6 +1043,7 @@ Handoff мора да биде овозможен и во Општиот дел 
 <translation id="8764015330924122850">Престани со следење на <ph name="DOMAIN_NAME" /></translation>
 <translation id="8775144690796719618">Неважечка URL-адреса</translation>
 <translation id="8787968206789828143">Пребарувајте на интернет</translation>
+<translation id="8792626944327216835">микрофон</translation>
 <translation id="8803639129939845298">Безбедно</translation>
 <translation id="8806823403540278281">Вашата организација бара да прелистувате „Инкогнито“. Картичките не се зачувуваат во режимот „Инкогнито“.
 <ph name="BEGIN_LINK" />Дознајте повеќе<ph name="END_LINK" /></translation>
@@ -1092,6 +1099,7 @@ Handoff мора да биде овозможен и во Општиот дел 
 <translation id="9157836665414082580">Отстрани дијалози</translation>
 <translation id="9177438225260810839">Пребарајте ги отворените картички</translation>
 <translation id="9188680907066685419">Одјавете се од управувана сметка</translation>
+<translation id="9193147658040604536">Повлечете овде за да закачите картичка</translation>
 <translation id="9200875785104711666">Пред <ph name="TIME" /> д.</translation>
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9219154867334666734">Пребарајте ги картичките…</translation>

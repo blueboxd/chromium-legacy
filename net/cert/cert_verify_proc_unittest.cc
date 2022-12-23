@@ -41,6 +41,7 @@
 #include "net/cert/pki/extended_key_usage.h"
 #include "net/cert/pki/parse_certificate.h"
 #include "net/cert/pki/signature_algorithm.h"
+#include "net/cert/pki/trust_store.h"
 #include "net/cert/test_root_certs.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
@@ -374,6 +375,13 @@ class CertVerifyProcInternalTest
                   verify_result, NetLogWithSource());
   }
 
+  int Verify(X509Certificate* cert, const std::string& hostname) {
+    CertVerifyResult verify_result;
+    int flags = 0;
+    return Verify(cert, hostname, flags, CRLSet::BuiltinCRLSet().get(),
+                  CertificateList(), &verify_result);
+  }
+
   CertVerifyProcType verify_proc_type() const { return GetParam(); }
 
   bool SupportsAdditionalTrustAnchors() const {
@@ -561,6 +569,33 @@ INSTANTIATE_TEST_SUITE_P(All,
                          CertVerifyProcInternalTest,
                          testing::ValuesIn(kAllCertVerifiers),
                          VerifyProcTypeToName);
+
+TEST_P(CertVerifyProcInternalTest, DistrustedIntermediate) {
+  auto [leaf, intermediate, root] = CertBuilder::CreateSimpleChain3();
+  scoped_refptr<X509Certificate> chain = leaf->GetX509CertificateChain();
+  constexpr char kHostname[] = "www.example.com";
+
+  // Chain should not verify without any ScopedTestRoots.
+  EXPECT_THAT(Verify(chain.get(), kHostname),
+              IsError(ERR_CERT_AUTHORITY_INVALID));
+
+  // Trusting root should cause chain to verify successfully.
+  ScopedTestRoot trust_root(root->GetX509Certificate().get(),
+                            CertificateTrust::ForTrustAnchor());
+  EXPECT_THAT(Verify(chain.get(), kHostname), IsOk());
+
+  ScopedTestRoot distrust_intermediate(intermediate->GetX509Certificate().get(),
+                                       CertificateTrust::ForDistrusted());
+  if (VerifyProcTypeIsBuiltin()) {
+    // Distrusting intermediate should cause chain to not verify again.
+    EXPECT_THAT(Verify(chain.get(), kHostname),
+                IsError(ERR_CERT_AUTHORITY_INVALID));
+  } else {
+    // Specifying trust types for the platform verifiers through ScopedTestRoot
+    // is not supported, so this should still verify successfully.
+    EXPECT_THAT(Verify(chain.get(), kHostname), IsOk());
+  }
+}
 
 // Tests that a certificate is recognized as EV, when the valid EV policy OID
 // for the trust anchor is the second candidate EV oid in the target
@@ -4242,14 +4277,22 @@ class CertVerifyProcConstraintsTest : public CertVerifyProcInternalTest {
     chain_ = CertBuilder::CreateSimpleChain(/*chain_length=*/4);
   }
 
-  int Verify() {
-    ScopedTestRoot test_root(chain_.back()->GetX509Certificate().get());
+  int VerifyWithTrust(CertificateTrust trust) {
+    ScopedTestRoot test_root(chain_.back()->GetX509Certificate().get(), trust);
     CertVerifyResult verify_result;
     int flags = 0;
     return CertVerifyProcInternalTest::Verify(
         chain_.front()->GetX509CertificateChain().get(), "www.example.com",
         flags, CRLSet::BuiltinCRLSet().get(), CertificateList(),
         &verify_result);
+  }
+
+  int Verify() { return VerifyWithTrust(CertificateTrust::ForTrustAnchor()); }
+
+  int VerifyWithExpiryAndConstraints() {
+    return VerifyWithTrust(CertificateTrust::ForTrustAnchor()
+                               .WithEnforceAnchorExpiry()
+                               .WithEnforceAnchorConstraints());
   }
 
   int ExpectedIntermediateConstraintError() {
@@ -4271,13 +4314,19 @@ TEST_P(CertVerifyProcConstraintsTest, BaseCase) {
   // successfully. If this is not true then the rest of the tests in this class
   // are unlikely to be useful.
   EXPECT_THAT(Verify(), IsOk());
+  if (VerifyProcTypeIsBuiltin()) {
+    EXPECT_THAT(VerifyWithExpiryAndConstraints(), IsOk());
+  }
 }
 
 TEST_P(CertVerifyProcConstraintsTest, BasicConstraintsNotCaRoot) {
   chain_[3]->SetBasicConstraints(/*is_ca=*/false, /*path_len=*/-1);
 
-  if (VerifyProcTypeIsBuiltin() || VerifyProcTypeIsMacAtMostOS10_14() ||
-      verify_proc_type() == CERT_VERIFY_PROC_ANDROID) {
+  if (VerifyProcTypeIsBuiltin()) {
+    EXPECT_THAT(Verify(), IsOk());
+    EXPECT_THAT(VerifyWithExpiryAndConstraints(), IsError(ERR_CERT_INVALID));
+  } else if (VerifyProcTypeIsMacAtMostOS10_14() ||
+             verify_proc_type() == CERT_VERIFY_PROC_ANDROID) {
     EXPECT_THAT(Verify(), IsOk());
   } else {
     EXPECT_THAT(Verify(), IsError(ERR_CERT_INVALID));
@@ -4300,25 +4349,19 @@ TEST_P(CertVerifyProcConstraintsTest, BasicConstraintsIsCaLeaf) {
     } else {
       chain_[0]->SetKeyUsages({KEY_USAGE_BIT_DIGITAL_SIGNATURE});
     }
-
-    if (VerifyProcTypeIsBuiltin()) {
-      if (has_key_usage_cert_sign) {
-        EXPECT_THAT(Verify(), IsOk());
-      } else {
-        EXPECT_THAT(Verify(), IsError(ERR_CERT_INVALID));
-      }
-    } else {
-      EXPECT_THAT(Verify(), IsOk());
-    }
+    EXPECT_THAT(Verify(), IsOk());
   }
 }
 
 TEST_P(CertVerifyProcConstraintsTest, BasicConstraintsPathlen0Root) {
   chain_[3]->SetBasicConstraints(/*is_ca=*/true, /*path_len=*/0);
 
-  if (VerifyProcTypeIsBuiltin() || VerifyProcTypeIsMacAtMostOS11() ||
-      VerifyProcTypeIsIOSAtMostOS14() ||
-      verify_proc_type() == CERT_VERIFY_PROC_ANDROID) {
+  if (VerifyProcTypeIsBuiltin()) {
+    EXPECT_THAT(Verify(), IsOk());
+    EXPECT_THAT(VerifyWithExpiryAndConstraints(), IsError(ERR_CERT_INVALID));
+  } else if (VerifyProcTypeIsMacAtMostOS11() ||
+             VerifyProcTypeIsIOSAtMostOS14() ||
+             verify_proc_type() == CERT_VERIFY_PROC_ANDROID) {
     EXPECT_THAT(Verify(), IsOk());
   } else {
     EXPECT_THAT(Verify(), IsError(ERR_CERT_INVALID));
@@ -4328,9 +4371,12 @@ TEST_P(CertVerifyProcConstraintsTest, BasicConstraintsPathlen0Root) {
 TEST_P(CertVerifyProcConstraintsTest, BasicConstraintsPathlen1Root) {
   chain_[3]->SetBasicConstraints(/*is_ca=*/true, /*path_len=*/1);
 
-  if (VerifyProcTypeIsBuiltin() || VerifyProcTypeIsMacAtMostOS11() ||
-      VerifyProcTypeIsIOSAtMostOS14() ||
-      verify_proc_type() == CERT_VERIFY_PROC_ANDROID) {
+  if (VerifyProcTypeIsBuiltin()) {
+    EXPECT_THAT(Verify(), IsOk());
+    EXPECT_THAT(VerifyWithExpiryAndConstraints(), IsError(ERR_CERT_INVALID));
+  } else if (VerifyProcTypeIsMacAtMostOS11() ||
+             VerifyProcTypeIsIOSAtMostOS14() ||
+             verify_proc_type() == CERT_VERIFY_PROC_ANDROID) {
     EXPECT_THAT(Verify(), IsOk());
   } else {
     EXPECT_THAT(Verify(), IsError(ERR_CERT_INVALID));
@@ -4341,6 +4387,9 @@ TEST_P(CertVerifyProcConstraintsTest, BasicConstraintsPathlen2Root) {
   chain_[3]->SetBasicConstraints(/*is_ca=*/true, /*path_len=*/2);
 
   EXPECT_THAT(Verify(), IsOk());
+  if (VerifyProcTypeIsBuiltin()) {
+    EXPECT_THAT(VerifyWithExpiryAndConstraints(), IsOk());
+  }
 }
 
 TEST_P(CertVerifyProcConstraintsTest,
@@ -4367,9 +4416,12 @@ TEST_P(CertVerifyProcConstraintsTest,
 TEST_P(CertVerifyProcConstraintsTest, BasicConstraintsNotPresentRoot) {
   chain_[3]->EraseExtension(der::Input(kBasicConstraintsOid));
 
-  if (VerifyProcTypeIsBuiltin() || VerifyProcTypeIsMacAtMostOS10_14() ||
-      verify_proc_type() == CERT_VERIFY_PROC_ANDROID ||
-      verify_proc_type() == CERT_VERIFY_PROC_WIN) {
+  if (VerifyProcTypeIsBuiltin()) {
+    EXPECT_THAT(Verify(), IsOk());
+    EXPECT_THAT(VerifyWithExpiryAndConstraints(), IsOk());
+  } else if (VerifyProcTypeIsMacAtMostOS10_14() ||
+             verify_proc_type() == CERT_VERIFY_PROC_ANDROID ||
+             verify_proc_type() == CERT_VERIFY_PROC_WIN) {
     EXPECT_THAT(Verify(), IsOk());
   } else {
     EXPECT_THAT(Verify(), IsError(ERR_CERT_INVALID));
@@ -4392,8 +4444,11 @@ TEST_P(CertVerifyProcConstraintsTest, NameConstraintsNotMatchingRoot) {
   chain_[3]->SetNameConstraintsDnsNames(/*permitted_dns_names=*/{"example.org"},
                                         /*excluded_dns_names=*/{});
 
-  if (VerifyProcTypeIsBuiltin() || VerifyProcTypeIsMacAtMostOS10_14() ||
-      verify_proc_type() == CERT_VERIFY_PROC_ANDROID) {
+  if (VerifyProcTypeIsBuiltin()) {
+    EXPECT_THAT(Verify(), IsOk());
+    EXPECT_THAT(VerifyWithExpiryAndConstraints(), IsError(ERR_CERT_INVALID));
+  } else if (VerifyProcTypeIsMacAtMostOS10_14() ||
+             verify_proc_type() == CERT_VERIFY_PROC_ANDROID) {
     EXPECT_THAT(Verify(), IsOk());
   } else {
     EXPECT_THAT(Verify(), IsError(ERR_CERT_INVALID));
@@ -4413,6 +4468,9 @@ TEST_P(CertVerifyProcConstraintsTest, NameConstraintsMatchingRoot) {
                                         /*excluded_dns_names=*/{});
 
   EXPECT_THAT(Verify(), IsOk());
+  if (VerifyProcTypeIsBuiltin()) {
+    EXPECT_THAT(VerifyWithExpiryAndConstraints(), IsOk());
+  }
 }
 
 TEST_P(CertVerifyProcConstraintsTest, NameConstraintsMatchingIntermediate) {
@@ -4444,8 +4502,11 @@ TEST_P(CertVerifyProcConstraintsTest, ValidityExpiredRoot) {
   chain_[3]->SetValidity(base::Time::Now() - base::Days(14),
                          base::Time::Now() - base::Days(7));
 
-  if (VerifyProcTypeIsBuiltin() ||
-      verify_proc_type() == CERT_VERIFY_PROC_ANDROID) {
+  if (VerifyProcTypeIsBuiltin()) {
+    EXPECT_THAT(Verify(), IsOk());
+    EXPECT_THAT(VerifyWithExpiryAndConstraints(),
+                IsError(ERR_CERT_DATE_INVALID));
+  } else if (verify_proc_type() == CERT_VERIFY_PROC_ANDROID) {
     EXPECT_THAT(Verify(), IsOk());
   } else {
     EXPECT_THAT(Verify(), IsError(ERR_CERT_DATE_INVALID));
@@ -4456,8 +4517,11 @@ TEST_P(CertVerifyProcConstraintsTest, ValidityNotYetValidRoot) {
   chain_[3]->SetValidity(base::Time::Now() + base::Days(7),
                          base::Time::Now() + base::Days(14));
 
-  if (VerifyProcTypeIsBuiltin() ||
-      verify_proc_type() == CERT_VERIFY_PROC_ANDROID) {
+  if (VerifyProcTypeIsBuiltin()) {
+    EXPECT_THAT(Verify(), IsOk());
+    EXPECT_THAT(VerifyWithExpiryAndConstraints(),
+                IsError(ERR_CERT_DATE_INVALID));
+  } else if (verify_proc_type() == CERT_VERIFY_PROC_ANDROID) {
     EXPECT_THAT(Verify(), IsOk());
   } else {
     EXPECT_THAT(Verify(), IsError(ERR_CERT_DATE_INVALID));
@@ -4503,12 +4567,17 @@ TEST_P(CertVerifyProcConstraintsTest, PolicyConstraints0Root) {
     if (leaf_has_policy) {
       chain_[0]->SetCertificatePolicies({kPolicy1});
       EXPECT_THAT(Verify(), IsOk());
+      if (VerifyProcTypeIsBuiltin()) {
+        EXPECT_THAT(VerifyWithExpiryAndConstraints(), IsOk());
+      }
     } else {
       chain_[0]->SetCertificatePolicies({});
-      if (VerifyProcTypeIsBuiltin() ||
-          verify_proc_type() == CERT_VERIFY_PROC_MAC ||
-          verify_proc_type() == CERT_VERIFY_PROC_IOS ||
-          verify_proc_type() == CERT_VERIFY_PROC_ANDROID) {
+      if (VerifyProcTypeIsBuiltin()) {
+        EXPECT_THAT(Verify(), IsOk());
+        EXPECT_THAT(VerifyWithExpiryAndConstraints(), IsOk());
+      } else if (verify_proc_type() == CERT_VERIFY_PROC_MAC ||
+                 verify_proc_type() == CERT_VERIFY_PROC_IOS ||
+                 verify_proc_type() == CERT_VERIFY_PROC_ANDROID) {
         EXPECT_THAT(Verify(), IsOk());
       } else {
         EXPECT_THAT(Verify(), IsError(ERR_CERT_INVALID));
@@ -4525,6 +4594,9 @@ TEST_P(CertVerifyProcConstraintsTest, PolicyConstraints4Root) {
       /*inhibit_policy_mapping=*/absl::nullopt);
 
   EXPECT_THAT(Verify(), IsOk());
+  if (VerifyProcTypeIsBuiltin()) {
+    EXPECT_THAT(VerifyWithExpiryAndConstraints(), IsOk());
+  }
 }
 
 // This is also a regression test for https://crbug.com/31497: If an
@@ -4602,9 +4674,12 @@ TEST_P(CertVerifyProcConstraintsTest, InhibitAnyPolicy0Root) {
   chain_[1]->SetCertificatePolicies({kPolicy1});
   chain_[0]->SetCertificatePolicies({kPolicy1});
 
-  if (VerifyProcTypeIsBuiltin() || verify_proc_type() == CERT_VERIFY_PROC_MAC ||
-      verify_proc_type() == CERT_VERIFY_PROC_IOS ||
-      verify_proc_type() == CERT_VERIFY_PROC_ANDROID) {
+  if (VerifyProcTypeIsBuiltin()) {
+    EXPECT_THAT(Verify(), IsOk());
+    EXPECT_THAT(VerifyWithExpiryAndConstraints(), IsOk());
+  } else if (verify_proc_type() == CERT_VERIFY_PROC_MAC ||
+             verify_proc_type() == CERT_VERIFY_PROC_IOS ||
+             verify_proc_type() == CERT_VERIFY_PROC_ANDROID) {
     EXPECT_THAT(Verify(), IsOk());
   } else {
     EXPECT_THAT(Verify(), IsError(ERR_CERT_INVALID));
@@ -4632,6 +4707,9 @@ TEST_P(CertVerifyProcConstraintsTest, InhibitAnyPolicy1Root) {
   chain_[0]->SetCertificatePolicies({kPolicy1});
 
   EXPECT_THAT(Verify(), IsOk());
+  if (VerifyProcTypeIsBuiltin()) {
+    EXPECT_THAT(VerifyWithExpiryAndConstraints(), IsOk());
+  }
 }
 
 TEST_P(CertVerifyProcConstraintsTest, InhibitAnyPolicy0Intermediate) {
@@ -4697,11 +4775,16 @@ TEST_P(CertVerifyProcConstraintsTest, PoliciesRoot) {
 
     if (root_has_matching_policy) {
       EXPECT_THAT(Verify(), IsOk());
+      if (VerifyProcTypeIsBuiltin()) {
+        EXPECT_THAT(VerifyWithExpiryAndConstraints(), IsOk());
+      }
     } else {
-      if (VerifyProcTypeIsBuiltin() ||
-          verify_proc_type() == CERT_VERIFY_PROC_MAC ||
-          verify_proc_type() == CERT_VERIFY_PROC_IOS ||
-          verify_proc_type() == CERT_VERIFY_PROC_ANDROID) {
+      if (VerifyProcTypeIsBuiltin()) {
+        EXPECT_THAT(Verify(), IsOk());
+        EXPECT_THAT(VerifyWithExpiryAndConstraints(), IsOk());
+      } else if (verify_proc_type() == CERT_VERIFY_PROC_MAC ||
+                 verify_proc_type() == CERT_VERIFY_PROC_IOS ||
+                 verify_proc_type() == CERT_VERIFY_PROC_ANDROID) {
         EXPECT_THAT(Verify(), IsOk());
       } else {
         EXPECT_THAT(Verify(), IsError(ERR_CERT_INVALID));
@@ -4713,8 +4796,11 @@ TEST_P(CertVerifyProcConstraintsTest, PoliciesRoot) {
 TEST_P(CertVerifyProcConstraintsTest, KeyUsageNoCertSignRoot) {
   chain_[3]->SetKeyUsages({KEY_USAGE_BIT_CRL_SIGN});
 
-  if (VerifyProcTypeIsBuiltin() || VerifyProcTypeIsMacAtMostOS10_14() ||
-      verify_proc_type() == CERT_VERIFY_PROC_ANDROID) {
+  if (VerifyProcTypeIsBuiltin()) {
+    EXPECT_THAT(Verify(), IsOk());
+    EXPECT_THAT(VerifyWithExpiryAndConstraints(), IsError(ERR_CERT_INVALID));
+  } else if (VerifyProcTypeIsMacAtMostOS10_14() ||
+             verify_proc_type() == CERT_VERIFY_PROC_ANDROID) {
     EXPECT_THAT(Verify(), IsOk());
   } else {
     EXPECT_THAT(Verify(), IsError(ERR_CERT_INVALID));
@@ -4725,6 +4811,9 @@ TEST_P(CertVerifyProcConstraintsTest, KeyUsageNotPresentRoot) {
   chain_[3]->EraseExtension(der::Input(kKeyUsageOid));
 
   EXPECT_THAT(Verify(), IsOk());
+  if (VerifyProcTypeIsBuiltin()) {
+    EXPECT_THAT(VerifyWithExpiryAndConstraints(), IsOk());
+  }
 }
 
 TEST_P(CertVerifyProcConstraintsTest, KeyUsageNoCertSignIntermediate) {
@@ -4758,10 +4847,12 @@ TEST_P(CertVerifyProcConstraintsTest, KeyUsageNotPresentLeaf) {
 TEST_P(CertVerifyProcConstraintsTest, ExtendedKeyUsageNoServerAuthRoot) {
   chain_[3]->SetExtendedKeyUsages({der::Input(kCodeSigning)});
 
-  if (VerifyProcTypeIsBuiltin() ||
-      verify_proc_type() == CERT_VERIFY_PROC_ANDROID ||
-      verify_proc_type() == CERT_VERIFY_PROC_MAC ||
-      verify_proc_type() == CERT_VERIFY_PROC_IOS) {
+  if (VerifyProcTypeIsBuiltin()) {
+    EXPECT_THAT(Verify(), IsOk());
+    EXPECT_THAT(VerifyWithExpiryAndConstraints(), IsError(ERR_CERT_INVALID));
+  } else if (verify_proc_type() == CERT_VERIFY_PROC_ANDROID ||
+             verify_proc_type() == CERT_VERIFY_PROC_MAC ||
+             verify_proc_type() == CERT_VERIFY_PROC_IOS) {
     EXPECT_THAT(Verify(), IsOk());
   } else {
     EXPECT_THAT(Verify(), IsError(ERR_CERT_INVALID));
@@ -4772,6 +4863,9 @@ TEST_P(CertVerifyProcConstraintsTest, ExtendedKeyUsageServerAuthRoot) {
   chain_[3]->SetExtendedKeyUsages({der::Input(kServerAuth)});
 
   EXPECT_THAT(Verify(), IsOk());
+  if (VerifyProcTypeIsBuiltin()) {
+    EXPECT_THAT(VerifyWithExpiryAndConstraints(), IsOk());
+  }
 }
 
 TEST_P(CertVerifyProcConstraintsTest,
@@ -4801,7 +4895,10 @@ TEST_P(CertVerifyProcConstraintsTest, ExtendedKeyUsageNoServerAuthLeaf) {
 TEST_P(CertVerifyProcConstraintsTest, UnknownSignatureAlgorithmRoot) {
   chain_[3]->SetSignatureAlgorithmTLV(TestOid0SignatureAlgorithmTLV());
 
-  if (verify_proc_type() == CERT_VERIFY_PROC_WIN) {
+  if (VerifyProcTypeIsBuiltin()) {
+    EXPECT_THAT(Verify(), IsOk());
+    EXPECT_THAT(VerifyWithExpiryAndConstraints(), IsOk());
+  } else if (verify_proc_type() == CERT_VERIFY_PROC_WIN) {
     EXPECT_THAT(Verify(), IsError(ERR_CERT_INVALID));
   } else {
     EXPECT_THAT(Verify(), IsOk());
@@ -4836,16 +4933,22 @@ TEST_P(CertVerifyProcConstraintsTest, UnknownExtensionRoot) {
     chain_[3]->SetExtension(TestOid0(), "hello world", critical);
 
     if (critical) {
-      if (VerifyProcTypeIsBuiltin() ||
-          verify_proc_type() == CERT_VERIFY_PROC_MAC ||
-          verify_proc_type() == CERT_VERIFY_PROC_IOS ||
-          verify_proc_type() == CERT_VERIFY_PROC_ANDROID) {
+      if (VerifyProcTypeIsBuiltin()) {
+        EXPECT_THAT(Verify(), IsOk());
+        EXPECT_THAT(VerifyWithExpiryAndConstraints(),
+                    IsError(ERR_CERT_INVALID));
+      } else if (verify_proc_type() == CERT_VERIFY_PROC_MAC ||
+                 verify_proc_type() == CERT_VERIFY_PROC_IOS ||
+                 verify_proc_type() == CERT_VERIFY_PROC_ANDROID) {
         EXPECT_THAT(Verify(), IsOk());
       } else {
         EXPECT_THAT(Verify(), IsError(ERR_CERT_INVALID));
       }
     } else {
       EXPECT_THAT(Verify(), IsOk());
+      if (VerifyProcTypeIsBuiltin()) {
+        EXPECT_THAT(VerifyWithExpiryAndConstraints(), IsOk());
+      }
     }
   }
 }
@@ -5116,16 +5219,7 @@ TEST_P(CertVerifyProcConstraintsTrustedSelfSignedTest, BasicConstraintsIsCa) {
     } else {
       cert_->SetKeyUsages({KEY_USAGE_BIT_DIGITAL_SIGNATURE});
     }
-
-    if (VerifyProcTypeIsBuiltin()) {
-      if (has_key_usage_cert_sign) {
-        EXPECT_THAT(Verify(), IsOk());
-      } else {
-        EXPECT_THAT(Verify(), IsError(ERR_CERT_INVALID));
-      }
-    } else {
-      EXPECT_THAT(Verify(), IsOk());
-    }
+    EXPECT_THAT(Verify(), IsOk());
   }
 }
 
@@ -5133,22 +5227,14 @@ TEST_P(CertVerifyProcConstraintsTrustedSelfSignedTest,
        BasicConstraintsNotCaPathlen) {
   cert_->SetBasicConstraints(/*is_ca=*/false, /*path_len=*/0);
 
-  if (VerifyProcTypeIsBuiltin()) {
-    EXPECT_THAT(Verify(), IsError(ERR_CERT_INVALID));
-  } else {
-    EXPECT_THAT(Verify(), IsOk());
-  }
+  EXPECT_THAT(Verify(), IsOk());
 }
 
 TEST_P(CertVerifyProcConstraintsTrustedSelfSignedTest,
        BasicConstraintsIsCaPathlen) {
   cert_->SetBasicConstraints(/*is_ca=*/true, /*path_len=*/0);
 
-  if (VerifyProcTypeIsBuiltin()) {
-    EXPECT_THAT(Verify(), IsError(ERR_CERT_INVALID));
-  } else {
-    EXPECT_THAT(Verify(), IsOk());
-  }
+  EXPECT_THAT(Verify(), IsOk());
 }
 
 TEST_P(CertVerifyProcConstraintsTrustedSelfSignedTest,

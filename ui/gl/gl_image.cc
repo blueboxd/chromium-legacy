@@ -23,24 +23,12 @@ GLImageD3D* GLImage::ToGLImageD3D(GLImage* image) {
 }
 
 // static
-GLImageMemory* GLImage::ToGLImageMemory(GLImage* image) {
-  if (!image || image->GetType() != Type::MEMORY)
-    return nullptr;
-  return reinterpret_cast<GLImageMemory*>(image);
-}
-
 // static
-GLImageIOSurface* GLImage::ToGLImageIOSurface(GLImage* image) {
-  if (!image || image->GetType() != Type::IOSURFACE)
+media::GLImageEGLStream* GLImage::ToGLImageEGLStream(GLImage* image) {
+  if (!image || image->GetType() != Type::EGL_STREAM) {
     return nullptr;
-  return reinterpret_cast<GLImageIOSurface*>(image);
-}
-
-// static
-GLImageDXGI* GLImage::ToGLImageDXGI(GLImage* image) {
-  if (!image || image->GetType() != Type::DXGI_IMAGE)
-    return nullptr;
-  return reinterpret_cast<GLImageDXGI*>(image);
+  }
+  return reinterpret_cast<media::GLImageEGLStream*>(image);
 }
 
 // static
@@ -93,11 +81,6 @@ unsigned GLImage::GetDataType() {
   return GL_NONE;
 }
 
-GLImage::BindOrCopy GLImage::ShouldBindOrCopy() {
-  NOTREACHED();
-  return BIND;
-}
-
 bool GLImage::BindTexImage(unsigned target) {
   NOTREACHED();
   return false;
@@ -107,20 +90,11 @@ void GLImage::ReleaseTexImage(unsigned target) {
   NOTREACHED();
 }
 
-bool GLImage::CopyTexImage(unsigned target) {
-  NOTREACHED();
-  return false;
-}
-
 bool GLImage::CopyTexSubImage(unsigned target,
                               const gfx::Point& offset,
                               const gfx::Rect& rect) {
   NOTREACHED();
   return false;
-}
-
-void GLImage::SetColorSpace(const gfx::ColorSpace& color_space) {
-  color_space_ = color_space;
 }
 
 void GLImage::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,

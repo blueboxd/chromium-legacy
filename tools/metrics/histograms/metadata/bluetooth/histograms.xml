@@ -203,6 +203,9 @@ chromium-metrics-reviews@google.com.
         summary="subsequent pairing protocol"/>
   </token>
   <token key="FastPairTrackedModelID">
+    <variant name="BoatRockerz255Pro"/>
+    <variant name="BoseQuietComfort35II"/>
+    <variant name="BoseQuietComfort35II_1"/>
     <variant name="JBLLIVE300TWS"/>
     <variant name="JBLLIVE300TWS_1"/>
     <variant name="JBLLIVE300TWS_2"/>
@@ -234,8 +237,15 @@ chromium-metrics-reviews@google.com.
     <variant name="JBLTUNE225TWS_3"/>
     <variant name="JBLTUNE225TWS_4"/>
     <variant name="JBLTUNE225TWS_5"/>
+    <variant name="JBLTUNE230NCTWS_1"/>
+    <variant name="JBLTUNE230NCTWS_2"/>
+    <variant name="JBLTUNE230NCTWS_3"/>
+    <variant name="JBLTUNE230NCTWS_4"/>
     <variant name="NothingEar1"/>
     <variant name="NothingEar1_2"/>
+    <variant name="OnePlusBuds"/>
+    <variant name="OnePlusBuds_1"/>
+    <variant name="OnePlusBuds_2"/>
     <variant name="OnePlusBudsZ"/>
     <variant name="OnePlusBudsZ_1"/>
     <variant name="OnePlusBudsZ_2"/>
@@ -255,6 +265,10 @@ chromium-metrics-reviews@google.com.
     <variant name="RealMeBudsAirPro"/>
     <variant name="RealMeBudsAirPro_1"/>
     <variant name="RealMeBudsAirPro_2"/>
+    <variant name="RealMeBudsQ2TWS"/>
+    <variant name="RealMeTechLifeBudsT100"/>
+    <variant name="RealMeTechLifeBudsT100_1"/>
+    <variant name="RealMeTechLifeBudsT100_2"/>
     <variant name="SonyWF1000XM3"/>
     <variant name="SonyWF1000XM3_1"/>
     <variant name="SonyWF1000XM3_2"/>
@@ -265,6 +279,12 @@ chromium-metrics-reviews@google.com.
     <variant name="SonyWF1000XM3_7"/>
     <variant name="SonyWH1000XM3"/>
     <variant name="SonyWH1000XM3_1"/>
+    <variant name="SRSXB13"/>
+    <variant name="SRSXB13_1"/>
+    <variant name="SRSXB13_2"/>
+    <variant name="SRSXB13_3"/>
+    <variant name="SRSXB13_4"/>
+    <variant name="SRSXB13_5"/>
     <variant name="SRSXB23"/>
     <variant name="SRSXB23_1"/>
     <variant name="SRSXB23_2"/>
@@ -396,6 +416,45 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram
+    name="Bluetooth.ChromeOS.FastPair.EngagementFunnel.Steps.{FastPairPairingProtocol}.{FastPairDeviceType}.{FastPairNotificationType}"
+    enum="FastPairEngagementFlowEvent" expires_after="2023-02-26">
+  <owner>jackshira@google.com</owner>
+  <owner>julietlevesque@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records each step in the Fast Pair flow, split per protocol, per device
+    type, and per notification type of the device from its metadata. Emitted
+    when the discovery UI is shown, the discovery UI is dismissed, pairing
+    progress begins, pairing fails, pairing succeeded, the error UI is
+    dismissed, and/or when the setting button on the error UI is pressed.
+    TODO(b/262923607): Remove once structured metrics for Fast Pair are
+    implemented.
+  </summary>
+  <token key="FastPairPairingProtocol">
+    <variant name="InitialPairingProtocol" summary="initial pairing protocol"/>
+    <variant name="SubsequentPairingProtocol"
+        summary="subsequent pairing protocol"/>
+  </token>
+  <token key="FastPairDeviceType">
+    <variant name="HeadphonesDeviceType" summary="Device Type: Headphones"/>
+    <variant name="SpeakerDeviceType" summary="Device Type: Speaker"/>
+    <variant name="TrueWirelessHeadphonesDeviceType"
+        summary="Device Type: True Wireless Headphones"/>
+    <variant name="UnspecifiedDeviceType" summary="Device Type: Unspecified"/>
+  </token>
+  <token key="FastPairNotificationType">
+    <variant name="FastPairNotificationType"
+        summary="Notification Type: Fast Pair. Notification launches the fast
+                 pair intent."/>
+    <variant name="FastPairOneNotificationType"
+        summary="Notification Type: Fast Pair One. Notification launches the
+                 fast pair intent, but doesn't include an anti-spoofing key."/>
+    <variant name="UnspecifiedNotificationType"
+        summary="Notification Type: Unspecified"/>
+  </token>
+</histogram>
+
+<histogram
     name="Bluetooth.ChromeOS.FastPair.EngagementFunnel.Steps.{FastPairPairingProtocol}.{FastPairTrackedModelID}"
     enum="FastPairEngagementFlowEvent" expires_after="2023-02-26">
   <owner>dclasson@google.com</owner>
@@ -413,6 +472,9 @@ chromium-metrics-reviews@google.com.
         summary="subsequent pairing protocol"/>
   </token>
   <token key="FastPairTrackedModelID">
+    <variant name="BoatRockerz255Pro"/>
+    <variant name="BoseQuietComfort35II"/>
+    <variant name="BoseQuietComfort35II_1"/>
     <variant name="JBLLIVE300TWS"/>
     <variant name="JBLLIVE300TWS_1"/>
     <variant name="JBLLIVE300TWS_2"/>
@@ -444,8 +506,15 @@ chromium-metrics-reviews@google.com.
     <variant name="JBLTUNE225TWS_3"/>
     <variant name="JBLTUNE225TWS_4"/>
     <variant name="JBLTUNE225TWS_5"/>
+    <variant name="JBLTUNE230NCTWS_1"/>
+    <variant name="JBLTUNE230NCTWS_2"/>
+    <variant name="JBLTUNE230NCTWS_3"/>
+    <variant name="JBLTUNE230NCTWS_4"/>
     <variant name="NothingEar1"/>
     <variant name="NothingEar1_2"/>
+    <variant name="OnePlusBuds"/>
+    <variant name="OnePlusBuds_1"/>
+    <variant name="OnePlusBuds_2"/>
     <variant name="OnePlusBudsZ"/>
     <variant name="OnePlusBudsZ_1"/>
     <variant name="OnePlusBudsZ_2"/>
@@ -465,6 +534,10 @@ chromium-metrics-reviews@google.com.
     <variant name="RealMeBudsAirPro"/>
     <variant name="RealMeBudsAirPro_1"/>
     <variant name="RealMeBudsAirPro_2"/>
+    <variant name="RealMeBudsQ2TWS"/>
+    <variant name="RealMeTechLifeBudsT100"/>
+    <variant name="RealMeTechLifeBudsT100_1"/>
+    <variant name="RealMeTechLifeBudsT100_2"/>
     <variant name="SonyWF1000XM3"/>
     <variant name="SonyWF1000XM3_1"/>
     <variant name="SonyWF1000XM3_2"/>
@@ -475,6 +548,12 @@ chromium-metrics-reviews@google.com.
     <variant name="SonyWF1000XM3_7"/>
     <variant name="SonyWH1000XM3"/>
     <variant name="SonyWH1000XM3_1"/>
+    <variant name="SRSXB13"/>
+    <variant name="SRSXB13_1"/>
+    <variant name="SRSXB13_2"/>
+    <variant name="SRSXB13_3"/>
+    <variant name="SRSXB13_4"/>
+    <variant name="SRSXB13_5"/>
     <variant name="SRSXB23"/>
     <variant name="SRSXB23_1"/>
     <variant name="SRSXB23_2"/>
@@ -1077,6 +1156,40 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram
+    name="Bluetooth.ChromeOS.FastPair.RetroactiveEngagementFunnel.Steps.{FastPairDeviceType}.{FastPairNotificationType}"
+    enum="FastPairRetroactiveEngagementFlowEvent" expires_after="2023-06-11">
+  <owner>jackshira@google.com</owner>
+  <owner>julietlevesque@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records each step in the Fast Pair flow for the retroactive pairing
+    scenario, per device type and per notification type from its metadata.
+    Emitted when the associate account UI is shown, the associate account UI is
+    dismissed, the save to account button is pressed on the associate account
+    UI, and when the learn more button is pressed on the associate account UI.
+    TODO(b/262923607): Remove once structured metrics for Fast Pair are
+    implemented.
+  </summary>
+  <token key="FastPairDeviceType">
+    <variant name="HeadphonesDeviceType" summary="Device Type: Headphones"/>
+    <variant name="SpeakerDeviceType" summary="Device Type: Speaker"/>
+    <variant name="TrueWirelessHeadphonesDeviceType"
+        summary="Device Type: True Wireless Headphones"/>
+    <variant name="UnspecifiedDeviceType" summary="Device Type: Unspecified"/>
+  </token>
+  <token key="FastPairNotificationType">
+    <variant name="FastPairNotificationType"
+        summary="Notification Type: Fast Pair. Notification launches the fast
+                 pair intent."/>
+    <variant name="FastPairOneNotificationType"
+        summary="Notification Type: Fast Pair One. Notification launches the
+                 fast pair intent, but doesn't include an anti-spoofing key."/>
+    <variant name="UnspecifiedNotificationType"
+        summary="Notification Type: Unspecified"/>
+  </token>
+</histogram>
+
+<histogram
     name="Bluetooth.ChromeOS.FastPair.RetroactiveEngagementFunnel.Steps.{FastPairTrackedModelID}"
     enum="FastPairRetroactiveEngagementFlowEvent" expires_after="2023-02-26">
   <owner>dclasson@google.com</owner>
@@ -1089,6 +1202,9 @@ chromium-metrics-reviews@google.com.
     UI, and when the learn more button is pressed on the associate account UI.
   </summary>
   <token key="FastPairTrackedModelID">
+    <variant name="BoatRockerz255Pro"/>
+    <variant name="BoseQuietComfort35II"/>
+    <variant name="BoseQuietComfort35II_1"/>
     <variant name="JBLLIVE300TWS"/>
     <variant name="JBLLIVE300TWS_1"/>
     <variant name="JBLLIVE300TWS_2"/>
@@ -1120,8 +1236,15 @@ chromium-metrics-reviews@google.com.
     <variant name="JBLTUNE225TWS_3"/>
     <variant name="JBLTUNE225TWS_4"/>
     <variant name="JBLTUNE225TWS_5"/>
+    <variant name="JBLTUNE230NCTWS_1"/>
+    <variant name="JBLTUNE230NCTWS_2"/>
+    <variant name="JBLTUNE230NCTWS_3"/>
+    <variant name="JBLTUNE230NCTWS_4"/>
     <variant name="NothingEar1"/>
     <variant name="NothingEar1_2"/>
+    <variant name="OnePlusBuds"/>
+    <variant name="OnePlusBuds_1"/>
+    <variant name="OnePlusBuds_2"/>
     <variant name="OnePlusBudsZ"/>
     <variant name="OnePlusBudsZ_1"/>
     <variant name="OnePlusBudsZ_2"/>
@@ -1141,6 +1264,10 @@ chromium-metrics-reviews@google.com.
     <variant name="RealMeBudsAirPro"/>
     <variant name="RealMeBudsAirPro_1"/>
     <variant name="RealMeBudsAirPro_2"/>
+    <variant name="RealMeBudsQ2TWS"/>
+    <variant name="RealMeTechLifeBudsT100"/>
+    <variant name="RealMeTechLifeBudsT100_1"/>
+    <variant name="RealMeTechLifeBudsT100_2"/>
     <variant name="SonyWF1000XM3"/>
     <variant name="SonyWF1000XM3_1"/>
     <variant name="SonyWF1000XM3_2"/>
@@ -1151,6 +1278,12 @@ chromium-metrics-reviews@google.com.
     <variant name="SonyWF1000XM3_7"/>
     <variant name="SonyWH1000XM3"/>
     <variant name="SonyWH1000XM3_1"/>
+    <variant name="SRSXB13"/>
+    <variant name="SRSXB13_1"/>
+    <variant name="SRSXB13_2"/>
+    <variant name="SRSXB13_3"/>
+    <variant name="SRSXB13_4"/>
+    <variant name="SRSXB13_5"/>
     <variant name="SRSXB23"/>
     <variant name="SRSXB23_1"/>
     <variant name="SRSXB23_2"/>

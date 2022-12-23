@@ -81,16 +81,8 @@ void Uninstall(UpdaterScope scope) {
   base::CommandLine command_line(*path);
   command_line.AppendSwitch(kUninstallSwitch);
   int exit_code = -1;
-  ASSERT_TRUE(Run(scope, command_line, &exit_code));
+  Run(scope, command_line, &exit_code);
   EXPECT_EQ(exit_code, 0);
-}
-
-void ExpectActiveUpdater(UpdaterScope scope) {
-  absl::optional<base::FilePath> path = GetInstalledExecutablePath(scope);
-  EXPECT_TRUE(path);
-  if (path) {
-    EXPECT_TRUE(base::PathExists(*path));
-  }
 }
 
 void ExpectCandidateUninstalled(UpdaterScope scope) {

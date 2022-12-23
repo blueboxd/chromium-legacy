@@ -127,7 +127,6 @@
 #endif
 
 #if BUILDFLAG(IS_WIN)
-#include "base/win/windows_version.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
 #include "device/fido/win/webauthn_api.h"
 
@@ -200,6 +199,7 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"subpageBackButtonAriaLabel", IDS_SETTINGS_SUBPAGE_BACK_BUTTON_ARIA_LABEL},
     {"subpageBackButtonAriaRoleDescription",
      IDS_SETTINGS_SUBPAGE_BACK_BUTTON_ARIA_ROLE_DESCRIPTION},
+    {"subpageLearnMoreAriaLabel", IDS_SETTINGS_SUBPAGE_LEARN_MORE_ARIA_LABEL},
     {"notValid", IDS_SETTINGS_NOT_VALID},
     {"notValidWebAddress", IDS_SETTINGS_NOT_VALID_WEB_ADDRESS},
     {"notValidWebAddressForContentType",
@@ -262,8 +262,7 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
 #if BUILDFLAG(IS_WIN)
-  html_source->AddBoolean("isWindows10OrNewer",
-                          base::win::GetVersion() >= base::win::Version::WIN10);
+  html_source->AddBoolean("isWindows10OrNewer", true);
 #endif
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -2000,11 +1999,29 @@ void AddPrivacySandboxStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_TOPICS_PAGE_CURRENT_TOPICS_HEADING},
       {"topicsPageCurrentTopicsDescription",
        IDS_SETTINGS_TOPICS_PAGE_CURRENT_TOPICS_DESCRIPTION},
+      {"topicsPageCurrentTopicsDescriptionLearnMore",
+       IDS_SETTINGS_TOPICS_PAGE_CURRENT_TOPICS_DESCRIPTION_LEARN_MORE},
+      {"topicsPageLearnMoreHeading",
+       IDS_SETTINGS_TOPICS_PAGE_LEARN_MORE_HEADING},
+      {"topicsPageLearnMoreBullet1",
+       IDS_SETTINGS_TOPICS_PAGE_LEARN_MORE_BULLET_1},
+      {"topicsPageLearnMoreBullet2",
+       IDS_SETTINGS_TOPICS_PAGE_LEARN_MORE_BULLET_2},
+      {"topicsPageLearnMoreBullet3",
+       IDS_SETTINGS_TOPICS_PAGE_LEARN_MORE_BULLET_3},
       {"topicsPageCurrentTopicsDescriptionDisabled",
        IDS_SETTINGS_TOPICS_PAGE_CURRENT_TOPICS_DESCRIPTION_DISABLED},
       {"topicsPageCurrentTopicsDescriptionEmpty",
        IDS_SETTINGS_TOPICS_PAGE_CURRENT_TOPICS_DESCRIPTION_EMPTY},
+      {"topicsPageBlockedTopicsHeading",
+       IDS_SETTINGS_TOPICS_PAGE_BLOCKED_TOPICS_HEADING},
+      {"topicsPageBlockedTopicsDescription",
+       IDS_SETTINGS_TOPICS_PAGE_BLOCKED_TOPICS_DESCRIPTION},
+      {"topicsPageBlockedTopicsDescriptionEmpty",
+       IDS_SETTINGS_TOPICS_PAGE_BLOCKED_TOPICS_DESCRIPTION_EMPTY},
       {"fledgePageTitle", IDS_SETTINGS_FLEDGE_PAGE_TITLE},
+      {"fledgePageToggleLabel", IDS_SETTINGS_FLEDGE_PAGE_TOGGLE_LABEL},
+      {"fledgePageToggleSubLabel", IDS_SETTINGS_FLEDGE_PAGE_TOGGLE_SUB_LABEL},
       {"adMeasurementPageTitle", IDS_SETTINGS_AD_MEASUREMENT_PAGE_TITLE},
       {"adMeasurementPageToggleLabel",
        IDS_SETTINGS_AD_MEASUREMENT_PAGE_TOGGLE_LABEL},
@@ -2742,6 +2759,8 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_SITE_CLEAR_STORAGE_SIGN_OUT},
     {"siteSettingsSiteClearStorageOfflineData",
      IDS_SETTINGS_SITE_SETTINGS_SITE_CLEAR_STORAGE_OFFLINE_DATA},
+    {"siteSettingsRemoveSiteAdPersonalization",
+     IDS_SETTINGS_SITE_SETTINGS_REMOVE_SITE_AD_PERSONALIZATION},
     {"siteSettingsSiteClearStorageApps",
      IDS_SETTINGS_SITE_SETTINGS_SITE_CLEAR_STORAGE_APPS},
     {"siteSettingsSiteGroupDelete", IDS_SETTINGS_SITE_SETTINGS_GROUP_DELETE},
@@ -3113,6 +3132,8 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SITE_SETTINGS_TYPE_IDLE_DETECTION_MID_SENTENCE},
     {"siteSettingsIdleDetectionBlock",
      IDS_SETTINGS_SITE_SETTINGS_IDLE_DETECTION_BLOCK},
+    {"siteSettingsExtensionIdDescription",
+     IDS_SETTINGS_SITE_SETTINGS_EXTENSION_ID_DESCRIPTION},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 

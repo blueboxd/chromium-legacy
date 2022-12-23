@@ -4,7 +4,6 @@
 
 #include "sandbox/win/src/sandbox_policy_base.h"
 
-#include <sddl.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -96,6 +95,7 @@ ConfigBase::ConfigBase() noexcept
       memory_limit_(0),
       ui_exceptions_(0),
       desktop_(Desktop::kDefault),
+      filter_environment_(false),
       policy_maker_(nullptr),
       policy_(nullptr) {
 }
@@ -404,6 +404,14 @@ ResultCode ConfigBase::SetDisconnectCsrss() {
 
 void ConfigBase::SetDesktop(Desktop desktop) {
   desktop_ = desktop;
+}
+
+void ConfigBase::SetFilterEnvironment(bool filter) {
+  filter_environment_ = filter;
+}
+
+bool ConfigBase::GetEnvironmentFiltered() {
+  return filter_environment_;
 }
 
 PolicyBase::PolicyBase(base::StringPiece tag)

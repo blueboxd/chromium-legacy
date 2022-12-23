@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_functions.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/bubble/download_bubble_controller.h"
@@ -21,9 +22,11 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/download/bubble/download_bubble_row_list_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_context_menu_view.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/download/public/common/download_item.h"
 #include "components/vector_icons/vector_icons.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -178,13 +181,16 @@ void DownloadBubbleRowView::AddedToWidget() {
   auto* focus_manager = GetFocusManager();
   if (focus_manager) {
     focus_manager->AddFocusChangeListener(this);
+    RegisterAccelerators(focus_manager);
   }
 }
 
 void DownloadBubbleRowView::RemovedFromWidget() {
   auto* focus_manager = GetFocusManager();
-  if (focus_manager)
+  if (focus_manager) {
     focus_manager->RemoveFocusChangeListener(this);
+    UnregisterAccelerators(focus_manager);
+  }
 }
 
 void DownloadBubbleRowView::OnThemeChanged() {
@@ -603,6 +609,7 @@ void DownloadBubbleRowView::UpdateButtons() {
   cancel_action_->SetVisible(false);
   show_in_folder_action_->SetVisible(false);
   open_when_complete_action_->SetVisible(false);
+
   for (const auto& action : ui_info_.quick_actions) {
     views::ImageButton* action_button =
         GetActionButtonForCommand(action.command);
@@ -616,22 +623,21 @@ void DownloadBubbleRowView::UpdateButtons() {
     action_button->SetVisible(true);
   }
 
-  cancel_button_->SetVisible(ui_info_.primary_button_command ==
-                             DownloadCommands::CANCEL);
-  discard_button_->SetVisible(ui_info_.primary_button_command ==
-                              DownloadCommands::DISCARD);
-  keep_button_->SetVisible(ui_info_.primary_button_command ==
-                           DownloadCommands::KEEP);
-  scan_button_->SetVisible(ui_info_.primary_button_command ==
-                           DownloadCommands::DEEP_SCAN);
-  open_now_button_->SetVisible(ui_info_.primary_button_command ==
-                               DownloadCommands::BYPASS_DEEP_SCANNING);
-  resume_button_->SetVisible(ui_info_.primary_button_command ==
-                             DownloadCommands::RESUME);
-  review_button_->SetVisible(ui_info_.primary_button_command ==
-                             DownloadCommands::REVIEW);
-  retry_button_->SetVisible(ui_info_.primary_button_command ==
-                            DownloadCommands::RETRY);
+  cancel_button_->SetVisible(false);
+  discard_button_->SetVisible(false);
+  keep_button_->SetVisible(false);
+  scan_button_->SetVisible(false);
+  open_now_button_->SetVisible(false);
+  resume_button_->SetVisible(false);
+  review_button_->SetVisible(false);
+  retry_button_->SetVisible(false);
+  if (ui_info_.primary_button_command) {
+    views::MdTextButton* main_button =
+        GetMainPageButton(ui_info_.primary_button_command.value());
+    main_button->SetAccessibleName(GetAccessibleNameForMainPageButton(
+        ui_info_.primary_button_command.value()));
+    main_button->SetVisible(true);
+  }
 
   subpage_icon_->SetVisible(ui_info_.has_subpage);
 }
@@ -819,6 +825,71 @@ std::u16string DownloadBubbleRowView::GetAccessibleNameForQuickAction(
   }
 }
 
+views::MdTextButton* DownloadBubbleRowView::GetMainPageButton(
+    DownloadCommands::Command command) {
+  switch (command) {
+    case DownloadCommands::CANCEL:
+      return cancel_button_;
+    case DownloadCommands::RESUME:
+      return resume_button_;
+    case DownloadCommands::DISCARD:
+      return discard_button_;
+    case DownloadCommands::KEEP:
+      return keep_button_;
+    case DownloadCommands::DEEP_SCAN:
+      return scan_button_;
+    case DownloadCommands::BYPASS_DEEP_SCANNING:
+      return open_now_button_;
+    case DownloadCommands::REVIEW:
+      return review_button_;
+    case DownloadCommands::RETRY:
+      return retry_button_;
+    default:
+      return nullptr;
+  }
+}
+
+std::u16string DownloadBubbleRowView::GetAccessibleNameForMainPageButton(
+    DownloadCommands::Command command) {
+  switch (command) {
+    case DownloadCommands::CANCEL:
+      return l10n_util::GetStringFUTF16(
+          IDS_DOWNLOAD_BUBBLE_CANCEL_MAIN_BUTTON_ACCESSIBILITY,
+          model_->GetFileNameToReportUser().LossyDisplayName());
+    case DownloadCommands::RESUME:
+      return l10n_util::GetStringFUTF16(
+          IDS_DOWNLOAD_BUBBLE_RESUME_MAIN_BUTTON_ACCESSIBILITY,
+          model_->GetFileNameToReportUser().LossyDisplayName());
+    case DownloadCommands::DISCARD:
+      return l10n_util::GetStringFUTF16(
+          IDS_DOWNLOAD_BUBBLE_DELETE_MAIN_BUTTON_ACCESSIBILITY,
+          model_->GetFileNameToReportUser().LossyDisplayName());
+    case DownloadCommands::KEEP:
+      return l10n_util::GetStringFUTF16(
+          IDS_DOWNLOAD_BUBBLE_KEEP_MAIN_BUTTON_ACCESSIBILITY,
+          model_->GetFileNameToReportUser().LossyDisplayName());
+    case DownloadCommands::DEEP_SCAN:
+      return l10n_util::GetStringFUTF16(
+          IDS_DOWNLOAD_BUBBLE_SCAN_MAIN_BUTTON_ACCESSIBILITY,
+          model_->GetFileNameToReportUser().LossyDisplayName());
+    case DownloadCommands::BYPASS_DEEP_SCANNING:
+      return l10n_util::GetStringFUTF16(
+          IDS_DOWNLOAD_BUBBLE_OPEN_NOW_MAIN_BUTTON_ACCESSIBILITY,
+          model_->GetFileNameToReportUser().LossyDisplayName());
+    case DownloadCommands::REVIEW:
+      return l10n_util::GetStringFUTF16(
+          IDS_DOWNLOAD_BUBBLE_REVIEW_MAIN_BUTTON_ACCESSIBILITY,
+          model_->GetFileNameToReportUser().LossyDisplayName());
+    case DownloadCommands::RETRY:
+      return l10n_util::GetStringFUTF16(
+          IDS_DOWNLOAD_BUBBLE_RETRY_MAIN_BUTTON_ACCESSIBILITY,
+          model_->GetFileNameToReportUser().LossyDisplayName());
+    default:
+      NOTREACHED();
+      return u"";
+  }
+}
+
 void DownloadBubbleRowView::ShowContextMenuForViewImpl(
     View* source,
     const gfx::Point& point,
@@ -842,6 +913,66 @@ void DownloadBubbleRowView::ShowContextMenuForViewImpl(
 void DownloadBubbleRowView::AnnounceInProgressAlert() {
   GetViewAccessibility().AnnounceText(
       model_->GetInProgressAccessibleAlertText());
+}
+
+bool DownloadBubbleRowView::AcceleratorPressed(
+    const ui::Accelerator& accelerator) {
+  if (model_->GetState() != download::DownloadItem::COMPLETE) {
+    return false;
+  }
+
+  // The only accelerator we registered is for copy, so we know that's what
+  // `accelerator` contains. If DCHECKs are enabled, we can confirm that.
+#if DCHECK_IS_ON()
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
+  ui::Accelerator registered_accelerator;
+  if (browser_view &&
+      browser_view->GetAccelerator(IDC_COPY, &registered_accelerator)) {
+    DCHECK(accelerator == registered_accelerator);
+  }
+#endif
+
+  ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste);
+  std::string uri_list = ui::FileInfosToURIList({ui::FileInfo(
+      model_->GetTargetFilePath(), model_->GetFileNameToReportUser())});
+  scw.WriteFilenames(uri_list);
+  return true;
+}
+
+bool DownloadBubbleRowView::CanHandleAccelerators() const {
+  bool focused = Contains(GetFocusManager()->GetFocusedView());
+  return focused;
+}
+
+void DownloadBubbleRowView::RegisterAccelerators(
+    views::FocusManager* focus_manager) {
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
+  if (!browser_view) {
+    return;
+  }
+
+  ui::Accelerator accelerator;
+  if (!browser_view->GetAccelerator(IDC_COPY, &accelerator)) {
+    return;
+  }
+
+  focus_manager->RegisterAccelerator(
+      accelerator, ui::AcceleratorManager::kNormalPriority, this);
+}
+
+void DownloadBubbleRowView::UnregisterAccelerators(
+    views::FocusManager* focus_manager) {
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
+  if (!browser_view) {
+    return;
+  }
+
+  ui::Accelerator accelerator;
+  if (!browser_view->GetAccelerator(IDC_COPY, &accelerator)) {
+    return;
+  }
+
+  focus_manager->UnregisterAccelerator(accelerator, this);
 }
 
 BEGIN_METADATA(DownloadBubbleRowView, views::View)

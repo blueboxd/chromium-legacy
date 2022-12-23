@@ -116,6 +116,7 @@
 <translation id="1908234395526491708">Hibás UDP-kérelmek.</translation>
 <translation id="1947737735496445907">Sikeres nyomtatás</translation>
 <translation id="1951012854035635156">Segéd</translation>
+<translation id="1962550982027027473">Szükség van alapértelmezett APN-re</translation>
 <translation id="1977994649430373166">Google-profilfotó</translation>
 <translation id="1979103255016296513">Esedékes a jelszó frissítése</translation>
 <translation id="1999615961760456652">Hitelesítési portál</translation>
@@ -186,6 +187,7 @@
 <translation id="2570743873672969996">„<ph name="TEST_NAME" />” teszt futtatása…</translation>
 <translation id="2584559707064218956">A beállításhoz nyissa meg a Beállításokat</translation>
 <translation id="2597774443162333062">A fájlokat elküldjük a Google-nak hibaelhárításra</translation>
+<translation id="2599691907981599502">{NUMBER_OF_PAGES,plural, =1{Szkennelés kész. 1 oldal beolvasva.}other{Szkennelés kész. {NUMBER_OF_PAGES} oldal beolvasva.}}</translation>
 <translation id="2619761439309613843">Napi frissítés</translation>
 <translation id="2620436844016719705">Rendszer</translation>
 <translation id="2638662041295312666">Bejelentkezési kép</translation>
@@ -392,6 +394,7 @@
 <translation id="4793710386569335688">Ha további segítségére van szüksége, látogasson el a <ph name="BEGIN_LINK" />Súgó oldalára<ph name="END_LINK" />.</translation>
 <translation id="4793756956024303490">Tömörítési algoritmus</translation>
 <translation id="4794140124556169553">CPU-teszt futtatása befolyásolhatja a rendszer teljesítményét.</translation>
+<translation id="4798078634453489142">Új APN hozzáadásához távolítsa el az egyik APN-t</translation>
 <translation id="4800589996161293643">Chromebook-közösség</translation>
 <translation id="4803391892369051319">IPv4</translation>
 <translation id="4808449224298348341">Nyomtatási feladat (<ph name="DOCUMENT_TITLE" />) megszakítva</translation>
@@ -633,6 +636,7 @@ Koppintson a mikrofonra, és kérdezzen tőlem.</translation>
 <translation id="6791471867139427246">billentyűzetvilágítás színe</translation>
 <translation id="680983167891198932">Kulcs</translation>
 <translation id="6816797338148849397">Rendelkezésre áll információ a kiválasztott elemmel kapcsolatban. A felfelé nyíllal érheti el.</translation>
+<translation id="6838167112108853532">Nem lehet letiltani vagy eltávolítani ezt az APN-t. Győződjön meg arról, hogy az engedélyezett csatlakoztatott APN-ek le vannak tiltva vagy el vannak távolítva.</translation>
 <translation id="6853312040151791195">Lemerítési sebesség</translation>
 <translation id="6889786074662672253">Az újraindítás közben ne húzza ki a külső eszközt, és ne kapcsolja ki számítógépét. Ezt az ablakot kis méretre állíthatja. A folyamat eltarthat néhány percig, és előfordulhat, hogy közben nem működik a külső eszköz.</translation>
 <translation id="6905724422583748843">Vissza ide: <ph name="PAGE_NAME" /></translation>
@@ -722,6 +726,7 @@ Koppintson a mikrofonra, és kérdezzen tőlem.</translation>
 <translation id="7769672763586021400">Modellazonosító</translation>
 <translation id="7778717409420828014">Visszajelzését áttekinti csapatunk, így segíthet a Chromebook által nyújtott élmény javításában. A jelentések nagy száma miatt nem tudunk válaszolni.</translation>
 <translation id="7784116172884276937">Nincsenek beállítva DNS-szerverek</translation>
+<translation id="7791543448312431591">Hozzáadás</translation>
 <translation id="779591286616261875">Új jelentés küldése</translation>
 <translation id="7799817062559422778">Világos mód</translation>
 <translation id="780301667611848630">Köszönöm, nem</translation>

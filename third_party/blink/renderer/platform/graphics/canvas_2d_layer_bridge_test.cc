@@ -717,7 +717,7 @@ TEST_F(Canvas2DLayerBridgeTest, ResourceRecycling) {
   const_cast<gpu::Capabilities&>(SharedGpuContext::ContextProviderWrapper()
                                      ->ContextProvider()
                                      ->GetCapabilities())
-      .gpu_memory_buffer_formats.Add(gfx::BufferFormat::BGRA_8888);
+      .gpu_memory_buffer_formats.Put(gfx::BufferFormat::BGRA_8888);
 
   viz::TransferableResource resources[3];
   viz::ReleaseCallback callbacks[3];
@@ -756,7 +756,7 @@ TEST_F(Canvas2DLayerBridgeTest, NoResourceRecyclingWhenPageHidden) {
   const_cast<gpu::Capabilities&>(SharedGpuContext::ContextProviderWrapper()
                                      ->ContextProvider()
                                      ->GetCapabilities())
-      .gpu_memory_buffer_formats.Add(gfx::BufferFormat::BGRA_8888);
+      .gpu_memory_buffer_formats.Put(gfx::BufferFormat::BGRA_8888);
 
   viz::TransferableResource resources[2];
   viz::ReleaseCallback callbacks[2];
@@ -794,7 +794,7 @@ TEST_F(Canvas2DLayerBridgeTest, ReleaseResourcesAfterBridgeDestroyed) {
   const_cast<gpu::Capabilities&>(SharedGpuContext::ContextProviderWrapper()
                                      ->ContextProvider()
                                      ->GetCapabilities())
-      .gpu_memory_buffer_formats.Add(gfx::BufferFormat::BGRA_8888);
+      .gpu_memory_buffer_formats.Put(gfx::BufferFormat::BGRA_8888);
 
   viz::TransferableResource resource;
   viz::ReleaseCallback release_callback;
@@ -972,8 +972,7 @@ TEST_F(Canvas2DLayerBridgeTest, WritePixelsRestoresClipStack) {
   cc::PaintFlags flags;
 
   // MakeBridge() results in a call to restore the matrix. So we already have 1.
-  EXPECT_EQ(bridge->GetPaintCanvas()->getTotalMatrix().get(SkMatrix::kMTransX),
-            5);
+  EXPECT_EQ(bridge->GetPaintCanvas()->getLocalToDevice().rc(0, 3), 5);
   // Drawline so WritePixels has something to flush
   bridge->GetPaintCanvas()->drawLine(0, 0, 2, 2, flags);
   bridge->DidDraw();
@@ -981,16 +980,14 @@ TEST_F(Canvas2DLayerBridgeTest, WritePixelsRestoresClipStack) {
   // WritePixels flushes recording. Post flush, a new drawing canvas is created
   // that should have the matrix restored onto it.
   bridge->WritePixels(SkImageInfo::MakeN32Premul(10, 10), nullptr, 10, 0, 0);
-  EXPECT_EQ(bridge->GetPaintCanvas()->getTotalMatrix().get(SkMatrix::kMTransX),
-            5);
+  EXPECT_EQ(bridge->GetPaintCanvas()->getLocalToDevice().rc(0, 3), 5);
 
   bridge->GetPaintCanvas()->drawLine(0, 0, 2, 2, flags);
   // Standard flush recording. Post flush, a new drawing canvas is created that
   // should have the matrix restored onto it.
   DrawSomething(bridge.get());
 
-  EXPECT_EQ(bridge->GetPaintCanvas()->getTotalMatrix().get(SkMatrix::kMTransX),
-            5);
+  EXPECT_EQ(bridge->GetPaintCanvas()->getLocalToDevice().rc(0, 3), 5);
 }
 
 TEST_F(Canvas2DLayerBridgeTest, DisplayedCanvasIsRateLimited) {
@@ -1017,31 +1014,6 @@ TEST_F(Canvas2DLayerBridgeTest, NonDisplayedCanvasIsNotRateLimited) {
   bridge->FinalizeFrame();
   bridge->FinalizeFrame();
   EXPECT_FALSE(bridge->HasRateLimiterForTesting());
-}
-
-TEST_F(Canvas2DLayerBridgeTest, SoftwareCanvasIsCompositedIfImageChromium) {
-  ScopedTestingPlatformSupport<GpuMemoryBufferTestPlatform> platform;
-  ScopedCanvas2dImageChromiumForTest canvas_2d_image_chromium(true);
-  const_cast<gpu::Capabilities&>(SharedGpuContext::ContextProviderWrapper()
-                                     ->ContextProvider()
-                                     ->GetCapabilities())
-      .gpu_memory_buffer_formats.Add(gfx::BufferFormat::BGRA_8888);
-  std::unique_ptr<Canvas2DLayerBridge> bridge =
-      MakeBridge(gfx::Size(300, 150), RasterMode::kCPU, kNonOpaque);
-  EXPECT_TRUE(bridge->IsValid());
-  DrawSomething(bridge.get());
-  EXPECT_FALSE(bridge->IsAccelerated());
-  EXPECT_TRUE(bridge->IsComposited());
-}
-
-TEST_F(Canvas2DLayerBridgeTest, SoftwareCanvasNotCompositedIfNotImageChromium) {
-  ScopedCanvas2dImageChromiumForTest canvas_2d_image_chromium(false);
-  std::unique_ptr<Canvas2DLayerBridge> bridge =
-      MakeBridge(gfx::Size(300, 150), RasterMode::kCPU, kNonOpaque);
-  EXPECT_TRUE(bridge->IsValid());
-  DrawSomething(bridge.get());
-  EXPECT_FALSE(bridge->IsAccelerated());
-  EXPECT_FALSE(bridge->IsComposited());
 }
 
 }  // namespace blink

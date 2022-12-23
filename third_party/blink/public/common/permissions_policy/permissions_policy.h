@@ -20,6 +20,10 @@
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-forward.h"
 #include "url/origin.h"
 
+namespace network {
+struct ResourceRequest;
+}  // namespace network
+
 namespace blink {
 
 // Permissions Policy is a mechanism for controlling the availability of web
@@ -179,6 +183,13 @@ class BLINK_COMMON_EXPORT PermissionsPolicy {
   bool IsFeatureEnabledForOrigin(mojom::PermissionsPolicyFeature feature,
                                  const url::Origin& origin) const;
 
+  // Returns whether or not the given feature is enabled by this policy for a
+  // subresource request, given the ongoing request/redirect origin.
+  bool IsFeatureEnabledForSubresourceRequest(
+      mojom::PermissionsPolicyFeature feature,
+      const url::Origin& origin,
+      const network::ResourceRequest& request) const;
+
   const Allowlist GetAllowlistForDevTools(
       mojom::PermissionsPolicyFeature feature) const;
 
@@ -245,6 +256,14 @@ class BLINK_COMMON_EXPORT PermissionsPolicy {
       const url::Origin& origin,
       const PermissionsPolicyFeatureList& features,
       blink::mojom::FencedFrameMode mode);
+
+  // Returns whether or not the given feature is enabled by this policy for a
+  // specific origin given a set of opt-in features. The opt-in features cannot
+  // override an explicit policy but can override the default policy.
+  bool IsFeatureEnabledForOriginImpl(
+      mojom::PermissionsPolicyFeature feature,
+      const url::Origin& origin,
+      const std::set<mojom::PermissionsPolicyFeature>& opt_in_features) const;
 
   bool InheritedValueForFeature(
       const PermissionsPolicy* parent_policy,

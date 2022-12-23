@@ -422,10 +422,9 @@ void SetUpWebUIDataSource(WebUI* web_ui,
                           const char* web_ui_host,
                           base::span<const webui::ResourcePath> resources,
                           int default_resource) {
-  auto source = base::WrapUnique(content::WebUIDataSource::Create(web_ui_host));
-  webui::SetupWebUIDataSource(source.get(), resources, default_resource);
-  content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
-                                source.release());
+  content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
+      web_ui->GetWebContents()->GetBrowserContext(), web_ui_host);
+  webui::SetupWebUIDataSource(source, resources, default_resource);
 }
 
 // A function for creating a new WebUI. The caller owns the return value, which
@@ -984,7 +983,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host_piece() == ash::kChromeUIScanningAppHost)
     return &NewWebUI<ash::ScanningUI>;
   if ((ash::shimless_rma::HasLaunchRmaSwitchAndIsAllowed() ||
-       ash::features::IsShimlessRMAStandaloneAppEnabled()) &&
+       ash::features::IsShimlessRMAFlowEnabled()) &&
       url.host_piece() == ash::kChromeUIShimlessRMAHost) {
     return &NewWebUI<ash::ShimlessRMADialogUI>;
   }

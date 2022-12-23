@@ -120,10 +120,6 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
     RunCommand("expect_version_not_active", {Param("version", version)});
   }
 
-  void ExpectActiveUpdater() const override {
-    RunCommand("expect_active_updater");
-  }
-
   void ExpectActive(const std::string& app_id) const override {
     updater::test::ExpectActive(updater_scope_, app_id);
   }
@@ -378,7 +374,7 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
     }
 
     int exit_code = -1;
-    ASSERT_TRUE(Run(updater_scope_, helper_command, &exit_code));
+    Run(updater_scope_, helper_command, &exit_code);
 
     // A failure here indicates that the integration test helper
     // process ran but the invocation of the test helper command was not

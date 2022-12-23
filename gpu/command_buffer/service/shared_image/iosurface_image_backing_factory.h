@@ -17,7 +17,6 @@
 #include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
 #include "gpu/gpu_gles2_export.h"
 #include "ui/gfx/mac/io_surface.h"
-#include "ui/gl/gl_image.h"
 
 namespace gfx {
 class Size;
@@ -34,10 +33,9 @@ class SharedImageBacking;
 class GpuDriverBugWorkarounds;
 struct GpuPreferences;
 struct Mailbox;
-class ImageFactory;
 
-// Helper functions used used by SharedImageRepresentationGLImage to do
-// IOSurface-specific sharing.
+// IOSurfaceImageBackingFactory is used to create SharedImage backings
+// backed by IOSurface instances.
 class GPU_GLES2_EXPORT IOSurfaceImageBackingFactory
     : public SharedImageBackingFactory {
  public:
@@ -55,13 +53,9 @@ class GPU_GLES2_EXPORT IOSurfaceImageBackingFactory
       gfx::ScopedIOSurface io_surface,
       uint32_t io_surface_plane);
 
-  // It is used for migrating GLImage backing, for part that works with
-  // SharedMemory GMB with SharedMemoryImageBacking and Composite backings, and
-  // all other parts with OzoneImageBacking and other backings.
   IOSurfaceImageBackingFactory(const GpuPreferences& gpu_preferences,
                                const GpuDriverBugWorkarounds& workarounds,
                                const gles2::FeatureInfo* feature_info,
-                               ImageFactory* image_factory,
                                gl::ProgressReporter* progress_reporter);
   ~IOSurfaceImageBackingFactory() override;
 
@@ -105,13 +99,6 @@ class GPU_GLES2_EXPORT IOSurfaceImageBackingFactory
                    base::span<const uint8_t> pixel_data) override;
 
  private:
-  scoped_refptr<gl::GLImage> MakeGLImage(int client_id,
-                                         gfx::GpuMemoryBufferHandle handle,
-                                         gfx::BufferFormat format,
-                                         const gfx::ColorSpace& color_space,
-                                         gfx::BufferPlane plane,
-                                         const gfx::Size& size);
-
   std::unique_ptr<SharedImageBacking> CreateSharedImageInternal(
       const Mailbox& mailbox,
       viz::SharedImageFormat format,
@@ -123,15 +110,12 @@ class GPU_GLES2_EXPORT IOSurfaceImageBackingFactory
       uint32_t usage,
       base::span<const uint8_t> pixel_data);
 
-  // Factory used to generate GLImages for SCANOUT backings.
-  const raw_ptr<ImageFactory> image_factory_ = nullptr;
-
   // Used to notify the watchdog before a buffer allocation in case it takes
   // long.
   const raw_ptr<gl::ProgressReporter> progress_reporter_ = nullptr;
 
   GpuMemoryBufferFormatSet gpu_memory_buffer_formats_;
-  base::flat_set<viz::ResourceFormat> supported_formats_ = {};
+  base::flat_set<viz::ResourceFormat> supported_formats_;
 
   int32_t max_texture_size_ = 0;
   bool angle_texture_usage_ = false;

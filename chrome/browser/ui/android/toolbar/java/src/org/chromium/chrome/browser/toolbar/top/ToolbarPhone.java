@@ -21,12 +21,12 @@ import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.RippleDrawable;
 import android.os.Build;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.util.FloatProperty;
-import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -976,8 +976,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
                 Math.max(Math.max(mNtpSearchBoxScrollFraction, mStartSurfaceScrollFraction),
                         mUrlFocusChangeFraction);
         for (UrlExpansionObserver observer : mUrlExpansionObservers) {
-            observer.onUrlExpansionProgressChanged(
-                    mUrlExpansionFraction, mUrlFocusChangeInProgress);
+            observer.onUrlExpansionProgressChanged(mUrlExpansionFraction);
         }
         assert mUrlExpansionFraction >= 0;
         assert mUrlExpansionFraction <= 1;
@@ -1773,18 +1772,14 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
     @Override
     public void setTabSwitcherMode(boolean inTabSwitcherMode, boolean showToolbar,
             boolean delayAnimation, MenuButtonCoordinator menuButtonCoordinator) {
-        setTabSwitcherMode(inTabSwitcherMode, showToolbar, delayAnimation, true);
-    }
-
-    /**
-     * See {@link #setTabSwitcherMode(boolean, boolean, boolean, MenuButtonCoordinator)}.
-     */
-    public void setTabSwitcherMode(boolean inTabSwitcherMode, boolean showToolbar,
-            boolean delayAnimation, boolean animate) {
         // This method is only used for grid tab switcher with the start surface disabled. When
         // start surface is enabled, omnibox state is updated in onStartSurfaceStateChanged(), which
         // is always called before setTabSwitcherMode(), so skip here.
-        if (getToolbarDataProvider().shouldShowLocationBarInOverviewMode()) return;
+        if (getToolbarDataProvider().shouldShowLocationBarInOverviewMode()) {
+            // Prevent pressing the tab switcher button until after transition finishes.
+            mToggleTabStackButton.setClickable(false);
+            return;
+        }
 
         // If setting tab switcher mode to true and the browser is already animating or in the tab
         // switcher skip.
@@ -1799,6 +1794,9 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
                 && (mTabSwitcherState == STATIC_TAB || mTabSwitcherState == EXITING_TAB_SWITCHER)) {
             return;
         }
+        // Prevent pressing the tab switcher button until after transition finishes.
+        mToggleTabStackButton.setClickable(false);
+
         mTabSwitcherState = inTabSwitcherMode ? ENTERING_TAB_SWITCHER : EXITING_TAB_SWITCHER;
 
         // The width of location bar depends on mTabSwitcherState so layout request is needed. See
@@ -1830,7 +1828,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
 
         updateButtonsTranslationY();
 
-        if (DeviceClassManager.enableAccessibilityLayout(getContext()) || !animate) {
+        if (DeviceClassManager.enableAccessibilityLayout(getContext())) {
             finishAnimations();
         }
 
@@ -1843,16 +1841,14 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
      */
     private void updateTabSwitcherButtonRipple() {
         if (mToggleTabStackButton == null) return;
-        if (mTabSwitcherState == ENTERING_TAB_SWITCHER) {
-            mToggleTabStackButton.setBackgroundColor(
-                    getContext().getColor(android.R.color.transparent));
-        } else {
-            // TODO(https://crbug.com/912358): This appears to no longer work.
-            TypedValue outValue = new TypedValue();
-
-            // The linked style here will have to be changed if it is updated in the XML.
-            getContext().getTheme().resolveAttribute(R.style.ToolbarButton, outValue, true);
-            mToggleTabStackButton.setBackgroundResource(outValue.resourceId);
+        if (mTabSwitcherState == ENTERING_TAB_SWITCHER || mIsShowingStartSurfaceTabSwitcher) {
+            Drawable drawable = mToggleTabStackButton.getBackground();
+            // drawable may not be a RippleDrawable if IPH is showing. Ignore that scenario since
+            // it is rare.
+            if (drawable instanceof RippleDrawable) {
+                // Force the ripple to end so the transition looks correct.
+                ((RippleDrawable) drawable).jumpToCurrentState();
+            }
         }
     }
 
@@ -1864,10 +1860,11 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
                 shouldBeVisible, isShowingStartSurfaceHomepage, isShowingStartSurfaceTabSwitcher);
 
         mIsShowingStartSurfaceTabSwitcher = isShowingStartSurfaceTabSwitcher;
-        // Update visibilities of toolbar layout, progress bar and shadow.
+        // Update visibilities of toolbar layout, progress bar, shadow and ripple.
         setVisibility(shouldBeVisible ? VISIBLE : GONE);
         updateProgressBarVisibility();
         updateShadowVisibility();
+        updateTabSwitcherButtonRipple();
         // Url bar should be focusable. This will be set in UrlBar#onDraw but there's a delay which
         // may cause focus to fail, so set here too.
         mLocationBar.setUrlBarFocusable(true);
@@ -1894,6 +1891,12 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
         }
         if (mTabSwitcherState == ENTERING_TAB_SWITCHER) {
             mTabSwitcherState = TAB_SWITCHER;
+            mToggleTabStackButton.setClickable(false);
+        }
+        // Ensure clickable if in STATIC_TAB mode. This handles both when the state transitions
+        // are ignored in favor of onStartSurfaceStateChanged() and when normal transitions occur.
+        if (mTabSwitcherState == STATIC_TAB) {
+            mToggleTabStackButton.setClickable(true);
         }
 
         // The width of location bar depends on mTabSwitcherState so layout request is needed. See

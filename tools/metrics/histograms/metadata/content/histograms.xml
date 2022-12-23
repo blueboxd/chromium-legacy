@@ -303,15 +303,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="ContentSettings.Plugins" enum="ContentSettingPluginsAction"
-    expires_after="M77">
-  <owner>tommycli@chromium.org</owner>
-  <summary>
-    Tracks whether the plugin content blocked puzzle piece was shown in the
-    Omnibox, and how the user interacted with it.
-  </summary>
-</histogram>
-
 <histogram name="ContentSettings.Popups" enum="ContentSettingPopupAction"
     expires_after="2023-06-04">
   <owner>charleszhao@chromium.org</owner>
@@ -399,7 +390,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSettings.RegularProfile.DefaultBackgroundSyncSetting"
-    enum="ContentSetting" expires_after="2023-04-16">
+    enum="ContentSetting" expires_after="2023-06-18">
   <owner>tungnh@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -1100,7 +1091,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.ContentLifetime.StaleAge" units="ms"
-    expires_after="2023-03-01">
+    expires_after="2023-06-18">
   <owner>birnie@google.com</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -1356,6 +1347,17 @@ chromium-metrics-reviews@google.com.
   <summary>
     Android: The integer error code when Piet wants to report events that
     occurred during Frame rendering.
+  </summary>
+</histogram>
+
+<histogram name="ContentSuggestions.Feed.RefreshTrigger"
+    enum="FeedRefreshTrigger" expires_after="2023-03-18">
+  <owner>edchin@google.com</owner>
+  <owner>sczs@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    Tracks triggers that ask the Discover engine to refresh the feed. However, a
+    network call may or may not occur based on configuration thresholds.
   </summary>
 </histogram>
 
@@ -1626,7 +1628,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.UploadVisibilityLog" enum="Boolean"
-    expires_after="2023-06-11">
+    expires_after="2023-06-18">
   <owner>freedjm@google.com</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -1823,7 +1825,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.WebFeed.FollowCount.Engaged"
-    units="follows" expires_after="2023-06-11">
+    units="follows" expires_after="2023-06-18">
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>

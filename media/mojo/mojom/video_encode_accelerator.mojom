@@ -51,6 +51,7 @@ struct VideoEncodeAcceleratorSupportedProfile {
   uint32 max_framerate_denominator;
   array<VideoEncodeAcceleratorSupportedRateControlMode> rate_control_modes;
   array<SVCScalabilityMode> scalability_modes;
+  bool is_software_codec;
 };
 
 // A renderer process calls this interface's functions. GPU process implements
@@ -299,6 +300,7 @@ struct BitstreamBufferMetadata {
   mojo_base.mojom.TimeDelta timestamp;
   int32 qp;
   CodecMetadata? codec_metadata;
+  gfx.mojom.Size? encoded_size;
 };
 
 interface VideoEncodeAcceleratorClient {

@@ -36,6 +36,7 @@
 namespace web_app {
 
 using ::testing::Eq;
+enum class ApiApprovalState;
 
 namespace {
 
@@ -146,16 +147,17 @@ TEST_P(ProtocolHandlingSubManagerTest, ConfigureOnlyProtocolHandler) {
 
   const AppId app_id = InstallWebAppWithProtocolHandlers({protocol_handler});
 
-  auto state = provider().registrar().GetAppCurrentOsIntegrationState(app_id);
+  auto state =
+      provider().registrar_unsafe().GetAppCurrentOsIntegrationState(app_id);
   if (EnableOsIntegrationSubManager()) {
     ASSERT_TRUE(state.has_value());
     const proto::WebAppOsIntegrationState& os_integration_state = state.value();
 
-    ASSERT_THAT(os_integration_state.manifest_protocol_handlers_states_size(),
+    ASSERT_THAT(os_integration_state.protocols_handled().protocols_size(),
                 testing::Eq(1));
 
-    const proto::WebAppProtocolHandler& protocol_handler_state =
-        os_integration_state.manifest_protocol_handlers_states(0);
+    const proto::ProtocolsHandled::Protocol& protocol_handler_state =
+        os_integration_state.protocols_handled().protocols(0);
 
     ASSERT_THAT(protocol_handler_state.protocol(),
                 testing::Eq(protocol_handler.protocol));
@@ -177,7 +179,8 @@ TEST_P(ProtocolHandlingSubManagerTest, UninstalledAppDoesNotConfigure) {
   const AppId app_id = InstallWebAppWithProtocolHandlers({protocol_handler});
   UninstallWebApp(app_id);
 
-  auto state = provider().registrar().GetAppCurrentOsIntegrationState(app_id);
+  auto state =
+      provider().registrar_unsafe().GetAppCurrentOsIntegrationState(app_id);
   ASSERT_FALSE(state.has_value());
 }
 
@@ -199,20 +202,22 @@ TEST_P(ProtocolHandlingSubManagerTest, ConfigureProtocolHandlerDisallowed) {
   {
     base::test::TestFuture<void> disallowed_future;
     provider().scheduler().UpdateProtocolHandlerUserApproval(
-        app_id, "web+test", /*allowed=*/false, disallowed_future.GetCallback());
+        app_id, "web+test", ApiApprovalState::kDisallowed,
+        disallowed_future.GetCallback());
     EXPECT_TRUE(disallowed_future.Wait());
   }
 
-  auto state = provider().registrar().GetAppCurrentOsIntegrationState(app_id);
+  auto state =
+      provider().registrar_unsafe().GetAppCurrentOsIntegrationState(app_id);
   if (EnableOsIntegrationSubManager()) {
     ASSERT_TRUE(state.has_value());
     const proto::WebAppOsIntegrationState& os_integration_state = state.value();
 
-    ASSERT_THAT(os_integration_state.manifest_protocol_handlers_states_size(),
+    ASSERT_THAT(os_integration_state.protocols_handled().protocols_size(),
                 testing::Eq(1));
 
-    const proto::WebAppProtocolHandler& protocol_handler_state =
-        os_integration_state.manifest_protocol_handlers_states(0);
+    const proto::ProtocolsHandled::Protocol& protocol_handler_state =
+        os_integration_state.protocols_handled().protocols(0);
 
     ASSERT_THAT(protocol_handler_state.protocol(),
                 testing::Eq(protocol_handler2.protocol));

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/constants/ash_features.h"
+#include "base/test/gtest_tags.h"
 #include "base/values.h"
 #include "chrome/browser/ash/policy/affiliation/affiliation_mixin.h"
 #include "chrome/browser/ash/policy/affiliation/affiliation_test_helper.h"
@@ -62,7 +63,7 @@ class EnterpriseDeviceAttributesTest
       : ForceInstalledAffiliatedExtensionApiTest(std::get<0>(GetParam()),
                                                  std::get<1>(GetParam())) {
     fake_statistics_provider_.SetMachineStatistic(
-        chromeos::system::kSerialNumberKeyForTest, kSerialNumber);
+        ash::system::kSerialNumberKeyForTest, kSerialNumber);
   }
 
  protected:
@@ -88,7 +89,7 @@ class EnterpriseDeviceAttributesTest
   }
 
  private:
-  chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
+  ash::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
 };
 
 IN_PROC_BROWSER_TEST_P(EnterpriseDeviceAttributesTest, PRE_Success) {
@@ -96,6 +97,9 @@ IN_PROC_BROWSER_TEST_P(EnterpriseDeviceAttributesTest, PRE_Success) {
 }
 
 IN_PROC_BROWSER_TEST_P(EnterpriseDeviceAttributesTest, Success) {
+  base::AddFeatureIdTagToTestResult(
+      "screenplay-be4e8241-2469-4b3f-969e-026494fb4ced");
+
   const bool is_affiliated = std::get<0>(GetParam());
   EXPECT_EQ(is_affiliated, user_manager::UserManager::Get()
                                ->FindUser(affiliation_mixin_.account_id())

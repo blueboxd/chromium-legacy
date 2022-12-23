@@ -31,16 +31,13 @@
 #include "fuchsia_web/runners/cast/cast_runner.h"
 #include "fuchsia_web/runners/cast/cast_runner_switches.h"
 #include "fuchsia_web/runners/cast/cast_runner_v1.h"
-#include "fuchsia_web/webinstance_host/web_instance_host.h"
+#include "fuchsia_web/webinstance_host/web_instance_host_v1.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace {
 
 // Config-data key for launching Cast content without using Scenic.
 constexpr char kHeadlessConfigKey[] = "headless";
-
-// Config-data key to enable the fuchsia.web.FrameHost provider component.
-constexpr char kFrameHostConfigKey[] = "enable-frame-host-component";
 
 // Config-data key for disable dynamic code generation by the web runtime.
 constexpr char kDisableCodeGenConfigKey[] = "disable-codegen";
@@ -138,7 +135,7 @@ int main(int argc, char** argv) {
       resolver_binding(outgoing_directory, &resolver);
 
   // Publish the fuchsia.component.runner.ComponentRunner for Cast apps.
-  WebInstanceHost web_instance_host;
+  WebInstanceHostV1 web_instance_host;
   CastRunner runner(
       web_instance_host,
       {.headless = command_line->HasSwitch(kForceHeadlessForTestsSwitch) ||
@@ -163,19 +160,10 @@ int main(int argc, char** argv) {
 
   // Allow web containers to be debugged, by end-to-end tests.
   base::ScopedServiceBinding<fuchsia::web::Debug> debug_binding(
-      outgoing_directory, &web_instance_host.debug_api());
+      outgoing_directory, web_instance_host.debug_api());
 
   if (command_line->HasSwitch(kDisableVulkanForTestsSwitch)) {
     runner.set_disable_vulkan_for_test();  // IN-TEST
-  }
-
-  // Optionally enable a pseudo-component providing the fuchsia.web.FrameHost
-  // service, to allow the Cast application web.Context to be shared by other
-  // components.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          kEnableFrameHostComponentForTestsSwitch) ||
-      GetConfigBool(kFrameHostConfigKey)) {
-    runner.set_enable_frame_host_component();
   }
 
   // Publish version information for this component to Inspect.

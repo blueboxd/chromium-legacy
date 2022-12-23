@@ -116,6 +116,7 @@
 <translation id="1908234395526491708">UDP pieprasījumu kļūmes</translation>
 <translation id="1947737735496445907">Izdrukāts</translation>
 <translation id="1951012854035635156">Asistents</translation>
+<translation id="1962550982027027473">Jānorāda noklusējuma APN.</translation>
 <translation id="1977994649430373166">Google profila fotoattēls</translation>
 <translation id="1979103255016296513">Paroles maiņa ir nokavēta</translation>
 <translation id="1999615961760456652">Caurlaides lapa</translation>
@@ -186,6 +187,7 @@
 <translation id="2570743873672969996">Notiek testa “<ph name="TEST_NAME" />” izpilde...</translation>
 <translation id="2584559707064218956">Lai iestatītu, pārejiet uz iestatījumiem.</translation>
 <translation id="2597774443162333062">Fails tiks nosūtīts Google serveriem atkļūdošanai.</translation>
+<translation id="2599691907981599502">{NUMBER_OF_PAGES,plural, =1{Skenēšana pabeigta. Skenēta viena lapa.}zero{Skenēšana pabeigta. Skenētas {NUMBER_OF_PAGES} lapas.}one{Skenēšana pabeigta. Skenēta {NUMBER_OF_PAGES} lapa.}other{Skenēšana pabeigta. Skenētas {NUMBER_OF_PAGES} lapas.}}</translation>
 <translation id="2619761439309613843">Nomainīt katru dienu</translation>
 <translation id="2620436844016719705">Sistēma</translation>
 <translation id="2638662041295312666">Pierakstīšanās attēls</translation>
@@ -392,6 +394,7 @@
 <translation id="4793710386569335688">Lai iegūtu papildu palīdzību, pārejiet uz <ph name="BEGIN_LINK" />palīdzības centru<ph name="END_LINK" />.</translation>
 <translation id="4793756956024303490">Saspiešanas algoritms</translation>
 <translation id="4794140124556169553">Centrālā procesora pārbaudes veikšana var ietekmēt jūsu sistēmas veiktspēju</translation>
+<translation id="4798078634453489142">Lai pievienotu jaunu APN, noņemiet kādu APN</translation>
 <translation id="4800589996161293643">Chromebook datoru kopiena</translation>
 <translation id="4803391892369051319">IPv4</translation>
 <translation id="4808449224298348341">Drukas uzdevums “<ph name="DOCUMENT_TITLE" />” tika atcelts</translation>
@@ -633,6 +636,7 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="6791471867139427246">tastatūras apgaismojuma krāsa</translation>
 <translation id="680983167891198932">Atslēga</translation>
 <translation id="6816797338148849397">Ir pieejama informācija, kas saistīta ar jūsu atlasīto saturu. Lai piekļūtu informācijai, nospiediet augšupvērsto bulttaustiņu.</translation>
+<translation id="6838167112108853532">Nevar atspējot vai noņemt šo APN. Iespējotie pievienotie APN ir jāatspējo vai jānoņem.</translation>
 <translation id="6853312040151791195">Izlādes ātrums</translation>
 <translation id="6889786074662672253">Kamēr notiek restartēšana, neatvienojiet šo ārējo ierīci un neizslēdziet datoru. Varat minimizēt šo logu. Restartēšana var ilgt dažas minūtes, un jūsu ārējā ierīce šajā laikā var nedarboties.</translation>
 <translation id="6905724422583748843">Atpakaļ uz lapu <ph name="PAGE_NAME" /></translation>
@@ -722,6 +726,7 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="7769672763586021400">Modeļa ID</translation>
 <translation id="7778717409420828014">Jūsu atsauksmes palīdz mums uzlabot Chromebook datora lietošanas iespējas, un mūsu komanda tās pārskatīs. Tā kā mēs saņemam ļoti daudz ziņojumu, nevarēsim atbildēt uz tiem visiem.</translation>
 <translation id="7784116172884276937">Neviens DNS serveris nav iestatīts</translation>
+<translation id="7791543448312431591">Pievienot</translation>
 <translation id="779591286616261875">Sūtīt jaunu ziņojumu</translation>
 <translation id="7799817062559422778">Gaišais režīms</translation>
 <translation id="780301667611848630">Nē, paldies</translation>

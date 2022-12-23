@@ -29,8 +29,9 @@ class CSSToLengthConversionDataTest : public PageTestBase {
   // css_zoom - The zoom to apply to :root.
   // data_zoom - The zoom to pass to the CSSToLengthConversionData constructor.
   CSSToLengthConversionData ConversionData(
-      absl::optional<float> css_zoom = absl::nullopt,
-      absl::optional<float> data_zoom = absl::nullopt) {
+      absl::optional<float> css_zoom,
+      absl::optional<float> data_zoom,
+      CSSToLengthConversionData::Flags& flags) {
     Element* root = GetDocument().documentElement();
     DCHECK(root);
     if (css_zoom.has_value()) {
@@ -50,7 +51,18 @@ class CSSToLengthConversionDataTest : public PageTestBase {
         GetDocument().documentElement()->GetComputedStyle(),
         GetDocument().GetLayoutView(),
         CSSToLengthConversionData::ContainerSizes(),
-        data_zoom.value_or(div->GetComputedStyle()->EffectiveZoom()));
+        data_zoom.value_or(div->GetComputedStyle()->EffectiveZoom()), flags);
+  }
+
+  CSSToLengthConversionData ConversionData(
+      absl::optional<float> css_zoom = absl::nullopt,
+      absl::optional<float> data_zoom = absl::nullopt) {
+    return ConversionData(css_zoom, data_zoom, ignored_flags_);
+  }
+
+  CSSToLengthConversionData ConversionData(
+      CSSToLengthConversionData::Flags& flags) {
+    return ConversionData(absl::nullopt, absl::nullopt, flags);
   }
 
   float Convert(const CSSToLengthConversionData& data, String value) {
@@ -60,10 +72,20 @@ class CSSToLengthConversionDataTest : public PageTestBase {
     return primitive_value->ConvertToLength(data).Pixels();
   }
 
+  CSSToLengthConversionData::Flags ConversionFlags(String value) {
+    CSSToLengthConversionData::Flags flags = 0;
+    CSSToLengthConversionData data = ConversionData(flags);
+    Convert(data, value);
+    return flags;
+  }
+
   void SetLineHeightSize(Element& element, CSSToLengthConversionData& data) {
     data.SetLineHeightSize(
         CSSToLengthConversionData::LineHeightSize(element.ComputedStyleRef()));
   }
+
+ private:
+  CSSToLengthConversionData::Flags ignored_flags_ = 0;
 };
 
 TEST_F(CSSToLengthConversionDataTest, Normal) {
@@ -73,6 +95,7 @@ TEST_F(CSSToLengthConversionDataTest, Normal) {
   EXPECT_FLOAT_EQ(16.0f, Convert(data, "1ex"));
   EXPECT_FLOAT_EQ(20.0f, Convert(data, "1ch"));
   EXPECT_FLOAT_EQ(10.0f, Convert(data, "1rem"));
+  EXPECT_FLOAT_EQ(8.0f, Convert(data, "1rex"));
   EXPECT_FLOAT_EQ(36.0f, Convert(data, "calc(1em + 1ex)"));
   EXPECT_FLOAT_EQ(10.0f, Convert(data, "1lh"));
 }
@@ -84,6 +107,7 @@ TEST_F(CSSToLengthConversionDataTest, Zoomed) {
   EXPECT_FLOAT_EQ(32.0f, Convert(data, "1ex"));
   EXPECT_FLOAT_EQ(40.0f, Convert(data, "1ch"));
   EXPECT_FLOAT_EQ(20.0f, Convert(data, "1rem"));
+  EXPECT_FLOAT_EQ(16.0f, Convert(data, "1rex"));
   EXPECT_FLOAT_EQ(72.0f, Convert(data, "calc(1em + 1ex)"));
   EXPECT_FLOAT_EQ(20.0f, Convert(data, "1lh"));
 }
@@ -95,6 +119,7 @@ TEST_F(CSSToLengthConversionDataTest, AdjustedZoom) {
   EXPECT_FLOAT_EQ(32.0f, Convert(data, "1ex"));
   EXPECT_FLOAT_EQ(40.0f, Convert(data, "1ch"));
   EXPECT_FLOAT_EQ(20.0f, Convert(data, "1rem"));
+  EXPECT_FLOAT_EQ(16.0f, Convert(data, "1rex"));
   EXPECT_FLOAT_EQ(72.0f, Convert(data, "calc(1em + 1ex)"));
   EXPECT_FLOAT_EQ(20.0f, Convert(data, "1lh"));
 }
@@ -108,6 +133,7 @@ TEST_F(CSSToLengthConversionDataTest, DifferentZoom) {
   EXPECT_FLOAT_EQ(32.0f, Convert(data, "1ex"));
   EXPECT_FLOAT_EQ(40.0f, Convert(data, "1ch"));
   EXPECT_FLOAT_EQ(20.0f, Convert(data, "1rem"));
+  EXPECT_FLOAT_EQ(16.0f, Convert(data, "1rex"));
   EXPECT_FLOAT_EQ(72.0f, Convert(data, "calc(1em + 1ex)"));
   EXPECT_FLOAT_EQ(20.0f, Convert(data, "1lh"));
 }
@@ -119,6 +145,7 @@ TEST_F(CSSToLengthConversionDataTest, Unzoomed) {
   EXPECT_FLOAT_EQ(16.0f, Convert(data, "1ex"));
   EXPECT_FLOAT_EQ(20.0f, Convert(data, "1ch"));
   EXPECT_FLOAT_EQ(10.0f, Convert(data, "1rem"));
+  EXPECT_FLOAT_EQ(8.0f, Convert(data, "1rex"));
   EXPECT_FLOAT_EQ(36.0f, Convert(data, "calc(1em + 1ex)"));
   EXPECT_FLOAT_EQ(10.0f, Convert(data, "1lh"));
 }
@@ -139,6 +166,71 @@ TEST_F(CSSToLengthConversionDataTest, SetLineHeightSize) {
   ASSERT_TRUE(div);
   SetLineHeightSize(*div, data);
   EXPECT_FLOAT_EQ(20.0f, Convert(data, "1lh"));
+}
+
+TEST_F(CSSToLengthConversionDataTest, Flags) {
+  using Flag = CSSToLengthConversionData::Flag;
+  using Flags = CSSToLengthConversionData::Flags;
+
+  Flags em = static_cast<Flags>(Flag::kEm);
+  Flags rem = static_cast<Flags>(Flag::kRootFontRelative);
+  Flags glyph = static_cast<Flags>(Flag::kGlyphRelative);
+  Flags rex = rem | glyph;
+  Flags lh = static_cast<Flags>(Flag::kLineHeightRelative);
+  Flags sv = static_cast<Flags>(Flag::kStaticViewport);
+  Flags dv = static_cast<Flags>(Flag::kDynamicViewport);
+  Flags cq = static_cast<Flags>(Flag::kContainerRelative);
+
+  EXPECT_EQ(0u, ConversionFlags("1px"));
+
+  EXPECT_EQ(em, ConversionFlags("1em"));
+
+  EXPECT_EQ(rem, ConversionFlags("1rem"));
+  EXPECT_EQ(rex, ConversionFlags("1rex"));
+
+  EXPECT_EQ(glyph, ConversionFlags("1ex"));
+  EXPECT_EQ(glyph, ConversionFlags("1ch"));
+  EXPECT_EQ(glyph, ConversionFlags("1ic"));
+
+  EXPECT_EQ(glyph | lh, ConversionFlags("1lh"));
+
+  EXPECT_EQ(sv, ConversionFlags("1svw"));
+  EXPECT_EQ(sv, ConversionFlags("1svh"));
+  EXPECT_EQ(sv, ConversionFlags("1svi"));
+  EXPECT_EQ(sv, ConversionFlags("1svb"));
+  EXPECT_EQ(sv, ConversionFlags("1svmin"));
+  EXPECT_EQ(sv, ConversionFlags("1svmax"));
+
+  EXPECT_EQ(sv, ConversionFlags("1lvw"));
+  EXPECT_EQ(sv, ConversionFlags("1lvh"));
+  EXPECT_EQ(sv, ConversionFlags("1lvi"));
+  EXPECT_EQ(sv, ConversionFlags("1lvb"));
+  EXPECT_EQ(sv, ConversionFlags("1lvmin"));
+  EXPECT_EQ(sv, ConversionFlags("1lvmax"));
+
+  EXPECT_EQ(sv, ConversionFlags("1vw"));
+  EXPECT_EQ(sv, ConversionFlags("1vh"));
+  EXPECT_EQ(sv, ConversionFlags("1vi"));
+  EXPECT_EQ(sv, ConversionFlags("1vb"));
+  EXPECT_EQ(sv, ConversionFlags("1vmin"));
+  EXPECT_EQ(sv, ConversionFlags("1vmax"));
+
+  EXPECT_EQ(dv, ConversionFlags("1dvw"));
+  EXPECT_EQ(dv, ConversionFlags("1dvh"));
+  EXPECT_EQ(dv, ConversionFlags("1dvi"));
+  EXPECT_EQ(dv, ConversionFlags("1dvb"));
+  EXPECT_EQ(dv, ConversionFlags("1dvmin"));
+  EXPECT_EQ(dv, ConversionFlags("1dvmax"));
+
+  // Since there is no container, these units fall back to the small viewport.
+  EXPECT_EQ(cq | sv, ConversionFlags("1cqh"));
+  EXPECT_EQ(cq | sv, ConversionFlags("1cqw"));
+  EXPECT_EQ(cq | sv, ConversionFlags("1cqi"));
+  EXPECT_EQ(cq | sv, ConversionFlags("1cqb"));
+  EXPECT_EQ(cq | sv, ConversionFlags("1cqmin"));
+  EXPECT_EQ(cq | sv, ConversionFlags("1cqmax"));
+
+  EXPECT_EQ(em | glyph, ConversionFlags("calc(1em + 1ex)"));
 }
 
 }  // namespace blink

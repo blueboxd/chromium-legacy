@@ -1093,10 +1093,6 @@ class BASE_EXPORT GSL_OWNER Value {
   const ListStorage& list() const { return GetList().storage_; }
   ListStorage& list() { return GetList().storage_; }
 
-  // Internal constructors, allowing the simplify the implementation of Clone().
-  explicit Value(const LegacyDictStorage& storage);
-  explicit Value(LegacyDictStorage&& storage) noexcept;
-
  private:
   // For access to DoubleStorage.
   friend class ValueView;
@@ -1255,8 +1251,6 @@ class BASE_EXPORT DictionaryValue : public Value {
   static std::unique_ptr<DictionaryValue> From(std::unique_ptr<Value> value);
 
   DictionaryValue();
-  explicit DictionaryValue(const LegacyDictStorage& in_dict);
-  explicit DictionaryValue(LegacyDictStorage&& in_dict) noexcept;
 
   // Sets the Value associated with the given path starting from this object.
   // A path has the form "<key>" or "<key>.<key>.[...]", where "." indexes
@@ -1282,54 +1276,22 @@ class BASE_EXPORT DictionaryValue : public Value {
   // DEPRECATED: prefer `Value::Dict::Set()` (if the path only has one
   // component, i.e. has no dots), or `Value::Dict::SetByDottedPath()`
   // otherwise.
-  Value* SetInteger(StringPiece path, int in_value);
-  // DEPRECATED: prefer `Value::Dict::Set()` (if the path only has one
-  // component, i.e. has no dots), or `Value::Dict::SetByDottedPath()`
-  // otherwise.
   Value* SetString(StringPiece path, StringPiece in_value);
   // DEPRECATED: prefer `Value::Dict::Set()` (if the path only has one
   // component, i.e. has no dots), or `Value::Dict::SetByDottedPath()`
   // otherwise.
   Value* SetString(StringPiece path, const std::u16string& in_value);
 
-  // Gets the Value associated with the given path starting from this object.
-  // A path has the form "<key>" or "<key>.<key>.[...]", where "." indexes
-  // into the next DictionaryValue down.  If the path can be resolved
-  // successfully, the value for the last key in the path will be returned
-  // through the `out_value` parameter, and the function will return true.
-  // Otherwise, it will return false and `out_value` will be untouched.
-  // Note that the dictionary always owns the value that's returned.
-  // `out_value` is optional and will only be set if non-NULL.
-  //
-  // DEPRECATED: prefer `Value::Dict::Find()` (if the path only has one
-  // component, i.e. has no dots), or `Value::Dict::FindByDottedPath()`
-  // otherwise.
-  bool Get(StringPiece path, const Value** out_value) const;
-  bool Get(StringPiece path, Value** out_value);
-
   // These are convenience forms of `Get()`.  The value will be retrieved
   // and the return value will be true if the path is valid and the value at
   // the end of the path can be returned in the form specified.
   // `out_value` is optional and will only be set if non-NULL.
   //
-  // DEPRECATED: prefer `Value::Dict::FindInt()` (if the path only has one
-  // component, i.e. has no dots), or `Value::Dict::FindIntByDottedPath()`
-  // otherwise.
-  bool GetInteger(StringPiece path, int* out_value) const;
-  // DEPRECATED: prefer `Value::Dict::FindString()` (if the path only has one
-  // component, i.e. has no dots), or `Value::Dict::FindStringByDottedPath()`
-  // otherwise.
-  bool GetString(StringPiece path, std::string* out_value) const;
   // DEPRECATED: prefer `Value::Dict::FindDict()` (if the path only has one
   // component, i.e. has no dots), or `Value::Dict::FindDictByDottedPath()`
   // otherwise.
   bool GetDictionary(StringPiece path, const DictionaryValue** out_value) const;
   bool GetDictionary(StringPiece path, DictionaryValue** out_value);
-  // DEPRECATED: prefer `Value::Dict::FindList()` (if the path only has one
-  // component, i.e. has no dots), or `Value::Dict::FindListByDottedPath()`
-  // otherwise.
-  bool GetList(StringPiece path, const ListValue** out_value) const;
-  bool GetList(StringPiece path, ListValue** out_value);
 };
 
 // This type of Value represents a list of other Value values.

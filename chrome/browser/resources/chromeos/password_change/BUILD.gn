@@ -50,10 +50,6 @@ preprocess_if_expr("preprocess_src") {
   in_files = [
     "confirm_password_change.html",
     "confirm_password_change.js",
-    "lock_screen_network.html",
-    "lock_screen_network.js",
-    "lock_screen_reauth_app.html",
-    "lock_screen_reauth_app.js",
     "password_change_app.html",
     "password_change_app.js",
     "urgent_password_expiry_notification.html",
@@ -61,7 +57,6 @@ preprocess_if_expr("preprocess_src") {
 }
 
 web_component_files = [
-  "lock_screen_reauth.js",
   "password_change.js",
   "urgent_password_expiry_notification_app.js",
 ]
@@ -87,10 +82,7 @@ js_type_check("closure_compile") {
                         root_build_dir),
         "js_module_root=./gen/chrome/browser/resources/gaia_auth_host/",
       ]
-  deps = [
-    ":lock_screen_network",
-    ":password_change",
-  ]
+  deps = [ ":password_change" ]
 }
 
 js_library("password_change") {
@@ -101,21 +93,10 @@ js_library("password_change") {
     "//chrome/browser/resources/gaia_auth_host:password_change_authenticator",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
-  externs_list = [ "$externs_path/webview_tag.js" ]
+  externs_list = [
+    "$externs_path/webview_tag.js",
+    "$externs_path/chrome_send.js",
+  ]
 
   extra_deps = [ ":web_components" ]
-}
-
-js_library("lock_screen_network") {
-  deps = [
-    "//ash/webui/common/resources:i18n_behavior",
-    "//ash/webui/common/resources:load_time_data.m",
-    "//ash/webui/common/resources/network:network_select",
-    "//ash/webui/common/resources/network:onc_mojo",
-  ]
-  externs_list = [
-    "$externs_path/chrome_send.js",
-    "//ui/webui/resources/cr_elements/cr_button/cr_button_externs.js",
-    "//ui/webui/resources/cr_elements/cr_dialog/cr_dialog_externs.js",
-  ]
 }

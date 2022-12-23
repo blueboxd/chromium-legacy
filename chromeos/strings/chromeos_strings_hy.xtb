@@ -116,6 +116,7 @@
 <translation id="1908234395526491708">Ձախողված UDP հարցումներ</translation>
 <translation id="1947737735496445907">Տպված է</translation>
 <translation id="1951012854035635156">Օգնական</translation>
+<translation id="1962550982027027473">Պահանջվում է կանխադրված APN</translation>
 <translation id="1977994649430373166">Google պրոֆիլի լուսանկար</translation>
 <translation id="1979103255016296513">Գաղտնաբառի փոփոխման ժամկետն անցել է</translation>
 <translation id="1999615961760456652">Մուտքի էջ</translation>
@@ -186,6 +187,7 @@
 <translation id="2570743873672969996"><ph name="TEST_NAME" />ը ստուգվում է…</translation>
 <translation id="2584559707064218956">Ցանցը կարգավորելու համար անցեք Կարգավորումներ</translation>
 <translation id="2597774443162333062">Վրիպազերծման համար ֆայլերը կուղարկվեն Google-ին</translation>
+<translation id="2599691907981599502">{NUMBER_OF_PAGES,plural, =1{Սկանավորումն ավարտվել է։ Սկանավորվել է 1 էջ։}one{Սկանավորումն ավարտվել է։ Սկանավորվել է {NUMBER_OF_PAGES} էջ։}other{Սկանավորումն ավարտվել է։ Սկանավորվել է {NUMBER_OF_PAGES} էջ։}}</translation>
 <translation id="2619761439309613843">Ամենօրյա թարմացում</translation>
 <translation id="2620436844016719705">Համակարգ</translation>
 <translation id="2638662041295312666">Մուտքի պատկեր</translation>
@@ -392,6 +394,7 @@
 <translation id="4793710386569335688">Եթե օգնություն է անհրաժեշտ, անցեք <ph name="BEGIN_LINK" />Օգնության կենտրոն<ph name="END_LINK" />։</translation>
 <translation id="4793756956024303490">Սեղմման ալգորիթմ</translation>
 <translation id="4794140124556169553">CPU-ի թեստի գործարկումը կարող է ազդել ձեր համակարգի աշխատանքի վրա</translation>
+<translation id="4798078634453489142">Նոր APN ավելացնելու համար հեռացրեք եղածներից մեկը</translation>
 <translation id="4800589996161293643">Chromebook համայնք</translation>
 <translation id="4803391892369051319">IPv4</translation>
 <translation id="4808449224298348341">Տպման առաջադրանքը չեղարկվեց՝ <ph name="DOCUMENT_TITLE" /></translation>
@@ -633,6 +636,7 @@
 <translation id="6791471867139427246">ստեղնաշարի լուսավորության գույնը</translation>
 <translation id="680983167891198932">Բանալի</translation>
 <translation id="6816797338148849397">Ձեր ընտրության վերաբերյալ հասանելի են տեղեկություններ։ Դրանք բացելու համար օգտագործեք վեր սլաքը։</translation>
+<translation id="6838167112108853532">Հնարավոր չէ անջատել կամ հեռացնել այս APN-ը։ Համոզվեք, որ միացված և կցված APN-ներն անջատված են կամ հեռացված։</translation>
 <translation id="6853312040151791195">Լիցքաթափման արագությունը</translation>
 <translation id="6889786074662672253">Վերագործարկման ժամանակ մի՛ անջատեք ձեր համակարգիչը կամ այս արտաքին սարքը համակարգչից։ Դուք կարող եք փոքրացնել այս պատուհանը։ Վերագործարկումը կարող է մի քանի րոպե տևել, և այդ ընթացքում արտաքին սարքը հնարավոր է, որ չաշխատի։</translation>
 <translation id="6905724422583748843">Վերադառնալ <ph name="PAGE_NAME" /></translation>
@@ -722,6 +726,7 @@
 <translation id="7769672763586021400">Մոդելի ID-ն</translation>
 <translation id="7778717409420828014">Մեր թիմը կդիտարկի ձեր կարծիքը։ Այն կօգնի մեզ բարելավել Chromebook-ի աշխատանքը։ Հաղորդումների մեծ քանակի պատճառով մենք չենք կարողանա պատասխան ուղարկել։</translation>
 <translation id="7784116172884276937">DNS սերվերներ կարգավորված չեն</translation>
+<translation id="7791543448312431591">Ավելացնել</translation>
 <translation id="779591286616261875">Ուղարկել նոր հաղորդում</translation>
 <translation id="7799817062559422778">Բաց ռեժիմ</translation>
 <translation id="780301667611848630">Ոչ</translation>

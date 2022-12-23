@@ -186,21 +186,18 @@
       field_size: 2,
       default_value: "0",
       type_name: "unsigned",
-      writable: true,
     },
     {
-      name: "HasRemUnits",
+      name: "HasRootFontRelativeUnits",
       field_template: "monotonic_flag",
       default_value: "false",
       custom_compare: true,
-      writable: true,
     },
     {
       name: "HasEmUnits",
       field_template: "monotonic_flag",
       default_value: "false",
       custom_compare: true,
-      writable: true,
     },
     // Whether we used a length unit that must be resolved against the measure
     // of a certain glyph in some font.
@@ -209,14 +206,12 @@
       field_template: "monotonic_flag",
       default_value: "false",
       custom_compare: true,
-      writable: true,
     },
     {
       name: "HasContainerRelativeUnits",
       field_template: "monotonic_flag",
       default_value: "false",
       custom_compare: true,
-      writable: true,
     },
     {
       name: "HasLineHeightRelativeUnits",
@@ -224,7 +219,6 @@
       field_template: "monotonic_flag",
       default_value: "false",
       custom_compare: true,
-      writable: true,
     },
     // True if this ComputedStyle is the result of CustomStyleForLayoutObject()
     // that uses font metrics in its calculation.
@@ -307,7 +301,6 @@
       type_name: "bool",
       inherited: true,
       computed_style_custom_functions: ["getter", "setter"],
-      writable: true,
     },
     // FIXME: vertical align is actually a CSS property, but since we don't support union fields
     // which can be either a keyword or Length, this is specified in this file for now. Remove this
@@ -484,7 +477,6 @@
       wrapper_pointer_name: "scoped_refptr",
       field_group: "*",
       computed_style_custom_functions: ["getter", "setter"],
-      writable: true,
     },
     {
       name: "InheritedVariables",
@@ -508,7 +500,6 @@
       wrapper_pointer_name: "scoped_refptr",
       field_group: "*",
       computed_style_custom_functions: [],
-      writable: true,
     },
     {
       name: "InitialData",
@@ -771,11 +762,21 @@
     // containment, since it depends on the type of layout object created.
     {
       name: "IsStackingContextWithoutContainment",
+      field_template: "derived_flag",
+      derived_from: "CalculateIsStackingContextWithoutContainment",
+      mutable: true,
+    },
+    // A stacking context is forced a few situations, e.g.:
+    //
+    // - The element is the document element.
+    // - The element is in the top layer.
+    // - The element is a <foreignObject>.
+    {
+      name: "ForcesStackingContext",
       field_template: "primitive",
       type_name: "bool",
       field_group: "*",
       default_value: "false",
-      writable: true,
     },
     // Plugins require accelerated compositing for reasons external to blink.
     // In which case, we need to update the ComputedStyle on the
@@ -916,7 +917,6 @@
       field_template: "monotonic_flag",
       default_value: "false",
       custom_compare: true,
-      writable: true,
     },
     {
       name: "MayHaveMargin",
@@ -1099,7 +1099,6 @@
       type_name: "bool",
       field_group: "*",
       default_value: "false",
-      writable: true,
     },
     {
       name: "DependsOnStyleContainerQueries",
@@ -1107,7 +1106,6 @@
       type_name: "bool",
       field_group: "*",
       default_value: "false",
-      writable: true,
     },
     {
       // Set to true if this ComputedStyle is for an element whose ::first-line
@@ -1134,7 +1132,6 @@
       name: "SkipsContents",
       field_template: "monotonic_flag",
       default_value: "false",
-      writable: true,
     },
     {
       // https://html.spec.whatwg.org/multipage/interaction.html#inert

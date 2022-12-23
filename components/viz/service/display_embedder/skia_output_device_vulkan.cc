@@ -26,7 +26,6 @@
 #include "ui/gfx/presentation_feedback.h"
 
 #if BUILDFLAG(IS_ANDROID)
-#include <android/native_window_jni.h>
 #include "gpu/ipc/common/gpu_surface_lookup.h"
 #include "ui/gl/android/scoped_a_native_window.h"
 #include "ui/gl/android/scoped_java_surface.h"
@@ -262,9 +261,14 @@ bool SkiaOutputDeviceVulkan::Initialize() {
   gfx::AcceleratedWidget accelerated_widget = gfx::kNullAcceleratedWidget;
 #if BUILDFLAG(IS_ANDROID)
   bool can_be_used_with_surface_control = false;
-  gl::ScopedJavaSurface scoped_java_surface =
+  auto surface_variant =
       gpu::GpuSurfaceLookup::GetInstance()->AcquireJavaSurface(
           surface_handle_, &can_be_used_with_surface_control);
+  // Should only reach here if surface control is disabled. In which case
+  // browser should not be sending ScopedJavaSurfaceControl variant.
+  CHECK(absl::holds_alternative<gl::ScopedJavaSurface>(surface_variant));
+  gl::ScopedJavaSurface& scoped_java_surface =
+      absl::get<gl::ScopedJavaSurface>(surface_variant);
   gl::ScopedANativeWindow window(scoped_java_surface);
   accelerated_widget = window.a_native_window();
 #else

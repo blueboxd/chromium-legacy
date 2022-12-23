@@ -116,6 +116,7 @@
 <translation id="1908234395526491708">‏خطاهای درخواست UDP</translation>
 <translation id="1947737735496445907">چاپ‌شده</translation>
 <translation id="1951012854035635156">دستیار</translation>
+<translation id="1962550982027027473">‏APN پیش‌فرض لازم است.</translation>
 <translation id="1977994649430373166">‏عکس نمایه Google</translation>
 <translation id="1979103255016296513">مهلت تغییر گذرواژه به پایان رسید</translation>
 <translation id="1999615961760456652">درگاه مهمان</translation>
@@ -186,6 +187,7 @@
 <translation id="2570743873672969996">درحال اجرای آزمایش <ph name="TEST_NAME" />…</translation>
 <translation id="2584559707064218956">برای راه‌اندازی، به «تنظیمات» بروید</translation>
 <translation id="2597774443162333062">‏فایل‌ها برای اشکال‌زدایی به Google ارسال خواهد شد</translation>
+<translation id="2599691907981599502">{NUMBER_OF_PAGES,plural, =1{اسکن کامل شد. یک صفحه اسکن شد}one{اسکن کامل شد. {NUMBER_OF_PAGES} صفحه اسکن شد}other{اسکن کامل شد. {NUMBER_OF_PAGES} صفحه اسکن شد}}</translation>
 <translation id="2619761439309613843">بازآوری روزانه</translation>
 <translation id="2620436844016719705">سیستم</translation>
 <translation id="2638662041295312666">تصویر ورود به سیستم</translation>
@@ -392,6 +394,7 @@
 <translation id="4793710386569335688">برای دریافت راهنمایی بیشتر، به <ph name="BEGIN_LINK" />مرکز راهنمایی<ph name="END_LINK" /> بروید.</translation>
 <translation id="4793756956024303490">الگوریتم فشرده‌سازی</translation>
 <translation id="4794140124556169553">‏انجام آزمایش CPU ممکن است بر عملکرد سیستم تأثیر بگذارد</translation>
+<translation id="4798078634453489142">‏برای افزودن APN جدید، یکی را حذف کنید</translation>
 <translation id="4800589996161293643">‏انجمن Chromebook</translation>
 <translation id="4803391892369051319">IPv4</translation>
 <translation id="4808449224298348341">کار چاپ <ph name="DOCUMENT_TITLE" /> لغو شد</translation>
@@ -633,6 +636,7 @@
 <translation id="6791471867139427246">رنگ نور صفحه‌کلید</translation>
 <translation id="680983167891198932">کلید</translation>
 <translation id="6816797338148849397">اطلاعات مرتبط با انتخاب شما دردسترس است. برای دسترسی، از کلید «پیکان روبه بالا» استفاده کنید.</translation>
+<translation id="6838167112108853532">‏این APN را نمی‌توان غیرفعال یا حذف کرد. مطمئن شوید نقطه‌های APN پیوست‌شده فعال را غیرفعال یا حذف کرده‌اید.</translation>
 <translation id="6853312040151791195">سرعت تخلیه شارژ</translation>
 <translation id="6889786074662672253">درحین بازراه‌اندازی، این دستگاه خارجی را از برق نکشید یا رایانه را خاموش نکنید. می‌توانید این پنجره را کوچک کنید. این کار ممکن است چند دقیقه طول بکشد و در این مدت ممکن است دستگاه خارجی‌تان کار نکند.</translation>
 <translation id="6905724422583748843">بازگشت به <ph name="PAGE_NAME" /></translation>
@@ -722,6 +726,7 @@
 <translation id="7769672763586021400">شناسه مدل</translation>
 <translation id="7778717409420828014">‏تیم ما بازخورد شما را مرور می‌کند و به‌کمک آن می‌توانیم تجربه استفاده از Chromebook را بهبود ببخشیم. به‌دلیل تعداد بالای گزارش‌ها، قادر به ارسال پاسخ نخواهیم بود.</translation>
 <translation id="7784116172884276937">هیچ سرور سانادی راه‌اندازی نشده است</translation>
+<translation id="7791543448312431591">افزودن</translation>
 <translation id="779591286616261875">ارسال گزارش جدید</translation>
 <translation id="7799817062559422778">حالت روشن</translation>
 <translation id="780301667611848630">نه متشکرم</translation>

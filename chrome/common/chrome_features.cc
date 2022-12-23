@@ -32,26 +32,6 @@ BASE_FEATURE(kAdaptiveScreenBrightnessLogging,
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-// Shows settings to adjust and disable touchpad haptic feedback.
-BASE_FEATURE(kAllowDisableTouchpadHapticFeedback,
-             "AllowDisableTouchpadHapticFeedback",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-// Shows settings to adjust the touchpad haptic click settings.
-BASE_FEATURE(kAllowTouchpadHapticClickSettings,
-             "AllowTouchpadHapticClickSettings",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#endif  // defined(IS_CHROMEOS_ASH)
-
-#if BUILDFLAG(IS_ANDROID)
-BASE_FEATURE(kAnonymousUpdateChecks,
-             "AnonymousUpdateChecks",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#endif
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
 BASE_FEATURE(kAppManagementAppDetails,
              "AppManagementAppDetails",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -638,6 +618,11 @@ BASE_FEATURE(kHideWebAppOriginText,
 // Sets whether the HTTPS-Only Mode setting is displayed in the settings UI.
 BASE_FEATURE(kHttpsOnlyMode, "HttpsOnlyMode", base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enables the new implementation of HTTPS-First Mode.
+BASE_FEATURE(kHttpsFirstModeV2,
+             "HttpsFirstModeV2",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables automatically upgrading main frame navigations to HTTPS.
 BASE_FEATURE(kHttpsUpgrades,
              "HttpsUpgrades",
@@ -969,12 +954,6 @@ BASE_FEATURE(kAbusiveNotificationPermissionRevocation,
 // Enables permanent removal of Legacy Supervised Users on startup.
 BASE_FEATURE(kRemoveSupervisedUsersOnStartup,
              "RemoveSupervisedUsersOnStartup",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#endif
-
-#if BUILDFLAG(IS_ANDROID)
-BASE_FEATURE(kRequestDesktopSiteForTablets,
-             "RequestDesktopSiteForTablets",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 

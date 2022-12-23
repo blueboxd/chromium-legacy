@@ -116,6 +116,7 @@
 <translation id="1908234395526491708">UDP istek hataları</translation>
 <translation id="1947737735496445907">Yazdırıldı</translation>
 <translation id="1951012854035635156">Asistan</translation>
+<translation id="1962550982027027473">Varsayılan bir APN gerekli</translation>
 <translation id="1977994649430373166">Google profil fotoğrafı</translation>
 <translation id="1979103255016296513">Şifre değişikliği zamanı geçti</translation>
 <translation id="1999615961760456652">Giriş Portalı</translation>
@@ -186,6 +187,7 @@
 <translation id="2570743873672969996"><ph name="TEST_NAME" /> adlı test çalıştırılıyor...</translation>
 <translation id="2584559707064218956">Kurulum yapmak için Ayarlar'a gidin</translation>
 <translation id="2597774443162333062">Dosyalar hata ayıklama amacıyla Google'a gönderilecektir</translation>
+<translation id="2599691907981599502">{NUMBER_OF_PAGES,plural, =1{Tarama işlemi tamamlandı. 1 sayfa tarandı}other{Tarama işlemi tamamlandı. {NUMBER_OF_PAGES} sayfa tarandı}}</translation>
 <translation id="2619761439309613843">Günlük Yenileme</translation>
 <translation id="2620436844016719705">Sistem</translation>
 <translation id="2638662041295312666">Oturum açma resmi</translation>
@@ -392,6 +394,7 @@
 <translation id="4793710386569335688">Daha fazla yardım için <ph name="BEGIN_LINK" />Yardım Merkezi<ph name="END_LINK" />'ne gidin.</translation>
 <translation id="4793756956024303490">Sıkıştırma algoritması</translation>
 <translation id="4794140124556169553">CPU testi çalıştırmak sisteminizin performansını etkileyebilir</translation>
+<translation id="4798078634453489142">Yeni APN eklemek için mevcut bir APN'yi kaldırın</translation>
 <translation id="4800589996161293643">Chromebook topluluğu</translation>
 <translation id="4803391892369051319">IPv4</translation>
 <translation id="4808449224298348341"><ph name="DOCUMENT_TITLE" /> yazdırma işi iptal edildi</translation>
@@ -633,6 +636,7 @@ Bana bir şey sormak için mikrofona dokunmayı deneyin.</translation>
 <translation id="6791471867139427246">klavye ışığı rengi</translation>
 <translation id="680983167891198932">Anahtar</translation>
 <translation id="6816797338148849397">Seçiminizle ilgili bilgi mevcut. Erişmek için yukarı ok tuşunu kullanın.</translation>
+<translation id="6838167112108853532">Bu APN devre dışı bırakılamaz veya kaldırılamaz. Etkin durumdaki eklenmiş APN'lerin devre dışı bırakıldığından veya kaldırıldığından emin olun.</translation>
 <translation id="6853312040151791195">Şarjın boşalma hızı</translation>
 <translation id="6889786074662672253">Yeniden başlatılırken bu harici cihazı çıkarmayın ya da bilgisayarınızı kapatmayın. Bu pencereyi simge durumuna küçültebilirsiniz. Güncelleme birkaç dakika sürebilir ve bu süre boyunca harici cihazınız çalışmayabilir.</translation>
 <translation id="6905724422583748843"><ph name="PAGE_NAME" /> uygulamasına geri dön</translation>
@@ -722,6 +726,7 @@ Bana bir şey sormak için mikrofona dokunmayı deneyin.</translation>
 <translation id="7769672763586021400">Model kimliği</translation>
 <translation id="7778717409420828014">Geri bildiriminiz ekibimiz tarafından incelenecek ve Chromebook deneyimini iyileştirmemize yardımcı olacaktır. Çok sayıda rapor aldığımız için yanıt gönderemiyoruz.</translation>
 <translation id="7784116172884276937">DNS sunucusu ayarlanmamış</translation>
+<translation id="7791543448312431591">Ekle</translation>
 <translation id="779591286616261875">Yeni rapor gönder</translation>
 <translation id="7799817062559422778">Açık mod</translation>
 <translation id="780301667611848630">Hayır, teşekkürler</translation>

@@ -22,6 +22,8 @@
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/dragdrop/cocoa_dnd_util.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/gfx/image/image.h"
+#include "ui/resources/grit/ui_resources.h"
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -30,14 +32,6 @@ using content::DropData;
 using features::kMacWebContentsOcclusion;
 using remote_cocoa::mojom::DraggingInfo;
 using remote_cocoa::mojom::SelectionDirection;
-
-namespace {
-// Time to delay clearing the pasteboard for after a drag ends. This is
-// required because Safari requests data from multiple processes, and clearing
-// the pasteboard after the first access results in unreliable drag operations
-// (http://crbug.com/1227001).
-const int64_t kPasteboardClearDelay = 0.5 * NSEC_PER_SEC;
-}
 
 namespace remote_cocoa {
 
@@ -230,64 +224,68 @@ STATIC_ASSERT_ENUM(NSDragOperationMove, ui::DragDropTypes::DRAG_MOVE);
   [pasteboard clearContents];
 
   _dragSource.reset([[WebDragSource alloc] initWithHost:_host
-                                                   view:self
-                                               dropData:&dropData
-                                                  image:image
-                                                 offset:offset
-                                             pasteboard:pasteboard
-                                      dragOperationMask:operationMask]);
-  [_dragSource startDrag];
+                                               dropData:dropData]);
+  NSDraggingItem* draggingItem = [[[NSDraggingItem alloc]
+      initWithPasteboardWriter:_dragSource] autorelease];
+
+  if (!image) {
+    image = content::GetContentClient()
+                ->GetNativeImageNamed(IDR_DEFAULT_FAVICON)
+                .ToNSImage();
+  }
+
+  NSRect imageRect = NSMakeRect(mouseLocation.x, mouseLocation.y,
+                                image.size.width, image.size.height);
+  imageRect.origin.x -= offset.x;
+  // Deal with Cocoa's flipped coordinate system.
+  imageRect.origin.y -= image.size.height - offset.y;
+  [draggingItem setDraggingFrame:imageRect contents:image];
+
+  _dragOperation = operationMask;
+  _dragOffset = offset;
+  _dragImageHeight = image.size.height;
+
+  // Run the drag operation.
+  [self beginDraggingSessionWithItems:@[ draggingItem ]
+                                event:dragEvent
+                               source:self];
 }
 
 // NSDraggingSource methods
 
-- (NSDragOperation)draggingSourceOperationMaskForLocal:(BOOL)isLocal {
-  if (_dragSource)
-    return [_dragSource draggingSourceOperationMaskForLocal:isLocal];
-  // No web drag source - this is the case for dragging a file from the
-  // downloads manager. Default to copy operation. Note: It is desirable to
-  // allow the user to either move or copy, but this requires additional
-  // plumbing to update the download item's path once its moved.
-  return NSDragOperationCopy;
+- (NSDragOperation)draggingSession:(NSDraggingSession*)session
+    sourceOperationMaskForDraggingContext:(NSDraggingContext)context {
+  return _dragOperation;
 }
 
 // Called when a drag initiated in our view ends.
-- (void)draggedImage:(NSImage*)anImage
-             endedAt:(NSPoint)screenPoint
-           operation:(NSDragOperation)operation {
-  [_dragSource
-      endDragAt:screenPoint
-      operation:ui::DragDropTypes::NSDragOperationToDragOperation(operation)];
+- (void)draggingSession:(NSDraggingSession*)session
+           endedAtPoint:(NSPoint)screenPoint
+              operation:(NSDragOperation)operation {
+  // Reconstruct the screen point by removing the offset. It seems like the
+  // underlying drag machinery is measuring from the corner of the dragged
+  // image.
+  screenPoint.x += _dragOffset.x;
+  screenPoint.y += _dragImageHeight - _dragOffset.y;
 
-  WebDragSource* currentDragSource = _dragSource.get();
+  NSPoint localPoint = NSZeroPoint;
+  if (self.window) {
+    NSPoint basePoint =
+        ui::ConvertPointFromScreenToWindow(self.window, screenPoint);
+    localPoint = [self convertPoint:basePoint fromView:nil];
+  }
 
-  dispatch_after(
-      dispatch_time(DISPATCH_TIME_NOW, (int64_t)kPasteboardClearDelay),
-      dispatch_get_main_queue(), ^{
-        if (_dragSource.get() == currentDragSource) {
-          // Clear the drag pasteboard. Even though this is called in dealloc,
-          // we need an explicit call because NSPasteboard can retain the drag
-          // source.
-          [_dragSource clearPasteboard];
-          _dragSource.reset();
-        }
-      });
-}
+  // Flip the two points as per Cocoa's coordinate system.
+  NSRect viewFrame = self.frame;
+  NSRect screenFrame = self.window.screen.frame;
+  _host->EndDrag(
+      operation,
+      gfx::PointF(localPoint.x, viewFrame.size.height - localPoint.y),
+      gfx::PointF(screenPoint.x, screenFrame.size.height - screenPoint.y));
 
-// Called when a drag initiated in our view moves.
-- (void)draggedImage:(NSImage*)draggedImage movedTo:(NSPoint)screenPoint {
-}
-
-// Called when a file drag is dropped and the promised files need to be written.
-- (NSArray*)namesOfPromisedFilesDroppedAtDestination:(NSURL*)dropDest {
-  if (![dropDest isFileURL])
-    return nil;
-
-  NSString* fileName = [_dragSource dragPromisedFileTo:[dropDest path]];
-  if (!fileName)
-    return nil;
-
-  return @[ fileName ];
+  // The drag is complete. Disconnect the drag source.
+  [_dragSource webContentsIsGone];
+  _dragSource.reset();
 }
 
 // NSDraggingDestination methods
@@ -346,8 +344,9 @@ STATIC_ASSERT_ENUM(NSDragOperationMove, ui::DragDropTypes::DRAG_MOVE);
 }
 
 - (void)setHost:(remote_cocoa::mojom::WebContentsNSViewHost*)host {
-  if (!host)
-    [_dragSource clearHostAndWebContentsView];
+  if (!host) {
+    [_dragSource webContentsIsGone];
+  }
   _host = host;
 }
 

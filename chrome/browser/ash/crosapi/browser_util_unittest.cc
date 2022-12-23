@@ -107,12 +107,11 @@ class BrowserUtilTest : public testing::Test {
     scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
         base::WrapUnique(fake_user_manager_));
     browser_util::RegisterLocalStatePrefs(pref_service_.registry());
-    chromeos::system::StatisticsProvider::SetTestProvider(
-        &statistics_provider_);
+    ash::system::StatisticsProvider::SetTestProvider(&statistics_provider_);
   }
 
   void TearDown() override {
-    chromeos::system::StatisticsProvider::SetTestProvider(nullptr);
+    ash::system::StatisticsProvider::SetTestProvider(nullptr);
   }
 
   void AddRegularUser(const std::string& email) {
@@ -132,7 +131,7 @@ class BrowserUtilTest : public testing::Test {
   ash::FakeChromeUserManager* fake_user_manager_ = nullptr;
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
   TestingPrefServiceSimple pref_service_;
-  chromeos::system::FakeStatisticsProvider statistics_provider_;
+  ash::system::FakeStatisticsProvider statistics_provider_;
 };
 
 class LacrosSupportBrowserUtilTest : public BrowserUtilTest {
@@ -629,21 +628,23 @@ TEST_F(BrowserUtilTest, GetMissingDataVer) {
 }
 
 TEST_F(BrowserUtilTest, GetCorruptDataVer) {
-  base::DictionaryValue dictionary_value;
+  base::Value::Dict dictionary_value;
   std::string user_id_hash = "1234";
-  dictionary_value.SetStringKey(user_id_hash, "corrupted");
-  pref_service_.Set(browser_util::kDataVerPref, dictionary_value);
+  dictionary_value.Set(user_id_hash, "corrupted");
+  pref_service_.Set(browser_util::kDataVerPref,
+                    base::Value(std::move(dictionary_value)));
   base::Version version =
       browser_util::GetDataVer(&pref_service_, user_id_hash);
   EXPECT_FALSE(version.IsValid());
 }
 
 TEST_F(BrowserUtilTest, GetDataVer) {
-  base::DictionaryValue dictionary_value;
+  base::Value::Dict dictionary_value;
   std::string user_id_hash = "1234";
   base::Version version{"1.1.1.1"};
-  dictionary_value.SetStringKey(user_id_hash, version.GetString());
-  pref_service_.Set(browser_util::kDataVerPref, dictionary_value);
+  dictionary_value.Set(user_id_hash, version.GetString());
+  pref_service_.Set(browser_util::kDataVerPref,
+                    base::Value(std::move(dictionary_value)));
 
   base::Version result_version =
       browser_util::GetDataVer(&pref_service_, user_id_hash);

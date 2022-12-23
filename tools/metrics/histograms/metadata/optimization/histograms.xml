@@ -39,6 +39,7 @@ chromium-metrics-reviews@google.com.
   <variant name="NotificationPermissions" summary="Notification permissions"/>
   <variant name="OmniboxOnDeviceTailSuggest"
       summary="Omnibox on device tail suggest"/>
+  <variant name="OmniboxUrlScoring" summary="Omnibox Url scoring"/>
   <variant name="PageEntities" summary="Page entities"/>
   <variant name="PageTopics" summary="Page topics"/>
   <variant name="PageTopicsV2" summary="Page topics v2"/>
@@ -161,7 +162,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OptimizationGuide.ClearFetchedHints.StoreAvailable"
-    enum="BooleanAvailable" expires_after="2023-04-16">
+    enum="BooleanAvailable" expires_after="2023-06-18">
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -206,7 +207,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="OptimizationGuide.HintCacheLevelDBStore.LoadMetadataResult"
     enum="OptimizationGuideHintCacheLevelDBStoreLoadMetadataResult"
-    expires_after="2023-04-16">
+    expires_after="2023-06-18">
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -217,7 +218,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="OptimizationGuide.HintCacheLevelDBStore.Status"
     enum="OptimizationGuideHintCacheLevelDBStoreStatus"
-    expires_after="2023-04-16">
+    expires_after="2023-06-18">
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -745,7 +746,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="OptimizationGuide.PageContentAnnotationsService.ContentAnnotationsStorageStatus"
     enum="OptimizationGuidePageContentAnnotationsStorageStatus"
-    expires_after="2023-06-11">
+    expires_after="2023-06-18">
   <owner>sophiechang@chromium.org</owner>
   <owner>mcrouse@chromium.org</owner>
   <summary>
@@ -1189,7 +1190,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OptimizationGuide.PredictionModelFetcher.GetModelsResponse.NetErrorCode"
-    enum="NetErrorCodes" expires_after="2023-06-11">
+    enum="NetErrorCodes" expires_after="2023-06-18">
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -1219,7 +1220,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OptimizationGuide.PredictionModelFetcher.GetModelsResponse.Status"
-    enum="HttpResponseCode" expires_after="2023-06-11">
+    enum="HttpResponseCode" expires_after="2023-06-18">
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -1284,6 +1285,17 @@ chromium-metrics-reviews@google.com.
     {OptimizationTarget}. Recorded once at startup.
   </summary>
   <token key="OptimizationTarget" variants="OptimizationTarget"/>
+</histogram>
+
+<histogram name="OptimizationGuide.PredictionModelStore.ModelRemovalReason"
+    enum="OptimizationGuidePredictionModelStoreModelRemovalReason"
+    expires_after="M112">
+  <owner>rajendrant@chromium.org</owner>
+  <owner>sophiechang@chromium.org</owner>
+  <summary>
+    Records the reason the prediction model was removed from the model store.
+    Recorded when the model is removed.
+  </summary>
 </histogram>
 
 <histogram
@@ -1418,7 +1430,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OptimizationGuide.RemoteFetchingEnabled" enum="BooleanEnabled"
-    expires_after="2023-04-16">
+    expires_after="2023-06-18">
   <owner>sophiechang@chromium.org</owner>
   <owner>mcrouse@chromium.org</owner>
   <summary>

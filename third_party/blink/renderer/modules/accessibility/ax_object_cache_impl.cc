@@ -406,8 +406,9 @@ bool IsShadowContentRelevantForAccessibility(const Node* node) {
   // for example, an <img> has a user agent shadow root containing a <span> for
   // the alt text. Do not create an accessible for that as it would be unable
   // to have a parent that has it as a child.
-  if (!AXNodeObject::CanHaveChildren(To<Element>(*node->OwnerShadowHost())))
+  if (!AXObject::CanHaveChildren(To<Element>(*node->OwnerShadowHost()))) {
     return false;
+  }
 
   // Native <img> create extra child nodes to hold alt text, which are not
   // allowed as children. Note: images can have image map children, but these
@@ -691,8 +692,9 @@ AXObjectCacheImpl::AXObjectCacheImpl(Document& document,
       permission_service_(document.GetExecutionContext()),
       permission_observer_receiver_(this, document.GetExecutionContext()),
       ax_tree_source_(BlinkAXTreeSource::Create(*this)),
-      ax_tree_serializer_(
-          std::make_unique<ui::AXTreeSerializer<AXObject*>>(ax_tree_source_)) {
+      ax_tree_serializer_(std::make_unique<ui::AXTreeSerializer<AXObject*>>(
+          ax_tree_source_,
+          /*crash_on_error*/ true)) {
   use_ax_menu_list_ = GetSettings()->GetUseAXMenuList();
 }
 
@@ -1543,9 +1545,9 @@ AXObject* AXObjectCacheImpl::CreateAndInit(
   }
 #endif
 
-  AXObject* parent = parent_if_known ? parent_if_known
-                                     : AXObject::ComputeNonARIAParent(
-                                           *this, node, layout_object);
+  AXObject* parent = parent_if_known
+                         ? parent_if_known
+                         : AXObject::ComputeNonARIAParent(*this, node);
   if (node == document_)
     DCHECK(!parent);
   else if (!parent)
@@ -2411,6 +2413,14 @@ void AXObjectCacheImpl::ChildrenChanged(const LayoutObject* layout_object) {
   // Ensure that this object is touched, so that Get() can Invalidate() it if
   // necessary, e.g. to change whether it's an AXNodeObject <--> AXLayoutObject.
   Get(layout_object);
+
+  // When pseudo element layout changes, we need to make sure we clear up all
+  // descendant objects, because we may not receive ChildrenChanged() calls for
+  // all of them, and we don't want to leave any parentless objects around. This
+  // will force re-creation of any AXObjects for this subtree.
+  if (layout_object->IsPseudoElement()) {
+    RemoveAXObjectsInLayoutSubtree(Get(layout_object));
+  }
 
   // Update using nearest node (walking ancestors if necessary).
   Node* node = GetClosestNodeForLayoutObject(layout_object);
@@ -3981,18 +3991,12 @@ bool AXObjectCacheImpl::SerializeEntireTree(bool exclude_offscreen,
     return false;
   }
 
-  if (serializer.SerializeChanges(tree_source->GetRoot(), response)) {
-    tree_source->Thaw();
-    return true;
-  }
+  bool success = serializer.SerializeChanges(tree_source->GetRoot(), response);
+  DCHECK(success)
+      << "Serializer failed. Should have hit DCHECK inside of serializer.";
 
-  // It's possible for the page to fail to serialize the first time due to
-  // aria-owns rearranging the page while it's being scanned. Try a second
-  // time.
-  *response = ui::AXTreeUpdate();
-  bool result = serializer.SerializeChanges(tree_source->GetRoot(), response);
   tree_source->Thaw();
-  return result;
+  return true;
 }
 
 void AXObjectCacheImpl::MarkAXObjectDirtyWithDetails(
@@ -4088,11 +4092,8 @@ void AXObjectCacheImpl::SerializeDirtyObjectsAndEvents(
     if (has_plugin_tree_source)
       update.has_tree_data = true;
 
-    if (!SerializeChanges(*obj, &update)) {
-      VLOG(1) << "Failed to serialize one accessibility event.";
-      continue;
-    }
-
+    bool success = SerializeChanges(*obj, &update);
+    DCHECK(success);
     DCHECK_GT(update.nodes.size(), 0U);
 
     for (auto& node : update.nodes) {

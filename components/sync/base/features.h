@@ -10,11 +10,6 @@
 
 namespace syncer {
 
-// Allows device registration within trusted vault server without having trusted
-// vault key. Effectively disabled if kSyncTrustedVaultPassphraseRecovery
-// is disabled.
-BASE_DECLARE_FEATURE(kAllowSilentTrustedVaultDeviceRegistration);
-
 // If enabled, EntitySpecifics will be cached in EntityMetadata in order to
 // prevent data loss caused by older clients dealing with unknown proto fields
 // (introduced later).
@@ -107,14 +102,6 @@ inline constexpr base::FeatureParam<base::TimeDelta>
 // Whether the entry point to opt in to trusted vault in settings should be
 // shown.
 BASE_DECLARE_FEATURE(kSyncTrustedVaultPassphrasePromo);
-
-BASE_DECLARE_FEATURE(kSyncTrustedVaultPassphraseRecovery);
-// Specifies how long requests to vault service shouldn't be retried after
-// encountering transient error.
-inline constexpr base::FeatureParam<base::TimeDelta>
-    kTrustedVaultServiceThrottlingDuration{
-        &kSyncTrustedVaultPassphraseRecovery,
-        "TrustedVaultServiceThrottlingDuration", base::Days(1)};
 
 // Enables logging a UMA metric that requires first communicating with the
 // trusted vault server, in order to verify that the local notion of the device

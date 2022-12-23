@@ -89,8 +89,7 @@ class ASH_EXPORT DeskMiniView : public views::View,
   void OnWidgetGestureTap(const gfx::Rect& screen_rect, bool is_long_gesture);
 
   // Updates the focus color of the `DeskPreviewView` based on the activation
-  // state of the corresponding desk and whether the desks template grid is
-  // visible.
+  // state of the corresponding desk and whether the saved desk grid is visible.
   void UpdateFocusColor();
 
   // Gets the preview border's insets.
@@ -161,9 +160,8 @@ class ASH_EXPORT DeskMiniView : public views::View,
   // The root window on which this mini_view is created.
   aura::Window* const root_window_;
 
-  // The associated desk. Can be null when the desk is deleted before this
-  // mini_view completes its removal animation. See comment above
-  // OnDeskRemoved().
+  // The associated desk. This can become null if the desk is deleted before the
+  // mini view is done. Desk deletion is monitored by `OnDeskDestroyed`.
   Desk* desk_;  // Not owned.
 
   // The view that shows a preview of the desk contents.

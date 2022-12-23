@@ -117,14 +117,6 @@ void SkiaPaintCanvas::concat(const SkM44& matrix) {
   canvas_->concat(matrix);
 }
 
-void SkiaPaintCanvas::concat(const SkMatrix& matrix) {
-  canvas_->concat(matrix);
-}
-
-void SkiaPaintCanvas::setMatrix(const SkMatrix& matrix) {
-  canvas_->setMatrix(matrix);
-}
-
 void SkiaPaintCanvas::clipRect(const SkRect& rect,
                                SkClipOp op,
                                bool do_anti_alias) {
@@ -369,16 +361,12 @@ void SkiaPaintCanvas::drawTextBlob(sk_sp<SkTextBlob> blob,
     SkPDF::SetNodeId(canvas_, 0);
 }
 
-void SkiaPaintCanvas::drawPicture(sk_sp<const PaintRecord> record) {
+void SkiaPaintCanvas::drawPicture(PaintRecord record) {
   drawPicture(record, PlaybackParams::CustomDataRasterCallback());
 }
 
 bool SkiaPaintCanvas::isClipEmpty() const {
   return canvas_->isClipEmpty();
-}
-
-SkMatrix SkiaPaintCanvas::getTotalMatrix() const {
-  return canvas_->getTotalMatrix();
 }
 
 SkM44 SkiaPaintCanvas::getLocalToDevice() const {
@@ -408,7 +396,7 @@ void SkiaPaintCanvas::setNodeId(int node_id) {
 }
 
 void SkiaPaintCanvas::drawPicture(
-    sk_sp<const PaintRecord> record,
+    PaintRecord record,
     PlaybackParams::CustomDataRasterCallback custom_raster_callback) {
   auto did_draw_op_cb =
       context_flushes_.enable
@@ -417,7 +405,7 @@ void SkiaPaintCanvas::drawPicture(
           : PlaybackParams::DidDrawOpCallback();
   PlaybackParams params(image_provider_, canvas_->getLocalToDevice(),
                         custom_raster_callback, did_draw_op_cb);
-  record->Playback(canvas_, params);
+  record.Playback(canvas_, params);
 }
 
 void SkiaPaintCanvas::FlushAfterDrawIfNeeded() {

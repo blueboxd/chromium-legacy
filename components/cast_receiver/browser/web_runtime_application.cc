@@ -85,7 +85,10 @@ void WebRuntimeApplication::MediaStartedPlaying(
     const MediaPlayerInfo& video_type,
     const content::MediaPlayerId& id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  embedder_application().NotifyMediaPlaybackChanged(true);
+
+  if (IsApplicationRunning()) {
+    embedder_application().NotifyMediaPlaybackChanged(true);
+  }
 }
 
 void WebRuntimeApplication::MediaStoppedPlaying(
@@ -93,7 +96,10 @@ void WebRuntimeApplication::MediaStoppedPlaying(
     const content::MediaPlayerId& id,
     content::WebContentsObserver::MediaStoppedReason reason) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  embedder_application().NotifyMediaPlaybackChanged(false);
+
+  if (IsApplicationRunning()) {
+    embedder_application().NotifyMediaPlaybackChanged(false);
+  }
 }
 
 void WebRuntimeApplication::OnAllBindingsReceived(
@@ -121,12 +127,12 @@ void WebRuntimeApplication::OnAllBindingsReceived(
       embedder_application().GetWebContents());
 
   // Application is initialized now - we can load the URL.
-  LoadPage(app_url());
+  NavigateToPage(app_url());
 }
 
 void WebRuntimeApplication::OnPageLoadComplete() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  OnPageLoaded();
+  OnPageNavigationComplete();
 }
 
 void WebRuntimeApplication::OnError() {

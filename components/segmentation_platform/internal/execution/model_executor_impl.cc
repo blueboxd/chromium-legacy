@@ -109,7 +109,7 @@ void ModelExecutorImpl::ExecuteModel(
                                        *state);
 
   if (!state->model_provider || !state->model_provider->ModelAvailable()) {
-    RunModelExecutionCallback(std::move(state),
+    RunModelExecutionCallback(*state, std::move(state->callback),
                               std::make_unique<ModelExecutionResult>(
                                   ModelExecutionStatus::kSkippedModelNotReady));
     return;
@@ -119,8 +119,9 @@ void ModelExecutorImpl::ExecuteModel(
   if (metadata_utils::ValidateSegmentInfo(segment_info) !=
       metadata_utils::ValidationResult::kValidationSuccess) {
     RunModelExecutionCallback(
-        std::move(state), std::make_unique<ModelExecutionResult>(
-                              ModelExecutionStatus::kSkippedInvalidMetadata));
+        *state, std::move(state->callback),
+        std::make_unique<ModelExecutionResult>(
+            ModelExecutionStatus::kSkippedInvalidMetadata));
     return;
   }
 
@@ -128,7 +129,8 @@ void ModelExecutorImpl::ExecuteModel(
       SegmentationUkmHelper::GetInstance()->CanUploadTensors(segment_info);
   feature_list_query_processor_->ProcessFeatureList(
       segment_info.model_metadata(), request->input_context, segment_id,
-      clock_->Now(), FeatureListQueryProcessor::ProcessOption::kInputsOnly,
+      clock_->Now(), base::Time(),
+      FeatureListQueryProcessor::ProcessOption::kInputsOnly,
       base::BindOnce(&ModelExecutorImpl::OnProcessingFeatureListComplete,
                      weak_ptr_factory_.GetWeakPtr(), std::move(state)));
 }
@@ -141,8 +143,9 @@ void ModelExecutorImpl::OnProcessingFeatureListComplete(
   if (error) {
     // Validation error occurred on model's metadata.
     RunModelExecutionCallback(
-        std::move(state), std::make_unique<ModelExecutionResult>(
-                              ModelExecutionStatus::kSkippedInvalidMetadata));
+        *state, std::move(state->callback),
+        std::make_unique<ModelExecutionResult>(
+            ModelExecutionStatus::kSkippedInvalidMetadata));
     return;
   }
   state->input_tensor.insert(state->input_tensor.end(), input_tensor.begin(),
@@ -183,7 +186,7 @@ void ModelExecutorImpl::OnModelExecutionComplete(
       clock_->Now() - state->model_execution_start_time);
   // TODO(ritikagup): Change the use of this according to MultiOutputModel.
   if (result.has_value()) {
-    VLOG(0) << "Segmentation model result: " << result.value().at(0)
+    VLOG(1) << "Segmentation model result: " << result.value().at(0)
             << " for segment "
             << proto::SegmentId_Name(state->segment_info.segment_id());
     const proto::SegmentationModelMetadata& model_metadata =
@@ -205,28 +208,29 @@ void ModelExecutorImpl::OnModelExecutionComplete(
       }
     }
     ModelProvider::Request input_tensor = state->input_tensor;
-    RunModelExecutionCallback(std::move(state),
+    RunModelExecutionCallback(*state, std::move(state->callback),
                               std::make_unique<ModelExecutionResult>(
                                   std::move(input_tensor), *result));
   } else {
     VLOG(1) << "Segmentation model returned no result for segment "
             << proto::SegmentId_Name(state->segment_info.segment_id());
-    RunModelExecutionCallback(std::move(state),
+    RunModelExecutionCallback(*state, std::move(state->callback),
                               std::make_unique<ModelExecutionResult>(
                                   ModelExecutionStatus::kExecutionError));
   }
 }
 
 void ModelExecutorImpl::RunModelExecutionCallback(
-    std::unique_ptr<ExecutionState> state,
+    const ExecutionState& state,
+    ModelExecutionCallback callback,
     std::unique_ptr<ModelExecutionResult> result) {
   stats::RecordModelExecutionDurationTotal(
-      state->segment_info.segment_id(), result->status,
-      clock_->Now() - state->total_execution_start_time);
-  stats::RecordModelExecutionStatus(state->segment_info.segment_id(),
-                                    state->record_metrics_for_default,
+      state.segment_info.segment_id(), result->status,
+      clock_->Now() - state.total_execution_start_time);
+  stats::RecordModelExecutionStatus(state.segment_info.segment_id(),
+                                    state.record_metrics_for_default,
                                     result->status);
-  std::move(state->callback).Run(std::move(result));
+  std::move(callback).Run(std::move(result));
 }
 
 }  // namespace segmentation_platform

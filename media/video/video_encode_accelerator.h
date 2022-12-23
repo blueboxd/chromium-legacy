@@ -149,6 +149,10 @@ struct MEDIA_EXPORT BitstreamBufferMetadata final {
   absl::optional<Vp9Metadata> vp9;
   absl::optional<Av1Metadata> av1;
   absl::optional<H265Metadata> h265;
+
+  // Some platforms may adjust the encoding size to meet hardware requirements.
+  // If not set, the encoded size is the same as configured.
+  absl::optional<gfx::Size> encoded_size;
 };
 
 // Video encoder interface.
@@ -181,6 +185,7 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
     uint32_t max_framerate_denominator{0};
     SupportedRateControlMode rate_control_modes = kNoMode;
     std::vector<SVCScalabilityMode> scalability_modes;
+    bool is_software_codec = false;
   };
   using SupportedProfiles = std::vector<SupportedProfile>;
   using FlushCallback = base::OnceCallback<void(bool)>;

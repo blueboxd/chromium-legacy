@@ -42,6 +42,10 @@ const char kGoogleDriveBuyStorageUrl[] =
 const char kGoogleDriveManageStorageUrl[] =
     "https://drive.google.com/drive/u/0/quota";
 
+// Location of the page to manage enterprise Google Drive storage.
+const char kGoogleDriveEnterpriseManageStorageUrl[] =
+    "https://drive.google.com/corp/drive/quota";
+
 // Location of the overview page about Google Drive.
 const char kGoogleDriveOverviewUrl[] =
     "https://support.google.com/chromebook/?p=filemanager_drive";
@@ -152,6 +156,8 @@ void AddStringsForDrive(base::Value::Dict* dict) {
              IDS_FILE_BROWSER_DRIVE_OFFLINE_COLLECTION_LABEL);
   SET_STRING("DRIVE_OUT_OF_SPACE_HEADER",
              IDS_FILE_BROWSER_DRIVE_OUT_OF_SPACE_HEADER);
+  SET_STRING("SYNC_ERROR_SHARED_DRIVE_OUT_OF_SPACE",
+             IDS_FILE_BROWSER_SYNC_ERROR_SHARED_DRIVE_OUT_OF_SPACE);
   SET_STRING("DRIVE_OUT_OF_SPACE_MESSAGE",
              IDS_FILE_BROWSER_DRIVE_OUT_OF_SPACE_MESSAGE);
   SET_STRING("DRIVE_RECENT_COLLECTION_LABEL",
@@ -1038,6 +1044,8 @@ base::Value::Dict GetFileManagerStrings() {
 
   dict.Set("GOOGLE_DRIVE_BUY_STORAGE_URL", kGoogleDriveBuyStorageUrl);
   dict.Set("GOOGLE_DRIVE_MANAGE_STORAGE_URL", kGoogleDriveManageStorageUrl);
+  dict.Set("GOOGLE_DRIVE_ENTERPRISE_MANAGE_STORAGE_URL",
+           kGoogleDriveEnterpriseManageStorageUrl);
   dict.Set("GOOGLE_DRIVE_ERROR_HELP_URL",
            base::StringPrintf(kHelpURLFormat, kGoogleDriveErrorHelpNumber));
   dict.Set("GOOGLE_DRIVE_HELP_URL", kGoogleDriveHelpUrl);
@@ -1096,8 +1104,6 @@ void AddFileManagerFeatureStrings(const std::string& locale,
   dict->Set("DRIVE_DSS_PIN_ENABLED",
             base::FeatureList::IsEnabled(
                 ash::features::kDriveFsBidirectionalNativeMessaging));
-  dict->Set("FILTERS_IN_RECENTS_V2_ENABLED",
-            base::FeatureList::IsEnabled(ash::features::kFiltersInRecentsV2));
   dict->Set(
       "FILES_SINGLE_PARTITION_FORMAT_ENABLED",
       base::FeatureList::IsEnabled(ash::features::kFilesSinglePartitionFormat));

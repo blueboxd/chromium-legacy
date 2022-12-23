@@ -126,6 +126,7 @@ component("base") {
     "interaction/element_identifier.h",
     "interaction/element_tracker.cc",
     "interaction/element_tracker.h",
+    "interaction/framework_specific_implementation.cc",
     "interaction/framework_specific_implementation.h",
     "interaction/interaction_sequence.cc",
     "interaction/interaction_sequence.h",
@@ -498,7 +499,7 @@ component("base") {
     "//ui/display/util:gpu_info_util",
     "//ui/events",
     "//ui/events/devices",
-    "//ui/resources:webui_generated_resources_grd",
+    "//ui/resources:webui_resources_grd",
     "//ui/strings",
     "//url",
   ]

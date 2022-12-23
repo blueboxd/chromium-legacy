@@ -48,6 +48,7 @@
 <translation id="1265739287306757398">了解如何操作</translation>
 <translation id="1272079795634619415">停止</translation>
 <translation id="1275718070701477396">已选择</translation>
+<translation id="1279024913354609713">不允许</translation>
 <translation id="1281818060020671000">管理数据</translation>
 <translation id="1282311502488501110">不登录</translation>
 <translation id="1283524564873030414">过去 24 小时</translation>
@@ -148,6 +149,7 @@
 <translation id="2074131957428911366">您始终可在<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />中选择要同步的内容。</translation>
 <translation id="2079545284768500474">撤消</translation>
 <translation id="2080769225927880590">请使用一个有效的帐号登录</translation>
+<translation id="2090878303988764231">登录帐号即可管理您看到的内容</translation>
 <translation id="2103075008456228677">打开 history.google.com</translation>
 <translation id="21133533946938348">固定标签页</translation>
 <translation id="2116625576999540962">移动了<ph name="NUMBER_OF_SELECTED_BOOKMARKS" />项</translation>
@@ -190,6 +192,7 @@
 <translation id="2421044535038393232">继续修改</translation>
 <translation id="2434405374328098816">您已经在 <ph name="WEBSITE" /> 上保存了“<ph name="USERNAME" />”的密码</translation>
 <translation id="2435457462613246316">显示密码</translation>
+<translation id="2451654228769116489">固定标签页</translation>
 <translation id="2461070143328828326">密码设置</translation>
 <translation id="2469960372084740698">关闭“安全浏览”功能？</translation>
 <translation id="2473876017985765807">您已经保存了在 <ph name="WEBSITE" /> 上使用的密码</translation>
@@ -672,6 +675,7 @@
 <translation id="6059830886158432458">在此处控制您的报道和活动</translation>
 <translation id="6064824697233747382">贵单位要求您关闭同步功能。</translation>
 <translation id="6066301408025741299">点按可取消。</translation>
+<translation id="6071409777669089905">取消固定标签页</translation>
 <translation id="60829778314739003">接受并继续</translation>
 <translation id="6084848228346514841">选择标签页</translation>
 <translation id="6103540626693881831">设备上加密</translation>
@@ -785,6 +789,7 @@
 <translation id="6710079714193676716">由贵组织管理。未必能使用所有功能。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">无法导出密码</translation>
+<translation id="6732087373923685049">摄像头</translation>
 <translation id="6748108480210050150">发件人</translation>
 <translation id="6760509555861141183">返回到最近用过的标签页</translation>
 <translation id="6762812039470893796">取消全选</translation>
@@ -971,6 +976,7 @@
 <translation id="8197543752516192074">翻译网页</translation>
 <translation id="8205564605687841303">取消</translation>
 <translation id="8206354486702514201">此设置是由您的管理员执行的。</translation>
+<translation id="821809831108207540">如要对“探索”信息流和 Chrome 进行个性化设置，请登录帐号并开启同步功能。</translation>
 <translation id="8225985093977202398">缓存的图片和文件</translation>
 <translation id="8237382152611443140">打开用于自动填充密码的设置</translation>
 <translation id="8261506727792406068">删除</translation>
@@ -1037,6 +1043,7 @@
 <translation id="8764015330924122850">取消关注“<ph name="DOMAIN_NAME" />”</translation>
 <translation id="8775144690796719618">网址无效</translation>
 <translation id="8787968206789828143">在网络上搜索</translation>
+<translation id="8792626944327216835">麦克风</translation>
 <translation id="8803639129939845298">安全</translation>
 <translation id="8806823403540278281">贵单位要求您进行无痕浏览。在无痕模式下，系统不会保存标签页。
 <ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
@@ -1092,11 +1099,13 @@
 <translation id="9157836665414082580">禁止显示对话框</translation>
 <translation id="9177438225260810839">在打开的标签页中搜索</translation>
 <translation id="9188680907066685419">退出受管理的帐号</translation>
+<translation id="9193147658040604536">拖到此处即可固定标签页</translation>
 <translation id="9200875785104711666"><ph name="TIME" /> 天前</translation>
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9219154867334666734">搜索标签页…</translation>
 <translation id="9223358826628549784">已发送崩溃报告。</translation>
 <translation id="941747855997058526">选择密码…</translation>
+<translation id="948048872540558976">创建新标签页</translation>
 <translation id="952704832371081537">取消</translation>
 <translation id="953008885340860025">已退出 Chrome</translation>
 <translation id="959066944189734975">您已关注“<ph name="CHANNEL_NAME" />”</translation>

@@ -13,6 +13,7 @@ import androidx.annotation.VisibleForTesting;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceCategory;
 
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.privacy_sandbox.FledgePreference;
 import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxBridge;
@@ -20,6 +21,7 @@ import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxSettingsBaseFra
 import org.chromium.chrome.browser.privacy_sandbox.R;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
+import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.components.browser_ui.settings.ChromeBasePreference;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
@@ -27,6 +29,8 @@ import org.chromium.components.browser_ui.settings.TextMessagePreference;
 import org.chromium.components.favicon.LargeIconBridge;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.user_prefs.UserPrefs;
+import org.chromium.ui.text.NoUnderlineClickableSpan;
+import org.chromium.ui.text.SpanApplier;
 
 import java.util.List;
 
@@ -81,6 +85,15 @@ public class FledgeFragmentV4 extends PrivacySandboxSettingsBaseFragment
         mFledgeTogglePreference.setChecked(isFledgePrefEnabled());
         mFledgeTogglePreference.setOnPreferenceChangeListener(this);
         mFledgeTogglePreference.setManagedPreferenceDelegate(createManagedPreferenceDelegate());
+
+        mCurrentSitesCategory.setSummary(SpanApplier.applySpans(
+                getResources().getString(R.string.settings_fledge_page_current_sites_description),
+                new SpanApplier.SpanInfo("<link>", "</link>",
+                        new NoUnderlineClickableSpan(getContext(), this::onLearnMoreClicked))));
+    }
+
+    private void onLearnMoreClicked(View view) {
+        launchSettingsActivity(FledgeLearnMoreFragment.class);
     }
 
     @Override
@@ -110,7 +123,10 @@ public class FledgeFragmentV4 extends PrivacySandboxSettingsBaseFragment
     @Override
     public boolean onPreferenceChange(@NonNull Preference preference, Object value) {
         if (preference.getKey().equals(FLEDGE_TOGGLE_PREFERENCE)) {
-            setFledgePrefEnabled((boolean) value);
+            boolean enabled = (boolean) value;
+            RecordUserAction.record(enabled ? "Settings.PrivacySandbox.Fledge.Enabled"
+                                            : "Settings.PrivacySandbox.Fledge.Disabled");
+            setFledgePrefEnabled(enabled);
             updatePreferenceVisibility();
             return true;
         }
@@ -125,6 +141,10 @@ public class FledgeFragmentV4 extends PrivacySandboxSettingsBaseFragment
                     ((FledgePreference) preference).getSite(), false);
             mCurrentSitesCategory.removePreference(preference);
             updatePreferenceVisibility();
+
+            showSnackbar(R.string.privacy_sandbox_remove_site_snackbar, null, Snackbar.TYPE_ACTION,
+                    Snackbar.UMA_PRIVACY_SANDBOX_REMOVE_SITE);
+            RecordUserAction.record("Settings.PrivacySandbox.Fledge.SiteRemoved");
             return true;
         }
 

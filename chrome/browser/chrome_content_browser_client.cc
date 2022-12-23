@@ -137,6 +137,8 @@
 #include "chrome/browser/ssl/https_defaulted_callbacks.h"
 #include "chrome/browser/ssl/https_only_mode_navigation_throttle.h"
 #include "chrome/browser/ssl/https_only_mode_upgrade_interceptor.h"
+#include "chrome/browser/ssl/https_upgrades_interceptor.h"
+#include "chrome/browser/ssl/https_upgrades_navigation_throttle.h"
 #include "chrome/browser/ssl/sct_reporting_service.h"
 #include "chrome/browser/ssl/ssl_client_auth_metrics.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
@@ -3335,6 +3337,18 @@ bool ChromeContentBrowserClient::IsSharedStorageAllowed(
   return allowed;
 }
 
+bool ChromeContentBrowserClient::IsSharedStorageSelectURLAllowed(
+    content::BrowserContext* browser_context,
+    const url::Origin& top_frame_origin,
+    const url::Origin& accessing_origin) {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  auto* privacy_sandbox_settings =
+      PrivacySandboxSettingsFactory::GetForProfile(profile);
+  DCHECK(privacy_sandbox_settings);
+  return privacy_sandbox_settings->IsSharedStorageSelectURLAllowed(
+      top_frame_origin, accessing_origin);
+}
+
 bool ChromeContentBrowserClient::IsPrivateAggregationAllowed(
     content::BrowserContext* browser_context,
     const url::Origin& top_frame_origin,
@@ -5059,11 +5073,19 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
 #endif
 
   if (profile && profile->GetPrefs()) {
-    MaybeAddThrottle(
-        HttpsOnlyModeNavigationThrottle::MaybeCreateThrottleFor(
-            handle, std::make_unique<ChromeSecurityBlockingPageFactory>(),
-            profile->GetPrefs()),
-        &throttles);
+    if (base::FeatureList::IsEnabled(features::kHttpsFirstModeV2)) {
+      MaybeAddThrottle(
+          HttpsUpgradesNavigationThrottle::MaybeCreateThrottleFor(
+              handle, std::make_unique<ChromeSecurityBlockingPageFactory>(),
+              profile->GetPrefs()),
+          &throttles);
+    } else {
+      MaybeAddThrottle(
+          HttpsOnlyModeNavigationThrottle::MaybeCreateThrottleFor(
+              handle, std::make_unique<ChromeSecurityBlockingPageFactory>(),
+              profile->GetPrefs()),
+          &throttles);
+    }
   }
 
   MaybeAddThrottle(MaybeCreateNavigationAblationThrottle(handle), &throttles);
@@ -5362,7 +5384,6 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
 
 #if BUILDFLAG(IS_ANDROID)
   std::string client_data_header;
-  bool is_tab_large_enough = false;
   bool is_custom_tab = false;
   if (frame_tree_node_id != content::RenderFrameHost::kNoFrameTreeNodeId) {
     auto* web_contents = WebContents::FromFrameTreeNodeId(frame_tree_node_id);
@@ -5380,7 +5401,6 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
                     web_contents->GetDelegate())
               : nullptr;
       if (delegate) {
-        is_tab_large_enough = delegate->IsTabLargeEnoughForDesktopSite();
         is_custom_tab = delegate->IsCustomTab();
       }
     }
@@ -5393,7 +5413,7 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
       profile->GetPrefs()->GetString(prefs::kAllowedDomainsForApps)};
   result.push_back(std::make_unique<GoogleURLLoaderThrottle>(
 #if BUILDFLAG(IS_ANDROID)
-      client_data_header, is_tab_large_enough,
+      client_data_header,
 #endif
       std::move(dynamic_params)));
 
@@ -5892,7 +5912,10 @@ ChromeContentBrowserClient::WillCreateURLLoaderRequestInterceptors(
   interceptors.push_back(
       std::make_unique<SearchPrefetchURLLoaderInterceptor>(frame_tree_node_id));
 
-  if (base::FeatureList::IsEnabled(features::kHttpsOnlyMode)) {
+  if (base::FeatureList::IsEnabled(features::kHttpsFirstModeV2)) {
+    interceptors.push_back(
+        std::make_unique<HttpsUpgradesInterceptor>(frame_tree_node_id));
+  } else {
     interceptors.push_back(
         std::make_unique<HttpsOnlyModeUpgradeInterceptor>(frame_tree_node_id));
   }

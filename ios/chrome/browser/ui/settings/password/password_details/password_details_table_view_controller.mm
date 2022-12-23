@@ -24,7 +24,6 @@
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_table_view_constants.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_table_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_table_view_constants.h"
-#import "ios/chrome/browser/ui/settings/settings_root_table_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_edit_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_edit_item_delegate.h"
@@ -236,9 +235,10 @@ const CGFloat kCompromisedPasswordSymbolSize = 22;
   TableViewTextEditItem* item =
       [[TableViewTextEditItem alloc] initWithType:ItemTypeWebsite];
   item.textFieldBackgroundColor = [UIColor clearColor];
-  // TODO(crbug.com/1358982): Update text to "Sites".
+  // TODO(crbug.com/1358982): Update text to "Sites" and display all sites in
+  // PasswordDetails.
   item.textFieldName = l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_SITE);
-  item.textFieldValue = passwordDetails.website;
+  item.textFieldValue = passwordDetails.websites[0];
   item.textFieldEnabled = NO;
   item.autoCapitalizationType = UITextAutocapitalizationTypeNone;
   item.hideIcon = YES;
@@ -356,7 +356,8 @@ const CGFloat kCompromisedPasswordSymbolSize = 22;
   return item;
 }
 
-- (TableViewTextButtonItem*)deleteButtonItem {
+- (TableViewTextButtonItem*)deleteButtonItemForPasswordDetails:
+    (PasswordDetails*)passwordDetails {
   TableViewTextButtonItem* item =
       [[TableViewTextButtonItem alloc] initWithType:ItemTypeDeleteButton];
   item.buttonText = l10n_util::GetNSString(IDS_IOS_SETTINGS_TOOLBAR_DELETE);
@@ -364,7 +365,9 @@ const CGFloat kCompromisedPasswordSymbolSize = 22;
   item.disableButtonIntrinsicWidth = YES;
   item.buttonTextColor = [UIColor colorNamed:kRedColor];
   item.buttonBackgroundColor = [UIColor clearColor];
-  item.buttonAccessibilityIdentifier = kSettingsToolbarDeleteButtonId;
+  item.buttonAccessibilityIdentifier = [NSString
+      stringWithFormat:@"%@%@%@", kDeleteButtonForPasswordDetailsId,
+                       passwordDetails.username, passwordDetails.password];
   return item;
 }
 
@@ -977,7 +980,7 @@ const CGFloat kCompromisedPasswordSymbolSize = 22;
   }
 
   if (IsPasswordGroupingEnabled() && self.tableView.editing) {
-    [model addItem:[self deleteButtonItem]
+    [model addItem:[self deleteButtonItemForPasswordDetails:passwordDetails]
         toSectionWithIdentifier:sectionForPassword];
   }
   [self.passwordDetailsInfoItems addObject:passwordItem];
@@ -1069,11 +1072,13 @@ const CGFloat kCompromisedPasswordSymbolSize = 22;
 
   switch (menuItem.itemType) {
     case ItemTypeWebsite:
+      // TODO(crbug.com/1358982): Copy to pasteboard all websites in
+      // PasswordDetails.
       generalPasteboard.string =
           self.passwords[IsPasswordGroupingEnabled()
                              ? self.tableView.indexPathForSelectedRow.section
                              : 0]
-              .website;
+              .websites[0];
       message =
           l10n_util::GetNSString(IDS_IOS_SETTINGS_SITE_WAS_COPIED_MESSAGE);
       break;
@@ -1118,7 +1123,9 @@ const CGFloat kCompromisedPasswordSymbolSize = 22;
   DCHECK(position >= 0);
   DCHECK(self.handler);
   [self.handler
-      showPasswordDeleteDialogWithPasswordDetails:self.passwords[position]];
+      showPasswordDeleteDialogWithPasswordDetails:self.passwords[position]
+                                       anchorView:buttonView
+                                       anchorRect:buttonView.frame];
 }
 
 #pragma mark - UIResponder

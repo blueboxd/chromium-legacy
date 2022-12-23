@@ -9,7 +9,9 @@ import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.js';
 
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
+import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
+import {PolymerElementProperties} from 'chrome://resources/polymer/v3_0/polymer/interfaces.js';
 import {DomRepeat, flush, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './accelerator_edit_dialog.html.js';
@@ -35,16 +37,19 @@ declare global {
  * a given shortcut. Allows users to edit the accelerators.
  * TODO(jimmyxgong): Implement editing accelerators.
  */
-export class AcceleratorEditDialogElement extends PolymerElement {
-  static get is() {
+const AcceleratorEditDialogElementBase = I18nMixin(PolymerElement);
+
+export class AcceleratorEditDialogElement extends
+    AcceleratorEditDialogElementBase {
+  static get is(): string {
     return 'accelerator-edit-dialog';
   }
 
-  static get template() {
+  static get template(): HTMLTemplateElement {
     return getTemplate();
   }
 
-  static get properties() {
+  static get properties(): PolymerElementProperties {
     return {
       description: {
         type: String,
@@ -53,10 +58,10 @@ export class AcceleratorEditDialogElement extends PolymerElement {
 
       acceleratorInfos: {
         type: Array,
-        value: () => {},
+        value: () => [],
       },
 
-      pendingNewAcceleratorState_: {
+      pendingNewAcceleratorState: {
         type: Number,
         value: ViewState.VIEW,
       },
@@ -71,7 +76,7 @@ export class AcceleratorEditDialogElement extends PolymerElement {
         value: 0,
       },
 
-      isAcceleratorCapturing_: {
+      isAcceleratorCapturing: {
         type: Boolean,
         value: false,
       },
@@ -82,63 +87,63 @@ export class AcceleratorEditDialogElement extends PolymerElement {
   acceleratorInfos: AcceleratorInfo[];
   action: number;
   source: AcceleratorSource;
-  protected isAcceleratorCapturing_: boolean;
-  private pendingNewAcceleratorState_: number;
-  private acceleratorCapturingStartedListener_ = () =>
-      this.onAcceleratorCapturingStarted_();
-  private acceleratorCapturingEndedListener_ = () =>
-      this.onAcceleratorCapturingEnded_();
+  protected isAcceleratorCapturing: boolean;
+  private pendingNewAcceleratorState: number;
+  private acceleratorCapturingStartedListener = (): void =>
+      this.onAcceleratorCapturingStarted();
+  private acceleratorCapturingEndedListener = (): void =>
+      this.onAcceleratorCapturingEnded();
 
-  override connectedCallback() {
+  override connectedCallback(): void {
     super.connectedCallback();
     this.$.editDialog.showModal();
 
     window.addEventListener(
         'accelerator-capturing-started',
-        this.acceleratorCapturingStartedListener_);
+        this.acceleratorCapturingStartedListener);
     window.addEventListener(
-        'accelerator-capturing-ended', this.acceleratorCapturingEndedListener_);
+        'accelerator-capturing-ended', this.acceleratorCapturingEndedListener);
   }
 
-  override disconnectedCallback() {
+  override disconnectedCallback(): void {
     super.disconnectedCallback();
     window.removeEventListener(
         'accelerator-capturing-started',
-        this.acceleratorCapturingStartedListener_);
+        this.acceleratorCapturingStartedListener);
     window.removeEventListener(
-        'accelerator-capturing-ended', this.acceleratorCapturingEndedListener_);
+        'accelerator-capturing-ended', this.acceleratorCapturingEndedListener);
   }
 
-  private getViewList_(): DomRepeat {
+  private getViewList(): DomRepeat {
     const viewList = this.shadowRoot!.querySelector('#viewList') as DomRepeat;
     assert(viewList);
     return viewList;
   }
 
-  updateDialogAccelerators(updatedAccels: AcceleratorInfo[]) {
+  updateDialogAccelerators(updatedAccels: AcceleratorInfo[]): void {
     this.set('acceleratorInfos', []);
-    this.getViewList_().render();
+    this.getViewList().render();
     this.acceleratorInfos = updatedAccels;
   }
 
-  protected onDoneButtonClicked_() {
+  protected onDoneButtonClicked(): void {
     this.$.editDialog.close();
   }
 
-  protected onDialogClose_() {
+  protected onDialogClose(): void {
     this.dispatchEvent(
         new CustomEvent('edit-dialog-closed', {bubbles: true, composed: true}));
   }
 
-  private onAcceleratorCapturingStarted_() {
-    this.isAcceleratorCapturing_ = true;
+  private onAcceleratorCapturingStarted(): void {
+    this.isAcceleratorCapturing = true;
   }
 
-  private onAcceleratorCapturingEnded_() {
-    this.isAcceleratorCapturing_ = false;
+  private onAcceleratorCapturingEnded(): void {
+    this.isAcceleratorCapturing = false;
   }
 
-  private focusAcceleratorItemContainer_() {
+  private focusAcceleratorItemContainer(): void {
     const editView = this.$.editDialog.querySelector('#pendingAccelerator');
     assert(editView);
     const accelItem = editView.shadowRoot!.querySelector('#acceleratorItem');
@@ -149,20 +154,20 @@ export class AcceleratorEditDialogElement extends PolymerElement {
     container!.focus();
   }
 
-  protected onAddAcceleratorClicked_() {
-    this.pendingNewAcceleratorState_ = ViewState.ADD;
+  protected onAddAcceleratorClicked(): void {
+    this.pendingNewAcceleratorState = ViewState.ADD;
 
     // Flush the dom so that the AcceleratorEditView is ready to be focused.
     flush();
-    this.focusAcceleratorItemContainer_();
+    this.focusAcceleratorItemContainer();
   }
 
-  protected showAddButton_(): boolean {
+  protected showAddButton(): boolean {
     // If the state is VIEW, no new pending accelerators are being added.
-    return this.pendingNewAcceleratorState_ === ViewState.VIEW;
+    return this.pendingNewAcceleratorState === ViewState.VIEW;
   }
 
-  protected onRestoreDefaultButtonClicked_() {
+  protected onRestoreDefaultButtonClicked(): void {
     // TODO(jimmyxgong): Implement this function.
   }
 }

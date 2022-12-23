@@ -45,8 +45,7 @@ class DeviceActivityControllerTest : public testing::Test {
   // testing::Test:
   void SetUp() override {
     SessionManagerClient::InitializeFake();
-    chromeos::system::StatisticsProvider::SetTestProvider(
-        &statistics_provider_);
+    system::StatisticsProvider::SetTestProvider(&statistics_provider_);
 
     DeviceActivityController::RegisterPrefs(local_state()->registry());
 
@@ -65,7 +64,7 @@ class DeviceActivityControllerTest : public testing::Test {
 
   std::unique_ptr<DeviceActivityController> device_activity_controller_;
 
-  chromeos::system::FakeStatisticsProvider statistics_provider_;
+  system::FakeStatisticsProvider statistics_provider_;
   TestingPrefServiceSimple local_state_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   network::TestURLLoaderFactory test_url_loader_factory_;
@@ -81,14 +80,6 @@ TEST_F(DeviceActivityControllerTest,
   base::Time daily_ts =
       local_state()->GetTime(prefs::kDeviceActiveLastKnownDailyPingTimestamp);
   EXPECT_EQ(daily_ts, base::Time::UnixEpoch());
-
-  base::Time monthly_ts =
-      local_state()->GetTime(prefs::kDeviceActiveLastKnownMonthlyPingTimestamp);
-  EXPECT_EQ(monthly_ts, base::Time::UnixEpoch());
-
-  base::Time first_active_ts = local_state()->GetTime(
-      prefs::kDeviceActiveLastKnownFirstActivePingTimestamp);
-  EXPECT_EQ(first_active_ts, base::Time::UnixEpoch());
 }
 
 }  // namespace ash::device_activity

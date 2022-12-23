@@ -18,11 +18,13 @@ import 'chrome://resources/cr_elements/policy/cr_policy_indicator.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
 import '../../prefs/prefs.js';
+import '../../settings_shared.css.js';
 import '../os_settings_page/os_settings_animated_pages.js';
 import '../os_settings_page/os_settings_subpage.js';
-import '../../settings_shared.css.js';
 import '../os_settings_icons.css.js';
+import './apn_subpage.js';
 import './cellular_setup_dialog.js';
+import './internet_config.js';
 import './internet_detail_menu.js';
 import './internet_detail_page.js';
 import './internet_known_networks_page.js';
@@ -41,6 +43,7 @@ import {MojoInterfaceProvider, MojoInterfaceProviderImpl} from 'chrome://resourc
 import {NetworkListenerBehavior, NetworkListenerBehaviorInterface} from 'chrome://resources/ash/common/network/network_listener_behavior.js';
 import {OncMojo} from 'chrome://resources/ash/common/network/onc_mojo.js';
 import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/ash/common/web_ui_listener_behavior.js';
+import {HotspotInfo} from 'chrome://resources/mojo/chromeos/ash/services/hotspot_config/public/mojom/cros_hotspot_config.mojom-webui.js';
 import {CrosNetworkConfigRemote, GlobalPolicy, NetworkStateProperties, StartConnectResult, VpnProvider} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-webui.js';
 import {DeviceStateType, NetworkType} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/network_types.mojom-webui.js';
 import {afterNextRender, html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -52,8 +55,6 @@ import {routes} from '../os_route.js';
 import {RouteObserverBehavior, RouteObserverBehaviorInterface} from '../route_observer_behavior.js';
 import {Route, Router} from '../router.js';
 
-import {ApnSubpageElement} from './apn_subpage';
-import {InternetConfigElement} from './internet_config.js';
 import {InternetPageBrowserProxy, InternetPageBrowserProxyImpl} from './internet_page_browser_proxy.js';
 
 // TODO(crbug/1315757) The following type definitions are only needed for
@@ -76,6 +77,28 @@ function NetworkSummaryElement() {}
  * @return {?NetworkSummaryItemElement}
  */
 NetworkSummaryElement.prototype.getNetworkRow = function(networkType) {};
+
+/**
+ * @constructor
+ * @extends {HTMLElement}
+ */
+function InternetConfigElement() {}
+/** @type {string} */
+InternetConfigElement.prototype.guid;
+/** @type {string} */
+InternetConfigElement.prototype.name;
+/** @type {boolean} */
+InternetConfigElement.prototype.showConnect;
+/** @type {string} */
+InternetConfigElement.prototype.type;
+InternetConfigElement.prototype.open = function() {};
+
+/**
+ * @constructor
+ * @extends {HTMLElement}
+ */
+function ApnSubpageElement() {}
+ApnSubpageElement.prototype.openApnDetailDialogInCreateMode = function() {};
 
 /** @type {number} */
 const ESIM_PROFILE_LIMIT = 5;
@@ -134,6 +157,15 @@ class SettingsInternetPageElement extends SettingsInternetPageElementBase {
        * @type {?OncMojo.NetworkStateProperties|undefined}
        */
       defaultNetwork: {
+        type: Object,
+        notify: true,
+      },
+
+      /**
+       * Hotspot information. Set by network-summary.
+       * @type {!HotspotInfo|undefined}
+       */
+      hotspotInfo: {
         type: Object,
         notify: true,
       },

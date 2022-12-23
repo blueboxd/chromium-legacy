@@ -116,6 +116,7 @@
 <translation id="1908234395526491708">UDP రిక్వెస్ట్ వైఫల్యాలు</translation>
 <translation id="1947737735496445907">ప్రింట్ అయింది</translation>
 <translation id="1951012854035635156">Assistant</translation>
+<translation id="1962550982027027473">ఆటోమేటిక్ సెట్టింగ్ APN అవసరం</translation>
 <translation id="1977994649430373166">Google ప్రొఫైల్ ఫోటో</translation>
 <translation id="1979103255016296513">పాస్‌వర్డ్‌ మార్చాల్సిన గడువు ముగిసింది</translation>
 <translation id="1999615961760456652">క్యాప్టివ్ పోర్టల్</translation>
@@ -186,6 +187,7 @@
 <translation id="2570743873672969996"><ph name="TEST_NAME" /> పరీక్షను రన్ చేస్తోంది...</translation>
 <translation id="2584559707064218956">సెటప్ చేయడానికి, సెట్టింగ్‌లకు వెళ్లండి</translation>
 <translation id="2597774443162333062">డీబగ్గింగ్ కోసం ఫైల్స్ Googleకు పంపబడతాయి</translation>
+<translation id="2599691907981599502">{NUMBER_OF_PAGES,plural, =1{స్కాన్ చేయడం పూర్తయింది. 1 పేజీ స్కాన్ చేయబడింది}other{స్కాన్ చేయడం పూర్తయింది. {NUMBER_OF_PAGES} పేజీలు స్కాన్ చేయబడ్డాయి}}</translation>
 <translation id="2619761439309613843">రోజూ రిఫ్రెష్ అవుతుంది</translation>
 <translation id="2620436844016719705">సిస్టమ్</translation>
 <translation id="2638662041295312666">సైన్ ఇన్ ఇమేజ్</translation>
@@ -392,6 +394,7 @@
 <translation id="4793710386569335688">మరింత సహాయం కోసం, <ph name="BEGIN_LINK" />సహాయ కేంద్రంకు<ph name="END_LINK" /> వెళ్లండి.</translation>
 <translation id="4793756956024303490">కుదింపు అల్గారిథమ్</translation>
 <translation id="4794140124556169553">CPU టెస్ట్‌ను రన్ చేయడం మీ సిస్టమ్ పనితీరుని ప్రభావితం చేయవచ్చు</translation>
+<translation id="4798078634453489142">కొత్త APNను జోడించడానికి ఒక పాత APNను తీసివేయండి</translation>
 <translation id="4800589996161293643">Chromebook కమ్యూనిటీ</translation>
 <translation id="4803391892369051319">IPv4</translation>
 <translation id="4808449224298348341"><ph name="DOCUMENT_TITLE" /> ప్రింట్ టాస్క్ రద్దు చేయబడింది</translation>
@@ -632,6 +635,7 @@
 <translation id="6791471867139427246">కీబోర్డ్ లైట్ రంగు</translation>
 <translation id="680983167891198932">కీ</translation>
 <translation id="6816797338148849397">మీ ఎంచుకున్న దానికి సంబంధించిన సమాచారం అందుబాటులో ఉంది. యాక్సెస్ చేయడానికి పై వైపు బాణం కీని ఉపయోగించండి.</translation>
+<translation id="6838167112108853532">ఈ APNను డిజేబుల్ చేయడం లేదా తీసివేయడం సాధ్యపడదు. ఎనేబుల్ చేయబడిన అటాచ్ చేయబడిన APNలు డిసేబుల్ లేదా తీసివేయబడ్డాయని నిర్ధారించుకోండి.</translation>
 <translation id="6853312040151791195">డిశ్చార్జింగ్ రేట్</translation>
 <translation id="6889786074662672253">రీస్టార్ట్ అవుతున్నప్పుడు, ఈ బాహ్య పరికరాన్ని అన్‌ప్లగ్ చేయవద్దు లేదా మీ కంప్యూటర్‌ను షట్ డౌన్ చేయవద్దు. మీరు ఈ విండోను చిన్నదిగా చేయవచ్చు. ఇందుకు కొన్ని నిమిషాల సమయం పట్టవచ్చు, ఇంకా ఈ సమయంలో మీ బాహ్య పరికరం పని చేయకపోవచ్చు.</translation>
 <translation id="6905724422583748843">తిరిగి <ph name="PAGE_NAME" />‌కు</translation>
@@ -721,6 +725,7 @@
 <translation id="7769672763586021400">మోడల్ ID</translation>
 <translation id="7778717409420828014">మీ ఫీడ్‌బ్యాక్ Chromebook అనుభవాన్ని మెరుగుపరచడంలో మాకు సహాయపడుతుంది, ఇంకా మా టీమ్ ద్వారా రివ్యూ చేయబడుతుంది. పెద్ద సంఖ్యలో రిపోర్ట్‌లు ఉన్నందున మేము రిప్లయిని పంపడం సాధ్యం కాదు.</translation>
 <translation id="7784116172884276937">DNS సర్వర్‌లు ఏవీ సెటప్ చేయబడలేదు</translation>
+<translation id="7791543448312431591">జోడించండి</translation>
 <translation id="779591286616261875">కొత్త రిపోర్ట్‌ను పంపండి</translation>
 <translation id="7799817062559422778">లైట్ మోడ్</translation>
 <translation id="780301667611848630">వద్దు , ధన్యవాదాలు</translation>

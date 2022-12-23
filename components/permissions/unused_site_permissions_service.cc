@@ -30,6 +30,7 @@
 constexpr char kRevokedKey[] = "revoked";
 constexpr base::TimeDelta kRevocationThreshold = base::Days(60);
 constexpr base::TimeDelta kRevocationThresholdForTesting = base::Days(0);
+constexpr base::TimeDelta kRevocationCleanUpThreshold = base::Days(30);
 
 namespace permissions {
 namespace {
@@ -70,45 +71,6 @@ UnusedSitePermissionsService::UnusedPermissionMap GetUnusedPermissionsMap(
     }
   }
   return recently_unused;
-}
-
-void StorePermissionInRevokedPermissionSetting(
-    const std::list<UnusedSitePermissionsService::ContentSettingEntry>&
-        recently_revoked_permissions,
-    scoped_refptr<HostContentSettingsMap> hcsm) {
-  DCHECK(!recently_revoked_permissions.empty());
-  const ContentSettingsPattern& primary_pattern =
-      recently_revoked_permissions.front().source.primary_pattern;
-  const ContentSettingsPattern& secondary_pattern =
-      recently_revoked_permissions.front().source.secondary_pattern;
-
-  GURL url = GURL(primary_pattern.ToString());
-  // The url should be valid as it is checked that the pattern represents a
-  // single origin.
-  DCHECK(url.is_valid());
-  // Get the current value of the setting to append the recently revoked
-  // permissions.
-  base::Value cur_value(hcsm->GetWebsiteSetting(
-      url, url, ContentSettingsType::REVOKED_UNUSED_SITE_PERMISSIONS, nullptr));
-
-  base::Value::Dict dict = cur_value.is_dict() ? std::move(cur_value.GetDict())
-                                               : base::Value::Dict();
-  base::Value::List permission_type_list =
-      dict.FindList(kRevokedKey) ? std::move(*dict.FindList(kRevokedKey))
-                                 : base::Value::List();
-
-  for (const auto& permission : recently_revoked_permissions) {
-    permission_type_list.Append(static_cast<int32_t>(permission.type));
-  }
-
-  dict.Set(kRevokedKey, base::Value::List(std::move(permission_type_list)));
-
-  // Set website setting for the list of recently revoked permissions and
-  // previously revoked permissions, if exists.
-  hcsm->SetWebsiteSettingCustomScope(
-      primary_pattern, secondary_pattern,
-      ContentSettingsType::REVOKED_UNUSED_SITE_PERMISSIONS,
-      base::Value(std::move(dict)));
 }
 
 base::TimeDelta GetRevocationThreshold() {
@@ -177,6 +139,27 @@ void UnusedSitePermissionsService::UpdateUnusedPermissionsAsync(
       base::BindOnce(
           &UnusedSitePermissionsService::OnUnusedPermissionsMapRetrieved,
           AsWeakPtr(), std::move(callback)));
+}
+
+void UnusedSitePermissionsService::IgnoreOriginForAutoRevocation(
+    const url::Origin& origin) {
+  auto* registry = content_settings::ContentSettingsRegistry::GetInstance();
+
+  for (const content_settings::ContentSettingsInfo* info : *registry) {
+    ContentSettingsType type = info->website_settings_info()->type();
+
+    ContentSettingsForOneType settings;
+    hcsm_->GetSettingsForOneType(type, &settings);
+    for (const auto& setting : settings) {
+      if (setting.metadata.last_visited != base::Time() &&
+          setting.primary_pattern.MatchesSingleOrigin() &&
+          setting.primary_pattern.Matches(origin.GetURL())) {
+        hcsm_->ResetLastVisitedTime(setting.primary_pattern,
+                                    setting.secondary_pattern, type);
+        break;
+      }
+    }
+  }
 }
 
 // Called by TabHelper when a URL was visited.
@@ -248,7 +231,7 @@ void UnusedSitePermissionsService::RevokeUnusedPermissions() {
 
     // Store revoked permissions on HCSM.
     if (!revoked_permissions.empty()) {
-      StorePermissionInRevokedPermissionSetting(revoked_permissions, hcsm_);
+      StorePermissionInRevokedPermissionSetting(revoked_permissions);
     }
 
     // Handle clean up of recently_unused_permissions_ map after revocation.
@@ -267,6 +250,47 @@ void UnusedSitePermissionsService::RevokeUnusedPermissions() {
       itr++;
     }
   }
+}
+
+void UnusedSitePermissionsService::StorePermissionInRevokedPermissionSetting(
+    const std::list<UnusedSitePermissionsService::ContentSettingEntry>&
+        recently_revoked_permissions) {
+  DCHECK(!recently_revoked_permissions.empty());
+  const ContentSettingsPattern& primary_pattern =
+      recently_revoked_permissions.front().source.primary_pattern;
+  const ContentSettingsPattern& secondary_pattern =
+      recently_revoked_permissions.front().source.secondary_pattern;
+
+  GURL url = GURL(primary_pattern.ToString());
+  // The url should be valid as it is checked that the pattern represents a
+  // single origin.
+  DCHECK(url.is_valid());
+  // Get the current value of the setting to append the recently revoked
+  // permissions.
+  base::Value cur_value(hcsm_->GetWebsiteSetting(
+      url, url, ContentSettingsType::REVOKED_UNUSED_SITE_PERMISSIONS, nullptr));
+
+  base::Value::Dict dict = cur_value.is_dict() ? std::move(cur_value.GetDict())
+                                               : base::Value::Dict();
+  base::Value::List permission_type_list =
+      dict.FindList(kRevokedKey) ? std::move(*dict.FindList(kRevokedKey))
+                                 : base::Value::List();
+
+  for (const auto& permission : recently_revoked_permissions) {
+    permission_type_list.Append(static_cast<int32_t>(permission.type));
+  }
+
+  dict.Set(kRevokedKey, base::Value::List(std::move(permission_type_list)));
+
+  const content_settings::ContentSettingConstraints constraint{
+      .expiration = clock_->Now() + kRevocationCleanUpThreshold};
+
+  // Set website setting for the list of recently revoked permissions and
+  // previously revoked permissions, if exists.
+  hcsm_->SetWebsiteSettingCustomScope(
+      primary_pattern, secondary_pattern,
+      ContentSettingsType::REVOKED_UNUSED_SITE_PERMISSIONS,
+      base::Value(std::move(dict)), constraint);
 }
 
 void UnusedSitePermissionsService::UpdateUnusedPermissionsForTesting() {

@@ -564,6 +564,7 @@ void TexturePassthrough::MarkContextLost() {
   have_context_ = false;
 }
 
+#if !BUILDFLAG(IS_ANDROID)
 void TexturePassthrough::SetLevelImage(GLenum target,
                                        GLint level,
                                        gl::GLImage* image) {
@@ -579,13 +580,14 @@ gl::GLImage* TexturePassthrough::GetLevelImage(GLenum target,
 
   return level_images_[face_idx][level].image.get();
 }
+#endif
 
-void TexturePassthrough::SetStreamLevelImage(GLenum target,
-                                             GLint level,
-                                             gl::GLImage* stream_texture_image,
-                                             GLuint service_id) {
-  SetLevelImageInternal(target, level, stream_texture_image, service_id);
-  UpdateStreamTextureServiceId(target, level);
+void TexturePassthrough::BindToServiceId(GLuint service_id) {
+  if (service_id != 0 && service_id != service_id_) {
+    service_id_ = service_id;
+  }
+  // TODO(blundell): Inline the body of this method here.
+  UpdateStreamTextureServiceId(target(), /*level=*/0);
 }
 
 void TexturePassthrough::SetEstimatedSize(size_t size) {
@@ -613,6 +615,7 @@ bool TexturePassthrough::LevelInfoExists(GLenum target,
   return true;
 }
 
+#if !BUILDFLAG(IS_ANDROID)
 void TexturePassthrough::SetLevelImageInternal(
     GLenum target,
     GLint level,
@@ -625,6 +628,7 @@ void TexturePassthrough::SetLevelImageInternal(
     service_id_ = service_id;
   }
 }
+#endif
 
 void TexturePassthrough::UpdateStreamTextureServiceId(GLenum target,
                                                       GLint level) {
@@ -1904,13 +1908,12 @@ void Texture::SetLevelImage(GLenum target,
 }
 
 #if BUILDFLAG(IS_ANDROID)
-void Texture::SetLevelStreamTextureImage(GLenum target,
-                                         GLint level,
-                                         gl::GLImage* image,
-                                         ImageState state,
-                                         GLuint service_id) {
+void Texture::BindToServiceId(GLuint service_id) {
   SetStreamTextureServiceId(service_id);
-  SetLevelImageInternal(target, level, image, state);
+  // TODO(crbug.com/1310020): Confirm that this method call is a no-op
+  // and eliminate it.
+  SetLevelImageInternal(target(), /*level=*/0, /*image=*/nullptr,
+                        /*state=*/ImageState::UNBOUND);
 }
 #endif
 
@@ -2605,19 +2608,6 @@ void TextureManager::SetLevelImage(TextureRef* ref,
   DCHECK(ref);
   ref->texture()->SetLevelImage(target, level, image, state);
 }
-
-#if BUILDFLAG(IS_ANDROID)
-void TextureManager::SetLevelStreamTextureImage(TextureRef* ref,
-                                                GLenum target,
-                                                GLint level,
-                                                gl::GLImage* image,
-                                                Texture::ImageState state,
-                                                GLuint service_id) {
-  DCHECK(ref);
-  ref->texture()->SetLevelStreamTextureImage(target, level, image, state,
-                                             service_id);
-}
-#endif
 
 void TextureManager::SetLevelImageState(TextureRef* ref,
                                         GLenum target,

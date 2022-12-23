@@ -442,6 +442,12 @@ BASE_FEATURE(kCrosPrivacyHubV2,
              "CrosPrivacyHubV2",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables syncing attestation certificates to cryptauth for use by Cross Device
+// features, including Eche and Phone Hub.
+BASE_FEATURE(kCryptauthAttestationSyncing,
+             "CryptauthAttestationSyncing",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // If enabled, replaces the `DeskMiniView` legacy desk close button and behavior
 // with a button to close desk and windows and a button to combine desks (the
 // legacy behavior).
@@ -629,7 +635,7 @@ BASE_FEATURE(kDockedMagnifier,
 // Enables dragging an unpinned open app to pinned app side to pin.
 BASE_FEATURE(kDragUnpinnedAppToPin,
              "DragUnpinnedAppToPin",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables dragging and dropping an existing window to new desk in overview.
 BASE_FEATURE(kDragWindowToNewDesk,
@@ -748,11 +754,6 @@ BASE_FEATURE(kEnableLocalSearchService,
 // TODO(ashleydp): Remove this after the feature is launched.
 BASE_FEATURE(kEnableLogControllerForDiagnosticsApp,
              "EnableLogControllerForDiagnosticsApp",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// If enabled, the networking cards will be shown in the diagnostics app.
-BASE_FEATURE(kEnableNetworkingInDiagnosticsApp,
-             "EnableNetworkingInDiagnosticsApp",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables OAuth support when printing via the IPP protocol.
@@ -913,12 +914,6 @@ BASE_FEATURE(kFastPairSoftwareScanning,
              "FastPairSoftwareScanning",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables the "Subsequent Pairing" Fast Pair scenario in Bluetooth Settings
-// and Quick Settings.
-BASE_FEATURE(kFastPairSubsequentPairingUX,
-             "FastPairSubsequentPairingUX",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enables the "Saved Devices" Fast Pair page in scenario in Bluetooth Settings.
 BASE_FEATURE(kFastPairSavedDevices,
              "FastPairSavedDevices",
@@ -968,16 +963,6 @@ BASE_FEATURE(kFilesSinglePartitionFormat,
 
 // Enable files app trash.
 BASE_FEATURE(kFilesTrash, "FilesTrash", base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enables filters in Files app Recents view V2.
-BASE_FEATURE(kFiltersInRecentsV2,
-             "FiltersInRecentsV2",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enables the firmware updater app.
-BASE_FEATURE(kFirmwareUpdaterApp,
-             "FirmwareUpdaterApp",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables first party Vietnamese input method.
 BASE_FEATURE(kFirstPartyVietnameseInput,
@@ -1432,6 +1417,11 @@ BASE_FEATURE(kMojoDBusRelay,
 // Enables the full apps list in Phone Hub bubble.
 BASE_FEATURE(kEcheLauncher, "EcheLauncher", base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Switch full apps list in Phone Hub from grid view to list view.
+BASE_FEATURE(kEcheLauncherListView,
+             "EcheLauncherListView",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables support for multilingual assistive typing on ChromeOS.
 BASE_FEATURE(kMultilingualTyping,
              "MultilingualTyping",
@@ -1503,14 +1493,12 @@ BASE_FEATURE(kOobeHidDetectionRevamp,
              "OobeHidDetectionRevamp",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables OOBE Jelly features.
+BASE_FEATURE(kOobeJelly, "OobeJelly", base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables or disables the Oobe quick start flow.
 BASE_FEATURE(kOobeQuickStart,
              "OobeQuickStart",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables OOBE Material Next features.
-BASE_FEATURE(kOobeMaterialNext,
-             "OobeMaterialNext",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Removes "Shut down" button from OOBE, except first login screen and
@@ -1554,6 +1542,8 @@ BASE_FEATURE(kOverviewDeskNavigation,
 
 // Enables a notification warning users that their Thunderbolt device is not
 // supported on their CrOS device.
+// TODO(crbug/1254930): Revisit this flag when there is a way to query billboard
+// devices correctly.
 BASE_FEATURE(kPcieBillboardNotification,
              "PcieBillboardNotification",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1882,11 +1872,6 @@ BASE_FEATURE(kShimlessRMAFlow,
              "ShimlessRMAFlow",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enables or disables launching Shimless RMA as a standalone app.
-BASE_FEATURE(kShimlessRMAEnableStandalone,
-             "ShimlessRMAEnableStandalone",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enables or disables the OS update page in the shimless RMA flow.
 BASE_FEATURE(kShimlessRMAOsUpdate,
              "ShimlessRMAOsUpdate",
@@ -2079,6 +2064,12 @@ BASE_FEATURE(kUserActivityPrediction,
 // Enable or disable the ChromeOS video conferencing controls UI.
 BASE_FEATURE(kVcControlsUi, "VcControlsUi", base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enable or disable the fake effects for ChromeOS video conferencing controls
+// UI. Only meaningful in the emulator.
+BASE_FEATURE(kVcControlsUiFakeEffects,
+             "VcControlsUiFakeEffects",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enable or disable multitouch for virtual keyboard on ChromeOS.
 BASE_FEATURE(kVirtualKeyboardMultitouch,
              "VirtualKeyboardMultitouch",
@@ -2109,6 +2100,11 @@ BASE_FEATURE(kWallpaperFastRefresh,
 BASE_FEATURE(kWallpaperFullScreenPreview,
              "WallpaperFullScreenPreview",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enable using google photos shared albums for wallpaper.
+BASE_FEATURE(kWallpaperGooglePhotosSharedAlbums,
+             "WallpaperGooglePhotosSharedAlbums",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enable different wallpapers per desk.
 BASE_FEATURE(kWallpaperPerDesk,
@@ -2179,30 +2175,6 @@ BASE_FEATURE(kDeviceActiveClientDailyCheckMembership,
              "DeviceActiveClientDailyCheckMembership",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enables or disables PSM CheckIn for the first active device active pings
-// on ChromeOS.
-BASE_FEATURE(kDeviceActiveClientFirstActiveCheckIn,
-             "DeviceActiveClientFirstActiveCheckIn",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables or disables PSM CheckMembership for all time device active pings
-// on ChromeOS.
-BASE_FEATURE(kDeviceActiveClientFirstActiveCheckMembership,
-             "DeviceActiveClientFirstActiveCheckMembership",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables or disables PSM CheckIn for the monthly device active pings
-// on ChromeOS.
-BASE_FEATURE(kDeviceActiveClientMonthlyCheckIn,
-             "DeviceActiveClientMonthlyCheckIn",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enables or disables PSM CheckMembership for monthly device active pings
-// on ChromeOS.
-BASE_FEATURE(kDeviceActiveClientMonthlyCheckMembership,
-             "DeviceActiveClientMonthlyCheckMembership",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enables or disables forced reboots when DeviceScheduledReboot policy is set.
 BASE_FEATURE(kDeviceForceScheduledReboot,
              "DeviceForceScheduledReboot",
@@ -2236,8 +2208,9 @@ bool AreCaptureModeDemoToolsEnabled() {
 }
 
 bool AreContextualNudgesEnabled() {
-  if (!IsHideShelfControlsInTabletModeEnabled())
+  if (!IsHideShelfControlsInTabletModeEnabled()) {
     return false;
+  }
   return base::FeatureList::IsEnabled(kContextualNudges);
 }
 
@@ -2329,10 +2302,6 @@ bool IsArcInputOverlayAlphaV2Enabled() {
   return base::FeatureList::IsEnabled(kArcInputOverlayAlphaV2);
 }
 
-bool IsArcNetworkDiagnosticsButtonEnabled() {
-  return IsNetworkingInDiagnosticsAppEnabled();
-}
-
 bool IsAssistantNativeIconsEnabled() {
   return base::FeatureList::IsEnabled(kAssistantNativeIcons);
 }
@@ -2409,6 +2378,10 @@ bool IsClipboardHistoryRefreshEnabled() {
 
 bool IsClipboardHistoryReorderEnabled() {
   return base::FeatureList::IsEnabled(kClipboardHistoryReorder);
+}
+
+bool IsCryptauthAttestationSyncingEnabled() {
+  return base::FeatureList::IsEnabled(kCryptauthAttestationSyncing);
 }
 
 bool IsDesksCloseAllEnabled() {
@@ -2564,10 +2537,6 @@ bool IsFastPairSoftwareScanningEnabled() {
   return base::FeatureList::IsEnabled(kFastPairSoftwareScanning);
 }
 
-bool IsFastPairSubsequentPairingUXEnabled() {
-  return base::FeatureList::IsEnabled(kFastPairSubsequentPairingUX);
-}
-
 bool IsFastPairSavedDevicesEnabled() {
   return base::FeatureList::IsEnabled(kFastPairSavedDevices);
 }
@@ -2591,10 +2560,6 @@ bool IsFileManagerFuseBoxDebugEnabled() {
 
 bool IsFileManagerSearchV2Enabled() {
   return base::FeatureList::IsEnabled(kFilesSearchV2);
-}
-
-bool IsFirmwareUpdaterAppEnabled() {
-  return base::FeatureList::IsEnabled(kFirmwareUpdaterApp);
 }
 
 bool IsFloatingWorkspaceEnabled() {
@@ -2814,12 +2779,13 @@ bool IsEcheLauncherEnabled() {
          base::FeatureList::IsEnabled(kEcheSWA);
 }
 
-bool IsNearbyKeepAliveFixEnabled() {
-  return base::FeatureList::IsEnabled(kNearbyKeepAliveFix);
+bool IsEcheLauncherListViewEnabled() {
+  return IsEcheLauncherEnabled() &&
+         base::FeatureList::IsEnabled(kEcheLauncherListView);
 }
 
-bool IsNetworkingInDiagnosticsAppEnabled() {
-  return base::FeatureList::IsEnabled(kEnableNetworkingInDiagnosticsApp);
+bool IsNearbyKeepAliveFixEnabled() {
+  return base::FeatureList::IsEnabled(kNearbyKeepAliveFix);
 }
 
 bool IsOAuthIppEnabled() {
@@ -2866,8 +2832,8 @@ bool IsKioskLoginScreenEnabled() {
   return base::FeatureList::IsEnabled(kEnableKioskLoginScreen);
 }
 
-bool IsOobeMaterialNextEnabled() {
-  return IsJellyEnabled() && base::FeatureList::IsEnabled(kOobeMaterialNext);
+bool IsOobeJellyEnabled() {
+  return IsJellyEnabled() && base::FeatureList::IsEnabled(kOobeJelly);
 }
 
 bool IsOobeNetworkScreenSkipEnabled() {
@@ -3091,11 +3057,6 @@ bool IsShimlessRMAFlowEnabled() {
   return base::FeatureList::IsEnabled(kShimlessRMAFlow);
 }
 
-bool IsShimlessRMAStandaloneAppEnabled() {
-  return base::FeatureList::IsEnabled(kShimlessRMAEnableStandalone) &&
-         IsShimlessRMAFlowEnabled();
-}
-
 bool IsShimlessRMAOsUpdateEnabled() {
   return base::FeatureList::IsEnabled(kShimlessRMAOsUpdate);
 }
@@ -3178,6 +3139,10 @@ bool IsVcControlsUiEnabled() {
   return base::FeatureList::IsEnabled(kVcControlsUi);
 }
 
+bool IsVcControlsUiFakeEffectsEnabled() {
+  return base::FeatureList::IsEnabled(kVcControlsUiFakeEffects);
+}
+
 bool IsViewPpdEnabled() {
   return base::FeatureList::IsEnabled(kEnableViewPpd);
 }
@@ -3187,6 +3152,10 @@ bool IsWallpaperFastRefreshEnabled() {
 }
 
 bool IsWallpaperFullScreenPreviewEnabled() {
+  return base::FeatureList::IsEnabled(kWallpaperFullScreenPreview);
+}
+
+bool IsWallpaperGooglePhotosSharedAlbumsEnabled() {
   return base::FeatureList::IsEnabled(kWallpaperFullScreenPreview);
 }
 

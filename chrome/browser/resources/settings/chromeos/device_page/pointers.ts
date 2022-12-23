@@ -122,26 +122,6 @@ class SettingsPointersElement extends SettingsPointersElementBase {
       },
 
       /**
-       * TODO(gavinwill): Remove this conditional once the feature is launched.
-       */
-      allowTouchpadHapticFeedback_: {
-        type: Boolean,
-        value() {
-          return loadTimeData.getBoolean('allowTouchpadHapticFeedback');
-        },
-      },
-
-      /**
-       * TODO(gavinwill): Remove this conditional once the feature is launched.
-       */
-      allowTouchpadHapticClickSettings_: {
-        type: Boolean,
-        value() {
-          return loadTimeData.getBoolean('allowTouchpadHapticClickSettings');
-        },
-      },
-
-      /**
        * Used by DeepLinkingBehavior to focus this page's deep links.
        */
       supportedSettingIds: {

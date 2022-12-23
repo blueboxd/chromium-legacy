@@ -50,13 +50,6 @@ const base::FeatureParam<bool> kOnlySetLastRefreshAttemptOnSuccess{
     &kInterestFeedContentSuggestions,
     "only_set_last_refresh_attempt_on_success", true};
 
-BASE_FEATURE(kInterestFeedV1ClicksAndViewsConditionalUpload,
-             "InterestFeedV1ClickAndViewActionsConditionalUpload",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-BASE_FEATURE(kInterestFeedV2ClicksAndViewsConditionalUpload,
-             "InterestFeedV2ClickAndViewActionsConditionalUpload",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 #if BUILDFLAG(IS_IOS)
 BASE_FEATURE(kInterestFeedNoticeCardAutoDismiss,
              "InterestFeedNoticeCardAutoDismiss",
@@ -70,15 +63,9 @@ BASE_FEATURE(kDiscoFeedEndpoint,
 BASE_FEATURE(kXsurfaceMetricsReporting,
              "XsurfaceMetricsReporting",
              base::FEATURE_DISABLED_BY_DEFAULT);
-BASE_FEATURE(kReliabilityLogging,
-             "FeedReliabilityLogging",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kFeedHeaderStickToTop,
              "FeedHeaderStickToTop",
              base::FEATURE_DISABLED_BY_DEFAULT);
-BASE_FEATURE(kFeedInteractiveRefresh,
-             "FeedInteractiveRefresh",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kFeedLoadingPlaceholder,
              "FeedLoadingPlaceholder",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -87,9 +74,6 @@ const base::FeatureParam<bool>
         &kFeedLoadingPlaceholder, "enable_animation_on_instant_start", false};
 BASE_FEATURE(kFeedImageMemoryCacheSizePercentage,
              "FeedImageMemoryCacheSizePercentage",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-BASE_FEATURE(kFeedClearImageMemoryCache,
-             "FeedClearImageMemoryCache",
              base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kFeedBackToTop,
              "FeedBackToTop",
@@ -143,7 +127,7 @@ signin::ConsentLevel GetConsentLevelNeededForPersonalizedFeed() {
 
 BASE_FEATURE(kInfoCardAcknowledgementTracking,
              "InfoCardAcknowledgementTracking",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kShareCrowButton,
              "ShareCrowButton",
@@ -160,39 +144,10 @@ const base::FeatureParam<bool> kFeedCloseRefreshRequireInteraction{
 BASE_FEATURE(kFeedNoViewCache,
              "FeedNoViewCache",
              base::FEATURE_ENABLED_BY_DEFAULT);
-BASE_FEATURE(kFeedReplaceAll,
-             "FeedReplaceAll",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kFeedVideoInlinePlayback,
              "FeedVideoInlinePlayback",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kClientGoodVisits,
-             "FeedClientGoodVisits",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-const base::FeatureParam<base::TimeDelta> kVisitTimeout{
-    &kClientGoodVisits, "visit_timeout", base::Minutes(5)};
-
-const base::FeatureParam<base::TimeDelta> kGoodTimeInFeed{
-    &kClientGoodVisits, "good_time_in_feed", base::Minutes(1)};
-
-const base::FeatureParam<base::TimeDelta> kLongOpenTime{
-    &kClientGoodVisits, "long_open_time", base::Seconds(10)};
-
-const base::FeatureParam<base::TimeDelta> kMinStableContentSliceVisibilityTime{
-    &kClientGoodVisits, "min_stable_content_slice_visibility_time",
-    base::Milliseconds(500)};
-
-const base::FeatureParam<base::TimeDelta> kMaxStableContentSliceVisibilityTime{
-    &kClientGoodVisits, "max_stable_content_slice_visibility_time",
-    base::Seconds(30)};
-
-const base::FeatureParam<double> kSliceVisibleExposureThreshold{
-    &kClientGoodVisits, "slice_exposure_threshold", 0.5f};
-
-const base::FeatureParam<double> kSliceVisibleCoverageThreshold{
-    &kClientGoodVisits, "slice_coverage_threshold", 0.25f};
 BASE_FEATURE(kFeedExperimentIDTagging,
              "FeedExperimentIDTagging",
              base::FEATURE_ENABLED_BY_DEFAULT);

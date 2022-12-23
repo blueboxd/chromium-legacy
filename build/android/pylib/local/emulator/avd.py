@@ -31,6 +31,7 @@ from pylib.local.emulator.proto import avd_pb2
 # the emulator instance, e.g. emulator binary, system images, AVDs.
 COMMON_CIPD_ROOT = os.path.join(constants.DIR_SOURCE_ROOT, '.android_emulator')
 
+# All the packages that are needed for runtime.
 _ALL_PACKAGES = object()
 
 # These files are used as backing files for corresponding qcow2 images.
@@ -242,44 +243,110 @@ class AvdConfig:
     self.avd_proto_path = avd_proto_path
     self._config = _Load(avd_proto_path)
 
-    self._emulator_home = os.path.join(COMMON_CIPD_ROOT,
-                                       self._config.avd_package.dest_path)
-    self._emulator_sdk_root = os.path.join(
-        COMMON_CIPD_ROOT, self._config.emulator_package.dest_path)
-    self._emulator_path = os.path.join(self._emulator_sdk_root, 'emulator',
-                                       'emulator')
-    self._qemu_img_path = os.path.join(self._emulator_sdk_root, 'emulator',
-                                       'qemu-img')
-
     self._initialized = False
     self._initializer_lock = threading.Lock()
 
   @property
+  def emulator_home(self):
+    """User-specific emulator configuration directory.
+
+    It corresponds to the environment variable $ANDROID_EMULATOR_HOME.
+    Configs like advancedFeatures.ini are expected to be under this dir.
+    """
+    return os.path.join(COMMON_CIPD_ROOT, self._config.avd_package.dest_path)
+
+  @property
+  def emulator_sdk_root(self):
+    """The path to the SDK installation directory.
+
+    It corresponds to the environment variable $ANDROID_HOME.
+
+    To be a valid sdk root, it requires to have the subdirecotries "platforms"
+    and "platform-tools". See http://bit.ly/2YAkyFE for context.
+
+    Also, it is expected to have subdirecotries "emulator" and "system-images".
+    """
+    emulator_sdk_root = os.path.join(COMMON_CIPD_ROOT,
+                                     self._config.emulator_package.dest_path)
+    # Ensure this is a valid sdk root.
+    required_dirs = [
+        os.path.join(emulator_sdk_root, 'platforms'),
+        os.path.join(emulator_sdk_root, 'platform-tools'),
+    ]
+    for d in required_dirs:
+      if not os.path.exists(d):
+        os.makedirs(d)
+
+    return emulator_sdk_root
+
+  @property
+  def emulator_path(self):
+    """The path to the emulator binary."""
+    return os.path.join(self.emulator_sdk_root, 'emulator', 'emulator')
+
+  @property
+  def qemu_img_path(self):
+    """The path to the qemu-img binary.
+
+    This is used to rebase the paths in qcow2 images.
+    """
+    return os.path.join(self.emulator_sdk_root, 'emulator', 'qemu-img')
+
+  @property
+  def mksdcard_path(self):
+    """The path to the mksdcard binary.
+
+    This is used to create a sdcard image.
+    """
+    return os.path.join(self.emulator_sdk_root, 'emulator', 'mksdcard')
+
+  @property
   def avd_settings(self):
+    """The AvdSettings in the avd proto file.
+
+    This defines how to configure the AVD at creation.
+    """
     return self._config.avd_settings
 
   @property
   def avd_name(self):
+    """The name of the AVD to create or use."""
     return self._config.avd_name
 
   @property
-  def _avd_home(self):
-    return os.path.join(self._emulator_home, 'avd')
+  def avd_home(self):
+    """The path that contains the files of one or multiple AVDs."""
+    avd_home = os.path.join(self.emulator_home, 'avd')
+    if not os.path.exists(avd_home):
+      os.makedirs(avd_home)
+
+    return avd_home
 
   @property
   def _avd_dir(self):
-    return os.path.join(self._avd_home, '%s.avd' % self._config.avd_name)
+    """The path that contains the files of the given AVD."""
+    return os.path.join(self.avd_home, '%s.avd' % self.avd_name)
 
   @property
   def _system_image_dir(self):
+    """The path of the directory that directly contains the system images.
+
+    For example, if the system_image_name is
+    "system-images;android-33;google_apis;x86_64"
+
+    The _system_image_dir will be:
+    <COMMON_CIPD_ROOT>/<dest_path>/system-images/android-33/google_apis/x86_64
+
+    This is used to rebase the paths in qcow2 images.
+    """
     return os.path.join(COMMON_CIPD_ROOT,
                         self._config.system_image_package.dest_path,
                         *self._config.system_image_name.split(';'))
 
   @property
   def _root_ini_path(self):
-    """The <avd_name>.ini file."""
-    return os.path.join(self._avd_home, '%s.ini' % self._config.avd_name)
+    """The <avd_name>.ini file of the given AVD."""
+    return os.path.join(self.avd_home, '%s.ini' % self.avd_name)
 
   @property
   def _config_ini_path(self):
@@ -288,7 +355,35 @@ class AvdConfig:
 
   @property
   def _features_ini_path(self):
-    return os.path.join(self._emulator_home, 'advancedFeatures.ini')
+    return os.path.join(self.emulator_home, 'advancedFeatures.ini')
+
+  @property
+  def xdg_config_dir(self):
+    """The base directory to store qt config file.
+
+    This dir should be added to the env variable $XDG_CONFIG_DIRS so that
+    _qt_config_path can take effect. See https://bit.ly/3HIQRZ3 for context.
+    """
+    config_dir = os.path.join(self.emulator_home, '.config')
+    if not os.path.exists(config_dir):
+      os.makedirs(config_dir)
+
+    return config_dir
+
+  @property
+  def _qt_config_path(self):
+    """The qt config file for emulator."""
+    qt_config_dir = os.path.join(self.xdg_config_dir,
+                                 'Android Open Source Project')
+    if not os.path.exists(qt_config_dir):
+      os.makedirs(qt_config_dir)
+
+    return os.path.join(qt_config_dir, 'Emulator.conf')
+
+  def HasSnapshot(self, snapshot_name):
+    """Check if a given snapshot exists or not."""
+    snapshot_path = os.path.join(self._avd_dir, 'snapshots', snapshot_name)
+    return os.path.exists(snapshot_path)
 
   def Create(self,
              force=False,
@@ -331,20 +426,16 @@ class AvdConfig:
     self._InstallCipdPackages(packages=[
         self._config.emulator_package,
         self._config.system_image_package,
+        # privileged_apk and additional_apk are needed only during create time.
         *self._config.privileged_apk,
         *self._config.additional_apk,
     ])
 
-    android_avd_home = self._avd_home
-
-    if not os.path.exists(android_avd_home):
-      os.makedirs(android_avd_home)
-
-    avd_manager = _AvdManagerAgent(avd_home=android_avd_home,
-                                   sdk_root=self._emulator_sdk_root)
+    avd_manager = _AvdManagerAgent(avd_home=self.avd_home,
+                                   sdk_root=self.emulator_sdk_root)
 
     logging.info('Creating AVD.')
-    avd_manager.Create(avd_name=self._config.avd_name,
+    avd_manager.Create(avd_name=self.avd_name,
                        system_image=self._config.system_image_name,
                        force=force)
 
@@ -353,7 +444,7 @@ class AvdConfig:
 
       # Clear out any previous configuration or state from this AVD.
       with ini.update_ini_file(self._root_ini_path) as r_ini_contents:
-        r_ini_contents['path.rel'] = 'avd/%s.avd' % self._config.avd_name
+        r_ini_contents['path.rel'] = 'avd/%s.avd' % self.avd_name
 
       with ini.update_ini_file(self._features_ini_path) as f_ini_contents:
         # features_ini file will not be refreshed by avdmanager during
@@ -386,10 +477,8 @@ class AvdConfig:
         config_ini_contents['hw.sdCard'] = 'yes'
         if self.avd_settings.sdcard.size:
           sdcard_path = os.path.join(self._avd_dir, _SDCARD_NAME)
-          mksdcard_path = os.path.join(os.path.dirname(self._emulator_path),
-                                       'mksdcard')
           cmd_helper.RunCmd([
-              mksdcard_path,
+              self.mksdcard_path,
               self.avd_settings.sdcard.size,
               sdcard_path,
           ])
@@ -420,8 +509,7 @@ class AvdConfig:
 
       # Start & stop the AVD.
       self._Initialize()
-      instance = _AvdInstance(self._emulator_path, self._emulator_home,
-                              self._config)
+      instance = _AvdInstance(self)
       # Enable debug for snapshot when it is set to True
       debug_tags = 'time,init,snapshot' if snapshot else None
       # Installing privileged apks requires modifying the system
@@ -483,17 +571,17 @@ class AvdConfig:
           'package':
           self._config.avd_package.package_name,
           'root':
-          self._emulator_home,
+          self.emulator_home,
           'install_mode':
           'copy',
           'data': [{
-              'dir': os.path.relpath(self._avd_dir, self._emulator_home)
+              'dir': os.path.relpath(self._avd_dir, self.emulator_home)
           }, {
               'file':
-              os.path.relpath(self._root_ini_path, self._emulator_home)
+              os.path.relpath(self._root_ini_path, self.emulator_home)
           }, {
               'file':
-              os.path.relpath(self._features_ini_path, self._emulator_home)
+              os.path.relpath(self._features_ini_path, self.emulator_home)
           }],
       }
 
@@ -537,7 +625,7 @@ class AvdConfig:
     finally:
       if not keep:
         logging.info('Deleting AVD.')
-        avd_manager.Delete(avd_name=self._config.avd_name)
+        avd_manager.Delete(avd_name=self.avd_name)
 
   def IsAvailable(self, packages=_ALL_PACKAGES):
     """Returns whether emulator is up-to-date."""
@@ -588,7 +676,7 @@ class AvdConfig:
       logging.info('Rebasing the qcow2 image %r with the backing file %r',
                    qcow2_image_path, backing_file_path)
       cmd_helper.RunCmd([
-          self._qemu_img_path,
+          self.qemu_img_path,
           'rebase',
           '-u',
           '-f',
@@ -606,8 +694,6 @@ class AvdConfig:
           self._config.avd_package,
           self._config.emulator_package,
           self._config.system_image_package,
-          *self._config.privileged_apk,
-          *self._config.additional_apk,
       ]
     for pkg in packages:
       # Skip when no version exists to prevent "IsAvailable()" returning False
@@ -651,7 +737,7 @@ class AvdConfig:
 
   def _MakeWriteable(self):
     # The emulator requires that some files are writable.
-    for dirname, _, filenames in os.walk(self._emulator_home):
+    for dirname, _, filenames in os.walk(self.emulator_home):
       for f in filenames:
         path = os.path.join(dirname, f)
         mode = os.lstat(path).st_mode
@@ -668,16 +754,17 @@ class AvdConfig:
      * Emulator instance can be booted correctly.
      * The snapshot can be loaded successfully.
     """
+    logging.info('Updating AVD configurations.')
     # Update the absolute avd path in root_ini file
     with ini.update_ini_file(self._root_ini_path) as r_ini_contents:
       r_ini_contents['path'] = self._avd_dir
 
     # Update hardware settings.
-    config_files = [self._config_ini_path]
+    config_paths = [self._config_ini_path]
     # The file hardware.ini within each snapshot need to be updated as well.
     hw_ini_glob_pattern = os.path.join(self._avd_dir, 'snapshots', '*',
                                        'hardware.ini')
-    config_files.extend(glob.glob(hw_ini_glob_pattern))
+    config_paths.extend(glob.glob(hw_ini_glob_pattern))
 
     properties = {}
     # Update hw.sdCard.path if applicable
@@ -685,9 +772,13 @@ class AvdConfig:
     if os.path.exists(sdcard_path):
       properties['hw.sdCard.path'] = sdcard_path
 
-    for config_file in config_files:
-      with ini.update_ini_file(config_file) as config_contents:
+    for config_path in config_paths:
+      with ini.update_ini_file(config_path) as config_contents:
         config_contents.update(properties)
+
+    # Create qt config file to disable adb warning when launched in window mode.
+    with ini.update_ini_file(self._qt_config_path) as config_contents:
+      config_contents['set'] = {'autoFindAdb': 'false'}
 
   def _Initialize(self):
     if self._initialized:
@@ -700,16 +791,8 @@ class AvdConfig:
       # Emulator start-up looks for the adb daemon. Make sure it's running.
       adb_wrapper.AdbWrapper.StartServer()
 
-      # Emulator start-up tries to check for the SDK root by looking for
-      # platforms/ and platform-tools/. Ensure they exist.
-      # See http://bit.ly/2YAkyFE for context.
-      required_dirs = [
-          os.path.join(self._emulator_sdk_root, 'platforms'),
-          os.path.join(self._emulator_sdk_root, 'platform-tools'),
-      ]
-      for d in required_dirs:
-        if not os.path.exists(d):
-          os.makedirs(d)
+      # Emulator start-up requires a valid sdk root.
+      assert self.emulator_sdk_root
 
   def CreateInstance(self):
     """Creates an AVD instance without starting it.
@@ -718,7 +801,7 @@ class AvdConfig:
       An _AvdInstance.
     """
     self._Initialize()
-    return _AvdInstance(self._emulator_path, self._emulator_home, self._config)
+    return _AvdInstance(self)
 
   def StartInstance(self):
     """Starts an AVD instance.
@@ -738,18 +821,16 @@ class _AvdInstance:
   but its other methods can be freely called.
   """
 
-  def __init__(self, emulator_path, emulator_home, avd_config):
+  def __init__(self, avd_config):
     """Create an _AvdInstance object.
 
     Args:
-      emulator_path: path to the emulator binary.
-      emulator_home: path to the emulator home directory.
-      avd_config: AVD config proto.
+      avd_config: an AvdConfig instance.
     """
     self._avd_config = avd_config
     self._avd_name = avd_config.avd_name
-    self._emulator_home = emulator_home
-    self._emulator_path = emulator_path
+    self._emulator_home = avd_config.emulator_home
+    self._emulator_path = avd_config.emulator_path
     self._emulator_proc = None
     self._emulator_serial = None
     self._emulator_device = None
@@ -829,9 +910,9 @@ class _AvdInstance:
       emulator_env = {
           # kill immediately when emulator hang.
           'ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL': '0',
+          # Sets the emulator configuration directory
+          'ANDROID_EMULATOR_HOME': self._emulator_home,
       }
-      if self._emulator_home:
-        emulator_env['ANDROID_EMULATOR_HOME'] = self._emulator_home
       if 'DISPLAY' in os.environ:
         emulator_env['DISPLAY'] = os.environ.get('DISPLAY')
       if window:
@@ -839,6 +920,12 @@ class _AvdInstance:
           raise AvdException('Emulator failed to start: DISPLAY not defined')
       else:
         emulator_cmd.append('-no-window')
+
+      # Need this for the qt config file to take effect.
+      xdg_config_dirs = [self._avd_config.xdg_config_dir]
+      if 'XDG_CONFIG_DIRS' in os.environ:
+        xdg_config_dirs.append(os.environ.get('XDG_CONFIG_DIRS'))
+      emulator_env['XDG_CONFIG_DIRS'] = ':'.join(xdg_config_dirs)
 
       sock.listen(1)
 
@@ -923,10 +1010,7 @@ class _AvdInstance:
 
   def HasSystemSnapshot(self):
     """Check if the instance has the snapshot named _SYSTEM_SNAPSHOT_NAME."""
-    snapshot_path = os.path.join(self._emulator_home, 'avd',
-                                 '%s.avd' % self._avd_name, 'snapshots',
-                                 _SYSTEM_SNAPSHOT_NAME)
-    return os.path.exists(snapshot_path)
+    return self._avd_config.HasSnapshot(_SYSTEM_SNAPSHOT_NAME)
 
   def SaveSnapshot(self):
     snapshot_name = self.GetSnapshotName()

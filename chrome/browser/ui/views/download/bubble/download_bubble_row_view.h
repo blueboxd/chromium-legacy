@@ -80,6 +80,10 @@ class DownloadBubbleRowView : public views::View,
                                   const gfx::Point& point,
                                   ui::MenuSourceType source_type) override;
 
+  // Overrides ui::AcceleratorTarget
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  bool CanHandleAccelerators() const override;
+
   DownloadUIModel* model() { return model_.get(); }
 
   DownloadUIModel::BubbleUIInfo& ui_info() { return ui_info_; }
@@ -99,6 +103,9 @@ class DownloadBubbleRowView : public views::View,
   views::ImageButton* GetActionButtonForCommand(
       DownloadCommands::Command command);
   std::u16string GetAccessibleNameForQuickAction(
+      DownloadCommands::Command command);
+  views::MdTextButton* GetMainPageButton(DownloadCommands::Command command);
+  std::u16string GetAccessibleNameForMainPageButton(
       DownloadCommands::Command command);
 
   // If there is any change in state, update UI info.
@@ -128,6 +135,10 @@ class DownloadBubbleRowView : public views::View,
   void OnMainButtonPressed();
 
   void AnnounceInProgressAlert();
+
+  // Registers/unregisters copy accelerator for copy/paste support.
+  void RegisterAccelerators(views::FocusManager* focus_manager);
+  void UnregisterAccelerators(views::FocusManager* focus_manager);
 
   // The icon for the file. We get platform-specific icons from IconLoader.
   raw_ptr<views::ImageView> icon_ = nullptr;

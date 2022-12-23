@@ -144,6 +144,7 @@
 <translation id="2208919847696382164">Cài đặt Linux</translation>
 <translation id="2225536596944493418">Bạn có chắc chắn muốn xóa <ph name="NUMBER_OF_ITEMS" /> mục không?</translation>
 <translation id="2230062665678605299">Không thể tạo thư mục "<ph name="FOLDER_NAME" />". <ph name="ERROR_MESSAGE" /></translation>
+<translation id="2236732657580416950">Your Google Drive cache was cleared.</translation>
 <translation id="2239068707900391003">Người uống cà phê</translation>
 <translation id="2251368349685848079">Khôi phục từ thùng rác</translation>
 <translation id="2282155092769082568">URL tự động định cấu hình:</translation>
@@ -364,7 +365,7 @@
 <translation id="4181839429935094755">Đã chia sẻ <ph name="NUMBER_OF_ITEMS" /> thư mục với Bruschetta</translation>
 <translation id="4186579485882418952">Bật chế độ ngoại tuyến</translation>
 <translation id="4193154014135846272">Tài liệu Google</translation>
-<translation id="4197674956721858839">Chọn file nén zip</translation>
+<translation id="4197674956721858839">Nén tệp đã chọn</translation>
 <translation id="4202378258276439759">Tiếng Tây Ban Nha (Mỹ Latinh)</translation>
 <translation id="4202977638116331303">Tiếng Georgia</translation>
 <translation id="421017592316736757">Bạn phải trực tuyến để truy cập tệp này.</translation>

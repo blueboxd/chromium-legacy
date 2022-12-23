@@ -41,8 +41,10 @@ export function $$(element: Element, selector: string) {
 export function createBackgroundImage(url: string): BackgroundImage {
   return {
     url: {url},
+    snapshotUrl: {url},
     isUploadedImage: false,
     title: '',
+    mainColor: undefined,
   };
 }
 
@@ -50,9 +52,11 @@ export function createTheme(systemDarkMode = false): Theme {
   return {
     backgroundImage: undefined,
     systemDarkMode,
+    seedColor: {value: 0xff0000ff},
     backgroundColor: {value: 0xffff0000},
     foregroundColor: undefined,
     colorPickerIconColor: {value: 0xffff0000},
+    colorsManagedByPolicy: false,
   };
 }
 

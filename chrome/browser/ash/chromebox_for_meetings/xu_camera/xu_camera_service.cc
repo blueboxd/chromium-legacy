@@ -29,7 +29,7 @@ class RealDelegate : public XuCameraService::Delegate {
   RealDelegate(const RealDelegate&) = delete;
   RealDelegate& operator=(const RealDelegate&) = delete;
 
-  int Ioctl(int fd, int request, uvc_xu_control_query* query) override {
+  int Ioctl(int fd, unsigned int request, void* query) override {
     return HANDLE_EINTR(ioctl(fd, request, query));
   }
 
@@ -144,17 +144,54 @@ void XuCameraService::GetUnitId(const mojom::WebcamIdPtr id,
 void XuCameraService::MapCtrl(const mojom::WebcamIdPtr id,
                               const mojom::ControlMappingPtr mapping_ctrl,
                               MapCtrlCallback callback) {
-  NOTIMPLEMENTED();
-  std::move(callback).Run(ENOSYS);
+  uint8_t error_code = 0;
+  std::string dev_path = id->is_device_id() ? GetDevicePath(id->get_device_id())
+                                            : id->get_dev_path();
+  int file_descriptor = delegate_->OpenFile(dev_path);
+  if (file_descriptor < 0) {
+    LOG(ERROR) << __func__ << ": File is invalid";
+    std::move(callback).Run(ENOENT);
+  }
+
+  struct uvc_menu_info uvc_menus[mapping_ctrl->menu_entries->menu_info.size()];
+
+  int index = 0;
+  for (auto menu_info = mapping_ctrl->menu_entries->menu_info.begin();
+       menu_info < mapping_ctrl->menu_entries->menu_info.end(); menu_info++) {
+    const struct uvc_menu_info info = {
+        .value = (*menu_info)->value,
+        .name = {*((*menu_info)->name.data())},
+    };
+    uvc_menus[index] = info;
+    index++;
+  }
+
+  struct uvc_xu_control_mapping control_mapping = {
+      .id = mapping_ctrl->id,
+      .name = {*(mapping_ctrl->name.data())},
+      .entity = {*(mapping_ctrl->guid.data())},
+      .selector = mapping_ctrl->selector,
+      .size = mapping_ctrl->size,
+      .offset = mapping_ctrl->offset,
+      .v4l2_type = mapping_ctrl->v4l2_type,
+      .data_type = mapping_ctrl->data_type,
+      .menu_info = uvc_menus,
+      .menu_count = static_cast<uint32_t>(index),
+  };
+
+  // Map the controls to v4l2
+  error_code =
+      delegate_->Ioctl(file_descriptor, UVCIOC_CTRL_MAP, &control_mapping);
+
+  std::move(callback).Run(error_code);
 }
 
 void XuCameraService::GetCtrl(const mojom::WebcamIdPtr id,
                               const mojom::CtrlTypePtr ctrl,
                               const mojom::GetFn fn,
                               GetCtrlCallback callback) {
-  uint8_t error_code = ENOSYS;
+  uint8_t error_code = 0;
   std::vector<uint8_t> data;
-  mojom::ControlQueryPtr query;
   std::string dev_path = id->is_device_id() ? GetDevicePath(id->get_device_id())
                                             : id->get_dev_path();
 
@@ -173,8 +210,8 @@ void XuCameraService::GetCtrl(const mojom::WebcamIdPtr id,
                            data, GetRequest(fn));
       break;
     case mojom::CtrlType::Tag::kMappingCtrl:
-      NOTIMPLEMENTED();
-      error_code = ENOSYS;
+      error_code = CtrlThroughMapping(
+          file_descriptor, std::move(ctrl->get_mapping_ctrl()), data, fn);
       break;
     default:
       LOG(ERROR) << __func__ << ": Invalid CtrlType::Tag";
@@ -188,8 +225,7 @@ void XuCameraService::SetCtrl(const mojom::WebcamIdPtr id,
                               const mojom::CtrlTypePtr ctrl,
                               const std::vector<uint8_t>& data,
                               SetCtrlCallback callback) {
-  uint8_t error_code = ENOSYS;
-  mojom::ControlQueryPtr query;
+  uint8_t error_code = 0;
   std::string dev_path = id->is_device_id() ? GetDevicePath(id->get_device_id())
                                             : id->get_dev_path();
   int file_descriptor = delegate_->OpenFile(dev_path);
@@ -207,10 +243,14 @@ void XuCameraService::SetCtrl(const mojom::WebcamIdPtr id,
           CtrlThroughQuery(file_descriptor, std::move(ctrl->get_query_ctrl()),
                            data_, UVC_SET_CUR);
       break;
-    case mojom::CtrlType::Tag::kMappingCtrl:
-      NOTIMPLEMENTED();
-      error_code = ENOSYS;
+    case mojom::CtrlType::Tag::kMappingCtrl: {
+      mojom::ControlMappingPtr mapping = std::move(ctrl->get_mapping_ctrl());
+      int32_t newValue;
+      CopyFromData(&newValue, data_);
+      struct v4l2_control control = {.id = mapping->id, .value = newValue};
+      error_code = delegate_->Ioctl(file_descriptor, VIDIOC_S_CTRL, &control);
       break;
+    }
     default:
       LOG(ERROR) << __func__ << ": Invalid CtrlType::Tag";
       error_code = EINVAL;
@@ -251,7 +291,7 @@ std::string XuCameraService::GetDevicePath(const std::string& device_id) {
 uint8_t XuCameraService::CtrlThroughQuery(int file_descriptor,
                                           const mojom::ControlQueryPtr& query,
                                           std::vector<uint8_t>& data,
-                                          unsigned int request) {
+                                          const uint8_t& request) {
   if (UVC_SET_CUR == request) {
     uint8_t error_code =
         QueryXuControl(file_descriptor, query->unit_id, query->selector,
@@ -280,5 +320,86 @@ uint8_t XuCameraService::CtrlThroughQuery(int file_descriptor,
                               data.data(), request, data_len);
 
   return error_code;
+}
+
+uint8_t XuCameraService::CtrlThroughMapping(
+    int file_descriptor,
+    const mojom::ControlMappingPtr& mapping,
+    std::vector<uint8_t>& data,
+    const mojom::GetFn& fn) {
+  uint8_t error_code = 0;
+
+  // Early return for kCur/kLen  vs other info that requires VIDIOC_QUERYCTRL
+  if (mojom::GetFn::kLen == fn) {
+    // User set up the map so they should know that the size returned will be
+    // in bits.
+    data.push_back(mapping->size);
+    return error_code;
+  } else if (mojom::GetFn::kCur == fn) {
+    struct v4l2_control control = {.id = mapping->id};
+    error_code = delegate_->Ioctl(file_descriptor, VIDIOC_G_CTRL, &control);
+    CopyToData<int32_t>(&control.value, data, sizeof(control.value));
+    return error_code;
+  }
+
+  struct v4l2_queryctrl query = {
+      .id = mapping->id,
+  };
+
+  error_code = delegate_->Ioctl(file_descriptor, VIDIOC_QUERYCTRL, &query);
+
+  if (error_code != 0) {
+    return error_code;
+  }
+
+  switch (fn) {
+    case mojom::GetFn::kMin: {
+      CopyToData<int32_t>(&query.minimum, data, sizeof(query.minimum));
+      break;
+    }
+    case mojom::GetFn::kMax: {
+      CopyToData<int32_t>(&query.maximum, data, sizeof(query.maximum));
+      break;
+    }
+    case mojom::GetFn::kDef: {
+      CopyToData<int32_t>(&query.default_value, data,
+                          sizeof(query.default_value));
+      break;
+    }
+    case mojom::GetFn::kRes: {
+      CopyToData<int32_t>(&query.step, data, sizeof(query.step));
+      break;
+    }
+    case mojom::GetFn::kInfo: {
+      // Get control info bitmap for get/set
+      CopyToData<uint32_t>(&query.flags, data, sizeof(query.flags));
+      break;
+    }
+    default:
+      LOG(ERROR) << __func__ << ": Invalid GetFn. ";
+      return EINVAL;
+  }
+  return error_code;
+}
+
+template <typename T>
+void XuCameraService::CopyToData(T* value,
+                                 std::vector<uint8_t>& data,
+                                 size_t size) {
+  data.reserve(size);
+  uint8_t* valueAsUint8 = reinterpret_cast<uint8_t*>(value);
+  for (size_t i = 0; i < size; ++i) {
+    data.push_back(*valueAsUint8);
+    valueAsUint8++;
+  }
+}
+
+template <typename T>
+void XuCameraService::CopyFromData(T* value, std::vector<uint8_t>& data) {
+  int shiftBit = 0;
+  for (size_t i = 0; i < data.size(); ++i) {
+    *value += data[i] << shiftBit;
+    shiftBit += 8;
+  }
 }
 }  // namespace ash::cfm

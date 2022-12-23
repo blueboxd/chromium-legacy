@@ -502,7 +502,16 @@ void LocalFrameView::Dispose() {
   if (owner_element && owner_element->OwnedEmbeddedContentView() == this)
     owner_element->SetEmbeddedContentView(nullptr);
 
-  ukm_aggregator_.reset();
+  if (ukm_aggregator_) {
+    LocalFrame& root_frame = GetFrame().LocalFrameRoot();
+    Document* root_document = root_frame.GetDocument();
+    if (root_document) {
+      ukm_aggregator_->TransmitFinalSample(root_document->UkmSourceID(),
+                                           root_document->UkmRecorder(),
+                                           root_frame.IsMainFrame());
+    }
+    ukm_aggregator_.reset();
+  }
   layout_shift_tracker_->Dispose();
 
 #if DCHECK_IS_ON()
@@ -3058,6 +3067,8 @@ void LocalFrameView::PushPaintArtifactToCompositor(bool repainted) {
 
   SCOPED_UMA_AND_UKM_TIMER(GetUkmAggregator(),
                            LocalFrameUkmAggregator::kCompositingCommit);
+  DEVTOOLS_TIMELINE_TRACE_EVENT("Layerize", inspector_layerize_event::Data,
+                                frame_.Get());
 
   // Skip updating property trees, pushing cc::Layers, and issuing raster
   // invalidations if possible.
@@ -4100,7 +4111,7 @@ void LocalFrameView::PaintForTest(const CullRect& cull_rect) {
       .UpdateForTesting(CullRect::Infinite());
 }
 
-sk_sp<PaintRecord> LocalFrameView::GetPaintRecord() const {
+PaintRecord LocalFrameView::GetPaintRecord() const {
   DCHECK_EQ(DocumentLifecycle::kPaintClean, Lifecycle().GetState());
   DCHECK(frame_->IsLocalRoot());
   DCHECK(paint_controller_);
@@ -4727,10 +4738,7 @@ LocalFrameUkmAggregator* LocalFrameView::GetUkmAggregator() {
   if (!local_root->ukm_aggregator_) {
     if (!local_root->frame_->GetChromeClient().IsSVGImageChromeClient()) {
       local_root->ukm_aggregator_ =
-          base::MakeRefCounted<LocalFrameUkmAggregator>(
-              local_root->frame_->GetDocument()->UkmSourceID(),
-              local_root->frame_->GetDocument()->UkmRecorder(),
-              local_root->frame_->IsMainFrame());
+          base::MakeRefCounted<LocalFrameUkmAggregator>();
     }
   }
   return local_root->ukm_aggregator_.get();

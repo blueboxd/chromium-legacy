@@ -662,9 +662,9 @@
   {
     "prefix": "fsa-incognito",
     "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["external/wpt/file-system-access"],
+    "bases": ["external/wpt/file-system-access", "external/wpt/fs"],
     "args": ["--enable-features=IncognitoFileSystemContextForTesting"],
-    "expires": "Jul 1, 2023"
+    "expires": "never"
   },
   {
     "prefix": "controls-refresh-hc",
@@ -863,20 +863,6 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/client-hints", "wpt_internal/client-hints"],
     "args": ["--disable-features=UserAgentClientHint"],
-    "expires": "Jul 1, 2023"
-  },
-  {
-    "prefix": "disable-prefers-reduced-motion-client-hint",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["external/wpt/client-hints", "wpt_internal/client-hints"],
-    "args": ["--disable-features=PrefersReducedMotionClientHintHeader"],
-    "expires": "Jul 1, 2023"
-  },
-  {
-    "prefix": "storage-access-api",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": [ "external/wpt/storage-access-api" ],
-    "args": [ "--enable-features=StorageAccessAPI" ],
     "expires": "Jul 1, 2023"
   },
   {
@@ -1693,6 +1679,28 @@
       "external/wpt/mediacapture-streams/parallel-capture-requests.https.html"
     ],
     "args": ["--enable-features=SplitUserMediaQueues"],
+    "expires": "Jul 1, 2023"
+  },
+  {
+    "prefix": "js-resizable-arraybuffer",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [
+      "external/wpt/html/infrastructure/safe-passing-of-structured-data/cross-origin-transfer-resizable-arraybuffer.html",
+      "external/wpt/html/infrastructure/safe-passing-of-structured-data/messagechannel.any.html",
+      "external/wpt/html/infrastructure/safe-passing-of-structured-data/messagechannel.any.serviceworker.html",
+      "external/wpt/html/infrastructure/safe-passing-of-structured-data/messagechannel.any.sharedworker.html",
+      "external/wpt/html/infrastructure/safe-passing-of-structured-data/messagechannel.any.worker.html",
+      "external/wpt/html/infrastructure/safe-passing-of-structured-data/window-postmessage.window.html",
+      "external/wpt/html/webappapis/structured-clone/structured-clone.any.html",
+      "external/wpt/html/webappapis/structured-clone/structured-clone.any.worker.html",
+      "external/wpt/webidl/ecmascript-binding/allow-resizable.html",
+      "external/wpt/workers/semantics/structured-clone/dedicated.html",
+      "external/wpt/workers/semantics/structured-clone/shared.html"
+    ],
+    "exclusive_tests": [
+      "external/wpt/html/infrastructure/safe-passing-of-structured-data/cross-origin-transfer-resizable-arraybuffer.html"
+    ],
+    "args": ["--js-flags=--harmony-rab-gsab"],
     "expires": "Jul 1, 2023"
   }
 ]

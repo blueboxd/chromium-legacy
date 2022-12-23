@@ -26,6 +26,7 @@
 #include "components/attribution_reporting/constants.h"
 #include "components/attribution_reporting/event_trigger_data.h"
 #include "components/attribution_reporting/filters.h"
+#include "components/attribution_reporting/registration_type.mojom-forward.h"
 #include "components/attribution_reporting/source_registration.h"
 #include "components/attribution_reporting/source_registration_error.mojom-forward.h"
 #include "components/attribution_reporting/suitable_origin.h"
@@ -107,7 +108,7 @@ class MockAttributionHost : public AttributionHost {
       void,
       RegisterDataHost,
       (mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host,
-       blink::mojom::AttributionRegistrationType),
+       attribution_reporting::mojom::RegistrationType),
       (override));
 
   MOCK_METHOD(
@@ -284,6 +285,7 @@ class MockAttributionManager : public AttributionManager {
   MOCK_METHOD(void,
               NotifyFailedSourceRegistration,
               (const std::string& header_value,
+               const attribution_reporting::SuitableOrigin& source_origin,
                const attribution_reporting::SuitableOrigin& reporting_origin,
                attribution_reporting::mojom::SourceRegistrationError),
               (override));
@@ -307,6 +309,7 @@ class MockAttributionManager : public AttributionManager {
       absl::optional<uint64_t> cleared_debug_key = absl::nullopt);
   void NotifySourceRegistrationFailure(
       const std::string& header_value,
+      const attribution_reporting::SuitableOrigin& source_origin,
       const attribution_reporting::SuitableOrigin& reporting_origin,
       attribution_reporting::mojom::SourceRegistrationError);
   void NotifyDebugReportSent(const AttributionDebugReport&,

@@ -932,7 +932,7 @@ void HTMLCanvasElement::PaintInternal(GraphicsContext& context,
         context.Canvas()->translate(r.X(), r.Y());
         context.Canvas()->scale(r.Width() / Size().width(),
                                 r.Height() / Size().height());
-        context.Canvas()->drawPicture(canvas2d_bridge_->getLastRecord());
+        context.Canvas()->drawPicture(*canvas2d_bridge_->getLastRecord());
         context.Canvas()->restore();
         UMA_HISTOGRAM_BOOLEAN("Blink.Canvas.2DPrintingAsVector", true);
         return;
@@ -1153,11 +1153,10 @@ void HTMLCanvasElement::toBlob(V8BlobCallback* callback,
   CanvasAsyncBlobCreator* async_creator = nullptr;
   scoped_refptr<StaticBitmapImage> image_bitmap = Snapshot(kBackBuffer);
   if (image_bitmap) {
-    auto image_unaccelerated = image_bitmap->MakeUnaccelerated();
     auto* options = ImageEncodeOptions::Create();
     options->setType(ImageEncodingMimeTypeName(encoding_mime_type));
     async_creator = MakeGarbageCollected<CanvasAsyncBlobCreator>(
-        std::move(image_unaccelerated), options,
+        image_bitmap, options,
         CanvasAsyncBlobCreator::kHTMLCanvasToBlobCallback, callback, start_time,
         GetExecutionContext(),
         IdentifiabilityStudySettings::Get()->ShouldSampleType(

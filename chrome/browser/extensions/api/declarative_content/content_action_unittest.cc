@@ -37,6 +37,7 @@ namespace extensions {
 namespace {
 
 using base::test::ParseJson;
+using base::test::ParseJsonDict;
 using testing::HasSubstr;
 using ContentActionType = declarative_content_constants::ContentActionType;
 using extensions::mojom::ManifestLocation;
@@ -82,17 +83,10 @@ TEST(DeclarativeContentActionTest, InvalidCreation) {
   TestingProfile profile;
   base::HistogramTester histogram_tester;
 
-  // Test wrong data type passed.
-  error.clear();
-  result = ContentAction::Create(&profile, nullptr, ParseJson("[]"), &error);
-  EXPECT_THAT(error, HasSubstr("missing instanceType"));
-  EXPECT_FALSE(result.get());
-  histogram_tester.ExpectTotalCount(
-      "Extensions.DeclarativeContentActionCreated", 0);
-
   // Test missing instanceType element.
   error.clear();
-  result = ContentAction::Create(&profile, nullptr, ParseJson("{}"), &error);
+  result =
+      ContentAction::Create(&profile, nullptr, ParseJsonDict("{}"), &error);
   EXPECT_THAT(error, HasSubstr("missing instanceType"));
   EXPECT_FALSE(result.get());
   histogram_tester.ExpectTotalCount(
@@ -100,7 +94,7 @@ TEST(DeclarativeContentActionTest, InvalidCreation) {
 
   // Test wrong instanceType element.
   error.clear();
-  result = ContentAction::Create(&profile, nullptr, ParseJson(R"(
+  result = ContentAction::Create(&profile, nullptr, ParseJsonDict(R"(
           {
             "instanceType": "declarativeContent.UnknownType",
           })"),
@@ -132,7 +126,7 @@ TEST(DeclarativeContentActionTest, ShowActionWithoutAction) {
   base::HistogramTester histogram_tester;
   std::string error;
   std::unique_ptr<const ContentAction> result =
-      ContentAction::Create(&profile, extension.get(), ParseJson(R"(
+      ContentAction::Create(&profile, extension.get(), ParseJsonDict(R"(
           {
             "instanceType": "declarativeContent.ShowAction",
           })"),
@@ -163,7 +157,7 @@ TEST_P(ParameterizedDeclarativeContentActionTest, ShowAction) {
   base::HistogramTester histogram_tester;
   std::unique_ptr<const ContentAction> result = ContentAction::Create(
       nullptr, extension.get(),
-      ParseJson(R"({"instanceType": "declarativeContent.ShowAction"})"),
+      ParseJsonDict(R"({"instanceType": "declarativeContent.ShowAction"})"),
       &error);
   EXPECT_TRUE(error.empty()) << error;
   ASSERT_TRUE(result.get());
@@ -264,13 +258,13 @@ TEST(DeclarativeContentActionTest, SetIcon) {
     base::Value::Dict dict = builder.BuildDict();
 
     const Extension* extension = env.MakeExtension(
-        ParseJson(R"({"page_action": {"default_title": "Extension"}})"));
+        ParseJsonDict(R"({"page_action": {"default_title": "Extension"}})"));
     base::HistogramTester histogram_tester;
     TestingProfile profile;
     std::string error;
     ContentAction::SetAllowInvisibleIconsForTest(false);
-    std::unique_ptr<const ContentAction> result = ContentAction::Create(
-        &profile, extension, base::Value(std::move(dict)), &error);
+    std::unique_ptr<const ContentAction> result =
+        ContentAction::Create(&profile, extension, dict, &error);
     ContentAction::SetAllowInvisibleIconsForTest(true);
     EXPECT_EQ("", error);
     ASSERT_TRUE(result.get());
@@ -314,21 +308,21 @@ TEST(DeclarativeContentActionTest, SetInvisibleIcon) {
   std::string data64 =
       base::Base64Encode(skia::mojom::InlineBitmap::Serialize(&bitmap));
 
-  std::unique_ptr<base::DictionaryValue> dict =
+  base::Value::Dict dict =
       DictionaryBuilder()
           .Set("instanceType", "declarativeContent.SetIcon")
-          .Set("imageData", DictionaryBuilder().Set("19", data64).Build())
-          .Build();
+          .Set("imageData", DictionaryBuilder().Set("19", data64).BuildDict())
+          .BuildDict();
 
   // Expect an error and no instance to be created.
   const Extension* extension = env.MakeExtension(
-      ParseJson(R"({"page_action": {"default_title": "Extension"}})"));
+      ParseJsonDict(R"({"page_action": {"default_title": "Extension"}})"));
   base::HistogramTester histogram_tester;
   TestingProfile profile;
   std::string error;
   ContentAction::SetAllowInvisibleIconsForTest(false);
   std::unique_ptr<const ContentAction> result =
-      ContentAction::Create(&profile, extension, *dict, &error);
+      ContentAction::Create(&profile, extension, dict, &error);
   ContentAction::SetAllowInvisibleIconsForTest(true);
   EXPECT_EQ("The specified icon is not sufficiently visible", error);
   EXPECT_FALSE(result);
@@ -344,7 +338,7 @@ TEST_F(RequestContentScriptTest, MissingScripts) {
   std::string error;
   base::HistogramTester histogram_tester;
   std::unique_ptr<const ContentAction> result =
-      ContentAction::Create(profile(), extension(), ParseJson(R"(
+      ContentAction::Create(profile(), extension(), ParseJsonDict(R"(
           {
             "instanceType": "declarativeContent.RequestContentScript",
             "allFrames": true,
@@ -362,7 +356,7 @@ TEST_F(RequestContentScriptTest, CSS) {
   std::string error;
   base::HistogramTester histogram_tester;
   std::unique_ptr<const ContentAction> result =
-      ContentAction::Create(profile(), extension(), ParseJson(R"(
+      ContentAction::Create(profile(), extension(), ParseJsonDict(R"(
           {
             "instanceType": "declarativeContent.RequestContentScript",
             "css": ["style.css"]
@@ -382,7 +376,7 @@ TEST_F(RequestContentScriptTest, JS) {
   std::string error;
   base::HistogramTester histogram_tester;
   std::unique_ptr<const ContentAction> result =
-      ContentAction::Create(profile(), extension(), ParseJson(R"(
+      ContentAction::Create(profile(), extension(), ParseJsonDict(R"(
           {
             "instanceType": "declarativeContent.RequestContentScript",
             "js": ["script.js"]
@@ -402,7 +396,7 @@ TEST_F(RequestContentScriptTest, CSSBadType) {
   std::string error;
   base::HistogramTester histogram_tester;
   std::unique_ptr<const ContentAction> result =
-      ContentAction::Create(profile(), extension(), ParseJson(R"(
+      ContentAction::Create(profile(), extension(), ParseJsonDict(R"(
           {
             "instanceType": "declarativeContent.RequestContentScript",
             "css": "style.css"
@@ -418,7 +412,7 @@ TEST_F(RequestContentScriptTest, JSBadType) {
   std::string error;
   base::HistogramTester histogram_tester;
   std::unique_ptr<const ContentAction> result =
-      ContentAction::Create(profile(), extension(), ParseJson(R"(
+      ContentAction::Create(profile(), extension(), ParseJsonDict(R"(
           {
             "instanceType": "declarativeContent.RequestContentScript",
             "js": "script.js"
@@ -434,7 +428,7 @@ TEST_F(RequestContentScriptTest, AllFrames) {
   std::string error;
   base::HistogramTester histogram_tester;
   std::unique_ptr<const ContentAction> result =
-      ContentAction::Create(profile(), extension(), ParseJson(R"(
+      ContentAction::Create(profile(), extension(), ParseJsonDict(R"(
           {
             "instanceType": "declarativeContent.RequestContentScript",
             "js": ["script.js"],
@@ -455,7 +449,7 @@ TEST_F(RequestContentScriptTest, MatchAboutBlank) {
   std::string error;
   base::HistogramTester histogram_tester;
   std::unique_ptr<const ContentAction> result =
-      ContentAction::Create(profile(), extension(), ParseJson(R"(
+      ContentAction::Create(profile(), extension(), ParseJsonDict(R"(
           {
             "instanceType": "declarativeContent.RequestContentScript",
             "js": ["script.js"],
@@ -476,7 +470,7 @@ TEST_F(RequestContentScriptTest, AllFramesBadType) {
   std::string error;
   base::HistogramTester histogram_tester;
   std::unique_ptr<const ContentAction> result =
-      ContentAction::Create(profile(), extension(), ParseJson(R"(
+      ContentAction::Create(profile(), extension(), ParseJsonDict(R"(
           {
             "instanceType": "declarativeContent.RequestContentScript",
             "js": ["script.js"],
@@ -493,7 +487,7 @@ TEST_F(RequestContentScriptTest, MatchAboutBlankBadType) {
   std::string error;
   base::HistogramTester histogram_tester;
   std::unique_ptr<const ContentAction> result =
-      ContentAction::Create(profile(), extension(), ParseJson(R"(
+      ContentAction::Create(profile(), extension(), ParseJsonDict(R"(
           {
             "instanceType": "declarativeContent.RequestContentScript",
             "js": ["script.js"],

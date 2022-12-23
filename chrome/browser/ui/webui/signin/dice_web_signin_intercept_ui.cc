@@ -20,7 +20,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/webui/resource_path.h"
 #include "ui/base/webui/web_ui_util.h"
-#include "ui/resources/grit/webui_generated_resources.h"
+#include "ui/resources/grit/webui_resources.h"
 #include "url/gurl.h"
 
 namespace {
@@ -60,8 +60,8 @@ CreateSampleBubbleParameters() {
 
 DiceWebSigninInterceptUI::DiceWebSigninInterceptUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
-  content::WebUIDataSource* source = content::WebUIDataSource::Create(
-      chrome::kChromeUIDiceWebSigninInterceptHost);
+  content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
+      Profile::FromWebUI(web_ui), chrome::kChromeUIDiceWebSigninInterceptHost);
   source->SetDefaultResource(
       IDR_SIGNIN_DICE_WEB_SIGNIN_INTERCEPT_DICE_WEB_SIGNIN_INTERCEPT_HTML);
 
@@ -79,7 +79,7 @@ DiceWebSigninInterceptUI::DiceWebSigninInterceptUI(content::WebUI* web_ui)
       // Resources for testing.
       {"test_loader.js", IDR_WEBUI_JS_TEST_LOADER_JS},
       {"test_loader_util.js", IDR_WEBUI_JS_TEST_LOADER_UTIL_JS},
-      {"test_loader.html", IDR_WEBUI_HTML_TEST_LOADER_HTML},
+      {"test_loader.html", IDR_WEBUI_TEST_LOADER_HTML},
   };
   source->AddResourcePaths(kResources);
 
@@ -98,8 +98,6 @@ DiceWebSigninInterceptUI::DiceWebSigninInterceptUI(content::WebUI* web_ui)
     // so we force it here.
     Initialize(CreateSampleBubbleParameters(), base::DoNothing());
   }
-
-  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
 }
 
 DiceWebSigninInterceptUI::~DiceWebSigninInterceptUI() = default;

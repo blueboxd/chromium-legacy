@@ -22,6 +22,7 @@
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/commerce/price_notifications/price_notifications_tab_helper.h"
 #import "ios/chrome/browser/commerce/push_notification/push_notification_feature.h"
+#import "ios/chrome/browser/credential_provider_promo/features.h"
 #import "ios/chrome/browser/download/download_directory_util.h"
 #import "ios/chrome/browser/download/external_app_util.h"
 #import "ios/chrome/browser/download/pass_kit_tab_helper.h"
@@ -55,7 +56,6 @@
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_password_coordinator.h"
 #import "ios/chrome/browser/ui/badges/badge_popup_menu_coordinator.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_interaction_controller.h"
 #import "ios/chrome/browser/ui/browser_container/browser_container_coordinator.h"
 #import "ios/chrome/browser/ui/browser_container/browser_container_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view/browser_coordinator+private.h"
@@ -88,6 +88,7 @@
 #import "ios/chrome/browser/ui/commands/web_content_commands.h"
 #import "ios/chrome/browser/ui/commands/whats_new_commands.h"
 #import "ios/chrome/browser/ui/context_menu/context_menu_configuration_provider.h"
+#import "ios/chrome/browser/ui/credential_provider_promo/credential_provider_promo_coordinator.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_promo_coordinator.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_promo_non_modal_commands.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_promo_non_modal_coordinator.h"
@@ -108,6 +109,7 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_mediator.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
+#import "ios/chrome/browser/ui/legacy_bookmarks/legacy_bookmark_interaction_controller.h"
 #import "ios/chrome/browser/ui/lens/lens_coordinator.h"
 #import "ios/chrome/browser/ui/main/browser_interface_provider.h"
 #import "ios/chrome/browser/ui/main/default_browser_scene_agent.h"
@@ -139,6 +141,7 @@
 #import "ios/chrome/browser/ui/settings/password/password_settings/password_settings_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/sharing/sharing_coordinator.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_controller.h"
+#import "ios/chrome/browser/ui/spotlight_debugger/spotlight_debugger_coordinator.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_strip/tab_strip_coordinator.h"
 #import "ios/chrome/browser/ui/tabs/tab_strip_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/text_fragments/text_fragments_coordinator.h"
@@ -150,9 +153,10 @@
 #import "ios/chrome/browser/ui/toolbar/secondary_toolbar_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_coordinator_adaptor.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
-#import "ios/chrome/browser/ui/util/named_guide.h"
+#import "ios/chrome/browser/ui/util/layout_guide_names.h"
 #import "ios/chrome/browser/ui/util/page_animation_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/util_swift.h"
 #import "ios/chrome/browser/ui/voice/text_to_speech_playback_controller.h"
 #import "ios/chrome/browser/ui/voice/text_to_speech_playback_controller_factory.h"
 #import "ios/chrome/browser/ui/webui/net_export_coordinator.h"
@@ -400,6 +404,10 @@ enum class ToolbarKind {
 // The coordinator used for What's New feature.
 @property(nonatomic, strong) WhatsNewCoordinator* whatsNewCoordinator;
 
+// The coordinator used for Spotlight Debugger.
+@property(nonatomic, strong)
+    SpotlightDebuggerCoordinator* spotlightDebuggerCoordinator;
+
 @end
 
 @implementation BrowserCoordinator {
@@ -433,6 +441,7 @@ enum class ToolbarKind {
   id<PopupMenuCommands> _popupMenuCommandsHandler;
   id<SnackbarCommands> _snackbarCommandsHandler;
   absl::optional<ToolbarKind> _nextToolbarToPresent;
+  CredentialProviderPromoCoordinator* _credentialProviderPromoCoordinator;
 }
 
 #pragma mark - ChromeCoordinator
@@ -1000,6 +1009,14 @@ enum class ToolbarKind {
                                browser:self.browser];
     [self.priceNotificationsIPHCoordinator start];
   }
+
+  if (IsCredentialProviderExtensionPromoEnabled()) {
+    _credentialProviderPromoCoordinator =
+        [[CredentialProviderPromoCoordinator alloc]
+            initWithBaseViewController:self.viewController
+                               browser:self.browser];
+    [_credentialProviderPromoCoordinator start];
+  }
 }
 
 // Stops child coordinators.
@@ -1112,6 +1129,9 @@ enum class ToolbarKind {
 
   [self.priceNotificationsIPHCoordinator stop];
   self.priceNotificationsIPHCoordinator = nil;
+
+  [_credentialProviderPromoCoordinator stop];
+  _credentialProviderPromoCoordinator = nil;
 }
 
 // Starts mediators owned by this coordinator.
@@ -1200,13 +1220,15 @@ enum class ToolbarKind {
   // Exit fullscreen if needed to make sure that share button is visible.
   FullscreenController::FromBrowser(self.browser)->ExitFullscreen();
 
-  NamedGuide* guide = [NamedGuide guideWithName:kToolsMenuGuide
-                                           view:self.viewController.view];
-  self.sharingCoordinator = [[SharingCoordinator alloc]
-      initWithBaseViewController:self.viewController
-                         browser:self.browser
-                          params:params
-                      originView:guide.constrainedView];
+  LayoutGuideCenter* layoutGuideCenter =
+      LayoutGuideCenterForBrowser(self.browser);
+  UIView* originView =
+      [layoutGuideCenter referencedViewUnderName:kToolsMenuGuide];
+  self.sharingCoordinator =
+      [[SharingCoordinator alloc] initWithBaseViewController:self.viewController
+                                                     browser:self.browser
+                                                      params:params
+                                                  originView:originView];
   [self.sharingCoordinator start];
 }
 
@@ -1427,6 +1449,13 @@ enum class ToolbarKind {
   [_bubblePresenter presentWhatsNewBottomToolbarBubble];
 }
 
+- (void)showSpotlightDebugger {
+  self.spotlightDebuggerCoordinator = [[SpotlightDebuggerCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                         browser:self.browser];
+  [self.spotlightDebuggerCoordinator start];
+}
+
 #pragma mark - DefaultPromoCommands
 
 - (void)showTailoredPromoStaySafe {
@@ -1489,15 +1518,8 @@ enum class ToolbarKind {
     self.findBarCoordinator = nil;
   }
 
-  findBarCoordinator =
-      [[FindBarCoordinator alloc] initWithBaseViewController:self.viewController
-                                                     browser:self.browser];
-  self.findBarCoordinator = findBarCoordinator;
-
-  findBarCoordinator.presenter = _toolbarAccessoryPresenter;
-  findBarCoordinator.delegate = self;
-  findBarCoordinator.presentationDelegate = self.viewController;
-  [findBarCoordinator start];
+  self.findBarCoordinator = [self newFindBarCoordinator];
+  [self.findBarCoordinator start];
 }
 
 - (void)closeFindInPage {
@@ -1510,6 +1532,7 @@ enum class ToolbarKind {
       findTabHelper->StopFinding();
     } else {
       [self.findBarCoordinator stop];
+      self.findBarCoordinator = nil;
     }
   }
 }
@@ -1519,13 +1542,16 @@ enum class ToolbarKind {
       self.browser->GetWebStateList()->GetActiveWebState();
   auto* findHelper = FindTabHelper::FromWebState(currentWebState);
   if (findHelper && findHelper->IsFindUIActive() &&
-      !self.findBarCoordinator.presenter.isPresenting) {
+      !_toolbarAccessoryPresenter.isPresenting) {
+    DCHECK(!self.findBarCoordinator);
+    self.findBarCoordinator = [self newFindBarCoordinator];
     [self.findBarCoordinator start];
   }
 }
 
 - (void)hideFindUI {
   [self.findBarCoordinator stop];
+  self.findBarCoordinator = nil;
 }
 
 - (void)defocusFindInPage {
@@ -1573,6 +1599,18 @@ enum class ToolbarKind {
   auto* helper = FindTabHelper::FromWebState(currentWebState);
   return (helper && helper->CurrentPageSupportsFindInPage() &&
           !helper->IsFindUIActive());
+}
+
+- (FindBarCoordinator*)newFindBarCoordinator {
+  FindBarCoordinator* findBarCoordinator =
+      [[FindBarCoordinator alloc] initWithBaseViewController:self.viewController
+                                                     browser:self.browser];
+
+  findBarCoordinator.presenter = _toolbarAccessoryPresenter;
+  findBarCoordinator.delegate = self;
+  findBarCoordinator.presentationDelegate = self.viewController;
+
+  return findBarCoordinator;
 }
 
 #pragma mark - PromosManagerCommands
@@ -1730,14 +1768,8 @@ enum class ToolbarKind {
     self.textZoomCoordinator = nil;
   }
 
-  textZoomCoordinator = [[TextZoomCoordinator alloc]
-      initWithBaseViewController:self.viewController
-                         browser:self.browser];
-  self.textZoomCoordinator = textZoomCoordinator;
-
-  textZoomCoordinator.presenter = _toolbarAccessoryPresenter;
-  textZoomCoordinator.delegate = self;
-  [textZoomCoordinator start];
+  self.textZoomCoordinator = [self newTextZoomCoordinator];
+  [self.textZoomCoordinator start];
 }
 
 - (void)closeTextZoom {
@@ -1751,6 +1783,7 @@ enum class ToolbarKind {
     }
   }
   [self.textZoomCoordinator stop];
+  self.textZoomCoordinator = nil;
 }
 
 - (void)showTextZoomUIIfActive {
@@ -1763,13 +1796,26 @@ enum class ToolbarKind {
   FontSizeTabHelper* fontSizeTabHelper =
       FontSizeTabHelper::FromWebState(currentWebState);
   if (fontSizeTabHelper && fontSizeTabHelper->IsTextZoomUIActive() &&
-      !self.textZoomCoordinator.presenter.isPresenting) {
+      !_toolbarAccessoryPresenter.isPresenting) {
+    DCHECK(!self.textZoomCoordinator);
+    self.textZoomCoordinator = [self newTextZoomCoordinator];
     [self.textZoomCoordinator start];
   }
 }
 
 - (void)hideTextZoomUI {
   [self.textZoomCoordinator stop];
+  self.textZoomCoordinator = nil;
+}
+
+- (TextZoomCoordinator*)newTextZoomCoordinator {
+  TextZoomCoordinator* textZoomCoordinator = [[TextZoomCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                         browser:self.browser];
+  textZoomCoordinator.presenter = _toolbarAccessoryPresenter;
+  textZoomCoordinator.delegate = self;
+
+  return textZoomCoordinator;
 }
 
 #pragma mark - URLLoadingServiceDelegate

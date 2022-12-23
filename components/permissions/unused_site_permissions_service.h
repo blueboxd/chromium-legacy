@@ -74,6 +74,10 @@ class UnusedSitePermissionsService
   // KeyedService implementation.
   void Shutdown() override;
 
+  // If the user clicked "Allow again" for an auto-revoked origin, the
+  // permissions for that site should not be auto-revoked again by the service.
+  void IgnoreOriginForAutoRevocation(const url::Origin& origin);
+
   // Triggers an update of the unused permission map. Automatically registers
   // a delayed task for another update after 24h.
   void StartRepeatedUpdates();
@@ -100,6 +104,11 @@ class UnusedSitePermissionsService
   // Revokes permissions that belong to sites that were last visited over 60
   // days ago.
   void RevokeUnusedPermissions();
+
+  // Stores revoked permissions data on HCSM.
+  void StorePermissionInRevokedPermissionSetting(
+      const std::list<UnusedSitePermissionsService::ContentSettingEntry>&
+          recently_revoked_permissions);
 
   // Set of permissions that haven't been used for at least a week.
   UnusedPermissionMap recently_unused_permissions_;

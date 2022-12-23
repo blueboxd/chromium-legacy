@@ -132,8 +132,9 @@ struct CurrentTurnSyncOnHelperUserData : public base::SupportsUserData::Data {
 TurnSyncOnHelper* GetCurrentTurnSyncOnHelper(Profile* profile) {
   base::SupportsUserData::Data* data =
       profile->GetUserData(kCurrentTurnSyncOnHelperKey);
-  if (!data)
+  if (!data) {
     return nullptr;
+  }
   CurrentTurnSyncOnHelperUserData* wrapper =
       static_cast<CurrentTurnSyncOnHelperUserData*>(data);
   TurnSyncOnHelper* helper = wrapper->current_helper;
@@ -281,8 +282,9 @@ void TurnSyncOnHelper::TurnSyncOnInternal() {
 bool TurnSyncOnHelper::HasCanOfferSigninError() {
   SigninUIError can_offer_error =
       CanOfferSignin(profile_, account_info_.gaia, account_info_.email);
-  if (can_offer_error.IsOk())
+  if (can_offer_error.IsOk()) {
     return false;
+  }
 
   // Display the error message
   delegate_->ShowLoginError(can_offer_error);
@@ -491,18 +493,17 @@ void TurnSyncOnHelper::SigninAndShowSyncConfirmationUI() {
   auto* primary_account_mutator = identity_manager_->GetPrimaryAccountMutator();
 
   // Signin.
-  if (base::FeatureList::IsEnabled(kDelayConsentLevelUpgrade)) {
-    if (auto* signin_manager = SigninManagerFactory::GetForProfile(profile_)) {
-      // `signin_manager` is null in tests.
-      account_change_blocker_ =
-          signin_manager->CreateAccountSelectionInProgressHandle();
-    }
-    primary_account_mutator->SetPrimaryAccount(account_info_.account_id,
-                                               signin::ConsentLevel::kSignin);
-  } else {
-    primary_account_mutator->SetPrimaryAccount(account_info_.account_id,
-                                               signin::ConsentLevel::kSync);
+  if (auto* signin_manager = SigninManagerFactory::GetForProfile(profile_)) {
+    // `signin_manager` is null in tests.
+    account_change_blocker_ =
+        signin_manager->CreateAccountSelectionInProgressHandle();
   }
+  primary_account_mutator->SetPrimaryAccount(account_info_.account_id,
+                                             signin::ConsentLevel::kSignin,
+                                             signin_access_point_);
+  // If the account is already signed in, `SetPrimaryAccount()` above is a no-op
+  // and the logs below are inaccurate.
+  // TODO(crbug.com/1402935): Review and rebuild the SigninReason logging.
   signin_metrics::LogSigninAccessPointCompleted(signin_access_point_,
                                                 signin_promo_action_);
   signin_metrics::LogSigninReason(signin_reason_);
@@ -515,8 +516,9 @@ void TurnSyncOnHelper::SigninAndShowSyncConfirmationUI() {
         profile_, enterprise_account_confirmed_);
     user_accepted_management = enterprise_account_confirmed_;
   }
-  if (user_accepted_management)
+  if (user_accepted_management) {
     signin_aborted_mode_ = SigninAbortedMode::KEEP_ACCOUNT;
+  }
 
   syncer::SyncService* sync_service = GetSyncService();
   if (sync_service) {
@@ -614,6 +616,7 @@ void TurnSyncOnHelper::ShowSyncConfirmationUI() {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
     LOG(WARNING) << "crbug.com/1340791 | Showing Sync opt-in screen.";
 #endif
+    signin_metrics::LogSyncOptInStarted(signin_access_point_);
     delegate_->ShowSyncConfirmation(
         base::BindOnce(&TurnSyncOnHelper::FinishSyncSetupAndDelete,
                        weak_pointer_factory_.GetWeakPtr()));
@@ -631,6 +634,10 @@ void TurnSyncOnHelper::ShowSyncConfirmationUI() {
         LoginUIService::SyncConfirmationUIClosedResult::ABORT_SYNC);
     return;
   }
+
+  // TODO(crbug.com/1398463): Once we stop completing the Sync opt-in when it's
+  // disabled, we also should stop recording opt-in start events.
+  signin_metrics::LogSyncOptInStarted(signin_access_point_);
 
   // The sync disabled dialog has an explicit "sign-out" label for the
   // LoginUIService::ABORT_SYNC action, force the mode to remove the account.
@@ -661,47 +668,35 @@ void TurnSyncOnHelper::FinishSyncSetupAndDelete(
 
   switch (result) {
     case LoginUIService::CONFIGURE_SYNC_FIRST:
-      if (base::FeatureList::IsEnabled(kDelayConsentLevelUpgrade)) {
-        primary_account_mutator->SetPrimaryAccount(account_info_.account_id,
-                                                   signin::ConsentLevel::kSync);
-      }
-      if (consent_service)
+      primary_account_mutator->SetPrimaryAccount(account_info_.account_id,
+                                                 signin::ConsentLevel::kSync,
+                                                 signin_access_point_);
+      if (consent_service) {
         consent_service->SetUrlKeyedAnonymizedDataCollectionEnabled(true);
+      }
+      signin_metrics::LogSyncSettingsOpened(signin_access_point_);
       delegate_->ShowSyncSettings();
       break;
-    case LoginUIService::SYNC_WITH_DEFAULT_SETTINGS: {
-      if (base::FeatureList::IsEnabled(kDelayConsentLevelUpgrade)) {
-        primary_account_mutator->SetPrimaryAccount(account_info_.account_id,
-                                                   signin::ConsentLevel::kSync);
-      }
+    case LoginUIService::SYNC_WITH_DEFAULT_SETTINGS:
+      primary_account_mutator->SetPrimaryAccount(account_info_.account_id,
+                                                 signin::ConsentLevel::kSync,
+                                                 signin_access_point_);
       if (auto* sync_service = GetSyncService()) {
         sync_service->GetUserSettings()->SetFirstSetupComplete(
             syncer::SyncFirstSetupCompleteSource::BASIC_FLOW);
       }
-      if (consent_service)
+      if (consent_service) {
         consent_service->SetUrlKeyedAnonymizedDataCollectionEnabled(true);
-      break;
-    }
-    case LoginUIService::ABORT_SYNC: {
-      if (!base::FeatureList::IsEnabled(kDelayConsentLevelUpgrade)) {
-        primary_account_mutator->RevokeSyncConsent(
-            signin_metrics::ABORT_SIGNIN,
-            signin_metrics::SignoutDelete::kIgnoreMetric);
       }
+      break;
+    case LoginUIService::ABORT_SYNC:
       AbortAndDelete();
       return;
-    }
-    // No explicit action when the ui gets closed. No final callback is sent.
-    case LoginUIService::UI_CLOSED: {
-      // We need to reset sync, to not leave it in a partially setup state.
-      if (!base::FeatureList::IsEnabled(kDelayConsentLevelUpgrade)) {
-        primary_account_mutator->RevokeSyncConsent(
-            signin_metrics::ABORT_SIGNIN,
-            signin_metrics::SignoutDelete::kIgnoreMetric);
-      }
+
+    case LoginUIService::UI_CLOSED:
+      // No explicit action when the ui gets closed. No final callback is sent.
       scoped_callback_runner_.ReplaceClosure(base::OnceClosure());
       break;
-    }
   }
   delete this;
 }
@@ -726,8 +721,9 @@ void TurnSyncOnHelper::SwitchToProfile(Profile* new_profile) {
           ->Subscribe(base::BindOnce(&TurnSyncOnHelper::AbortAndDelete,
                                      base::Unretained(this)));
   delegate_->SwitchToProfile(new_profile);
-  if (policy_fetch_tracker_)
+  if (policy_fetch_tracker_) {
     policy_fetch_tracker_->SwitchToProfile(profile_);
+  }
 }
 
 void TurnSyncOnHelper::AttachToProfile() {
@@ -735,8 +731,9 @@ void TurnSyncOnHelper::AttachToProfile() {
   TurnSyncOnHelper* current_helper = GetCurrentTurnSyncOnHelper(profile_);
   if (current_helper) {
     // If the existing flow was using the same account, keep the account.
-    if (current_helper->account_info_.account_id == account_info_.account_id)
+    if (current_helper->account_info_.account_id == account_info_.account_id) {
       current_helper->signin_aborted_mode_ = SigninAbortedMode::KEEP_ACCOUNT;
+    }
     policy::UserPolicySigninServiceFactory::GetForProfile(profile_)
         ->ShutdownUserCloudPolicyManager();
     current_helper->AbortAndDelete();

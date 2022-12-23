@@ -4,6 +4,7 @@
 
 #include "chrome/browser/device_api/device_attribute_api.h"
 
+#include "base/test/gtest_tags.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/ash/policy/core/device_policy_cros_browser_test.h"
 #include "chromeos/ash/components/system/fake_statistics_provider.h"
@@ -28,11 +29,11 @@ class DeviceAttributeAPIUnsetTest : public policy::DevicePolicyCrosBrowserTest {
 
     // Init machine statistic.
     fake_statistics_provider_.SetMachineStatistic(
-        chromeos::system::kSerialNumberKeyForTest, std::string());
+        ash::system::kSerialNumberKeyForTest, std::string());
   }
 
  private:
-  chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
+  ash::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
 };
 
 IN_PROC_BROWSER_TEST_F(DeviceAttributeAPIUnsetTest, AllAttributes) {
@@ -84,14 +85,17 @@ class DeviceAttributeAPITest : public policy::DevicePolicyCrosBrowserTest {
 
     // Init machine statistic.
     fake_statistics_provider_.SetMachineStatistic(
-        chromeos::system::kSerialNumberKeyForTest, kSerialNumber);
+        ash::system::kSerialNumberKeyForTest, kSerialNumber);
   }
 
  private:
-  chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
+  ash::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
 };
 
 IN_PROC_BROWSER_TEST_F(DeviceAttributeAPITest, AllAttributes) {
+  base::AddFeatureIdTagToTestResult(
+      "screenplay-163d36ff-e640-48e1-a451-03e14c9e8874");
+
   device_attribute_api::GetDirectoryId(
       base::BindOnce([](blink::mojom::DeviceAttributeResultPtr result) {
         EXPECT_EQ(result->get_attribute(), kDirectoryApiId);

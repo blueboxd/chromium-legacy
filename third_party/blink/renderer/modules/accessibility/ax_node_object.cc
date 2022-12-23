@@ -756,8 +756,9 @@ bool AXNodeObject::ComputeAccessibilityIsIgnored(
 
   // All nodes must have an unignored parent within their tree under
   // the root node of the web area, so force that node to always be unignored.
-  if (IsWebArea())
+  if (IsA<Document>(GetNode())) {
     return false;
+  }
 
   DCHECK_NE(role_, ax::mojom::blink::Role::kUnknown);
   // Use AXLayoutObject::ComputeAccessibilityIsIgnored().
@@ -2550,7 +2551,7 @@ RGBA32 AXNodeObject::BackgroundColor() const {
   if (!layout_object)
     return Color::kTransparent.Rgb();
 
-  if (IsWebArea()) {
+  if (IsA<Document>(GetNode())) {
     LocalFrameView* view = DocumentFrameView();
     if (view)
       return view->BaseBackgroundColor().Rgb();
@@ -2899,8 +2900,10 @@ KURL AXNodeObject::Url() const {
   if (IsLink())  // <area>, <link>, <html:a> or <svg:a>
     return GetElement()->HrefURL();
 
-  if (IsWebArea() && GetDocument())
+  if (IsWebArea()) {
+    DCHECK(GetDocument());
     return GetDocument()->Url();
+  }
 
   auto* html_image_element = DynamicTo<HTMLImageElement>(GetNode());
   if (IsImage() && html_image_element) {
@@ -2920,18 +2923,28 @@ KURL AXNodeObject::Url() const {
 
 AXObject* AXNodeObject::ChooserPopup() const {
   // When color & date chooser popups are visible, they can be found in the tree
-  // as a WebArea child of the <input> control itself.
+  // as a group child of the <input> control itself.
   switch (native_role_) {
     case ax::mojom::blink::Role::kColorWell:
+    case ax::mojom::blink::Role::kComboBoxSelect:
     case ax::mojom::blink::Role::kDate:
-    case ax::mojom::blink::Role::kDateTime: {
+    case ax::mojom::blink::Role::kDateTime:
+    case ax::mojom::blink::Role::kInputTime:
+    case ax::mojom::blink::Role::kTextFieldWithComboBox: {
       for (const auto& child : ChildrenIncludingIgnored()) {
-        if (child->IsWebArea())
+        if (IsA<Document>(child->GetNode())) {
           return child;
+        }
       }
       return nullptr;
     }
     default:
+#if DCHECK_IS_ON()
+      for (const auto& child : ChildrenIncludingIgnored()) {
+        DCHECK(!IsA<Document>(child->GetNode()))
+            << "Chooser popup exists for " << native_role_;
+      }
+#endif
       return nullptr;
   }
 }
@@ -3041,8 +3054,28 @@ String AXNodeObject::GetValueForControl() const {
     }
   }
 
-  // An ARIA combobox can get value from inner contents.
   if (RoleValue() == ax::mojom::blink::Role::kComboBoxMenuButton) {
+    // An HTML <selectmenu> gets its value from the selected option.
+    if (auto* select_menu = HTMLSelectMenuElement::OwnerSelectMenu(node)) {
+      DCHECK(RuntimeEnabledFeatures::HTMLSelectMenuElementEnabled());
+      if (HTMLOptionElement* selected = select_menu->selectedOption()) {
+        // TODO(accessibility) Because these <option> elements can contain
+        // anything, we need to create an AXObject for the selected option, and
+        // use ax_selected_option->ComputedName(). However, for now, the
+        // AXObject is not created because AXObject::IsRelevantSlotElement()
+        // returns false for the invisible slot parent. Also, strangely,
+        // selected->innerText()/GetInnerTextWithoutUpdate() are returning "".
+        // See the following content_browsertest:
+        // All/DumpAccessibilityTreeTest.AccessibilitySelectMenu/blink.
+        // TODO(crbug.com/1401767): DCHECK fails with synchronous serialization.
+        DCHECK(selected->firstChild())
+            << "There is a selected option but it has no DOM children.";
+        return selected->textContent();
+      }
+      return String();
+    }
+
+    // An ARIA combobox can get value from inner contents.
     AXObjectSet visited;
     return TextFromDescendants(visited, nullptr, false);
   }
@@ -4002,51 +4035,7 @@ void AXNodeObject::AddPopupChildren() {
   auto* html_input_element = DynamicTo<HTMLInputElement>(GetNode());
   if (html_input_element) {
     AddChildAndCheckIncluded(html_input_element->PopupRootAXObject());
-    return;
   }
-}
-
-bool AXNodeObject::CanAddLayoutChild(LayoutObject& child) {
-  if (child.IsAnonymous())
-    return true;
-
-  // An non-anonymous layout object (has a DOM node) is only reached when a
-  // pseudo element is inside another pseudo element.
-  // This is because layout object traversal only occurs for pseudo element
-  // subtrees -- see AXObject::ShouldUseLayoutObjectTraversalForChildren().
-  // The only way a node will occur inside of that subtree is if it's another
-  // pseudo element.
-  DCHECK(child.GetNode()->IsPseudoElement());
-
-  // ---------------------------------------------------------------------------
-  // Under certain circumstances the LayoutTreeBuilderTraversal and LayoutObject
-  // trees do not match, e.g. for the combination of ::before/::after and
-  // ::marker pseudo elements in legacy layout.
-  // In this case, there is a danger that the AXObject created for |child| will
-  // be added in two places.Unfortunately, this requires a slow check.
-  // For more info, see discussion here:
-  // https://crrev.com/c/chromium/src/+/3591572/9/third_party/blink/renderer/modules/accessibility/ax_node_object.cc#3973
-  // TODO(accessibility) Remove this once legacy layout is completely removed,
-  // as this problem will go away.
-  AXObject* ax_dom_parent = AXObjectCache().SafeGet(
-      LayoutTreeBuilderTraversal::Parent(*child.GetNode()));
-  if (ax_dom_parent &&
-      !ax_dom_parent->ShouldUseLayoutObjectTraversalForChildren()) {
-    DCHECK_NE(ax_dom_parent, this);
-    for (Node* child_node =
-             LayoutTreeBuilderTraversal::FirstChild(*ax_dom_parent->GetNode());
-         child_node;
-         child_node = LayoutTreeBuilderTraversal::NextSibling(*child_node)) {
-      if (child_node == child.GetNode()) {
-        // Different AX parent would have the same AX child (via
-        // LayoutTreeBuilderTraversal).
-        return false;
-      }
-    }
-  }
-  // ---------------------------------------------------------------------------
-
-  return true;
 }
 
 #if DCHECK_IS_ON()
@@ -4056,6 +4045,8 @@ bool AXNodeObject::CanAddLayoutChild(LayoutObject& child) {
          ax_preexisting->CachedParentObject() == this)                  \
       << "Newly added child can't have a different preexisting parent:" \
       << "\nChild = " << ax_preexisting->ToString(true, true)           \
+      << "\nChild DOM node: " << ax_preexisting->GetNode()              \
+      << "\nChild layout object: " << ax_preexisting->GetLayoutObject() \
       << "\nNew parent = " << ToString(true, true)                      \
       << "\nPreexisting parent = "                                      \
       << ax_preexisting->CachedParentObject()->ToString(true, true);
@@ -4063,7 +4054,7 @@ bool AXNodeObject::CanAddLayoutChild(LayoutObject& child) {
 #define CHECK_NO_OTHER_PARENT_FOR(child) (void(0))
 #endif
 
-void AXNodeObject::AddLayoutChildren() {
+void AXNodeObject::AddPseudoElementChildrenFromLayoutTree() {
   // Children are added this way only for pseudo-element subtrees.
   // See AXObject::ShouldUseLayoutObjectTraversalForChildren().
   if (!GetLayoutObject()) {
@@ -4073,13 +4064,11 @@ void AXNodeObject::AddLayoutChildren() {
   }
   LayoutObject* child = GetLayoutObject()->SlowFirstChild();
   while (child) {
-    if (CanAddLayoutChild(*child)) {
-      CHECK_NO_OTHER_PARENT_FOR(child);
-      // All added pseudo element desecendants are included in the tree.
-      if (AXObject* ax_child = AXObjectCache().GetOrCreate(child, this)) {
-        DCHECK(AXObjectCacheImpl::IsRelevantPseudoElementDescendant(*child));
-        AddChildAndCheckIncluded(ax_child);
-      }
+    CHECK_NO_OTHER_PARENT_FOR(child);
+    // All added pseudo element descendants are included in the tree.
+    if (AXObject* ax_child = AXObjectCache().GetOrCreate(child, this)) {
+      DCHECK(AXObjectCacheImpl::IsRelevantPseudoElementDescendant(*child));
+      AddChildAndCheckIncluded(ax_child);
     }
     child = child->NextSibling();
   }
@@ -4169,7 +4158,7 @@ void AXNodeObject::AddChildrenImpl() {
   if (HasValidHTMLTableStructureAndLayout())
     AddTableChildren();
   else if (ShouldUseLayoutObjectTraversalForChildren())
-    AddLayoutChildren();
+    AddPseudoElementChildrenFromLayoutTree();
   else
     AddNodeChildren();
   CHECK_ATTACHED();
@@ -4320,9 +4309,7 @@ void AXNodeObject::AddChildAndCheckIncluded(AXObject* child,
                                             bool is_from_aria_owns) {
   if (!child)
     return;
-  DCHECK(child->AccessibilityIsIncludedInTree())
-      << "A parent " << ToString(true, true) << "\n    ... tried to add child "
-      << child->ToString(true, true);
+  DCHECK(child->LastKnownIsIncludedInTreeValue());
   AddChild(child, is_from_aria_owns);
 }
 
@@ -4399,7 +4386,7 @@ bool AXNodeObject::CanHaveChildren() const {
   // their contents to the browser side, allowing platforms to decide whether
   // to make them a leaf, ensuring that focusable content cannot be hidden,
   // and improving stability in Blink.
-  bool result = !GetElement() || CanHaveChildren(*GetElement());
+  bool result = !GetElement() || AXObject::CanHaveChildren(*GetElement());
   switch (native_role_) {
     case ax::mojom::blink::Role::kCheckBox:
     case ax::mojom::blink::Role::kListBoxOption:
@@ -4428,47 +4415,6 @@ bool AXNodeObject::CanHaveChildren() const {
       break;
   }
   return result;
-}
-
-// static
-bool AXNodeObject::CanHaveChildren(Element& element) {
-  DCHECK(!IsA<HTMLMapElement>(element));
-  // Placeholder gets exposed as an attribute on the input accessibility node,
-  // so there's no need to add its text children. Placeholder text is a separate
-  // node that gets removed when it disappears, so this will only be present if
-  // the placeholder is visible.
-  if (element.ShadowPseudoId() ==
-      shadow_element_names::kPseudoInputPlaceholder) {
-    return false;
-  }
-
-  if (IsA<HTMLBRElement>(element) &&
-      (!element.GetLayoutObject() || !element.GetLayoutObject()->IsBR())) {
-    // A <br> element that is not treated as a line break could occur when the
-    // <br> element has DOM children. A <br> does not usually have DOM children,
-    // but there is nothing preventing a script from creating this situation.
-    // This anomalous child content is not rendered, and therefore AXObjects
-    // should not be created for the children. Enforcing that <br>s to only have
-    // children when they are line breaks also helps create consistency: any AX
-    // child of a <br> will always be an AXInlineTextBox.
-    return false;
-  }
-
-  if (IsA<HTMLHRElement>(element))
-    return false;
-
-  if (auto* input = DynamicTo<HTMLInputElement>(&element)) {
-    // False for checkbox, radio and range.
-    return !input->IsCheckable() && input->type() != input_type_names::kRange;
-  }
-
-  if (IsA<HTMLOptionElement>(element))
-    return false;
-
-  if (IsA<HTMLProgressElement>(element))
-    return false;
-
-  return true;
 }
 
 //
@@ -4564,7 +4510,7 @@ AtomicString AXNodeObject::Language() const {
 
   // If it's the root, get the computed language for the document element,
   // because the root LayoutObject doesn't have the right value.
-  if (RoleValue() == ax::mojom::blink::Role::kRootWebArea) {
+  if (IsWebArea()) {
     Element* document_element = GetDocument()->documentElement();
     if (!document_element)
       return g_empty_atom;
@@ -5381,8 +5327,7 @@ String AXNodeObject::NativeTextAlternative(
   }
 
   // Document.
-  if (IsWebArea()) {
-    Document* document = GetDocument();
+  if (Document* document = DynamicTo<Document>(GetNode())) {
     if (document) {
       name_from = ax::mojom::blink::NameFrom::kAttribute;
       if (name_sources) {

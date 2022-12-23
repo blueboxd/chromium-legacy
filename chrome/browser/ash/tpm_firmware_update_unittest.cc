@@ -40,12 +40,14 @@ TEST(TPMFirmwareUpdateTest, DecodeSettingsProto) {
       enterprise_management::
           TPMFirmwareUpdateSettingsProto_AutoUpdateMode_USER_ACKNOWLEDGMENT);
   auto dict = DecodeSettingsProto(settings);
-  ASSERT_TRUE(dict);
-  EXPECT_THAT(dict->FindBoolKey("allow-user-initiated-powerwash"),
+  ASSERT_TRUE(dict.is_dict());
+  EXPECT_THAT(dict.GetDict().FindBool("allow-user-initiated-powerwash"),
               Optional(true));
-  EXPECT_THAT(dict->FindBoolKey("allow-user-initiated-preserve-device-state"),
-              Optional(true));
-  int update_mode_value = dict->FindIntKey("auto-update-mode").value_or(0);
+  EXPECT_THAT(
+      dict.GetDict().FindBool("allow-user-initiated-preserve-device-state"),
+      Optional(true));
+  int update_mode_value =
+      dict.GetDict().FindInt("auto-update-mode").value_or(0);
   EXPECT_EQ(2, update_mode_value);
 }
 
@@ -123,7 +125,7 @@ class TPMFirmwareUpdateTest : public testing::Test {
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   ScopedCrosSettingsTestHelper cros_settings_test_helper_;
-  chromeos::system::ScopedFakeStatisticsProvider statistics_provider_;
+  system::ScopedFakeStatisticsProvider statistics_provider_;
 };
 
 class TPMFirmwareUpdateModesTest : public TPMFirmwareUpdateTest {
@@ -291,12 +293,12 @@ class TPMFirmwareUpdateModesEnterpriseTest : public TPMFirmwareUpdateModesTest {
   }
 
   void SetPolicy(const std::set<Mode>& modes) {
-    base::DictionaryValue dict;
-    dict.SetKey(kSettingsKeyAllowPowerwash,
-                base::Value(modes.count(Mode::kPowerwash) > 0));
-    dict.SetKey(kSettingsKeyAllowPreserveDeviceState,
-                base::Value(modes.count(Mode::kPreserveDeviceState) > 0));
-    cros_settings_test_helper_.Set(kTPMFirmwareUpdateSettings, dict);
+    base::Value::Dict dict;
+    dict.Set(kSettingsKeyAllowPowerwash, modes.count(Mode::kPowerwash) > 0);
+    dict.Set(kSettingsKeyAllowPreserveDeviceState,
+             modes.count(Mode::kPreserveDeviceState) > 0);
+    cros_settings_test_helper_.Set(kTPMFirmwareUpdateSettings,
+                                   base::Value(std::move(dict)));
   }
 };
 

@@ -48,6 +48,7 @@
 <translation id="1265739287306757398">જાણો કેવી રીતે</translation>
 <translation id="1272079795634619415">રોકો</translation>
 <translation id="1275718070701477396">પસંદ કરેલ</translation>
+<translation id="1279024913354609713">મંજૂરી આપશો નહીં</translation>
 <translation id="1281818060020671000">ડેટા મેનેજ કરો</translation>
 <translation id="1282311502488501110">સાઇન ઇન કરશો નહીં</translation>
 <translation id="1283524564873030414">છેલ્લા 24 કલાક</translation>
@@ -148,6 +149,7 @@
 <translation id="2074131957428911366">શું સિંક કરવું તે હંમેશાં તમે <ph name="BEGIN_LINK" />સેટિંગ<ph name="END_LINK" />માં પસંદ કરી શકો છો.</translation>
 <translation id="2079545284768500474">છેલ્લો ફેરફાર રદ કરો</translation>
 <translation id="2080769225927880590">કોઈ માન્ય એકાઉન્ટ વડે સાઇન ઇન કરો</translation>
+<translation id="2090878303988764231">તમે જોઈ શકો તેવું કન્ટેન્ટ મેનેજ કરવા માટે સાઇન ઇન કરો</translation>
 <translation id="2103075008456228677">history.google.com ખોલો</translation>
 <translation id="21133533946938348">ટૅબ પિન કરો</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> આઇટમ ખસેડી</translation>
@@ -190,6 +192,7 @@
 <translation id="2421044535038393232">ફેરફાર કરતા રહો</translation>
 <translation id="2434405374328098816">તમે <ph name="WEBSITE" /> પર "<ph name="USERNAME" />" માટેનો પાસવર્ડ પહેલેથી સાચવ્યો છે</translation>
 <translation id="2435457462613246316">પાસવર્ડ બતાવો</translation>
+<translation id="2451654228769116489">ટૅબને પિન કરો</translation>
 <translation id="2461070143328828326">પાસવર્ડ સેટિંગ</translation>
 <translation id="2469960372084740698">Safe Browsing બંધ કરીએ?</translation>
 <translation id="2473876017985765807">તમે <ph name="WEBSITE" /> માટેનો પાસવર્ડ પહેલેથી સાચવ્યો છે</translation>
@@ -672,6 +675,7 @@
 <translation id="6059830886158432458">તમારી સ્ટોરી અને પ્રવૃત્તિને અહીં નિયંત્રિત કરો</translation>
 <translation id="6064824697233747382">તમારી સંસ્થા માટે જરૂરી છે કે તમે સિંકની સુવિધા બંધ કરો.</translation>
 <translation id="6066301408025741299">રદ કરવા માટે ટેપ કરો.</translation>
+<translation id="6071409777669089905">ટૅબને અનપિન કરો</translation>
 <translation id="60829778314739003">સ્વીકારો અને આગળ વધો</translation>
 <translation id="6084848228346514841">કોઈ ટૅબ પસંદ કરો</translation>
 <translation id="6103540626693881831">ડિવાઇસ પર એન્ક્રિપ્શન</translation>
@@ -785,6 +789,7 @@
 <translation id="6710079714193676716">તમારી સંસ્થા દ્વારા મેનેજ કરવામાં આવે છે. અમુક સુવિધાઓ અનુપલબ્ધ હોઈ શકે છે. <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /></translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">બધા પાસવર્ડ નિકાસ કરી શકાતાં નથી</translation>
+<translation id="6732087373923685049">કૅમેરા</translation>
 <translation id="6748108480210050150">પ્રેષક:</translation>
 <translation id="6760509555861141183">તાજેતરના ટૅબ પર પાછા ફરો</translation>
 <translation id="6762812039470893796">બધાને નાપસંદ કરો</translation>
@@ -971,6 +976,7 @@
 <translation id="8197543752516192074">પેજનો અનુવાદ કરો</translation>
 <translation id="8205564605687841303">રદ કરો</translation>
 <translation id="8206354486702514201">આ સેટિંગ તમારા વહીવટકર્તા દ્વારા લાગુ કરેલી છે.</translation>
+<translation id="821809831108207540">તમારું Discover ફીડ અને Chromeને મનગમતું બનાવવા માટે, સાઇન ઇન કરો અને સિંકની સુવિધા ચાલુ કરો.</translation>
 <translation id="8225985093977202398">કૅશ કરેલી છબીઓ અને ફાઇલો</translation>
 <translation id="8237382152611443140">પાસવર્ડ ઑટોમૅટિક રીતે ભરવાની સુવિધાનાં સેટિંગ ખોલો</translation>
 <translation id="8261506727792406068">ડિલીટ કરો</translation>
@@ -1037,6 +1043,7 @@
 <translation id="8764015330924122850"><ph name="DOMAIN_NAME" />ને અનફૉલો કરો</translation>
 <translation id="8775144690796719618">અમાન્ય URL</translation>
 <translation id="8787968206789828143">વેબ પર શોધો</translation>
+<translation id="8792626944327216835">માઇક્રોફોન</translation>
 <translation id="8803639129939845298">સુરક્ષિત</translation>
 <translation id="8806823403540278281">તમારી સંસ્થા માટે જરૂરી છે કે તમે ખાનગી રીતે બ્રાઉઝ કરો. છૂપા મોડમાં ટૅબ સાચવવામાં આવતી નથી.
 <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /></translation>
@@ -1097,6 +1104,7 @@
 <translation id="9219154867334666734">ટૅબ શોધો…</translation>
 <translation id="9223358826628549784">ક્રૅશ રિપોર્ટ મોકલ્યો.</translation>
 <translation id="941747855997058526">પાસવર્ડ પસંદ કરો...</translation>
+<translation id="948048872540558976">નવું ટૅબ બનાવો</translation>
 <translation id="952704832371081537">રદ કરો</translation>
 <translation id="953008885340860025">Chromeમાંથી સાઇન આઉટ થયા</translation>
 <translation id="959066944189734975">તમે <ph name="CHANNEL_NAME" />ને ફૉલો કરી રહ્યાં છો</translation>

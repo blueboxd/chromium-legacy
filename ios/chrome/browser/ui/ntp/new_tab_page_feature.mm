@@ -19,10 +19,6 @@ BASE_FEATURE(kEnableDiscoverFeedPreview,
              "EnableDiscoverFeedPreview",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kEnableDiscoverFeedGhostCards,
-             "EnableDiscoverFeedGhostCards",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kEnableDiscoverFeedStaticResourceServing,
              "EnableDiscoverFeedStaticResourceServing",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -42,10 +38,6 @@ BASE_FEATURE(kEnableFollowingFeedDefaultSortType,
 BASE_FEATURE(kEnableNTPViewHierarchyRepair,
              "NTPViewHierarchyRepair",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kEnableFeedAblation,
-             "EnableFeedAblation",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kEnableCheckVisibilityOnAttentionLogStart,
              "EnableCheckVisibilityOnAttentionLogStart",
@@ -96,10 +88,6 @@ bool IsDiscoverFeedPreviewEnabled() {
   return base::FeatureList::IsEnabled(kEnableDiscoverFeedPreview);
 }
 
-bool IsDiscoverFeedGhostCardsEnabled() {
-  return base::FeatureList::IsEnabled(kEnableDiscoverFeedGhostCards);
-}
-
 bool IsNTPViewHierarchyRepairEnabled() {
   return base::FeatureList::IsEnabled(kEnableNTPViewHierarchyRepair);
 }
@@ -128,10 +116,6 @@ bool IsDefaultFollowingFeedSortTypeGroupedByPublisher() {
   return base::GetFieldTrialParamByFeatureAsBool(
       kEnableFollowingFeedDefaultSortType,
       kFollowingFeedDefaultSortTypeGroupedByPublisher, true);
-}
-
-bool IsFeedAblationEnabled() {
-  return base::FeatureList::IsEnabled(kEnableFeedAblation);
 }
 
 bool IsContentSuggestionsForSupervisedUserEnabled(PrefService* pref_service) {

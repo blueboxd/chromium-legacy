@@ -21,8 +21,9 @@ MediaValues* MediaValuesDynamic::Create(Document& document) {
 
 MediaValues* MediaValuesDynamic::Create(LocalFrame* frame) {
   if (!frame || !frame->View() || !frame->GetDocument() ||
-      !frame->GetDocument()->GetLayoutView())
+      !frame->GetDocument()->GetLayoutView()) {
     return MakeGarbageCollected<MediaValuesCached>();
+  }
   return MakeGarbageCollected<MediaValuesDynamic>(frame);
 }
 
@@ -61,6 +62,12 @@ float MediaValuesDynamic::ExFontSize(float zoom) const {
   return CalculateExSize(frame_);
 }
 
+float MediaValuesDynamic::RexFontSize(float zoom) const {
+  DCHECK_EQ(1.0f, zoom);
+  // For media queries rex and ex units are both based on the initial font.
+  return CalculateExSize(frame_);
+}
+
 float MediaValuesDynamic::ChFontSize(float zoom) const {
   DCHECK_EQ(1.0f, zoom);
   return CalculateChSize(frame_);
@@ -77,14 +84,16 @@ float MediaValuesDynamic::LineHeight(float zoom) const {
 }
 
 double MediaValuesDynamic::ViewportWidth() const {
-  if (viewport_dimensions_overridden_)
+  if (viewport_dimensions_overridden_) {
     return viewport_width_override_;
+  }
   return CalculateViewportWidth(frame_);
 }
 
 double MediaValuesDynamic::ViewportHeight() const {
-  if (viewport_dimensions_overridden_)
+  if (viewport_dimensions_overridden_) {
     return viewport_height_override_;
+  }
   return CalculateViewportHeight(frame_);
 }
 

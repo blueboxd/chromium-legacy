@@ -48,6 +48,7 @@ Yalnız parolunuzu bilən kimsə şifrələnmiş datanızı oxuya bilər. Bu par
 <translation id="1265739287306757398">Məlumat əldə edin</translation>
 <translation id="1272079795634619415">Dayandırın</translation>
 <translation id="1275718070701477396">Seçilib</translation>
+<translation id="1279024913354609713">İcazə verməyin</translation>
 <translation id="1281818060020671000">Datanı idarə edin</translation>
 <translation id="1282311502488501110">Daxil olmayın</translation>
 <translation id="1283524564873030414">Son 24 Saat</translation>
@@ -148,6 +149,7 @@ Yalnız parolunuzu bilən kimsə şifrələnmiş datanızı oxuya bilər. Bu par
 <translation id="2074131957428911366">Sinxronizasiya seçimlərini <ph name="BEGIN_LINK" />ayarlarda<ph name="END_LINK" /> edə bilərsiniz.</translation>
 <translation id="2079545284768500474">Geri qaytarın</translation>
 <translation id="2080769225927880590">Etibarlı Hesabla daxil olun</translation>
+<translation id="2090878303988764231">Gördüyünüz məzmunu idarə etmək üçün daxil olun</translation>
 <translation id="2103075008456228677">history.google.com linkində açın</translation>
 <translation id="21133533946938348">Tabı sancın</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> element köçürüldü</translation>
@@ -787,6 +789,7 @@ Anonim rejimdə olduqda saytlar müxtəlif saytlarda baxış tarixçənizi görm
 <translation id="6710079714193676716">Təşkilatınız tərəfindən idarə olunur. Bəzi funksiyalar əlçatan olmaya bilər. <ph name="BEGIN_LINK" />Ətraflı məlumat<ph name="END_LINK" /></translation>
 <translation id="6713747756340119864">Google Tətbiqlər</translation>
 <translation id="6730682669179532099">Parolları Eksport Etmək alınmadı</translation>
+<translation id="6732087373923685049">kamera</translation>
 <translation id="6748108480210050150">Kimdən</translation>
 <translation id="6760509555861141183">Son Taba qayıdın</translation>
 <translation id="6762812039470893796">Bütün seçimləri silin</translation>
@@ -973,6 +976,7 @@ Saytlar müxtəlif saytlarda baxış fəaliyyətinizi görmək üçün kukilərd
 <translation id="8197543752516192074">Səhifəni tərcümə edin</translation>
 <translation id="8205564605687841303">Ləğv edin</translation>
 <translation id="8206354486702514201">Bu ayar administratorunuz tərəfindən icra olunur.</translation>
+<translation id="821809831108207540">Təkliflər lentinizi və Chrome'u fərdiləşdirmək üçün daxil olun və sinxronizasiyanı aktiv edin.</translation>
 <translation id="8225985093977202398">Keşlənmiş Şəkillər və Fayllar</translation>
 <translation id="8237382152611443140">Parolların Avtomatik Doldurulması Ayarlarını açın</translation>
 <translation id="8261506727792406068">Silin</translation>
@@ -1039,6 +1043,7 @@ Saytlar müxtəlif saytlarda baxış fəaliyyətinizi görmək üçün kukilərd
 <translation id="8764015330924122850"><ph name="DOMAIN_NAME" /> kanalını izləməyin</translation>
 <translation id="8775144690796719618">Yanlış URL</translation>
 <translation id="8787968206789828143">Vebdə axtarış</translation>
+<translation id="8792626944327216835">mikrofon</translation>
 <translation id="8803639129939845298">Güvənli</translation>
 <translation id="8806823403540278281">Təşkilatınız məxfi şəkildə baxış keçirməyinizi tələb edir. Tablar Anonim rejimdə yadda saxlanılmır.
 <ph name="BEGIN_LINK" />Ətraflı məlumat<ph name="END_LINK" /></translation>
@@ -1094,6 +1099,7 @@ Saytlar müxtəlif saytlarda baxış fəaliyyətinizi görmək üçün kukilərd
 <translation id="9157836665414082580">Dialoqların qarşısını alın</translation>
 <translation id="9177438225260810839">Açıq Tabları axtarın</translation>
 <translation id="9188680907066685419">İdarə olunan hesabdan çıxın</translation>
+<translation id="9193147658040604536">Tabı Sancmaq üçün bura sürüşdürün</translation>
 <translation id="9200875785104711666"><ph name="TIME" /> gün əvvəl</translation>
 <translation id="9203116392574189331">Əldən-ələ</translation>
 <translation id="9219154867334666734">Tabları axtarın…</translation>

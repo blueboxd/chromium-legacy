@@ -116,6 +116,7 @@
 <translation id="1908234395526491708">Neuspele zahteve UDP</translation>
 <translation id="1947737735496445907">Natisnjeno</translation>
 <translation id="1951012854035635156">Pomočnik</translation>
+<translation id="1962550982027027473">Privzeti APN je obvezen</translation>
 <translation id="1977994649430373166">Fotografija za profil v Googlu</translation>
 <translation id="1979103255016296513">Rok za spremembo gesla je potekel</translation>
 <translation id="1999615961760456652">Prestrezni portal</translation>
@@ -186,6 +187,7 @@
 <translation id="2570743873672969996">Izvajanje preizkusa <ph name="TEST_NAME" /> …</translation>
 <translation id="2584559707064218956">Če želite nastaviti, odprite nastavitve.</translation>
 <translation id="2597774443162333062">Datoteke bodo poslane Googlu zaradi odpravljanja napak.</translation>
+<translation id="2599691907981599502">{NUMBER_OF_PAGES,plural, =1{Optično branje je dokončano. Optično prebrana je bila 1 stran.}one{Optično branje je dokončano. Optično prebrana je bila {NUMBER_OF_PAGES} stran.}two{Optično branje je dokončano. Optično prebrani sta bili {NUMBER_OF_PAGES} strani.}few{Optično branje je dokončano. Optično prebrane so bile {NUMBER_OF_PAGES} strani.}other{Optično branje je dokončano. Optično prebranih je bilo {NUMBER_OF_PAGES} strani.}}</translation>
 <translation id="2619761439309613843">Dnevno osveževanje</translation>
 <translation id="2620436844016719705">Sistem</translation>
 <translation id="2638662041295312666">Slika za prijavo</translation>
@@ -392,6 +394,7 @@
 <translation id="4793710386569335688">Več pomoči je na voljo v <ph name="BEGIN_LINK" />centru za pomoč<ph name="END_LINK" />.</translation>
 <translation id="4793756956024303490">Algoritem stiskanja</translation>
 <translation id="4794140124556169553">Izvajanje preizkusa CPE-ja lahko vpliva na delovanje sistema.</translation>
+<translation id="4798078634453489142">Odstranitev APN-ja zaradi dodajanja novega APN-ja</translation>
 <translation id="4800589996161293643">Skupnost za Chromebook</translation>
 <translation id="4803391892369051319">IPv4</translation>
 <translation id="4808449224298348341">Preklicano tiskalno opravilo za dokument <ph name="DOCUMENT_TITLE" /></translation>
@@ -633,6 +636,7 @@ Poskusite vprašati tako, da se dotaknete mikrofona.</translation>
 <translation id="6791471867139427246">barva svetlobe tipkovnice</translation>
 <translation id="680983167891198932">Ključ</translation>
 <translation id="6816797338148849397">Podatki, ki so na voljo v zvezi z vašim izborom. Za dostop uporabite tipko s puščico gor.</translation>
+<translation id="6838167112108853532">Tega APN-ja ni mogoče onemogočiti ali odstraniti. Omogočeni povezani APN-ji morajo biti onemogočeni ali odstranjeni.</translation>
 <translation id="6853312040151791195">Hitrost praznjenja</translation>
 <translation id="6889786074662672253">Med posodabljanjem ne odklopite zunanje naprave ali izklopite računalnika. To okno lahko pomanjšate. Ta posodobitev bo morda trajala nekaj minut in zunanja naprava v tem času morda ne bo delovala.</translation>
 <translation id="6905724422583748843">Nazaj na stran <ph name="PAGE_NAME" /></translation>
@@ -722,6 +726,7 @@ Poskusite vprašati tako, da se dotaknete mikrofona.</translation>
 <translation id="7769672763586021400">ID modela</translation>
 <translation id="7778717409420828014">Povratne informacije nam pomagajo izboljšati uporabo Chromebooka, zato jih bo pregledala naša skupina. Zaradi velikega števila poročil vam ne bomo mogli odgovoriti.</translation>
 <translation id="7784116172884276937">Strežniki DNS niso nastavljeni.</translation>
+<translation id="7791543448312431591">Dodaj</translation>
 <translation id="779591286616261875">Pošlji novo poročilo</translation>
 <translation id="7799817062559422778">Svetli način</translation>
 <translation id="780301667611848630">Ne, hvala</translation>

@@ -1,3 +1,5 @@
+# tags: [ Android Fuchsia Linux Mac Mac10.13 Mac11 Mac12 Win Win10.20h2 Win11 ]
+# tags: [ Release Debug ]
 # results: [ Timeout Crash Pass Failure Slow Skip ]
 
 # These expectations are used when LayoutNG is disabled. We test this
@@ -11,6 +13,12 @@
 # Tests that fail in legacy but pass in NG
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 virtual/force-renderer-accessibility/external/wpt/accessibility/crashtests/bdo-table-cell.html [ Crash ]
+crbug.com/626703 external/wpt/url/a-element.html?include=mailto [ Crash Failure ]
+crbug.com/626703 external/wpt/url/url-setters-a-area.window.html?exclude=(file|javascript|mailto) [ Crash Failure ]
+crbug.com/626703 virtual/idna-2008/external/wpt/url/url-constructor.any.worker.html?exclude=(file|javascript|mailto) [ Crash Failure ]
+crbug.com/626703 virtual/idna-2008/external/wpt/url/url-setters.any.html?include=mailto [ Crash Failure ]
+crbug.com/626703 external/wpt/css/selectors/invalidation/media-pseudo-classes-in-has.html [ Timeout ]
 crbug.com/626703 external/wpt/fullscreen/api/document-exit-fullscreen-nested-in-iframe.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-sizing/aspect-ratio/replaced-element-039.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-sizing/aspect-ratio/replaced-element-040.html [ Failure ]
@@ -19,7 +27,6 @@ crbug.com/626703 external/wpt/geolocation-API/enabled-by-permission-policy-attri
 crbug.com/626703 external/wpt/geolocation-API/enabled-by-permission-policy-attribute.https.sub.html [ Timeout ]
 crbug.com/626703 external/wpt/geolocation-API/enabled-by-permissions-policy.https.sub.html [ Timeout ]
 crbug.com/626703 external/wpt/geolocation-API/enabled-on-self-origin-by-permissions-policy.https.sub.html [ Timeout ]
-crbug.com/626703 external/wpt/webxr/webxr_feature_policy.https.html [ Timeout ]
 crbug.com/626703 external/wpt/webxr/xr_viewport_scale.https.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-multicol/relative-child-overflowing-container.html [ Failure ]
 crbug.com/626703 external/wpt/html/user-activation/consumption-crossorigin.sub.tentative.html [ Failure Timeout ]
@@ -343,6 +350,9 @@ crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-094.html 
 crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-095.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-096.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-099.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-105.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-106.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-109.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/overflow-clip-000.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/overflow-clip-001.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/overflow-clip-010.html [ Failure ]
@@ -422,6 +432,7 @@ crbug.com/1058792 external/wpt/css/css-break/transform-005.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/transform-006.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/transform-008.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/transform-010.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/underflow-from-next-page-print.html [ Failure ]
 crbug.com/614667 external/wpt/css/css-break/grid/grid-container-fragmentation-010.html [ Failure ]
 crbug.com/614667 external/wpt/css/css-break/grid/grid-container-fragmentation-011.html [ Failure ]
 crbug.com/614667 external/wpt/css/css-break/grid/grid-item-fragmentation-020.html [ Failure ]

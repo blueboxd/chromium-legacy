@@ -116,6 +116,7 @@
 <translation id="1908234395526491708">UDP-beiðnir mistókust</translation>
 <translation id="1947737735496445907">Prentað</translation>
 <translation id="1951012854035635156">Aðstoðarmaður</translation>
+<translation id="1962550982027027473">Sjálfgefinn aðgangsstaður er nauðsynlegur</translation>
 <translation id="1977994649430373166">Google prófílmynd</translation>
 <translation id="1979103255016296513">Breyting á aðgangsorði komin fram yfir tíma</translation>
 <translation id="1999615961760456652">Innskráningarsíða</translation>
@@ -186,6 +187,7 @@
 <translation id="2570743873672969996">Keyrir prófið <ph name="TEST_NAME" />...</translation>
 <translation id="2584559707064218956">Opnaðu stillingarnar til að setja þetta upp.</translation>
 <translation id="2597774443162333062">Skrár verða sendar til villuleitar hjá Google</translation>
+<translation id="2599691907981599502">{NUMBER_OF_PAGES,plural, =1{Skönnun lokið. 1 síða skönnuð}one{Skönnun lokið. {NUMBER_OF_PAGES} síða skönnuð}other{Skönnun lokið. {NUMBER_OF_PAGES} síður skannaðar}}</translation>
 <translation id="2619761439309613843">Uppfæra daglega</translation>
 <translation id="2620436844016719705">Kerfi</translation>
 <translation id="2638662041295312666">Innskráningarmynd</translation>
@@ -392,6 +394,7 @@
 <translation id="4793710386569335688">Opnaðu <ph name="BEGIN_LINK" />hjálparmiðstöðina<ph name="END_LINK" /> til að fá frekari aðstoð.</translation>
 <translation id="4793756956024303490">Þjöppunarreiknirit</translation>
 <translation id="4794140124556169553">Keyrsla örgjörvaprófs kann að hafa áhrif á afköst kerfisins</translation>
+<translation id="4798078634453489142">Fjarlægðu aðgangsstað til að bæta nýjum við</translation>
 <translation id="4800589996161293643">Chromebook samfélagið</translation>
 <translation id="4803391892369051319">IPv4</translation>
 <translation id="4808449224298348341">Hætt við prentverkið <ph name="DOCUMENT_TITLE" /></translation>
@@ -633,6 +636,7 @@ Prófaðu að ýta á hljóðnemann til að spyrja mig að hverju sem er.</trans
 <translation id="6791471867139427246">litur lyklaborðsljóss</translation>
 <translation id="680983167891198932">Lykill</translation>
 <translation id="6816797338148849397">Tiltækar upplýsingar sem tengjast vali þínu. Notaðu ör upp-lykilinn til að opna.</translation>
+<translation id="6838167112108853532">Hvorki er hægt að slökkva á né fjarlægja þennan aðgangsstað. Gakktu úr skugga um að slökkt sé á tengdum aðgangsstöðum sem er kveikt á eða þeir fjarlægðir.</translation>
 <translation id="6853312040151791195">Afhleðsluhraði</translation>
 <translation id="6889786074662672253">Ekki skal taka þetta ytra tæki úr sambandi eða slökkva á tölvunni meðan á endurræsingu stendur. Þú getur minnkað þennan glugga. Þetta gæti tekið nokkrar mínútur og óvíst er að ytra tækið virki á meðan.</translation>
 <translation id="6905724422583748843">Til baka í <ph name="PAGE_NAME" /></translation>
@@ -722,6 +726,7 @@ Prófaðu að ýta á hljóðnemann til að spyrja mig að hverju sem er.</trans
 <translation id="7769672763586021400">Auðkenni gerðar</translation>
 <translation id="7778717409420828014">Ábendingin þín hjálpar okkur að bæta Chromebook-upplifunina og verður yfirfarin af teyminu okkar. Vegna fjölda tilkynninga höfum við ekki tök á því að svara.</translation>
 <translation id="7784116172884276937">Engir DNS-þjónar eru uppsettir</translation>
+<translation id="7791543448312431591">Bæta við</translation>
 <translation id="779591286616261875">Senda nýja tilkynningu</translation>
 <translation id="7799817062559422778">Ljós stilling</translation>
 <translation id="780301667611848630">Nei, takk</translation>

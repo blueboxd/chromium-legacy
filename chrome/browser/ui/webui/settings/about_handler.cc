@@ -169,8 +169,8 @@ base::FilePath FindRegulatoryLabelDir() {
   base::FilePath region_path;
   // Use the VPD region code to find the label dir.
   const absl::optional<base::StringPiece> region =
-      chromeos::system::StatisticsProvider::GetInstance()->GetMachineStatistic(
-          chromeos::system::kRegionKey);
+      ash::system::StatisticsProvider::GetInstance()->GetMachineStatistic(
+          ash::system::kRegionKey);
   if (region && !region->empty()) {
     region_path = GetRegulatoryLabelDirForRegion(region.value());
   }
@@ -548,7 +548,6 @@ void AboutHandler::OnGetVersionInfoReady(std::string callback_id,
 }
 
 void AboutHandler::HandleGetFirmwareUpdateCount(const base::Value::List& args) {
-  DCHECK(base::FeatureList::IsEnabled(ash::features::kFirmwareUpdaterApp));
   CHECK_EQ(1U, args.size());
   const std::string& callback_id = args[0].GetString();
   auto* firmware_update_manager = ash::FirmwareUpdateManager::Get();

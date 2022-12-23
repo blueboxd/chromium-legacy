@@ -37,6 +37,7 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="1175572348579024023">Desplazamiento</translation>
 <translation id="1178581264944972037">Detener</translation>
 <translation id="1181037720776840403">Quitar</translation>
+<translation id="1182225749592316782">Esto permite el acceso a todas las apps y sitios web con los permisos de cámara y micrófono</translation>
 <translation id="1183863904939664422">No me interesa esta sugerencia</translation>
 <translation id="118437560755358292">Ingresa la contraseña o el PIN para más seguridad</translation>
 <translation id="118532027333893379">Presiona en cualquier lugar para capturar la pantalla completa</translation>
@@ -120,6 +121,7 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="15373452373711364">Cursor del mouse grande</translation>
 <translation id="1546492247443594934">Escritorio 2</translation>
 <translation id="1546930421365146760">Pídele a tu administrador que configure este dispositivo en la Consola del administrador de Google</translation>
+<translation id="1550406609415860283">Dispositivos disponibles</translation>
 <translation id="1550523713251050646">Haz clic para obtener más opciones</translation>
 <translation id="1555130319947370107">Azul</translation>
 <translation id="1589090746204042747">Accede a toda tu actividad en esta sesión</translation>
@@ -127,6 +129,7 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="1611993646327628135">Sí</translation>
 <translation id="1620510694547887537">Cámara</translation>
 <translation id="1632985212731562677">Accesibilidad con interruptores se puede inhabilitar en Configuración &gt; Accesibilidad.</translation>
+<translation id="163517899691012366">Se silencian las notificaciones cuando está activada la función No interrumpir.</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> dispositivos</translation>
 <translation id="1639239467298939599">Cargando</translation>
 <translation id="1654477262762802994">Iniciar una búsqueda por voz</translation>
@@ -173,7 +176,6 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
         <ph name="LOCALE" /></translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1830308660060964064">Se dejó de fijar <ph name="ITEM_TITLE" /></translation>
-<translation id="1836215606488044471">Asistente (cargando…)</translation>
 <translation id="1838895407229022812">La luz nocturna está apagada.</translation>
 <translation id="1854180393107901205">Detener transmisión</translation>
 <translation id="1862380676329487333">Actualizar y salir</translation>
@@ -261,7 +263,6 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="2367186422933365202">No se puede acceder a la Chromebook</translation>
 <translation id="2369165858548251131">"Hola" en chino</translation>
-<translation id="2375445874393996153">Ya no se admite la búsqueda de lo que aparece en pantalla con Asistente de Google.</translation>
 <translation id="2390318262976603432">Configuración regional</translation>
 <translation id="240006516586367791">Controles multimedia</translation>
 <translation id="2402411679569069051">Para desbloquear la Chromebook, utiliza la huella dactilar o desbloquea el teléfono</translation>
@@ -375,6 +376,7 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="3047761520276763270">Intenta decir:</translation>
 <translation id="3051189971848907985">Se está cambiando el nombre del perfil. Espera unos minutos.</translation>
 <translation id="3055162170959710888">Hoy usaste este dispositivo durante <ph name="USED_TIME" /></translation>
+<translation id="3062298103034426069">No es compatible</translation>
 <translation id="3068711042108640621">Biblioteca a la izquierda</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">Expandir menú</translation>
@@ -409,6 +411,7 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="3249513730522716925">La ventana <ph name="WINDOW_TITLE" /> se movió del escritorio <ph name="ACTIVE_DESK" /> al <ph name="TARGET_DESK" /></translation>
 <translation id="3252573918265662711">Configuración</translation>
 <translation id="3255483164551725916">¿Qué puedes hacer?</translation>
+<translation id="3260969790895726815">La voz se procesa de manera local y el dictado funciona sin conexión, pero algunos comandos por voz no funcionarán.</translation>
 <translation id="3269597722229482060">Hacer clic con el botón derecho</translation>
 <translation id="3289544412142055976">Por el momento, las apps de Linux no son compatibles</translation>
 <translation id="3289674678944039601">Se está cargando mediante el adaptador</translation>
@@ -456,9 +459,12 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="3513798432020909783">Cuenta administrada por <ph name="MANAGER_EMAIL" /></translation>
 <translation id="352245152354538528">{0,plural, =1{Actualiza el dispositivo en el transcurso de 1 minuto}other{Actualiza el dispositivo en el transcurso de # minutos}}</translation>
 <translation id="353086728817903341">Se estableció la conexión con <ph name="NUM_DEVICES" /> dispositivos</translation>
+<translation id="3533126039236445965">Apps en la barra</translation>
 <translation id="3542066395059568317">Verás recomendaciones para continuar desde donde dejaste. Para quitarlas, haz clic con el botón derecho.</translation>
 <translation id="3552189655002856821">La conexión Wi-Fi está desactivada</translation>
 <translation id="3554637740840164787">Se fijó <ph name="ITEM_TITLE" /></translation>
+<translation id="3558768885091059911">¿Quieres activar el acceso a la cámara y al micrófono?</translation>
+<translation id="3560174576767922131">Grabar video</translation>
 <translation id="3563775809269155755">Habilitar el hotspot</translation>
 <translation id="3566240529365775567">Se abrió justo ahora</translation>
 <translation id="3571734092741541777">Configurar</translation>
@@ -604,7 +610,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="4324840740119394760">Permite el acceso a la cámara para <ph name="APP_NAME" /> y todas las apps y sitios web con el permiso correspondiente</translation>
 <translation id="4333628967105022692">Lacros no es compatible si acceden varios usuarios.</translation>
 <translation id="4338109981321384717">Lupa</translation>
-<translation id="4351433414020964307">El Asistente se está cargando…</translation>
 <translation id="4371348193907997655">Configuración de transmisión</translation>
 <translation id="4378479437904450384">Intensidad de la señal de <ph name="WIRELESS_PROVIDER" />: <ph name="SIGNAL_STRENGTH" /> por ciento</translation>
 <translation id="4378551569595875038">Conectando…</translation>
@@ -652,6 +657,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="4577274620589681794">Pasó el tiempo indicado · <ph name="LABEL" /></translation>
 <translation id="4577990005084629481">Mostrar vistas previas</translation>
 <translation id="4578906031062871102">Se abrió el menú de configuración</translation>
+<translation id="458210817642223147">Grabar GIF</translation>
 <translation id="4585337515783392668">Dejar de transmitir en un receptor desconocido</translation>
 <translation id="4596144739579517758">El Tema oscuro está desactivado</translation>
 <translation id="4611292653554630842">Acceder</translation>
@@ -731,6 +737,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
         <ph name="NUM_OTHER_NOTIFICATION" /></translation>
 <translation id="4987738733603015246">Escritorio 16</translation>
 <translation id="5003993274120026347">Oración siguiente</translation>
+<translation id="5004607513195820459">La red está administrada</translation>
 <translation id="5016558321564993266">Activar o desactivar el marcador. <ph name="STATE_TEXT" /></translation>
 <translation id="5029356738310729434">El acceso al micrófono del dispositivo está activado</translation>
 <translation id="5030687792513154421">Se acabó el tiempo</translation>
@@ -790,9 +797,11 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="5331975486040154427">Dispositivo USB-C (puerto lateral izquierdo trasero)</translation>
 <translation id="533282197239610265">Mostrar dispositivos de transmisión</translation>
 <translation id="5344128444027639014"><ph name="BATTERY_PERCENTAGE" />% (derecho)</translation>
+<translation id="5351427059191534258">¿Quieres desactivar el acceso a la cámara?</translation>
 <translation id="5352250171825660495">El Tema oscuro está activado</translation>
 <translation id="5356963482258194581">Cambia entre los temas oscuro y claro. Haz clic con el botón derecho en el escritorio y elige Estilo y fondo de pantalla.</translation>
 <translation id="536019650977002321">Tu administrador no permite capturas de audio. Para obtener más información, comunícate con el administrador.</translation>
+<translation id="5361524080961918551">Se descargaron archivos de voz en <ph name="LANGUAGE" /> de forma parcial</translation>
 <translation id="5363163447017455357"><ph name="DELIMITER" /> Ir a esta pestaña</translation>
 <translation id="5377367976106153749">¿Deseas activar el acceso a la cámara?</translation>
 <translation id="5379115545237091094">Realizaste demasiados intentos</translation>
@@ -865,6 +874,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="5763928712329149804">El modo Grupo de barras está desactivado.</translation>
 <translation id="576453121877257266">La luz nocturna está activada.</translation>
 <translation id="5769373120130404283">Pantalla de privacidad</translation>
+<translation id="5773950591113557721">Esto permite el acceso para <ph name="APP_NAME" /> y todas las apps y sitios web con los permisos de cámara y micrófono</translation>
 <translation id="5777841717266010279">¿Dejar de compartir la pantalla?</translation>
 <translation id="5779721926447984944">Archivos fijados</translation>
 <translation id="5788127256798019331">Archivos de Play</translation>
@@ -902,6 +912,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="5980301590375426705">Cerrar como invitado</translation>
 <translation id="598407983968395253">Utilizar plantilla</translation>
 <translation id="598882571027504733">Para obtener la actualización, reinicia tu Chromebook con el teclado conectado.</translation>
+<translation id="6002179289567220515">Usaste el interruptor físico para apagar 1 cámara. También puedes desactivar el acceso a todas las cámaras.</translation>
 <translation id="6012623610530968780">Página <ph name="SELECTED_PAGE" /> de <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6018164090099858612">Saliendo del modo de espejo</translation>
 <translation id="602001110135236999">Desplazar hacia la izquierda</translation>
@@ -942,9 +953,11 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="619279033188484792">Ve las fotos, el contenido multimedia y las notificaciones recientes del teléfono en tu <ph name="DEVICE_TYPE" /></translation>
 <translation id="619335566042889110">Cargar por completo ahora</translation>
 <translation id="6193431488227440296">Dev</translation>
+<translation id="6200515304866777730">No es compatible con la app</translation>
 <translation id="6210042900243040400">Conectar <ph name="NAME" /> que guardaste anteriormente en <ph name="EMAIL" /></translation>
 <translation id="6220928844947387476">Ahora puedes grabarte a ti y a tu pantalla al mismo tiempo</translation>
 <translation id="622484624075952240">Abajo</translation>
+<translation id="623116199192908855">Transmite contenido desde la Chromebook</translation>
 <translation id="6231419273573514727">Es posible que se limite el rendimiento de los dispositivos periféricos</translation>
 <translation id="6232891689835436217"><ph name="APP_NAME" /> está utilizando tu cámara y micrófono</translation>
 <translation id="6237231532760393653">1X</translation>
@@ -986,8 +999,10 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="6491071886865974820"><ph name="MANAGER" /> requiere que actualices tu <ph name="DEVICE_TYPE" /> antes de la fecha límite</translation>
 <translation id="649452524636452238">PIN de la tarjeta inteligente</translation>
 <translation id="6495400115277918834">Se inició el modo pantalla en pantalla; presiona Alt+Mayúsculas+V para enfocar</translation>
+<translation id="6497418457565568043">La función No interrumpir está activada</translation>
 <translation id="6500896621837555595">Actualizar</translation>
 <translation id="6501401484702599040">Transmitiendo pantalla a <ph name="RECEIVER_NAME" /></translation>
+<translation id="6508923215158854599">Asegúrate de que la Chromebook esté conectada a la misma red Wi-Fi que el dispositivo Chromecast.</translation>
 <translation id="6515727200518652613">Se desconectó la cámara. Intentando volver a establecer la conexión.</translation>
 <translation id="6520517963145875092">Selecciona una ventana que quieras capturar</translation>
 <translation id="652139407789908527">Durante esta actualización, se apagará la pantalla por más tiempo que lo usual (hasta un minuto). Mientras se realiza la actualización, no presiones el botón de encendido.</translation>
@@ -1047,6 +1062,7 @@ Nueva instalación</translation>
 <translation id="6787595647772650851">Restablecer la última sesión</translation>
 <translation id="6790428901817661496">Reproducir</translation>
 <translation id="6801878137098616817">Se editó recientemente</translation>
+<translation id="6802687695197837794">Esto permite el acceso para <ph name="APP1_NAME" />, <ph name="APP2_NAME" /> y todas las apps y sitios web con los permisos de cámara y micrófono</translation>
 <translation id="6803622936009808957">No se pudieron reflejar las pantallas porque no se encontraron resoluciones compatibles. En su lugar, se activó el escritorio extendido.</translation>
 <translation id="6812232930908427253">No se pudo guardar el escritorio. Hay demasiadas ventanas o pestañas.</translation>
 <translation id="6818242057446442178">Volver palabra por palabra</translation>
@@ -1069,6 +1085,7 @@ Nueva instalación</translation>
 <translation id="6901883536534621389">Prueba los gestos para navegar</translation>
 <translation id="6919251195245069855">No se reconoció tu tarjeta inteligente. Vuelve a intentarlo.</translation>
 <translation id="6931576957638141829">Guardar en</translation>
+<translation id="6942518653766415536">Menú de formato de grabación</translation>
 <translation id="6945221475159498467">Seleccionar</translation>
 <translation id="6960565108681981554">No está activada. Comunícate con tu proveedor.</translation>
 <translation id="6961121602502368900">La opción Silenciar teléfono no está disponible en los perfiles de trabajo</translation>
@@ -1078,6 +1095,7 @@ Nueva instalación</translation>
 <translation id="6965382102122355670">Aceptar</translation>
 <translation id="6972754398087986839">Comenzar</translation>
 <translation id="6979158407327259162">Google Drive</translation>
+<translation id="6981291220124935078">Activar el acceso</translation>
 <translation id="6981982820502123353">Accesibilidad</translation>
 <translation id="698231206551913481">Todos los archivos y datos locales asociados a este usuario se borrarán de forma permanente una vez que se quite este usuario.</translation>
 <translation id="7005239792648594238">Abre una app para comenzar</translation>
@@ -1218,7 +1236,6 @@ Nueva instalación</translation>
 <translation id="7768784765476638775">Seleccionar para pronunciar</translation>
 <translation id="7780094051999721182">accesos directos</translation>
 <translation id="7780159184141939021">Girar pantalla</translation>
-<translation id="7796353162336583443">Presiona el botón de la pluma stylus en la biblioteca para tomar notas o capturas de pantalla, usar el Asistente de Google y activar las funciones de puntero láser o lupa.</translation>
 <translation id="7796735576426975947">Se ocultó una nueva notificación</translation>
 <translation id="7798302898096527229">Presiona mayúscula o la tecla de búsqueda para cancelarlo.</translation>
 <translation id="7807067443225230855">Búsqueda y Asistente</translation>

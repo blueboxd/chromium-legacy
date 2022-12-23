@@ -37,6 +37,7 @@
 <translation id="1175572348579024023">Прокрутка</translation>
 <translation id="1178581264944972037">Пауза</translation>
 <translation id="1181037720776840403">Удалить</translation>
+<translation id="1182225749592316782">Доступ будет предоставлен всем приложениям и сайтам с разрешениями "Камера" и "Микрофон".</translation>
 <translation id="1183863904939664422">Эта подсказка мне неинтересна</translation>
 <translation id="118437560755358292">Для дополнительной безопасности введите пароль или PIN-код.</translation>
 <translation id="118532027333893379">Чтобы снять экран полностью, нажмите в любом его месте</translation>
@@ -120,6 +121,7 @@
 <translation id="15373452373711364">Большой курсор мыши</translation>
 <translation id="1546492247443594934">Рабочий стол 2</translation>
 <translation id="1546930421365146760">Попросите администратора настроить это устройство в консоли администратора Google</translation>
+<translation id="1550406609415860283">Доступные устройства</translation>
 <translation id="1550523713251050646">Чтобы изменить источник питания, нажмите здесь.</translation>
 <translation id="1555130319947370107">Синий</translation>
 <translation id="1589090746204042747">Получать доступ к данным о ваших действиях во время этого сеанса.</translation>
@@ -174,7 +176,6 @@
         <ph name="LOCALE" /></translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1830308660060964064">Объект "<ph name="ITEM_TITLE" />" откреплен</translation>
-<translation id="1836215606488044471">Ассистент (загрузка…)</translation>
 <translation id="1838895407229022812">Ночная подсветка отключена</translation>
 <translation id="1854180393107901205">Прекратить трансляцию</translation>
 <translation id="1862380676329487333">Обновить и выйти</translation>
@@ -262,7 +263,6 @@
 <translation id="2359808026110333948">Продолжить</translation>
 <translation id="2367186422933365202">Не удалось войти в аккаунт на устройстве Chromebook.</translation>
 <translation id="2369165858548251131">"Привет" по-китайски</translation>
-<translation id="2375445874393996153">Google Ассистент больше не поддерживает поиск контента на экране.</translation>
 <translation id="2390318262976603432">Региональные настройки</translation>
 <translation id="240006516586367791">Управление медиаконтентом</translation>
 <translation id="2402411679569069051">Чтобы разблокировать Chromebook, используйте отпечаток пальца или разблокируйте телефон.</translation>
@@ -459,9 +459,12 @@
 <translation id="3513798432020909783">Администратор аккаунта: <ph name="MANAGER_EMAIL" /></translation>
 <translation id="352245152354538528">{0,plural, =1{Перезагрузите устройство в течение 1 минуты}one{Перезагрузите устройство в течение # минуты}few{Перезагрузите устройство в течение # минут}many{Перезагрузите устройство в течение # минут}other{Перезагрузите устройство в течение # минуты}}</translation>
 <translation id="353086728817903341">Подключенных устройств: <ph name="NUM_DEVICES" /></translation>
+<translation id="3533126039236445965">Приложения на панели запуска</translation>
 <translation id="3542066395059568317">Следуйте рекомендациям, чтобы продолжить работу с того места, на котором вы остановились. Нажмите на них правой кнопкой мыши, чтобы удалить.</translation>
 <translation id="3552189655002856821">Wi-Fi отключен</translation>
 <translation id="3554637740840164787">Объект "<ph name="ITEM_TITLE" />" закреплен</translation>
+<translation id="3558768885091059911">Разрешить доступ к камере и микрофону?</translation>
+<translation id="3560174576767922131">Записать видео</translation>
 <translation id="3563775809269155755">Включить точку доступа</translation>
 <translation id="3566240529365775567">Открыто только что</translation>
 <translation id="3571734092741541777">Настроить</translation>
@@ -606,7 +609,6 @@
 <translation id="4324840740119394760">Доступ к камере получит приложение "<ph name="APP_NAME" />", а также все приложения и сайты с разрешением "Камера".</translation>
 <translation id="4333628967105022692">Lacros не поддерживается, если выполнен вход в несколько аккаунтов.</translation>
 <translation id="4338109981321384717">Лупа</translation>
-<translation id="4351433414020964307">Загрузка Ассистента…</translation>
 <translation id="4371348193907997655">Настройки трансляции</translation>
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />, уровень сигнала – <ph name="SIGNAL_STRENGTH" /> %</translation>
 <translation id="4378551569595875038">Подключение…</translation>
@@ -654,6 +656,7 @@
 <translation id="4577274620589681794">Время истекло · <ph name="LABEL" /></translation>
 <translation id="4577990005084629481">Включить предпросмотр</translation>
 <translation id="4578906031062871102">Меню настроек открыто</translation>
+<translation id="458210817642223147">Записать GIF</translation>
 <translation id="4585337515783392668">Остановить трансляцию на неизвестное устройство</translation>
 <translation id="4596144739579517758">Тёмная тема отключена</translation>
 <translation id="4611292653554630842">Войти</translation>
@@ -733,6 +736,7 @@
         <ph name="NUM_OTHER_NOTIFICATION" /></translation>
 <translation id="4987738733603015246">Рабочий стол 16</translation>
 <translation id="5003993274120026347">К следующему предложению</translation>
+<translation id="5004607513195820459">Сетью управляет администратор</translation>
 <translation id="5016558321564993266">Статус фломастера: <ph name="STATE_TEXT" /></translation>
 <translation id="5029356738310729434">Доступ к микрофону разрешен.</translation>
 <translation id="5030687792513154421">Время вышло</translation>
@@ -869,6 +873,7 @@
 <translation id="5763928712329149804">Режим отключен.</translation>
 <translation id="576453121877257266">Ночная подсветка включена</translation>
 <translation id="5769373120130404283">Экран конфиденциальности</translation>
+<translation id="5773950591113557721">Доступ будет предоставлен приложению "<ph name="APP_NAME" />", а также всем приложениям и сайтам с разрешениями "Камера" и "Микрофон".</translation>
 <translation id="5777841717266010279">Закрыть доступ к экрану?</translation>
 <translation id="5779721926447984944">Закрепленные файлы</translation>
 <translation id="5788127256798019331">Файлы Google Play</translation>
@@ -1056,6 +1061,7 @@
 <translation id="6787595647772650851">Восстановить последний сеанс</translation>
 <translation id="6790428901817661496">Воспроизвести</translation>
 <translation id="6801878137098616817">Недавно отредактировано</translation>
+<translation id="6802687695197837794">Доступ будет предоставлен приложениям "<ph name="APP1_NAME" />" и "<ph name="APP2_NAME" />", а также всем приложениям и сайтам с разрешениями "Камера" и "Микрофон".</translation>
 <translation id="6803622936009808957">Не удалось дублировать изображение экрана, т. к. указанное разрешение не поддерживается. Включен режим расширенного рабочего стола.</translation>
 <translation id="6812232930908427253">Не удалось сохранить рабочий стол. Слишком много окон или вкладок.</translation>
 <translation id="6818242057446442178">Назад на одно слово</translation>
@@ -1078,6 +1084,7 @@
 <translation id="6901883536534621389">Используйте жесты для навигации</translation>
 <translation id="6919251195245069855">Не удалось распознать смарт-карту. Повторите попытку.</translation>
 <translation id="6931576957638141829">Сохранить в</translation>
+<translation id="6942518653766415536">Меню форматов записи</translation>
 <translation id="6945221475159498467">Выбрать</translation>
 <translation id="6960565108681981554">Сеть не активирована. Свяжитесь с оператором.</translation>
 <translation id="6961121602502368900">Отключение звука на телефоне недоступно в рабочем профиле</translation>
@@ -1087,6 +1094,7 @@
 <translation id="6965382102122355670">ОК</translation>
 <translation id="6972754398087986839">Начать</translation>
 <translation id="6979158407327259162">Google Диск</translation>
+<translation id="6981291220124935078">Разрешить доступ</translation>
 <translation id="6981982820502123353">Спец. возможности</translation>
 <translation id="698231206551913481">После удаления пользователя все связанные с ним файлы и локальные данные также будут удалены.</translation>
 <translation id="7005239792648594238">Чтобы начать, откройте приложение</translation>
@@ -1227,7 +1235,6 @@
 <translation id="7768784765476638775">Озвучивание при нажатии</translation>
 <translation id="7780094051999721182">ярлыки</translation>
 <translation id="7780159184141939021">Поворот экрана</translation>
-<translation id="7796353162336583443">Нажмите кнопку стилуса на панели запуска, чтобы создать заметку, запустить Ассистента либо использовать стилус в качестве лупы или лазерной указки.</translation>
 <translation id="7796735576426975947">Новые уведомления скрыты</translation>
 <translation id="7798302898096527229">Для отмены нажмите SEARCH или SHIFT.</translation>
 <translation id="7807067443225230855">Поиск и Ассистент</translation>
@@ -1338,7 +1345,7 @@
 <translation id="8374601332003098278">Нажмите Ввод, чтобы записать видео с части экрана</translation>
 <translation id="8375916635258623388"><ph name="DEVICE_NAME" /> и телефон будут подключены друг к другу автоматически</translation>
 <translation id="8380784334203145311">Доброй ночи!</translation>
-<translation id="8382715499079447151">Безопасный просмотр</translation>
+<translation id="8382715499079447151">Защита от чужих взглядов</translation>
 <translation id="8388750414311082622">Удалить единственный рабочий стол нельзя.</translation>
 <translation id="8394567579869570560">Ваш родитель заблокировал это устройство.</translation>
 <translation id="8401850874595457088">Открыть языковое меню</translation>

@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
+#include "base/test/gtest_tags.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_future.h"
 #include "base/threading/thread_restrictions.h"
@@ -83,7 +84,6 @@
 #include "extensions/common/manifest_handlers/shared_module_info.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/value_builder.h"
-#include "extensions/test/extension_test_message_listener.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "third_party/blink/public/common/switches.h"
@@ -1718,7 +1718,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
       embedded_test_server()->GetURL("/extensions/good_v1_update_manifest.xml");
 
   extension_service()->updater()->SetBackoffPolicyForTesting(
-      &kDefaultBackOffPolicyForTesting);
+      kDefaultBackOffPolicyForTesting);
 
   base::FilePath extension_path(ui_test_utils::GetTestFilePath(
       base::FilePath(kTestExtensionsDir), base::FilePath(kGoodV1CrxName)));
@@ -1774,7 +1774,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionInstallForcelistOffline) {
         }));
   }
   extension_service()->updater()->SetBackoffPolicyForTesting(
-      &kDefaultBackOffPolicyForTesting);
+      kDefaultBackOffPolicyForTesting);
 
   base::FilePath extension_path(ui_test_utils::GetTestFilePath(
       base::FilePath(kTestExtensionsDir), base::FilePath(kGoodV1CrxName)));
@@ -2666,6 +2666,11 @@ class MixinBasedExtensionPolicyTest
     extensions::MixinBasedExtensionApiTest::SetUpCommandLine(command_line);
   }
 
+  void AddScreenplayTag() {
+    base::AddTagToTestResult("feature_id",
+                             "screenplay-3c0007b0-8082-4b7d-bdeb-675a4dc1bbb4");
+  }
+
   ExtensionForceInstallMixin extension_force_install_mixin_{&mixin_host_};
 
  private:
@@ -2677,6 +2682,7 @@ class MixinBasedExtensionPolicyTest
 // will not affect incognito profile.
 IN_PROC_BROWSER_TEST_F(MixinBasedExtensionPolicyTest,
                        ForcedProxyExtensionHasNoEffectInIncognitoMode) {
+  AddScreenplayTag();
 #if BUILDFLAG(IS_WIN)
   // Mark as enterprise managed.
   base::win::ScopedDomainStateForTesting scoped_domain(true);
@@ -2703,17 +2709,13 @@ IN_PROC_BROWSER_TEST_F(MixinBasedExtensionPolicyTest,
     EXPECT_EQ(proxy_mode, "system");
   }
 
-  // Force load extension from source dir and get back extension_id.
+  // Force load extension from the source dir and wait until message "ready"
+  // is received.
   // As PEM file is provided, we are expecting same extension ID always.
-  ExtensionTestMessageListener ready_listener("ready");
-  ready_listener.set_extension_id(kProxySettingExtensionId);
   EXPECT_TRUE(force_mixin()->ForceInstallFromSourceDir(
       GetTestDataDir().AppendASCII(kProxySettingExtensionExtensionPath),
       GetTestDataDir().AppendASCII(kProxySettingExtensionPemPath),
-      ExtensionForceInstallMixin::WaitMode::kLoad, nullptr));
-
-  // Waiting for JS execution after the extension is loaded.
-  ASSERT_TRUE(ready_listener.WaitUntilSatisfied());
+      ExtensionForceInstallMixin::WaitMode::kReadyMessageReceived));
 
   // Verify extension is installed and enabled.
   ASSERT_TRUE(force_mixin()->GetInstalledExtension(kProxySettingExtensionId));

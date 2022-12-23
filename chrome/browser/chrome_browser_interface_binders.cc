@@ -915,6 +915,7 @@ void PopulateChromeWebUIFrameBinders(
 #endif
 #if BUILDFLAG(IS_CHROMEOS_ASH)
       ash::personalization_app::PersonalizationAppUI,
+      ash::settings::OSSettingsUI,
 #endif
       NewTabPageUI>(map);
 
@@ -1184,11 +1185,9 @@ void PopulateChromeWebUIFrameBinders(
       ash::diagnostics::mojom::InputDataProvider, ash::DiagnosticsDialogUI>(
       map);
 
-  if (ash::features::IsNetworkingInDiagnosticsAppEnabled()) {
-    RegisterWebUIControllerInterfaceBinder<
-        ash::diagnostics::mojom::NetworkHealthProvider,
-        ash::DiagnosticsDialogUI>(map);
-  }
+  RegisterWebUIControllerInterfaceBinder<
+      ash::diagnostics::mojom::NetworkHealthProvider, ash::DiagnosticsDialogUI>(
+      map);
 
   RegisterWebUIControllerInterfaceBinder<
       ash::diagnostics::mojom::SystemDataProvider, ash::DiagnosticsDialogUI>(
@@ -1276,11 +1275,9 @@ void PopulateChromeWebUIFrameBinders(
   RegisterWebUIControllerInterfaceBinder<audio::mojom::PageHandlerFactory,
                                          ash::AudioUI>(map);
 
-  if (ash::features::IsFirmwareUpdaterAppEnabled()) {
-    RegisterWebUIControllerInterfaceBinder<
-        ash::firmware_update::mojom::UpdateProvider, ash::FirmwareUpdateAppUI>(
-        map);
-  }
+  RegisterWebUIControllerInterfaceBinder<
+      ash::firmware_update::mojom::UpdateProvider, ash::FirmwareUpdateAppUI>(
+      map);
 
   if (ash::features::IsDriveFsMirroringEnabled()) {
     RegisterWebUIControllerInterfaceBinder<

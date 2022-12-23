@@ -161,13 +161,13 @@
   [self updateNTPLayout];
   [self updateHeaderSynchronizerOffset];
   [self updateScrolledToMinimumHeight];
-  [self.headerSynchronizer updateConstraints];
+  [self.headerController updateConstraints];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
 
-  self.headerSynchronizer.showing = YES;
+  self.headerController.showing = YES;
 
   [self applyCollectionViewConstraints];
   [self updateNTPLayout];
@@ -211,13 +211,13 @@
 
 - (void)viewDidDisappear:(BOOL)animated {
   [super viewDidDisappear:animated];
-  self.headerSynchronizer.showing = NO;
+  self.headerController.showing = NO;
 }
 
 - (void)viewSafeAreaInsetsDidChange {
   [super viewSafeAreaInsetsDidChange];
 
-  [self.headerSynchronizer updateConstraints];
+  [self.headerController updateConstraints];
   // Only update the insets if this NTP is being viewed for this first time. If
   // we are reopening an existing NTP, the insets are already ok.
   // TODO(crbug.com/1170995): Remove this once we use a custom feed header.
@@ -264,7 +264,7 @@
     // Pinned offset is different based on the orientation, so we reevaluate the
     // minimum scroll position upon device rotation.
     CGFloat pinnedOffsetY = [weakSelf.headerSynchronizer pinnedOffsetY];
-    if ([weakSelf.headerSynchronizer isOmniboxFocused] &&
+    if ([weakSelf.headerController isOmniboxFocused] &&
         [weakSelf scrollPosition] < pinnedOffsetY) {
       weakSelf.collectionView.contentOffset = CGPointMake(0, pinnedOffsetY);
     }
@@ -305,7 +305,7 @@
     [self.headerSynchronizer updateFakeOmniboxForScrollPosition];
   }
 
-  [self.headerSynchronizer updateConstraints];
+  [self.headerController updateConstraints];
   [self updateOverscrollActionsState];
 }
 
@@ -515,6 +515,12 @@
 
 - (void)updateStickyElements {
   [self handleStickyElementsForScrollPosition:[self scrollPosition] force:YES];
+}
+
+#pragma mark - ContentSuggestionsHeaderViewControllerDelegate
+
+- (BOOL)isScrolledToMinimumHeight {
+  return self.scrolledToMinimumHeight;
 }
 
 #pragma mark - UIScrollViewDelegate
@@ -926,8 +932,8 @@
     [self cleanUpCollectionViewConstraints];
 
     [NSLayoutConstraint activateConstraints:@[
-      [self.feedHeaderViewController.view.leadingAnchor
-          constraintEqualToAnchor:self.collectionView.leadingAnchor],
+      [self.feedHeaderViewController.view.leftAnchor
+          constraintEqualToAnchor:self.collectionView.leftAnchor],
       [self.feedHeaderViewController.view.widthAnchor
           constraintEqualToAnchor:self.collectionView.widthAnchor],
       [self.collectionView.centerXAnchor
@@ -939,8 +945,8 @@
     if (IsDiscoverFeedTopSyncPromoEnabled() &&
         self.feedTopSectionViewController) {
       [NSLayoutConstraint activateConstraints:@[
-        [self.feedTopSectionViewController.view.leadingAnchor
-            constraintEqualToAnchor:self.collectionView.leadingAnchor],
+        [self.feedTopSectionViewController.view.leftAnchor
+            constraintEqualToAnchor:self.collectionView.leftAnchor],
         [self.feedTopSectionViewController.view.widthAnchor
             constraintEqualToAnchor:self.collectionView.widthAnchor],
         [self.feedTopSectionViewController.view.topAnchor

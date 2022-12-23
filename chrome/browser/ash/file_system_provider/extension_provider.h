@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/file_system_provider/icon_set.h"
 #include "chrome/browser/ash/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/ash/file_system_provider/provided_file_system_interface.h"
@@ -23,6 +24,8 @@ class ExtensionRegistry;
 
 namespace ash {
 namespace file_system_provider {
+
+class RequestDispatcher;
 
 // Holds information for a providing extension.
 struct ProvidingExtensionInfo {
@@ -74,11 +77,16 @@ class ExtensionProvider : public ProviderInterface,
   void OnAppRegistryCacheWillBeDestroyed(
       apps::AppRegistryCache* cache) override;
 
+  void OnLacrosOperationForwarded(int request_id, base::File::Error error);
+
   ProviderId provider_id_;
   Capabilities capabilities_;
   std::string name_;
   IconSet icon_set_;
+  std::unique_ptr<RequestDispatcher> request_dispatcher_;
   std::unique_ptr<RequestManager> request_manager_;
+
+  base::WeakPtrFactory<ExtensionProvider> weak_ptr_factory_{this};
 };
 
 }  // namespace file_system_provider

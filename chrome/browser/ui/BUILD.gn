@@ -156,8 +156,6 @@ static_library("ui") {
     "profile_chooser_constants.h",
     "profile_error_dialog.cc",
     "profile_error_dialog.h",
-    "read_later/reading_list_model_factory.cc",
-    "read_later/reading_list_model_factory.h",
     "recently_audible_helper.cc",
     "recently_audible_helper.h",
     "screen_capture_notification_ui.h",
@@ -785,15 +783,11 @@ static_library("ui") {
       "android/infobars/infobar_container_android.h",
       "android/infobars/near_oom_infobar.cc",
       "android/infobars/near_oom_infobar.h",
-      "android/infobars/near_oom_reduction_infobar.cc",
-      "android/infobars/near_oom_reduction_infobar.h",
       "android/infobars/permission_infobar.cc",
       "android/infobars/permission_infobar.h",
       "android/infobars/reader_mode_infobar.cc",
       "android/infobars/reader_mode_infobar.h",
       "android/infobars/simple_confirm_infobar_builder.cc",
-      "android/infobars/survey_infobar.cc",
-      "android/infobars/survey_infobar.h",
       "android/infobars/translate_compact_infobar.cc",
       "android/infobars/translate_compact_infobar.h",
       "android/login_handler_android.cc",
@@ -1229,8 +1223,6 @@ static_library("ui") {
       "passwords/passwords_leak_dialog_delegate.h",
       "passwords/passwords_model_delegate.cc",
       "passwords/passwords_model_delegate.h",
-      "pdf/chrome_pdf_web_contents_helper_client.cc",
-      "pdf/chrome_pdf_web_contents_helper_client.h",
       "performance_controls/battery_saver_bubble_delegate.cc",
       "performance_controls/battery_saver_bubble_delegate.h",
       "performance_controls/battery_saver_bubble_observer.h",
@@ -1334,6 +1326,7 @@ static_library("ui") {
       "tabs/pinned_tab_service.h",
       "tabs/pinned_tab_service_factory.cc",
       "tabs/pinned_tab_service_factory.h",
+      "tabs/saved_tab_groups/saved_tab_group_controller.h",
       "tabs/saved_tab_groups/saved_tab_group_keyed_service.cc",
       "tabs/saved_tab_groups/saved_tab_group_keyed_service.h",
       "tabs/saved_tab_groups/saved_tab_group_model_listener.cc",
@@ -1825,7 +1818,6 @@ static_library("ui") {
       "//components/commerce/core:shopping_service",
       "//components/commerce/core/mojom:mojo_bindings",
       "//components/commerce/core/webui",
-      "//components/enterprise/common:download_item_reroute_info",
       "//components/enterprise/common:files_scan_data",
       "//components/feedback/proto",
       "//components/keep_alive_registry",
@@ -2001,6 +1993,8 @@ static_library("ui") {
       "../ash/app_list/arc/arc_app_list_prefs_factory.h",
       "../ash/app_list/arc/arc_app_scoped_pref_update.cc",
       "../ash/app_list/arc/arc_app_scoped_pref_update.h",
+      "../ash/app_list/arc/arc_app_sync_metrics_helper.cc",
+      "../ash/app_list/arc/arc_app_sync_metrics_helper.h",
       "../ash/app_list/arc/arc_app_utils.cc",
       "../ash/app_list/arc/arc_app_utils.h",
       "../ash/app_list/arc/arc_data_removal_dialog.h",
@@ -2016,8 +2010,6 @@ static_library("ui") {
       "../ash/app_list/arc/arc_package_syncable_service_factory.h",
       "../ash/app_list/arc/arc_pai_starter.cc",
       "../ash/app_list/arc/arc_pai_starter.h",
-      "../ash/app_list/arc/arc_playstore_app_context_menu.cc",
-      "../ash/app_list/arc/arc_playstore_app_context_menu.h",
       "../ash/app_list/arc/arc_usb_host_permission_manager.cc",
       "../ash/app_list/arc/arc_usb_host_permission_manager.h",
       "../ash/app_list/arc/arc_usb_host_permission_manager_factory.cc",
@@ -2157,6 +2149,8 @@ static_library("ui") {
       "../ash/app_list/search/ranking/filtering_ranker.h",
       "../ash/app_list/search/ranking/ftrl_ranker.cc",
       "../ash/app_list/search/ranking/ftrl_ranker.h",
+      "../ash/app_list/search/ranking/keyword_ranker.cc",
+      "../ash/app_list/search/ranking/keyword_ranker.h",
       "../ash/app_list/search/ranking/launch_data.cc",
       "../ash/app_list/search/ranking/launch_data.h",
       "../ash/app_list/search/ranking/mrfu_ranker.cc",
@@ -4494,6 +4488,8 @@ static_library("ui") {
       "views/extensions/extensions_menu_main_page_view.cc",
       "views/extensions/extensions_menu_main_page_view.h",
       "views/extensions/extensions_menu_navigation_handler.h",
+      "views/extensions/extensions_menu_site_permissions_page_view.cc",
+      "views/extensions/extensions_menu_site_permissions_page_view.h",
       "views/extensions/extensions_menu_view.cc",
       "views/extensions/extensions_menu_view.h",
       "views/extensions/extensions_request_access_button.cc",
@@ -4956,6 +4952,12 @@ static_library("ui") {
       "views/side_panel/customize_chrome/customize_chrome_side_panel_controller.cc",
       "views/side_panel/customize_chrome/customize_chrome_side_panel_controller.h",
       "views/side_panel/customize_chrome/customize_chrome_side_panel_controller_utils.cc",
+      "views/side_panel/extensions/extension_side_panel_coordinator.cc",
+      "views/side_panel/extensions/extension_side_panel_coordinator.h",
+      "views/side_panel/extensions/extension_side_panel_manager.cc",
+      "views/side_panel/extensions/extension_side_panel_manager.h",
+      "views/side_panel/extensions/extension_side_panel_utils.cc",
+      "views/side_panel/extensions/extension_side_panel_utils.h",
       "views/side_panel/feed/feed_side_panel_coordinator.cc",
       "views/side_panel/feed/feed_side_panel_coordinator.h",
       "views/side_panel/history_clusters/history_clusters_side_panel_coordinator.cc",
@@ -5484,12 +5486,8 @@ static_library("ui") {
         "lens/lens_side_panel_navigation_helper.h",
         "views/lens/lens_region_search_instructions_view.cc",
         "views/lens/lens_region_search_instructions_view.h",
-        "views/lens/lens_side_panel_controller.cc",
-        "views/lens/lens_side_panel_controller.h",
         "views/lens/lens_side_panel_helper.cc",
         "views/lens/lens_side_panel_navigation_helper.cc",
-        "views/lens/lens_side_panel_view.cc",
-        "views/lens/lens_side_panel_view.h",
         "views/lens/lens_static_page_controller.cc",
         "views/lens/lens_static_page_controller.h",
         "views/side_panel/lens/lens_side_panel_coordinator.cc",
@@ -5501,7 +5499,7 @@ static_library("ui") {
     }
   }
 
-  if (enable_lens_desktop_side_panel) {
+  if (enable_lens_desktop_google_branded_features) {
     sources += [ "lens/lens_side_panel_helper.h" ]
   }
 
@@ -5717,7 +5715,14 @@ static_library("ui") {
   }
 
   if (enable_pdf) {
-    deps += [ "//components/pdf/browser" ]
+    sources += [
+      "pdf/chrome_pdf_web_contents_helper_client.cc",
+      "pdf/chrome_pdf_web_contents_helper_client.h",
+    ]
+    deps += [
+      "//chrome/browser/pdf",
+      "//components/pdf/browser",
+    ]
   }
 
   if (enable_plugins) {

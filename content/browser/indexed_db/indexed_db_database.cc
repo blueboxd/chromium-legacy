@@ -37,7 +37,6 @@
 #include "content/browser/indexed_db/indexed_db_cursor.h"
 #include "content/browser/indexed_db/indexed_db_external_object.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
-#include "content/browser/indexed_db/indexed_db_factory_impl.h"
 #include "content/browser/indexed_db/indexed_db_index_writer.h"
 #include "content/browser/indexed_db/indexed_db_metadata_coding.h"
 #include "content/browser/indexed_db/indexed_db_pending_connection.h"
@@ -1772,7 +1771,7 @@ void IndexedDBDatabase::SendVersionChangeToAllConnections(int64_t old_version,
       connection->RequireClientToBeActive(base::BindOnce(
           [](base::WeakPtr<IndexedDBConnection> connection, int64_t old_version,
              int64_t new_version, bool was_client_active) {
-            if (connection && was_client_active) {
+            if (connection && connection->IsConnected() && was_client_active) {
               connection->callbacks()->OnVersionChange(old_version,
                                                        new_version);
             }

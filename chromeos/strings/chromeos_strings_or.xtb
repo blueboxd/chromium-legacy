@@ -116,6 +116,7 @@
 <translation id="1908234395526491708">UDP ଅନୁରୋଧ ବିଫଳ</translation>
 <translation id="1947737735496445907">ପ୍ରିଣ୍ଟ କରାଯାଇଛି</translation>
 <translation id="1951012854035635156">Assistant</translation>
+<translation id="1962550982027027473">ଏକ ଡିଫଲ୍ଟ APN ଆବଶ୍ୟକ</translation>
 <translation id="1977994649430373166">Google ପ୍ରୋଫାଇଲ ଫଟୋ</translation>
 <translation id="1979103255016296513">ପାସ୍‌ୱାର୍ଡ ପରିବର୍ତ୍ତନର ସମୟ ବିଳମ୍ବ ହୋଇଯାଇଛି</translation>
 <translation id="1999615961760456652">କ୍ୟାପ୍ଟିଭ୍ ପୋର୍ଟାଲ୍</translation>
@@ -186,6 +187,7 @@
 <translation id="2570743873672969996"><ph name="TEST_NAME" /> ପରୀକ୍ଷା ଚଲାଯାଉଛି...</translation>
 <translation id="2584559707064218956">ସେଟ ଅପ କରିବାକୁ, ସେଟିଂସକୁ ଯାଆନ୍ତୁ</translation>
 <translation id="2597774443162333062">ଡିବଗିଂ ପାଇଁ ଫାଇଲଗୁଡ଼ିକ Googleକୁ ପଠାଯିବ</translation>
+<translation id="2599691907981599502">{NUMBER_OF_PAGES,plural, =1{ସ୍କାନ ସମ୍ପୂର୍ଣ୍ଣ ହୋଇଛି। 1ଟି ପୃଷ୍ଠାକୁ ସ୍କାନ କରାଯାଇଛି}other{ସ୍କାନ ସମ୍ପୂର୍ଣ୍ଣ ହୋଇଛି। {NUMBER_OF_PAGES}ଟି ପୃଷ୍ଠାକୁ ସ୍କାନ କରାଯାଇଛି}}</translation>
 <translation id="2619761439309613843">ଦୈନିକ ରିଫ୍ରେଶ୍</translation>
 <translation id="2620436844016719705">ସିଷ୍ଟମ୍‌</translation>
 <translation id="2638662041295312666">ସାଇନ୍-ଇନ୍ ଛବି</translation>
@@ -392,6 +394,7 @@
 <translation id="4793710386569335688">ଅଧିକ ସହାୟତା ପାଇଁ, <ph name="BEGIN_LINK" />ସହାୟତା କେନ୍ଦ୍ର<ph name="END_LINK" />କୁ ଯାଆନ୍ତୁ।</translation>
 <translation id="4793756956024303490">କମ୍ପ୍ରେସନ ଆଲଗୋରିଦମ</translation>
 <translation id="4794140124556169553">ଏକ CPU ଟେଷ୍ଟ ଚଲାଇବା ଫଳରେ ଏହା ଆପଣଙ୍କ ସିଷ୍ଟମର ପରଫରମାନ୍ସକୁ ପ୍ରଭାବିତ କରିପାରେ</translation>
+<translation id="4798078634453489142">ନୂଆ APN ଯୋଗ କରିବା ପାଇଁ କୌଣସି APNକୁ କାଢ଼ି ଦିଅନ୍ତୁ</translation>
 <translation id="4800589996161293643">Chromebook କମ୍ୟୁନିଟୀ</translation>
 <translation id="4803391892369051319">IPv4</translation>
 <translation id="4808449224298348341">ପ୍ରିଣ୍ଟ କାର୍ଯ୍ୟ <ph name="DOCUMENT_TITLE" /> ବାତିଲ୍ କରାଯାଇଛି</translation>
@@ -633,6 +636,7 @@
 <translation id="6791471867139427246">କୀ'ବୋର୍ଡ ଲାଇଟ ରଙ୍ଗ</translation>
 <translation id="680983167891198932">କୀ</translation>
 <translation id="6816797338148849397">ଆପଣଙ୍କ ଚୟନ ସମ୍ବନ୍ଧିତ ସୂଚନା ଉପଲବ୍ଧ ଅଛି। ଆକ୍ସେସ୍ କରିବାକୁ ଅପ୍ ତୀର କୀ ବ୍ୟବହାର କରନ୍ତୁ।</translation>
+<translation id="6838167112108853532">ଏହି APNକୁ ଅକ୍ଷମ କରାଯାଇପାରିବ ନାହିଁ କିମ୍ବା କାଢ଼ି ଦିଆଯାଇପାରିବ ନାହିଁ। ସକ୍ଷମ କରାଯାଇଥିବା ଆଟାଚ ହୋଇଥିବା APNଗୁଡ଼ିକୁ ଅକ୍ଷମ କରାଯାଇଛି କିମ୍ବା କାଢ଼ି ଦିଆଯାଇଛି।</translation>
 <translation id="6853312040151791195">ଡିସଚାର୍ଜିଂ ରେଟ୍</translation>
 <translation id="6889786074662672253">ରିଷ୍ଟାର୍ଟ କରାଯାଉଥିବା ସମୟରେ, ଏହି ଏକ୍ସଟର୍ନଲ ଡିଭାଇସକୁ ଅନପ୍ଲଗ କରନ୍ତୁ ନାହିଁ କିମ୍ବା ଆପଣଙ୍କ କମ୍ପ୍ୟୁଟରକୁ ବନ୍ଦ କରନ୍ତୁ ନାହିଁ। ଆପଣ ଏହି ୱିଣ୍ଡୋକୁ ଛୋଟ କରିପାରିବେ। ଏଥିପାଇଁ କିଛି ସମୟ ଲାଗିପାରେ ଏବଂ ଏହି ସମୟରେ ଆପଣଙ୍କ ଏକ୍ସଟର୍ନଲ ଡିଭାଇସ କାମ କରିନପାରେ।</translation>
 <translation id="6905724422583748843"><ph name="PAGE_NAME" />କୁ ଫେରନ୍ତୁ</translation>
@@ -722,6 +726,7 @@
 <translation id="7769672763586021400">ମଡେଲ୍ ID</translation>
 <translation id="7778717409420828014">Chromebook ଅନୁଭୂତିକୁ ଉନ୍ନତ କରିବାରେ ଆପଣଙ୍କ ମତାମତ ଆମକୁ ସାହାଯ୍ୟ କରେ ଏବଂ ଏହାକୁ ଆମ ଟିମ ଦ୍ୱାରା ସମୀକ୍ଷା କରାଯିବ। ବହୁ ସଂଖ୍ୟକ ରିପୋର୍ଟ ଯୋଗୁଁ ଆମେ ଏକ ପ୍ରତ୍ୟୁତ୍ତର ପଠାଇବାକୁ ସକ୍ଷମ ହେବୁ ନାହିଁ।</translation>
 <translation id="7784116172884276937">କୌଣସି DNS ସର୍ଭର ସେଟ ଅପ କରାଯାଇନାହିଁ</translation>
+<translation id="7791543448312431591">ଯୋଡନ୍ତୁ</translation>
 <translation id="779591286616261875">ନୂଆ ରିପୋର୍ଟ ପଠାନ୍ତୁ</translation>
 <translation id="7799817062559422778">ଲାଇଟ୍ ମୋଡ୍</translation>
 <translation id="780301667611848630">ନାଁ, ଥାଉ</translation>

@@ -34,8 +34,7 @@ constexpr size_t kRollingWindowSize = 28;
 constexpr char kFakePsmDeviceActiveSecret[] =
     "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
 
-// TODO(hirthanan): Enable when rolling out check membership requests for the
-// first active use case.
+// TODO(hirthanan): Enable when rolling out check membership requests.
 // constexpr char kHardwareClassKeyNotFound[] = "HARDWARE_CLASS_KEY_NOT_FOUND";
 
 constexpr ChromeDeviceMetadataParameters kFakeChromeParameters = {
@@ -64,8 +63,7 @@ class TwentyEightDayActiveUseCaseImplTest : public testing::Test {
 
     DeviceActivityController::RegisterPrefs(local_state_.registry());
 
-    chromeos::system::StatisticsProvider::SetTestProvider(
-        &statistics_provider_);
+    system::StatisticsProvider::SetTestProvider(&statistics_provider_);
 
     const std::vector<psm_rlwe::RlwePlaintextId> plaintext_ids;
     twenty_eight_day_active_use_case_impl_ =
@@ -85,7 +83,7 @@ class TwentyEightDayActiveUseCaseImplTest : public testing::Test {
   // Fake pref service for unit testing the local state.
   TestingPrefServiceSimple local_state_;
   base::test::ScopedFeatureList scoped_feature_list_;
-  chromeos::system::FakeStatisticsProvider statistics_provider_;
+  system::FakeStatisticsProvider statistics_provider_;
 };
 
 TEST_F(TwentyEightDayActiveUseCaseImplTest,
@@ -96,7 +94,7 @@ TEST_F(TwentyEightDayActiveUseCaseImplTest,
       base::Time::FromString("01 Jan 2022 23:59:59 GMT", &new_daily_ts));
 
   std::string window_id =
-      twenty_eight_day_active_use_case_impl_->GenerateUTCWindowIdentifier(
+      twenty_eight_day_active_use_case_impl_->GenerateWindowIdentifier(
           new_daily_ts);
 
   EXPECT_EQ(static_cast<int>(window_id.size()), 8);
@@ -110,9 +108,9 @@ TEST_F(TwentyEightDayActiveUseCaseImplTest, SameDayTimestampsHaveSameWindowId) {
   EXPECT_TRUE(base::Time::FromString("01 Jan 2022 00:00:00 GMT", &daily_ts_1));
   EXPECT_TRUE(base::Time::FromString("01 Jan 2022 23:59:59 GMT", &daily_ts_2));
 
-  EXPECT_EQ(twenty_eight_day_active_use_case_impl_->GenerateUTCWindowIdentifier(
+  EXPECT_EQ(twenty_eight_day_active_use_case_impl_->GenerateWindowIdentifier(
                 daily_ts_1),
-            twenty_eight_day_active_use_case_impl_->GenerateUTCWindowIdentifier(
+            twenty_eight_day_active_use_case_impl_->GenerateWindowIdentifier(
                 daily_ts_2));
 }
 
@@ -124,9 +122,9 @@ TEST_F(TwentyEightDayActiveUseCaseImplTest,
   EXPECT_TRUE(base::Time::FromString("01 Jan 2022 00:00:00 GMT", &daily_ts_1));
   EXPECT_TRUE(base::Time::FromString("02 Jan 2022 00:00:00 GMT", &daily_ts_2));
 
-  EXPECT_NE(twenty_eight_day_active_use_case_impl_->GenerateUTCWindowIdentifier(
+  EXPECT_NE(twenty_eight_day_active_use_case_impl_->GenerateWindowIdentifier(
                 daily_ts_1),
-            twenty_eight_day_active_use_case_impl_->GenerateUTCWindowIdentifier(
+            twenty_eight_day_active_use_case_impl_->GenerateWindowIdentifier(
                 daily_ts_2));
 }
 
@@ -144,8 +142,7 @@ TEST_F(TwentyEightDayActiveUseCaseImplTest, ExpectedMetadataIsSet) {
   EXPECT_EQ(req.device_metadata().chromeos_channel(), Channel::CHANNEL_STABLE);
   EXPECT_FALSE(req.device_metadata().chromeos_version().empty());
 
-  // TODO(hirthanan): Enable when rolling out check membership requests for the
-  // first active use case.
+  // TODO(hirthanan): Enable when rolling out check membership requests.
   // EXPECT_EQ(req.device_metadata().hardware_id(), kHardwareClassKeyNotFound);
   // EXPECT_EQ(req.device_metadata().market_segment(),
   //          MarketSegment::MARKET_SEGMENT_UNKNOWN);
@@ -227,7 +224,7 @@ TEST_F(TwentyEightDayActiveUseCaseImplTest,
     // is set. This generates the expected psm id to window dates that is
     // verified here.
     std::string actual_window_id =
-        twenty_eight_day_active_use_case_impl_->GenerateUTCWindowIdentifier(
+        twenty_eight_day_active_use_case_impl_->GenerateWindowIdentifier(
             twenty_eight_day_active_use_case_impl_->RetrievePsmIdDate(
                 expected_psm_id));
     EXPECT_EQ(actual_window_id, expected_window_id);
@@ -262,7 +259,7 @@ TEST_F(TwentyEightDayActiveUseCaseImplTest,
     // is set. This generates the expected psm id to window dates that is
     // verified here.
     std::string actual_window_id =
-        twenty_eight_day_active_use_case_impl_->GenerateUTCWindowIdentifier(
+        twenty_eight_day_active_use_case_impl_->GenerateWindowIdentifier(
             twenty_eight_day_active_use_case_impl_->RetrievePsmIdDate(
                 expected_psm_id));
     EXPECT_EQ(actual_window_id, expected_window_id);
@@ -301,7 +298,7 @@ TEST_F(TwentyEightDayActiveUseCaseImplTest,
     // is set. This generates the expected psm id to window dates that is
     // verified here.
     std::string actual_window_id =
-        twenty_eight_day_active_use_case_impl_->GenerateUTCWindowIdentifier(
+        twenty_eight_day_active_use_case_impl_->GenerateWindowIdentifier(
             twenty_eight_day_active_use_case_impl_->RetrievePsmIdDate(
                 expected_psm_id));
     EXPECT_EQ(actual_window_id, expected_window_id);

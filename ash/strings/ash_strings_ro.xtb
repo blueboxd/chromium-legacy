@@ -37,6 +37,7 @@ Iată câteva lucruri pe care le poți încerca pentru început.</translation>
 <translation id="1175572348579024023">Derulează</translation>
 <translation id="1178581264944972037">Întrerupe</translation>
 <translation id="1181037720776840403">Elimină</translation>
+<translation id="1182225749592316782">Astfel, se permite accesul pentru toate aplicațiile și site-urile cu permisiuni pentru camera foto și microfon</translation>
 <translation id="1183863904939664422">Nu mă interesează această sugestie</translation>
 <translation id="118437560755358292">Introdu parola sau codul PIN pentru mai multă siguranță</translation>
 <translation id="118532027333893379">Atinge oriunde pentru a captura ecranul complet</translation>
@@ -120,6 +121,7 @@ Iată câteva lucruri pe care le poți încerca pentru început.</translation>
 <translation id="15373452373711364">Cursor de mouse mare</translation>
 <translation id="1546492247443594934">Desktop 2</translation>
 <translation id="1546930421365146760">Solicită-i administratorului să configureze acest dispozitiv în consola de administrare Google</translation>
+<translation id="1550406609415860283">Dispozitive disponibile</translation>
 <translation id="1550523713251050646">Dă clic pentru mai multe opțiuni</translation>
 <translation id="1555130319947370107">Albastru</translation>
 <translation id="1589090746204042747">să acceseze toată activitatea din această sesiune;</translation>
@@ -174,7 +176,6 @@ Iată câteva lucruri pe care le poți încerca pentru început.</translation>
         <ph name="LOCALE" /></translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1830308660060964064">Fixarea pentru <ph name="ITEM_TITLE" /> a fost anulată</translation>
-<translation id="1836215606488044471">Asistent (se încarcă...)</translation>
 <translation id="1838895407229022812">Lumina de noapte este dezactivată.</translation>
 <translation id="1854180393107901205">Nu mai trimite</translation>
 <translation id="1862380676329487333">Actualizează și deconectează-te</translation>
@@ -262,7 +263,6 @@ Iată câteva lucruri pe care le poți încerca pentru început.</translation>
 <translation id="2359808026110333948">Continuă</translation>
 <translation id="2367186422933365202">Nu te poți conecta la Chromebook</translation>
 <translation id="2369165858548251131">„Bună” în chineză</translation>
-<translation id="2375445874393996153">Nu se mai acceptă căutarea conținutului de pe ecran cu Asistentul Google.</translation>
 <translation id="2390318262976603432">Setări de limbă</translation>
 <translation id="240006516586367791">Comenzi media</translation>
 <translation id="2402411679569069051">Pentru a debloca Chromebookul, folosește amprenta sau deblochează telefonul</translation>
@@ -459,9 +459,12 @@ Iată câteva lucruri pe care le poți încerca pentru început.</translation>
 <translation id="3513798432020909783">Cont gestionat de <ph name="MANAGER_EMAIL" /></translation>
 <translation id="352245152354538528">{0,plural, =1{Actualizează dispozitivul într-un minut}few{Actualizează dispozitivul în # minute}other{Actualizează dispozitivul în # de minute}}</translation>
 <translation id="353086728817903341">S-a conectat la <ph name="NUM_DEVICES" /> dispozitive</translation>
+<translation id="3533126039236445965">Aplicații pe raft</translation>
 <translation id="3542066395059568317">Vei vedea recomandări ca să poți continua de unde ai rămas. Poți da clic dreapta ca să elimini recomandările.</translation>
 <translation id="3552189655002856821">Conexiunea Wi-Fi este dezactivată</translation>
 <translation id="3554637740840164787">S-a fixat <ph name="ITEM_TITLE" /></translation>
+<translation id="3558768885091059911">Activezi accesul la camera foto și la microfon?</translation>
+<translation id="3560174576767922131">Înregistrează videoclipul</translation>
 <translation id="3563775809269155755">Activează hotspotul</translation>
 <translation id="3566240529365775567">Deschis adineauri</translation>
 <translation id="3571734092741541777">Configurează</translation>
@@ -606,7 +609,6 @@ Conectează dispozitivul la o sursă de alimentare.</translation>
 <translation id="4324840740119394760">Astfel, accesul la cameră este permis pentru <ph name="APP_NAME" /> și toate aplicațiile și site-urile care au permisiunea adecvată</translation>
 <translation id="4333628967105022692">Lacros nu este acceptat dacă se conectează mai mulți utilizatori.</translation>
 <translation id="4338109981321384717">Lupă</translation>
-<translation id="4351433414020964307">Asistentul se încarcă...</translation>
 <translation id="4371348193907997655">Setări pentru proiectare</translation>
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />, puterea semnalului: <ph name="SIGNAL_STRENGTH" /> %</translation>
 <translation id="4378551569595875038">Se conectează</translation>
@@ -654,6 +656,7 @@ Conectează dispozitivul la o sursă de alimentare.</translation>
 <translation id="4577274620589681794">Timpul a expirat · <ph name="LABEL" /></translation>
 <translation id="4577990005084629481">Afișează previzualizările</translation>
 <translation id="4578906031062871102">Meniul Setări deschis</translation>
+<translation id="458210817642223147">Înregistrează un GIF</translation>
 <translation id="4585337515783392668">Nu mai proiecta pe un receiver necunoscut</translation>
 <translation id="4596144739579517758">Tema întunecată este dezactivată</translation>
 <translation id="4611292653554630842">Conectează-te</translation>
@@ -733,6 +736,7 @@ Conectează dispozitivul la o sursă de alimentare.</translation>
         <ph name="NUM_OTHER_NOTIFICATION" /></translation>
 <translation id="4987738733603015246">Biroul 16</translation>
 <translation id="5003993274120026347">Propoziția următoare</translation>
+<translation id="5004607513195820459">Rețeaua este gestionată</translation>
 <translation id="5016558321564993266">Comută marcatorul. <ph name="STATE_TEXT" /></translation>
 <translation id="5029356738310729434">Accesul la microfonul dispozitivului este activat</translation>
 <translation id="5030687792513154421">Timpul a expirat</translation>
@@ -869,6 +873,7 @@ Conectează dispozitivul la o sursă de alimentare.</translation>
 <translation id="5763928712329149804">Modul Shelf Party este dezactivat.</translation>
 <translation id="576453121877257266">Lumina de noapte este activată.</translation>
 <translation id="5769373120130404283">Ecran de confidențialitate</translation>
+<translation id="5773950591113557721">Astfel, se permite accesul la <ph name="APP_NAME" /> și la toate aplicațiile și site-urile care au acces la camera foto și microfon</translation>
 <translation id="5777841717266010279">Oprești permiterea accesului la ecran?</translation>
 <translation id="5779721926447984944">Fișiere fixate</translation>
 <translation id="5788127256798019331">Fișiere Play</translation>
@@ -1056,6 +1061,7 @@ Instalare nouă</translation>
 <translation id="6787595647772650851">Restabilește ultima sesiune</translation>
 <translation id="6790428901817661496">Redă</translation>
 <translation id="6801878137098616817">Editat recent</translation>
+<translation id="6802687695197837794">Astfel, se permite accesul pentru <ph name="APP1_NAME" />, <ph name="APP2_NAME" /> și pentru toate aplicațiile și site-urile cu permisiuni pentru camera foto și microfon</translation>
 <translation id="6803622936009808957">Afișajele nu au putut fi oglindite, deoarece nu au fost găsite rezoluții acceptate. Ați intrat, în schimb, în modul monitor extins.</translation>
 <translation id="6812232930908427253">Nu s-a putut salva desktopul. Prea multe ferestre sau file.</translation>
 <translation id="6818242057446442178">Înapoi cu un cuvânt</translation>
@@ -1078,6 +1084,7 @@ Instalare nouă</translation>
 <translation id="6901883536534621389">Încearcă gesturile pentru navigare</translation>
 <translation id="6919251195245069855">Nu s-a recunoscut cardul inteligent. Încearcă din nou.</translation>
 <translation id="6931576957638141829">Salvează în</translation>
+<translation id="6942518653766415536">Meniu cu formatul de înregistrare</translation>
 <translation id="6945221475159498467">Selectează</translation>
 <translation id="6960565108681981554">Neactivată. Contactează operatorul.</translation>
 <translation id="6961121602502368900">Dezactivarea sunetului telefonului nu este disponibilă în profilul de serviciu</translation>
@@ -1087,6 +1094,7 @@ Instalare nouă</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6972754398087986839">Începe</translation>
 <translation id="6979158407327259162">Google Drive</translation>
+<translation id="6981291220124935078">Activează accesul</translation>
 <translation id="6981982820502123353">Accesibilitate</translation>
 <translation id="698231206551913481">Toate fișierele și datele locale asociate acestui utilizator vor fi șterse definitiv după eliminarea utilizatorului.</translation>
 <translation id="7005239792648594238">Deschide o aplicație pentru a începe</translation>
@@ -1227,7 +1235,6 @@ Instalare nouă</translation>
 <translation id="7768784765476638775">Selectează și ascultă</translation>
 <translation id="7780094051999721182">comenzi rapide</translation>
 <translation id="7780159184141939021">Rotește ecranul</translation>
-<translation id="7796353162336583443">Atinge butonul creion de pe raft ca să creezi note și capturi de ecran, să folosești Asistentul Google, indicatorul laser sau lupa.</translation>
 <translation id="7796735576426975947">Notificare nouă ascunsă</translation>
 <translation id="7798302898096527229">Apasă pe tasta de căutare sau pe Shift pentru a anula.</translation>
 <translation id="7807067443225230855">Căutarea și Asistentul</translation>

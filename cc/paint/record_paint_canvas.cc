@@ -21,12 +21,12 @@ namespace cc {
 RecordPaintCanvas::RecordPaintCanvas() = default;
 RecordPaintCanvas::~RecordPaintCanvas() = default;
 
-sk_sp<PaintRecord> RecordPaintCanvas::ReleaseAsRecord() {
+PaintRecord RecordPaintCanvas::ReleaseAsRecord() {
   // Some users expect that their saves are automatically closed for them.
   // Maybe we could remove this assumption and just have callers do it.
   restoreToCount(1);
   needs_flush_ = false;
-  return buffer_.MoveRetainingBufferIfPossible();
+  return buffer_.ReleaseAsRecord();
 }
 
 template <typename T, typename... Args>
@@ -124,16 +124,8 @@ void RecordPaintCanvas::rotate(SkScalar degrees) {
   push<RotateOp>(degrees);
 }
 
-void RecordPaintCanvas::concat(const SkMatrix& matrix) {
-  concat(SkM44(matrix));
-}
-
 void RecordPaintCanvas::concat(const SkM44& matrix) {
   push<ConcatOp>(matrix);
-}
-
-void RecordPaintCanvas::setMatrix(const SkMatrix& matrix) {
-  setMatrix(SkM44(matrix));
 }
 
 void RecordPaintCanvas::setMatrix(const SkM44& matrix) {
@@ -221,11 +213,6 @@ bool RecordPaintCanvas::getDeviceClipBounds(SkIRect* bounds) const {
 bool RecordPaintCanvas::isClipEmpty() const {
   NOTREACHED();
   return true;
-}
-
-SkMatrix RecordPaintCanvas::getTotalMatrix() const {
-  NOTREACHED();
-  return SkMatrix();
 }
 
 SkM44 RecordPaintCanvas::getLocalToDevice() const {
@@ -342,7 +329,7 @@ void RecordPaintCanvas::drawTextBlob(sk_sp<SkTextBlob> blob,
   push<DrawTextBlobOp>(std::move(blob), x, y, node_id, flags);
 }
 
-void RecordPaintCanvas::drawPicture(sk_sp<const PaintRecord> record) {
+void RecordPaintCanvas::drawPicture(PaintRecord record) {
   // TODO(enne): If this is small, maybe flatten it?
   push<DrawRecordOp>(record);
 }
@@ -476,10 +463,6 @@ bool InspectableRecordPaintCanvas::getDeviceClipBounds(SkIRect* bounds) const {
 
 bool InspectableRecordPaintCanvas::isClipEmpty() const {
   return canvas_.isClipEmpty();
-}
-
-SkMatrix InspectableRecordPaintCanvas::getTotalMatrix() const {
-  return canvas_.getTotalMatrix();
 }
 
 SkM44 InspectableRecordPaintCanvas::getLocalToDevice() const {

@@ -37,6 +37,7 @@ Na začiatok môžete vyskúšať niektoré z týchto vecí.</translation>
 <translation id="1175572348579024023">Posúvanie</translation>
 <translation id="1178581264944972037">Pozastaviť</translation>
 <translation id="1181037720776840403">Odstrániť</translation>
+<translation id="1182225749592316782">Týmto povolíte prístup všetkým aplikáciám a webom s povoleniami používať kameru a mikrofón</translation>
 <translation id="1183863904939664422">Tento návrh ma nezaujíma</translation>
 <translation id="118437560755358292">Zadajte heslo alebo PIN, zvýšite tým zabezpečenie</translation>
 <translation id="118532027333893379">Klepnutím na ľubovoľné miesto nasnímate celú obrazovku</translation>
@@ -120,6 +121,7 @@ Na začiatok môžete vyskúšať niektoré z týchto vecí.</translation>
 <translation id="15373452373711364">Veľký kurzor myši</translation>
 <translation id="1546492247443594934">2. plocha</translation>
 <translation id="1546930421365146760">Požiadajte správcu, aby toto zariadenie nastavil v správcovskej konzole Google</translation>
+<translation id="1550406609415860283">Dostupné zariadenia</translation>
 <translation id="1550523713251050646">Kliknutím zobrazíte ďalšie možnosti</translation>
 <translation id="1555130319947370107">Modrá</translation>
 <translation id="1589090746204042747">Získajte prístup k všetkej svojej aktivite v tejto relácii</translation>
@@ -174,7 +176,6 @@ Na začiatok môžete vyskúšať niektoré z týchto vecí.</translation>
         <ph name="LOCALE" /></translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1830308660060964064">Položka <ph name="ITEM_TITLE" /> bola odopnutá</translation>
-<translation id="1836215606488044471">Asistent (načítava sa...)</translation>
 <translation id="1838895407229022812">Nočný režim je vypnutý.</translation>
 <translation id="1854180393107901205">Zastaviť prenášanie</translation>
 <translation id="1862380676329487333">Aktualizovať a odhlásiť sa</translation>
@@ -262,7 +263,6 @@ Na začiatok môžete vyskúšať niektoré z týchto vecí.</translation>
 <translation id="2359808026110333948">Pokračovať</translation>
 <translation id="2367186422933365202">Do Chromebooku sa nedá prihlásiť</translation>
 <translation id="2369165858548251131">„Dobrý deň“ po čínsky</translation>
-<translation id="2375445874393996153">Vyhľadávanie obsahu na obrazovke pomocou Asistenta Google už nie je podporované.</translation>
 <translation id="2390318262976603432">Miestne nastavenia</translation>
 <translation id="240006516586367791">Ovládanie médií</translation>
 <translation id="2402411679569069051">Ak chcete Chromebook odomknúť, použite odtlačok prsta alebo odomknite telefón</translation>
@@ -459,9 +459,12 @@ Na začiatok môžete vyskúšať niektoré z týchto vecí.</translation>
 <translation id="3513798432020909783">Správca účtu: <ph name="MANAGER_EMAIL" /></translation>
 <translation id="352245152354538528">{0,plural, =1{Aktualizujte zariadenie do 1 minúty}few{Aktualizujte zariadenie do # minút}many{Aktualizujte zariadenie do # minúty}other{Aktualizujte zariadenie do # minút}}</translation>
 <translation id="353086728817903341">Pripojené k <ph name="NUM_DEVICES" /> zariadeniam</translation>
+<translation id="3533126039236445965">Aplikácie na poličke</translation>
 <translation id="3542066395059568317">Zobrazia sa vám odporúčania, aby ste mohli pokračovať tam, kde ste prestali. Odstránite ich kliknutím pravým tlačidlom.</translation>
 <translation id="3552189655002856821">Pripojenie Wi‑Fi je vypnuté</translation>
 <translation id="3554637740840164787">Položka <ph name="ITEM_TITLE" /> bola pripnutá</translation>
+<translation id="3558768885091059911">Chcete zapnúť prístup ku kamere a mikrofónu?</translation>
+<translation id="3560174576767922131">Nahrať video</translation>
 <translation id="3563775809269155755">Zapnutie hotspotu</translation>
 <translation id="3566240529365775567">Otvorené teraz</translation>
 <translation id="3571734092741541777">Nastaviť</translation>
@@ -606,7 +609,6 @@ Pripojte svoje zariadenie k napájaniu.</translation>
 <translation id="4324840740119394760">Týmto povolíte prístup ku kamere aplikácii <ph name="APP_NAME" /> a všetkým aplikáciám a webom s povolením používať kameru</translation>
 <translation id="4333628967105022692">Prehliadač Lacros nie je podporovaný, keď je prihlásených viacero používateľov.</translation>
 <translation id="4338109981321384717">Lupa</translation>
-<translation id="4351433414020964307">Asistent sa načítava...</translation>
 <translation id="4371348193907997655">Nastavenia prenosu</translation>
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />, sila signálu: <ph name="SIGNAL_STRENGTH" /> %.</translation>
 <translation id="4378551569595875038">Pripája sa...</translation>
@@ -654,6 +656,7 @@ Pripojte svoje zariadenie k napájaniu.</translation>
 <translation id="4577274620589681794">Čas vypršal · <ph name="LABEL" /></translation>
 <translation id="4577990005084629481">Zobraziť ukážky</translation>
 <translation id="4578906031062871102">Bola otvorená ponuka Nastavenia</translation>
+<translation id="458210817642223147">Nahrať gif</translation>
 <translation id="4585337515783392668">Zastaviť prenos do neznámeho zariadenia</translation>
 <translation id="4596144739579517758">Tmavý motív je vypnutý</translation>
 <translation id="4611292653554630842">Prihlásiť sa</translation>
@@ -733,6 +736,7 @@ Pripojte svoje zariadenie k napájaniu.</translation>
         <ph name="NUM_OTHER_NOTIFICATION" /></translation>
 <translation id="4987738733603015246">16. plocha</translation>
 <translation id="5003993274120026347">Ďalšia veta</translation>
+<translation id="5004607513195820459">Sieť je spravovaná</translation>
 <translation id="5016558321564993266">Prepnite zvýrazňovač. <ph name="STATE_TEXT" /></translation>
 <translation id="5029356738310729434">Prístup k mikrofónu zariadenia je zapnutý</translation>
 <translation id="5030687792513154421">Čas vypršal</translation>
@@ -869,6 +873,7 @@ Pripojte svoje zariadenie k napájaniu.</translation>
 <translation id="5763928712329149804">Režim Shelf Party je vypnutý.</translation>
 <translation id="576453121877257266">Nočný režim je zapnutý.</translation>
 <translation id="5769373120130404283">Obrazovka ochrany súkromia</translation>
+<translation id="5773950591113557721">Týmto povolíte prístup aplikácii <ph name="APP_NAME" /> a všetkým aplikáciám a webom s povoleniami používať kameru a mikrofón</translation>
 <translation id="5777841717266010279">Chcete ukončiť zdieľanie obrazovky?</translation>
 <translation id="5779721926447984944">Pripnuté súbory</translation>
 <translation id="5788127256798019331">Súbory Play</translation>
@@ -1056,6 +1061,7 @@ Nová inštalácia</translation>
 <translation id="6787595647772650851">Obnoviť poslednú reláciu</translation>
 <translation id="6790428901817661496">Prehrať</translation>
 <translation id="6801878137098616817">Nedávno upravené</translation>
+<translation id="6802687695197837794">Týmto povolíte prístup aplikáciám <ph name="APP1_NAME" />, <ph name="APP2_NAME" /> a všetkým aplikáciám a webom s povoleniami používať kameru a mikrofón</translation>
 <translation id="6803622936009808957">Obraz na monitoroch sa nedá zrkadliť, pretože sa nenašli podporované rozlíšenia. Namiesto toho sa spustil režim rozšírenej pracovnej plochy.</translation>
 <translation id="6812232930908427253">Plochu sa nepodarilo uložiť. Príliš veľa okien alebo kariet.</translation>
 <translation id="6818242057446442178">Dozadu o slovo</translation>
@@ -1078,6 +1084,7 @@ Nová inštalácia</translation>
 <translation id="6901883536534621389">Skúste prechádzanie gestami</translation>
 <translation id="6919251195245069855">Inteligentnú kartu sa nepodarilo rozpoznať. Skúste to znova.</translation>
 <translation id="6931576957638141829">Uložiť do</translation>
+<translation id="6942518653766415536">Ponuka formátu nahrávky</translation>
 <translation id="6945221475159498467">Vybrať</translation>
 <translation id="6960565108681981554">Neaktivované. Kontaktujte operátora.</translation>
 <translation id="6961121602502368900">Stíšenie telefónu nie je v pracovnom profile k dispozícii</translation>
@@ -1087,6 +1094,7 @@ Nová inštalácia</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6972754398087986839">Začať</translation>
 <translation id="6979158407327259162">Disk Google</translation>
+<translation id="6981291220124935078">Zapnúť prístup</translation>
 <translation id="6981982820502123353">Dostupnosť</translation>
 <translation id="698231206551913481">Všetky súbory a miestne údaje priradené k tomuto používateľovi budú po jeho odstránení natrvalo vymazané.</translation>
 <translation id="7005239792648594238">Začnite otvorením aplikácie</translation>
@@ -1227,7 +1235,6 @@ Nová inštalácia</translation>
 <translation id="7768784765476638775">Vyslovenie položky po vybratí</translation>
 <translation id="7780094051999721182">skratky</translation>
 <translation id="7780159184141939021">Otáčanie obrazovky</translation>
-<translation id="7796353162336583443">Klepnite na tlačidlo dotykového pera na poličke a vytvorte poznámku, snímku obrazovky, použite Asistenta Google, laserové ukazovadlo alebo lupu.</translation>
 <translation id="7796735576426975947">Nové upozornenie bolo skryté</translation>
 <translation id="7798302898096527229">Ak to chcete zrušiť, stlačte kláves Hľadať alebo Shift.</translation>
 <translation id="7807067443225230855">Vyhľadávanie a Asistent</translation>

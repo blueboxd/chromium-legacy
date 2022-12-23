@@ -470,10 +470,6 @@ const char kFileSystemSyncAccessHandleAsyncInterfaceEnabled[] =
 // file:///alias/some/path.html into file:///replacement/some/path.html.
 const char kFileUrlPathAlias[] = "file-url-path-alias";
 
-// Forces the Chrome major version to the minor position in the User-Agent
-// string. Locks major version to 99.
-const char kForceMajorVersionToMinorPosition[] = "force-major-version-to-minor";
-
 // This forces pages to be loaded as presentation receivers.  Useful for testing
 // behavior specific to presentation receivers.
 // Spec: https://www.w3.org/TR/presentation-api/#interface-presentationreceiver
@@ -677,6 +673,10 @@ const char kRemoteDebuggingPipe[] = "remote-debugging-pipe";
 // Enables remote debug over HTTP on the specified port.
 const char kRemoteDebuggingPort[]           = "remote-debugging-port";
 
+// Enables web socket connections from the specified origins only. '*' allows
+// any origin.
+const char kRemoteAllowOrigins[] = "remote-allow-origins";
+
 const char kRendererClientId[] = "renderer-client-id";
 
 // The contents of this flag are prepended to the renderer command line.
@@ -779,7 +779,7 @@ const char kSkiaFontCacheLimitMb[] = "skia-font-cache-limit-mb";
 // exceeds this limit.
 const char kSkiaResourceCacheLimitMb[] = "skia-resource-cache-limit-mb";
 
-// Type of the current test harness ("browser" or "ui").
+// Type of the current test harness ("browser" or "ui" or "gpu").
 const char kTestType[]                      = "test-type";
 
 // The time zone to use for testing. Passed to renderers and plugins on startup.

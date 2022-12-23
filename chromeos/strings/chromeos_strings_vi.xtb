@@ -116,6 +116,7 @@
 <translation id="1908234395526491708">Không gửi được yêu cầu UDP</translation>
 <translation id="1947737735496445907">Đã in</translation>
 <translation id="1951012854035635156">Trợ lý</translation>
+<translation id="1962550982027027473">Cần có APN mặc định</translation>
 <translation id="1977994649430373166">Ảnh hồ sơ trên Google</translation>
 <translation id="1979103255016296513">Đã quá hạn thay đổi mật khẩu</translation>
 <translation id="1999615961760456652">Trang xác thực</translation>
@@ -393,6 +394,7 @@
 <translation id="4793710386569335688">Để được trợ giúp thêm, hãy truy cập <ph name="BEGIN_LINK" />Trung tâm trợ giúp<ph name="END_LINK" />.</translation>
 <translation id="4793756956024303490">Thuật toán nén</translation>
 <translation id="4794140124556169553">Việc chạy quá trình kiểm tra CPU có thể ảnh hưởng đến hiệu suất của hệ thống</translation>
+<translation id="4798078634453489142">Xoá một APN để thêm một APN mới</translation>
 <translation id="4800589996161293643">Cộng đồng Chromebook</translation>
 <translation id="4803391892369051319">IPv4</translation>
 <translation id="4808449224298348341">Đã hủy lệnh in <ph name="DOCUMENT_TITLE" /></translation>
@@ -634,6 +636,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="6791471867139427246">màu đèn bàn phím</translation>
 <translation id="680983167891198932">Khóa</translation>
 <translation id="6816797338148849397">Có thông tin liên quan đến nội dung bạn chọn. Sử dụng phím Mũi tên lên để truy cập.</translation>
+<translation id="6838167112108853532">Không thể tắt hoặc xoá APN này. Hãy nhớ tắt hoặc xoá các APN đính kèm đã bật.</translation>
 <translation id="6853312040151791195">Tốc độ xả pin</translation>
 <translation id="6889786074662672253">Khi đang khởi động lại, đừng rút thiết bị bên ngoài này ra hay tắt máy tính. Bạn có thể thu nhỏ cửa sổ này. Quá trình này có thể mất vài phút và thiết bị bên ngoài của bạn có thể không hoạt động được trong thời gian này.</translation>
 <translation id="6905724422583748843">Quay lại <ph name="PAGE_NAME" /></translation>
@@ -723,6 +726,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="7769672763586021400">ID kiểu máy</translation>
 <translation id="7778717409420828014">Ý kiến phản hồi của bạn giúp chúng tôi cải thiện trải nghiệm sử dụng Chromebook và sẽ được đội ngũ của chúng tôi xem xét. Do nhận được số lượng lớn báo cáo nên chúng tôi sẽ không thể gửi thư trả lời cho bạn.</translation>
 <translation id="7784116172884276937">Không có máy chủ DNS nào được thiết lập</translation>
+<translation id="7791543448312431591">Thêm</translation>
 <translation id="779591286616261875">Gửi báo cáo mới</translation>
 <translation id="7799817062559422778">Chế độ sáng</translation>
 <translation id="780301667611848630">Không, cảm ơn</translation>

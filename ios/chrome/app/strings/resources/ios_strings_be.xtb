@@ -48,6 +48,7 @@
 <translation id="1265739287306757398">Даведацца больш</translation>
 <translation id="1272079795634619415">Спыніць</translation>
 <translation id="1275718070701477396">Выбрана</translation>
+<translation id="1279024913354609713">Не дазваляць</translation>
 <translation id="1281818060020671000">Кіраванне данымі</translation>
 <translation id="1282311502488501110">Не ўваходзіць</translation>
 <translation id="1283524564873030414">За апошнія 24 гадзіны</translation>
@@ -148,6 +149,7 @@
 <translation id="2074131957428911366">У <ph name="BEGIN_LINK" />наладах<ph name="END_LINK" /> заўсёды можна выбраць, што трэба сінхранізаваць.</translation>
 <translation id="2079545284768500474">Адрабіць</translation>
 <translation id="2080769225927880590">Увайдзіце ў сапраўдны ўліковы запіс</translation>
+<translation id="2090878303988764231">Каб кіраваць змесцівам, увайдзіце ва ўліковы запіс</translation>
 <translation id="2103075008456228677">Адкрыць history.google.com</translation>
 <translation id="21133533946938348">Замацаваць укладку</translation>
 <translation id="2116625576999540962">Перамешчана элементаў: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
@@ -190,6 +192,7 @@
 <translation id="2421044535038393232">Працягнуць рэдагаванне</translation>
 <translation id="2434405374328098816">Вы ўжо захавалі пароль для карыстальніка <ph name="USERNAME" /> на вэб-сайце <ph name="WEBSITE" /></translation>
 <translation id="2435457462613246316">Паказаць пароль</translation>
+<translation id="2451654228769116489">Замацаваць укладку</translation>
 <translation id="2461070143328828326">Налады пароляў</translation>
 <translation id="2469960372084740698">Выключыць Бяспечны прагляд?</translation>
 <translation id="2473876017985765807">Вы ўжо захавалі пароль для вэб-сайта <ph name="WEBSITE" /></translation>
@@ -672,6 +675,7 @@
 <translation id="6059830886158432458">Кіруйце паказам артыкулаў і гісторыяй дзеянняў тут</translation>
 <translation id="6064824697233747382">Палітыка вашай арганізацыі патрабуе, каб вы выключылі сінхранізацыю.</translation>
 <translation id="6066301408025741299">Каб скасаваць, націсніце тут.</translation>
+<translation id="6071409777669089905">Адмацаваць укладку</translation>
 <translation id="60829778314739003">Прыняць і працягнуць</translation>
 <translation id="6084848228346514841">Выбраць укладкі</translation>
 <translation id="6103540626693881831">Шыфраванне на прыладзе</translation>
@@ -785,6 +789,7 @@
 <translation id="6710079714193676716">Пад кіраваннем вашай арганізацыі. Некаторыя функцыі могуць быць недаступныя. <ph name="BEGIN_LINK" />Даведацца больш<ph name="END_LINK" /></translation>
 <translation id="6713747756340119864">Праграмы Google</translation>
 <translation id="6730682669179532099">Не ўдалося экспартаваць паролі</translation>
+<translation id="6732087373923685049">камера</translation>
 <translation id="6748108480210050150">З</translation>
 <translation id="6760509555861141183">Вярнуцца да апошняй укладкі</translation>
 <translation id="6762812039470893796">Адмяніць выбар усіх</translation>
@@ -971,6 +976,7 @@
 <translation id="8197543752516192074">Перакласці старонку</translation>
 <translation id="8205564605687841303">Скасаваць</translation>
 <translation id="8206354486702514201">Гэтай наладай кіруе адміністратар.</translation>
+<translation id="821809831108207540">Каб персаналізаваць стужку "Рэкамендацыі" і Chrome, увайдзіце ва ўліковы запіс і ўключыце сінхранізацыю.</translation>
 <translation id="8225985093977202398">Відарысы і файлы ў кэшы</translation>
 <translation id="8237382152611443140">Адкрыйце налады аўтазапаўнення пароляў</translation>
 <translation id="8261506727792406068">Выдаліць</translation>
@@ -1037,6 +1043,7 @@
 <translation id="8764015330924122850">Адпісацца ад <ph name="DOMAIN_NAME" /></translation>
 <translation id="8775144690796719618">Няправільны URL-адрас</translation>
 <translation id="8787968206789828143">Пошук у інтэрнэце</translation>
+<translation id="8792626944327216835">мікрафон</translation>
 <translation id="8803639129939845298">Бяспечны сайт</translation>
 <translation id="8806823403540278281">Палітыка вашай арганізацыі патрабуе, каб вы праглядалі старонкі ў рэжыме інкогніта. У гэтым рэжыме ўкладкі не захоўваюцца.
 <ph name="BEGIN_LINK" />Даведацца больш<ph name="END_LINK" /></translation>
@@ -1097,6 +1104,7 @@
 <translation id="9219154867334666734">Пошук укладак…</translation>
 <translation id="9223358826628549784">Справаздача аб збоях адпраўлена.</translation>
 <translation id="941747855997058526">Выбраць пароль…</translation>
+<translation id="948048872540558976">Стварыць новую ўкладку</translation>
 <translation id="952704832371081537">Скасаваць</translation>
 <translation id="953008885340860025">Уваход у Chrome не выкананы</translation>
 <translation id="959066944189734975">Вы падпісаны на канал "<ph name="CHANNEL_NAME" />"</translation>

@@ -23,7 +23,6 @@
 #import "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #import "ios/chrome/browser/ui/activity_services/activity_params.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_interaction_controller.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/bookmarks_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -40,6 +39,7 @@
 #import "ios/chrome/browser/ui/history/public/history_presentation_delegate.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_mediator.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
+#import "ios/chrome/browser/ui/legacy_bookmarks/legacy_bookmark_interaction_controller.h"
 #import "ios/chrome/browser/ui/main/bvc_container_view_controller.h"
 #import "ios/chrome/browser/ui/main/default_browser_scene_agent.h"
 #import "ios/chrome/browser/ui/main/layout_guide_util.h"
@@ -52,6 +52,8 @@
 #import "ios/chrome/browser/ui/recent_tabs/synced_sessions.h"
 #import "ios/chrome/browser/ui/sharing/sharing_coordinator.h"
 #import "ios/chrome/browser/ui/snackbar/snackbar_coordinator.h"
+#import "ios/chrome/browser/ui/tab_switcher/pinned_tabs/features.h"
+#import "ios/chrome/browser/ui/tab_switcher/pinned_tabs/pinned_tabs_mediator.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_commands.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_context_menu_helper.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_item.h"
@@ -116,6 +118,8 @@
 @property(nonatomic, strong) IncognitoReauthMediator* incognitoAuthMediator;
 // Mediator for remote Tabs.
 @property(nonatomic, strong) RecentTabsMediator* remoteTabsMediator;
+// Mediator for pinned Tabs.
+@property(nonatomic, strong) PinnedTabsMediator* pinnedTabsMediator;
 // Coordinator for history, which can be started from recent tabs.
 @property(nonatomic, strong) HistoryCoordinator* historyCoordinator;
 // Coordinator for the thumb strip.
@@ -647,6 +651,12 @@
             regularBrowserState);
   }
 
+  if (IsPinnedTabsEnabled()) {
+    self.pinnedTabsMediator = [[PinnedTabsMediator alloc]
+        initWithConsumer:baseViewController.pinnedTabsConsumer];
+    self.pinnedTabsMediator.browser = _regularBrowser;
+  }
+
   self.incognitoTabsMediator = [[TabGridMediator alloc]
       initWithConsumer:baseViewController.incognitoTabsConsumer];
   self.incognitoTabsMediator.browser = _incognitoBrowser;
@@ -872,6 +882,7 @@
 
   self.actionSheetCoordinator.alertStyle = UIAlertControllerStyleActionSheet;
 
+  __weak TabGridMediator* weakTabGridMediator = tabGridMediator;
   [self.actionSheetCoordinator
       addItemWithTitle:base::SysUTF16ToNSString(
                            l10n_util::GetPluralStringFUTF16(
@@ -880,7 +891,7 @@
                 action:^{
                   base::RecordAction(base::UserMetricsAction(
                       "MobileTabGridSelectionCloseTabsConfirmed"));
-                  [tabGridMediator closeItemsWithIDs:items];
+                  [weakTabGridMediator closeItemsWithIDs:items];
                 }
                  style:UIAlertActionStyleDestructive];
   [self.actionSheetCoordinator
@@ -888,6 +899,51 @@
                 action:^{
                   base::RecordAction(base::UserMetricsAction(
                       "MobileTabGridSelectionCloseTabsCanceled"));
+                }
+                 style:UIAlertActionStyleCancel];
+  [self.actionSheetCoordinator start];
+}
+
+- (void)
+    showCloseAllItemsConfirmationActionSheetWithTabGridMediator:
+        (TabGridMediator*)tabGridMediator
+                                                         anchor:
+                                                             (UIBarButtonItem*)
+                                                                 buttonAnchor {
+  DCHECK(tabGridMediator == self.regularTabsMediator);
+
+  NSString* title = l10n_util::GetNSString(
+      IDS_IOS_TAB_GRID_CLOSE_ALL_TABS_ACTION_SHEET_TITLE);
+  NSString* message = l10n_util::GetNSString(
+      IDS_IOS_TAB_GRID_CLOSE_ALL_TABS_ACTION_SHEET_MESSAGE);
+
+  self.actionSheetCoordinator = [[ActionSheetCoordinator alloc]
+      initWithBaseViewController:self.baseViewController
+                         browser:self.browser
+                           title:title
+                         message:message
+                   barButtonItem:buttonAnchor];
+
+  self.actionSheetCoordinator.alertStyle = UIAlertControllerStyleActionSheet;
+
+  __weak TabGridMediator* weakTabGridMediator = tabGridMediator;
+  [self.actionSheetCoordinator
+      addItemWithTitle:l10n_util::GetNSString(
+                           IDS_IOS_TAB_GRID_CLOSE_NON_PINNED_TABS_ONLY)
+                action:^{
+                  [weakTabGridMediator closeNonPinnedItems];
+                }
+                 style:UIAlertActionStyleDefault];
+  [self.actionSheetCoordinator
+      addItemWithTitle:l10n_util::GetNSString(IDS_IOS_TAB_GRID_CLOSE_ALL_TABS)
+                action:^{
+                  [weakTabGridMediator closeAllItems];
+                }
+                 style:UIAlertActionStyleDestructive];
+
+  [self.actionSheetCoordinator
+      addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)
+                action:^{
                 }
                  style:UIAlertActionStyleCancel];
   [self.actionSheetCoordinator start];

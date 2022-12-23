@@ -125,8 +125,9 @@ bool HandleKeyboardFeatureFlags(fuchsia::web::ContextFeatureFlags features,
 void HandleUnsafelyTreatInsecureOriginsAsSecureParam(
     fuchsia::web::CreateContextParams& params,
     base::CommandLine& launch_args) {
-  if (!params.has_unsafely_treat_insecure_origins_as_secure())
+  if (!params.has_unsafely_treat_insecure_origins_as_secure()) {
     return;
+  }
 
   const std::vector<std::string>& insecure_origins =
       params.unsafely_treat_insecure_origins_as_secure();
@@ -157,8 +158,9 @@ void HandleUnsafelyTreatInsecureOriginsAsSecureParam(
 
 void HandleCorsExemptHeadersParam(fuchsia::web::CreateContextParams& params,
                                   base::CommandLine& launch_args) {
-  if (!params.has_cors_exempt_headers())
+  if (!params.has_cors_exempt_headers()) {
     return;
+  }
 
   std::vector<base::StringPiece> cors_exempt_headers;
   cors_exempt_headers.reserve(params.cors_exempt_headers().size());
@@ -462,8 +464,9 @@ void AppendDynamicServices(fuchsia::web::ContextFeatureFlags features,
      "fuchsia.input.virtualkeyboard.ControllerCreator"},
   };
   for (const auto& [flag, value, service] : kServices) {
-    if ((features & flag) == value)
+    if ((features & flag) == value) {
       services.push_back(std::string(service));
+    }
   }
 
 #if BUILDFLAG(ENABLE_WIDEVINE) && BUILDFLAG(ENABLE_CAST_RECEIVER)

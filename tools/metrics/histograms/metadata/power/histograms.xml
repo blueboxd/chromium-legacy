@@ -306,7 +306,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PerformanceMonitor.ResourceCoalition.Availability"
-    enum="CoalitionIDAvailability" expires_after="2023-04-16">
+    enum="CoalitionIDAvailability" expires_after="2023-06-18">
   <owner>fdoray@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -861,7 +861,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Power.BatteryDischargeGranularityMilliwattHours"
+<histogram name="Power.BatteryDischargeGranularityMilliwattHours2"
     units="milliwatt-hours" expires_after="2023-06-04">
   <owner>pmonette@chromium.org</owner>
   <owner>fdoray@chromium.org</owner>
@@ -880,7 +880,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Power.BatteryDischargeGranularityRelative"
+<histogram name="Power.BatteryDischargeGranularityRelative2"
     units="hundredth of a percent" expires_after="2023-06-04">
   <owner>pmonette@chromium.org</owner>
   <owner>fdoray@chromium.org</owner>
@@ -921,7 +921,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.BatteryDischargeRate" units="mW"
-    expires_after="2023-06-11">
+    expires_after="2023-06-18">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -2007,7 +2007,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.Mac.IsOnBattery2" enum="BooleanOnBattery"
-    expires_after="2023-04-16">
+    expires_after="2023-06-18">
   <owner>avi@chromium.org</owner>
   <owner>lgrey@chromium.org</owner>
   <summary>
@@ -2089,7 +2089,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.PowerButtonPressed" units="units"
-    expires_after="2023-04-16">
+    expires_after="2023-06-18">
   <owner>emaamari@google.com</owner>
   <owner>chromeos-commercial-identity@google.com</owner>
   <summary>

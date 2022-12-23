@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/style/ash_color_provider.h"
@@ -60,7 +61,11 @@ constexpr int kUseSmallerHeightDividerWidthThreshold = 600;
 
 // The rounded corner radii, also in dips.
 constexpr int kCornerRadius = 4;
-constexpr gfx::RoundedCornersF kCornerRadii(kCornerRadius);
+constexpr gfx::RoundedCornersF kCornerRadiiOld(kCornerRadius);
+
+// The rounded corner radii when feature flag Jellyroll is enabled.
+// TODO(conniekxu): After CrOS Next is launched, remove `kCornerRadiiOld`.
+constexpr gfx::RoundedCornersF kCornerRadii(8);
 
 // Used for painting the highlight when the context menu is open.
 constexpr float kHighlightTransparency = 0.3f * 0xFF;
@@ -272,8 +277,8 @@ void GetLayersData(aura::Window* window,
     layer_data.should_force_mirror_visible = true;
 
   // Since floated window is not stored in desk container and will be hidden
-  // when the desk is inactive, or when we switch to the template/save desk grid
-  // on overview (via `HideForSavedDeskLibrary` etc.). We need to make sure it's
+  // when the desk is inactive, or when we switch to the saved desk grid on
+  // overview (via `HideForSavedDeskLibrary` etc.). We need to make sure it's
   // visible in the desk mini view at anytime, except when it's minimized (which
   // has been handled above). Currently we force the floated window to be
   // visible at all time, since we don't have a use case where we need to hide
@@ -294,6 +299,10 @@ void GetLayersData(aura::Window* window,
 
   for (auto* child : window->children())
     GetLayersData(child, out_layers_data);
+}
+
+gfx::RoundedCornersF GetRoundedCorner() {
+  return features::IsJellyrollEnabled() ? kCornerRadii : kCornerRadiiOld;
 }
 
 }  // namespace
@@ -322,19 +331,21 @@ DeskPreviewView::DeskPreviewView(PressedCallback callback,
   wallpaper_preview_->SetPaintToLayer();
   auto* wallpaper_preview_layer = wallpaper_preview_->layer();
   wallpaper_preview_layer->SetFillsBoundsOpaquely(false);
-  wallpaper_preview_layer->SetRoundedCornerRadius(kCornerRadii);
+  wallpaper_preview_layer->SetRoundedCornerRadius(GetRoundedCorner());
   wallpaper_preview_layer->SetIsFastRoundedCorner(true);
   AddChildView(wallpaper_preview_);
 
-  shadow_ = SystemShadow::CreateShadowOnNinePatchLayerForView(
-      wallpaper_preview_, kDefaultShadowType);
-  shadow_->SetRoundedCornerRadius(kCornerRadius);
+  if (!features::IsJellyrollEnabled()) {
+    shadow_ = SystemShadow::CreateShadowOnNinePatchLayerForView(
+        wallpaper_preview_, kDefaultShadowType);
+    shadow_->SetRoundedCornerRadius(kCornerRadius);
+  }
 
   desk_mirrored_contents_view_->SetPaintToLayer(ui::LAYER_NOT_DRAWN);
   ui::Layer* contents_view_layer = desk_mirrored_contents_view_->layer();
   contents_view_layer->SetMasksToBounds(true);
   contents_view_layer->SetName("Desk mirrored contents view");
-  contents_view_layer->SetRoundedCornerRadius(kCornerRadii);
+  contents_view_layer->SetRoundedCornerRadius(GetRoundedCorner());
   contents_view_layer->SetIsFastRoundedCorner(true);
   AddChildView(desk_mirrored_contents_view_);
 
@@ -344,7 +355,7 @@ DeskPreviewView::DeskPreviewView(PressedCallback callback,
     highlight_overlay_->SetVisible(false);
     ui::Layer* highlight_overlay_layer = highlight_overlay_->layer();
     highlight_overlay_layer->SetName("DeskPreviewView highlight overlay");
-    highlight_overlay_layer->SetRoundedCornerRadius(kCornerRadii);
+    highlight_overlay_layer->SetRoundedCornerRadius(GetRoundedCorner());
     highlight_overlay_layer->SetIsFastRoundedCorner(true);
   }
 

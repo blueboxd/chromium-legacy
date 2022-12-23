@@ -71,6 +71,7 @@
 #import "ios/chrome/browser/sessions/session_saving_scene_agent.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/capabilities_types.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/constants.h"
@@ -171,26 +172,6 @@ BASE_FEATURE(kForceNewTabForIntentSearch,
 // animation. It's used to temporarily disable mutally exclusive chrome
 // commands that trigger a view controller presentation.
 const int64_t kExpectedTransitionDurationInNanoSeconds = 0.2 * NSEC_PER_SEC;
-
-// Possible results of snapshotting at the moment the user enters the tab
-// switcher. These values are persisted to logs. Entries should not be
-// renumbered and numeric values should never be reused.
-enum class EnterTabSwitcherSnapshotResult {
-  // Page was loading at the time of the snapshot request, and the snapshot
-  // failed.
-  kPageLoadingAndSnapshotFailed = 0,
-  // Page was loading at the time of the snapshot request, and the snapshot
-  // succeeded.
-  kPageLoadingAndSnapshotSucceeded = 1,
-  // Page was not loading at the time of the snapshot request, and the snapshot
-  // failed.
-  kPageNotLoadingAndSnapshotFailed = 2,
-  // Page was not loading at the time of the snapshot request, and the snapshot
-  // succeeded.
-  kPageNotLoadingAndSnapshotSucceeded = 3,
-  // kMaxValue should share the value of the highest enumerator.
-  kMaxValue = kPageNotLoadingAndSnapshotSucceeded,
-};
 
 // Used to update the current BVC mode if a new tab is added while the tab
 // switcher view is being dismissed.  This is different than ApplicationMode in
@@ -810,14 +791,14 @@ void InjectNTP(Browser* browser) {
   // sync promos and displays the sign-in promo if possible.
   base::Time fetch_start = base::Time::Now();
   identityService->CanOfferExtendedSyncPromos(
-      defaultIdentity, ^(ios::ChromeIdentityCapabilityResult result) {
+      defaultIdentity, ^(SystemIdentityCapabilityResult result) {
         base::TimeDelta fetch_delay = (base::Time::Now() - fetch_start);
         base::UmaHistogramTimes(
             "Signin.AccountCapabilities.GetFromSystemLibraryDuration."
             "SigninUpgradePromo",
             fetch_delay);
         if (fetch_delay > signin::GetWaitThresholdForCapabilities() ||
-            result != ios::ChromeIdentityCapabilityResult::kTrue) {
+            result != SystemIdentityCapabilityResult::kTrue) {
           return;
         }
         [weakSelf presentSigninUpgradePromo];
@@ -1458,27 +1439,8 @@ void InjectNTP(Browser* browser) {
   web::WebState* currentWebState =
       self.currentInterface.browser->GetWebStateList()->GetActiveWebState();
   if (currentWebState) {
-    BOOL loading = currentWebState->IsLoading();
     SnapshotTabHelper::FromWebState(currentWebState)
-        ->UpdateSnapshotWithCallback(^(UIImage* snapshot) {
-          EnterTabSwitcherSnapshotResult snapshotResult;
-          if (loading && !snapshot) {
-            snapshotResult =
-                EnterTabSwitcherSnapshotResult::kPageLoadingAndSnapshotFailed;
-          } else if (loading && snapshot) {
-            snapshotResult = EnterTabSwitcherSnapshotResult::
-                kPageLoadingAndSnapshotSucceeded;
-          } else if (!loading && !snapshot) {
-            snapshotResult = EnterTabSwitcherSnapshotResult::
-                kPageNotLoadingAndSnapshotFailed;
-          } else {
-            DCHECK(!loading && snapshot);
-            snapshotResult = EnterTabSwitcherSnapshotResult::
-                kPageNotLoadingAndSnapshotSucceeded;
-          }
-          UMA_HISTOGRAM_ENUMERATION("IOS.EnterTabSwitcherSnapshotResult",
-                                    snapshotResult);
-        });
+        ->UpdateSnapshotWithCallback(nil);
   }
   [self.mainCoordinator prepareToShowTabGrid];
 }

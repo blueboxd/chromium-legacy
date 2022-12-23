@@ -5,11 +5,15 @@
 #ifndef COMPONENTS_PRIVACY_SANDBOX_PRIVACY_SANDBOX_TEST_UTIL_H_
 #define COMPONENTS_PRIVACY_SANDBOX_PRIVACY_SANDBOX_TEST_UTIL_H_
 
+#include <set>
 #include <string>
 
+#include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "components/content_settings/core/test/content_settings_mock_provider.h"
 #include "components/privacy_sandbox/privacy_sandbox_settings.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "url/origin.h"
 
 namespace sync_preferences {
 class TestingPrefServiceSyncable;
@@ -50,6 +54,76 @@ class MockPrivacySandboxSettingsDelegate
   MOCK_METHOD(bool, IsIncognitoProfile, (), (const, override));
 };
 
+// A declarative test case is a collection of key value pairs, which each define
+// some property of the test, such as the state of the profile, the input, or
+// expected output.
+// Defines the state of the profile prior to testing.
+enum class StateKey {
+  kM1TopicsEnabledUserPrefValue = 1,
+  kCookieControlsModeUserPrefValue = 2,
+  kSiteDataUserDefault = 3,
+  kSiteDataUserExceptions = 4,
+  kM1FledgeEnabledUserPrefValue = 5,
+  kM1AdMeasurementEnabledUserPrefValue = 6,
+  kIsIncognito = 7,
+  kIsRestrictedAccount = 8,
+};
+
+// Defines the input to the functions under test.
+enum class InputKey {
+  kTopFrameOrigin = 1,
+  kTopicsURL = 2,
+  kFledgeAuctionPartyOrigin = 3,
+  kAdMeasurementReportingOrigin = 4,
+  kAdMeasurementSourceOrigin = 5,
+  kAdMeasurementDestinationOrigin = 6,
+};
+
+// Defines the expected output of the functions under test, when the profile is
+// setup as per defined state, and they are provided the defined inputs.
+enum class OutputKey {
+  kIsTopicsAllowed = 1,
+  kIsTopicsAllowedForContext = 2,
+  kIsFledgeAllowed = 3,
+  kIsAttributionReportingAllowed = 4,
+  kMaySendAttributionReport = 5,
+};
+
+// To allow multiple input keys to map to the same value, without having to
+// redeclare every such relationship, additional types are defined here. The
+// result is that `TestKey` can represent 1:1 and many:1 key value
+// relationships.
+template <typename T>
+using MultipleKeys = std::set<T>;
+
+using MultipleStateKeys = MultipleKeys<StateKey>;
+using MultipleInputKeys = MultipleKeys<InputKey>;
+using MultipleOutputKeys = MultipleKeys<OutputKey>;
+
+template <typename T>
+using TestKey = absl::variant<T, MultipleKeys<T>>;
+
+using SiteDataException = std::pair<std::string, ContentSetting>;
+using SiteDataExceptions = std::vector<SiteDataException>;
+
+// Although each part of the test case (state, input, output) uses different
+// key types, the set of value types associated with those keys is shared, and
+// represented by this variant. When accessing keys, the test util will expect
+// a particular value type, and will error otherwise.
+using TestCaseItemValue = absl::variant<bool,
+                                        std::string,
+                                        url::Origin,
+                                        GURL,
+                                        content_settings::CookieControlsMode,
+                                        SiteDataExceptions,
+                                        ContentSetting>;
+
+using TestState = std::map<TestKey<StateKey>, TestCaseItemValue>;
+using TestInput = std::map<TestKey<InputKey>, TestCaseItemValue>;
+using TestOutput = std::map<TestKey<OutputKey>, TestCaseItemValue>;
+
+using TestCase = std::tuple<TestState, TestInput, TestOutput>;
+
 // Define an additional content setting value to simulate an unmanaged default
 // content setting.
 const ContentSetting kNoSetting = static_cast<ContentSetting>(-1);
@@ -59,14 +133,6 @@ struct CookieContentSettingException {
   std::string secondary_pattern;
   ContentSetting content_setting;
 };
-
-// Sets up non-managed cookie preferences and content settings based on provided
-// parameters.
-void SetupMinimialTestStateForM1(
-    sync_preferences::TestingPrefServiceSyncable* testing_pref_service,
-    HostContentSettingsMap* map,
-    ContentSetting default_cookie_setting,
-    const std::vector<CookieContentSettingException>& user_cookie_exceptions);
 
 // Sets up preferences and content settings based on provided parameters.
 void SetupTestState(
@@ -79,6 +145,16 @@ void SetupTestState(
     ContentSetting managed_cookie_setting,
     const std::vector<CookieContentSettingException>&
         managed_cookie_exceptions);
+
+// Setup and run the provided test case.
+void RunTestCase(
+    sync_preferences::TestingPrefServiceSyncable* testing_pref_service,
+    HostContentSettingsMap* host_content_settings_map,
+    MockPrivacySandboxSettingsDelegate* mock_delegate,
+    privacy_sandbox::PrivacySandboxSettings* privacy_sandbox_settings,
+    content_settings::MockProvider* user_content_setting_provider,
+    content_settings::MockProvider* managed_content_setting_provider,
+    const TestCase& test_case);
 
 }  // namespace privacy_sandbox_test_util
 

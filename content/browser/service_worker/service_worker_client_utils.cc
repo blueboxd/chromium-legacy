@@ -503,7 +503,8 @@ void NavigateClient(const GURL& url,
   // navigation. We can't proceed with the navigation and rely on the usual
   // mechanism to disallow (PrerenderNavigationThrottle), because
   // RequestOpenURL() crashes if called by a prerendering main frame.
-  if (rfhi->is_main_frame() && rfhi->frame_tree()->is_prerendering()) {
+  if (rfhi->frame_tree_node()->GetFrameType() ==
+      FrameType::kPrerenderMainFrame) {
     DidNavigate(context, script_url.DeprecatedGetOriginAsURL(), key,
                 std::move(callback), GlobalRenderFrameHostId());
     return;
@@ -523,11 +524,13 @@ void NavigateClient(const GURL& url,
 
   int frame_tree_node_id = rfhi->frame_tree_node()->frame_tree_node_id();
   Navigator& navigator = rfhi->frame_tree_node()->navigator();
+  // Service workers don't have documents, so it's ok to use nullopt for
+  // `initiator_base_url` in the following call.
   navigator.RequestOpenURL(
       rfhi, url, nullptr /* initiator_frame_token */,
       ChildProcessHost::kInvalidUniqueID /* initiator_process_id */,
-      url::Origin::Create(script_url), nullptr /* post_body */,
-      std::string() /* extra_headers */,
+      url::Origin::Create(script_url), /* initiator_base_url= */ absl::nullopt,
+      nullptr /* post_body */, std::string() /* extra_headers */,
       Referrer::SanitizeForRequest(
           url, Referrer(script_url, network::mojom::ReferrerPolicy::kDefault)),
       WindowOpenDisposition::CURRENT_TAB,

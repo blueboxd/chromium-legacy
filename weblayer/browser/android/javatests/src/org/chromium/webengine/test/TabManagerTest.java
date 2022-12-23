@@ -11,12 +11,11 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
 
 import android.content.pm.ActivityInfo;
-import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
 
-import androidx.annotation.Nullable;
 import androidx.test.filters.SmallTest;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -24,24 +23,25 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.EmbeddedTestServerRule;
 import org.chromium.webengine.FragmentParams;
 import org.chromium.webengine.Tab;
 import org.chromium.webengine.TabListObserver;
 import org.chromium.webengine.TabManager;
-import org.chromium.webengine.WebFragment;
+import org.chromium.webengine.WebEngine;
 import org.chromium.webengine.WebSandbox;
 
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
 /**
  * Tests various aspects of interacting with Tabs.
  */
-@Batch(Batch.PER_CLASS)
+@DoNotBatch(reason = "Tests need separate Activities and WebFragments")
 @RunWith(WebEngineJUnit4ClassRunner.class)
 public class TabManagerTest {
     @Rule
@@ -52,14 +52,23 @@ public class TabManagerTest {
             new InstrumentationActivityTestRule();
 
     private EmbeddedTestServer mServer;
-    private WebFragment mFragment;
+
+    WebSandbox mSandbox;
 
     @Before
     public void setUp() throws Exception {
         mActivityTestRule.launchShell();
         mServer = mTestServerRule.getServer();
-        WebSandbox sandbox = mActivityTestRule.getWebSandbox();
-        mFragment = runOnUiThreadBlocking(() -> sandbox.createFragment());
+
+        mSandbox = mActivityTestRule.getWebSandbox();
+    }
+
+    @After
+    public void shutdown() throws Exception {
+        if (mSandbox != null) {
+            runOnUiThreadBlocking(() -> mSandbox.shutdown());
+        }
+        mActivityTestRule.finish();
     }
 
     private String getTestDataURL(String path) {
@@ -69,37 +78,36 @@ public class TabManagerTest {
     @Test
     @SmallTest
     public void tabGetsAddedAndActivatedOnStartup() throws Exception {
-        CountDownLatch tabAddedLatch = new CountDownLatch(1);
-        CountDownLatch tabActivatedLatch = new CountDownLatch(1);
+        WebEngine webEngine = runOnUiThreadBlocking(() -> mSandbox.createWebEngine()).get();
 
-        runOnUiThreadBlocking(() -> mFragment.registerTabListObserver(new TabListObserver() {
-            @Nullable
-            private Tab mAddedTab;
+        Tab activeTab = webEngine.getTabManager().getActiveTab();
+        Assert.assertNotNull(activeTab);
 
-            @Override
-            public void onTabAdded(Tab tab) {
-                Assert.assertEquals(tab.getDisplayUri(), Uri.EMPTY);
-                mAddedTab = tab;
-                tabAddedLatch.countDown();
-            }
+        Set<Tab> allTabs = webEngine.getTabManager().getAllTabs();
+        Assert.assertEquals(1, allTabs.size());
 
-            @Override
-            public void onActiveTabChanged(Tab tab) {
-                Assert.assertEquals(tab, mAddedTab);
-                tabActivatedLatch.countDown();
-            }
-        }));
+        Assert.assertTrue(allTabs.contains(activeTab));
+    }
 
-        runOnUiThreadBlocking(() -> mActivityTestRule.attachFragment(mFragment));
-        tabAddedLatch.await();
-        tabActivatedLatch.await();
+    @Test
+    @SmallTest
+    public void tabsGetAddedToRegistry() throws Exception {
+        WebEngine webEngine = runOnUiThreadBlocking(() -> mSandbox.createWebEngine()).get();
+
+        Set<Tab> initialTabs = webEngine.getTabManager().getAllTabs();
+        Assert.assertEquals(1, initialTabs.size());
+
+        Tab addedTab = runOnUiThreadBlocking(() -> webEngine.getTabManager().createTab()).get();
+        Set<Tab> twoTabs = webEngine.getTabManager().getAllTabs();
+        Assert.assertEquals(2, twoTabs.size());
+        Assert.assertTrue(twoTabs.contains(addedTab));
     }
 
     @Test
     @SmallTest
     public void tabsPersistAcrossRotations() throws Exception {
         String url = getTestDataURL("simple_page.html");
-        mActivityTestRule.attachNewFragmentThenNavigateAndWait(url);
+        WebEngine webEngine = mActivityTestRule.createWebEngineAttachThenNavigateAndWait(url);
 
         // Rotate device.
         mActivityTestRule.getActivity().setRequestedOrientation(
@@ -109,11 +117,8 @@ public class TabManagerTest {
                     mActivityTestRule.getActivity().getResources().getConfiguration().orientation,
                     is(ORIENTATION_LANDSCAPE));
         });
-
-        WebFragment fragment =
-                runOnUiThreadBlocking(() -> mActivityTestRule.getActivity().getAttachedFragment());
-        Tab activeTab = fragment.getTabManager().get().getActiveTab().get();
-        Assert.assertEquals(activeTab.getDisplayUri().toString(), url);
+        Tab activeTab = webEngine.getTabManager().getActiveTab();
+        Assert.assertEquals(url, activeTab.getDisplayUri().toString());
     }
 
     @Test
@@ -123,17 +128,15 @@ public class TabManagerTest {
                                         .setPersistenceId("pid1234")
                                         .setProfileName("pn12345")
                                         .build();
-        mFragment = runOnUiThreadBlocking(
-                () -> mActivityTestRule.getWebSandbox().createFragment(params));
-
-        runOnUiThreadBlocking(() -> mActivityTestRule.attachFragment(mFragment));
-        Tab activeTab = mFragment.getTabManager().get().getActiveTab().get();
-
+        WebEngine webEngine = runOnUiThreadBlocking(
+                () -> mActivityTestRule.getWebSandbox().createWebEngine(params))
+                                      .get();
+        runOnUiThreadBlocking(() -> mActivityTestRule.attachFragment(webEngine.getFragment()));
+        Tab activeTab = webEngine.getTabManager().getActiveTab();
         String url = getTestDataURL("simple_page.html");
         mActivityTestRule.navigateAndWait(activeTab, url);
-
         // Shutdown the sandbox.
-        runOnUiThreadBlocking(() -> mActivityTestRule.detachFragment(mFragment));
+        runOnUiThreadBlocking(() -> mActivityTestRule.detachFragment(webEngine.getFragment()));
         runOnUiThreadBlocking(() -> {
             try {
                 mActivityTestRule.getWebSandbox().shutdown();
@@ -149,12 +152,15 @@ public class TabManagerTest {
                 runOnUiThreadBlocking(() -> WebSandbox.create(ContextUtils.getApplicationContext()))
                         .get();
         // Recreate a fragment with the same params.
-        mFragment = runOnUiThreadBlocking(() -> sandbox.createFragment(params));
-        runOnUiThreadBlocking(() -> mActivityTestRule.attachFragment(mFragment));
-        Tab newActiveTab = mFragment.getTabManager().get().getActiveTab().get();
-
-        Assert.assertEquals(newActiveTab.getDisplayUri().toString(), url);
-        Assert.assertEquals(newActiveTab.getGuid(), activeTab.getGuid());
+        WebEngine webEngine2 = runOnUiThreadBlocking(() -> sandbox.createWebEngine(params)).get();
+        runOnUiThreadBlocking(() -> mActivityTestRule.attachFragment(webEngine2.getFragment()));
+        Tab newActiveTab = webEngine2.getTabManager().getActiveTab();
+        Set<Tab> allTabs = webEngine2.getTabManager().getAllTabs();
+        Assert.assertEquals(1, allTabs.size());
+        Assert.assertTrue(allTabs.contains(newActiveTab));
+        // TODO(crbug.com/1398388): Set url for tab after restoring from persistence ID.
+        // Assert.assertEquals(newActiveTab.getDisplayUri().toString(), url);
+        Assert.assertEquals(activeTab.getGuid(), newActiveTab.getGuid());
     }
 
     private static final class TabHolder {
@@ -167,32 +173,32 @@ public class TabManagerTest {
     @SmallTest
     public void newTabCanBeActivatedAndRemoved() throws Exception {
         // One count for the initial tab created and one for the tab we programmatically create.
-        CountDownLatch activeLatch = new CountDownLatch(2);
+        CountDownLatch activeLatch = new CountDownLatch(1);
         CountDownLatch removeLatch = new CountDownLatch(1);
 
         final TabHolder holder = new TabHolder();
-        runOnUiThreadBlocking(() -> mFragment.registerTabListObserver(new TabListObserver() {
-            @Override
-            public void onTabAdded(Tab tab) {
-                holder.mAddedTab = tab;
-            }
+        WebEngine webEngine = runOnUiThreadBlocking(() -> mSandbox.createWebEngine()).get();
+        runOnUiThreadBlocking(
+                () -> webEngine.getTabManager().registerTabListObserver(new TabListObserver() {
+                    @Override
+                    public void onTabAdded(Tab tab) {
+                        holder.mAddedTab = tab;
+                    }
 
-            @Override
-            public void onActiveTabChanged(Tab tab) {
-                holder.mActiveTab = tab;
-                activeLatch.countDown();
-            }
+                    @Override
+                    public void onActiveTabChanged(Tab tab) {
+                        holder.mActiveTab = tab;
+                        activeLatch.countDown();
+                    }
 
-            @Override
-            public void onTabRemoved(Tab tab) {
-                holder.mRemovedTab = tab;
-                removeLatch.countDown();
-            }
-        }));
-
-        runOnUiThreadBlocking(() -> mActivityTestRule.attachFragment(mFragment));
-        TabManager tabManager = mFragment.getTabManager().get();
-
+                    @Override
+                    public void onTabRemoved(Tab tab) {
+                        holder.mRemovedTab = tab;
+                        removeLatch.countDown();
+                    }
+                }));
+        runOnUiThreadBlocking(() -> mActivityTestRule.attachFragment(webEngine.getFragment()));
+        TabManager tabManager = webEngine.getTabManager();
         Tab newTab = runOnUiThreadBlocking(() -> tabManager.createTab()).get();
         Assert.assertEquals(newTab, holder.mAddedTab);
 
@@ -204,6 +210,6 @@ public class TabManagerTest {
         removeLatch.await();
         Assert.assertEquals(newTab, holder.mRemovedTab);
 
-        Assert.assertNull(tabManager.getActiveTab().get());
+        Assert.assertNull(tabManager.getActiveTab());
     }
 }

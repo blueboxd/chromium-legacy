@@ -88,12 +88,7 @@ class CORE_EXPORT SVGLength final : public SVGListablePropertyBase {
 
   const CSSPrimitiveValue& AsCSSPrimitiveValue() const { return *value_; }
 
-  // Resolves LengthTypePercentage into a normalized floating point number (full
-  // value is 1.0).
-  float ValueAsPercentage() const;
-
-  // Scale the input value by this SVGLength. Higher precision than input *
-  // valueAsPercentage().
+  // Scale the input value by this SVGLength.
   float ScaleByPercentage(float) const;
 
   String ValueAsString() const override;
@@ -119,7 +114,6 @@ class CORE_EXPORT SVGLength final : public SVGListablePropertyBase {
   }
 
   bool IsNegativeNumericLiteral() const;
-  bool IsZero() const { return value_->GetFloatValue() == 0; }
 
   static SVGLengthMode LengthModeForAnimatedLengthAttribute(
       const QualifiedName&);

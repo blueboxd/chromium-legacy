@@ -16,6 +16,23 @@ namespace media {
 
 namespace v4l2_test {
 
+// H264SliceMetadata contains metadata about an H.264 picture
+// slice including how the slice is reordered. It is used as
+// elements in the decoded picture buffer class H264DPB.
+struct H264SliceMetadata {
+  H264SliceHeader slice_header;
+  int bottom_field_order_cnt = 0;
+  int frame_num = 0;
+  int frame_num_wrap = 0;
+  uint64_t ref_ts_nsec = 0;  // Reference Timestamp in nanoseconds.
+  int pic_order_cnt = 0;
+  int pic_order_cnt_lsb = 0;
+  int pic_order_cnt_msb = 0;
+  int top_field_order_cnt = 0;
+  bool outputted = false;  // Whether this slice has been outputted.
+  bool ref = false;        // Whether this slice is a reference element.
+};
+
 namespace {
 
 constexpr uint8_t zigzag_4x4[] = {0, 1,  4,  8,  5, 2,  3,  6,
@@ -242,6 +259,68 @@ bool IsNewFrame(H264SliceHeader* prev_slice,
 }
 
 }  // namespace
+
+void H264DPB::ClearDPB() {
+  dpb_.clear();
+}
+
+int H264DPB::CountRefPics() {
+  int ret = 0;
+  for (const auto& pic : dpb_) {
+    if (pic->ref) {
+      ++ret;
+    }
+  }
+
+  return ret;
+}
+
+void H264DPB::Delete(H264SliceMetadata* pic) {
+  for (auto it = dpb_.begin(); it != dpb_.end(); ++it) {
+    if ((*it).get() == pic) {
+      dpb_.erase(it);
+      break;
+    }
+  }
+}
+
+void H264DPB::DeleteUnused() {
+  dpb_.erase(std::remove_if(dpb_.begin(), dpb_.end(),
+                            [](const std::unique_ptr<H264SliceMetadata>& pic) {
+                              return (pic->outputted && !pic->ref);
+                            }),
+             dpb_.end());
+}
+
+void H264DPB::UnmarkLowestFrameNumWrapShortRefPic() {
+  H264SliceMetadata* ret = nullptr;
+  for (const auto& pic : dpb_) {
+    if (pic->ref && (!ret || pic->frame_num_wrap < ret->frame_num_wrap)) {
+      ret = pic.get();
+    }
+  }
+  ret->ref = false;
+}
+
+std::vector<H264SliceMetadata*> H264DPB::GetNotOutputtedPicsAppending() {
+  std::vector<H264SliceMetadata*> data;
+  for (const auto& pic : dpb_) {
+    if (!pic->outputted) {
+      data.push_back(pic.get());
+    }
+  }
+  return data;
+}
+
+void H264DPB::MarkAllUnusedRef() {
+  for (const auto& pic : dpb_) {
+    pic->ref = false;
+  }
+}
+
+void H264DPB::StorePic(H264SliceMetadata* pic) {
+  dpb_.push_back(std::make_unique<H264SliceMetadata>(*pic));
+}
 
 VideoDecoder::Result H264Decoder::StartNewFrame(const int sps_id,
                                                 const int pps_id) {
@@ -492,6 +571,19 @@ H264Decoder::H264Decoder(std::unique_ptr<H264Parser> parser,
 
 H264Decoder::~H264Decoder() = default;
 
+std::set<uint32_t> H264Decoder::GetReusableReferenceSlots(
+    const MmapedBuffer& buffer,
+    std::set<uint32_t> queued_buffer_indexes) {
+  std::set<uint32_t> reusable_buffer_slots = {};
+  for (size_t i = 0; i < CAPTURE_queue_->num_buffers(); i++) {
+    // Check that index is not currently queued in the CAPTURE queue and
+    // that it is not the same buffer index previously written to.
+    if (!queued_buffer_indexes.count(i) && i != buffer.buffer_id())
+      reusable_buffer_slots.insert(i);
+  }
+  return reusable_buffer_slots;
+}
+
 VideoDecoder::Result H264Decoder::DecodeNextFrame(std::vector<char>& y_plane,
                                                   std::vector<char>& u_plane,
                                                   std::vector<char>& v_plane,
@@ -516,6 +608,11 @@ VideoDecoder::Result H264Decoder::DecodeNextFrame(std::vector<char>& y_plane,
     VLOG(4) << "VIDIOC_DQBUF failed for CAPTURE queue";
     return VideoDecoder::kError;
   }
+  // Keeps track of which indices are currently dequeued in the
+  // CAPTURE queue. This will be used to determine which indices
+  // can/cannot be refreshed.
+  CAPTURE_queue_->DequeueBufferIndex(CAPTURE_index);
+
   CHECK_LT(CAPTURE_index, kNumberOfBuffersInCaptureQueue)
       << "Capture Queue Index greater than number of buffers";
 
@@ -540,9 +637,19 @@ VideoDecoder::Result H264Decoder::DecodeNextFrame(std::vector<char>& y_plane,
     LOG(FATAL) << "Unsupported CAPTURE queue format";
   }
 
-  if (!v4l2_ioctl_->QBuf(CAPTURE_queue_, CAPTURE_index)) {
-    VLOG(4) << "VIDIOC_QBUF failed for CAPTURE queue.";
-    return VideoDecoder::kError;
+  const std::set<uint32_t> reusable_buffer_slots =
+      GetReusableReferenceSlots(*CAPTURE_queue_->GetBuffer(CAPTURE_index).get(),
+                                CAPTURE_queue_->queued_buffer_indexes());
+
+  for (const auto reusable_buffer_slot : reusable_buffer_slots) {
+    if (!v4l2_ioctl_->QBuf(CAPTURE_queue_, reusable_buffer_slot)) {
+      VLOG(4) << "VIDIOC_QBUF failed for CAPTURE queue.";
+      return VideoDecoder::kError;
+    }
+    // Keeps track of which indices are currently queued in the
+    // CAPTURE queue. This will be used to determine which indices
+    // can/cannot be refreshed.
+    CAPTURE_queue_->QueueBufferIndex(reusable_buffer_slot);
   }
 
   uint32_t OUTPUT_index;

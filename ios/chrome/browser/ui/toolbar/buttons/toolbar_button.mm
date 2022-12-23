@@ -156,10 +156,6 @@ const CGFloat kSpotlightCornerRadius = 7;
 // should be updated.
 - (void)checkNamedGuide {
   if (!self.hidden && self.guideName) {
-    NamedGuide* guide = [NamedGuide guideWithName:self.guideName view:self];
-    if (guide.constrainedView != self)
-      guide.constrainedView = self;
-
     [self.layoutGuideCenter referenceView:self underName:self.guideName];
   }
 }

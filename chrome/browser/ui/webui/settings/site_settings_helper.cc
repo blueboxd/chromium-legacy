@@ -910,7 +910,7 @@ void GetPolicyAllowedUrls(
   }
 }
 
-const ChooserTypeNameEntry* ChooserTypeFromGroupName(const std::string& name) {
+const ChooserTypeNameEntry* ChooserTypeFromGroupName(base::StringPiece name) {
   for (const auto& chooser_type : kChooserTypeGroupNames) {
     if (chooser_type.name == name)
       return &chooser_type;
@@ -925,7 +925,8 @@ base::Value::Dict CreateChooserExceptionObject(
     const std::u16string& display_name,
     const base::Value& object,
     const std::string& chooser_type,
-    const ChooserExceptionDetails& chooser_exception_details) {
+    const ChooserExceptionDetails& chooser_exception_details,
+    Profile* profile) {
   base::Value::Dict exception;
 
   std::string setting_string =
@@ -940,28 +941,38 @@ base::Value::Dict CreateChooserExceptionObject(
   std::vector<base::Value::Dict>
       all_provider_sites[HostContentSettingsMap::NUM_PROVIDER_TYPES];
   for (const auto& details : chooser_exception_details) {
-    const GURL& requesting_origin = details.first.first;
-    const std::string& source = details.first.second;
+    const GURL& origin = std::get<0>(details);
+    const std::string& source = std::get<1>(details);
+    const bool incognito = std::get<2>(details);
+
+    std::string site_display_name = origin.spec();
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    // Set the |site_display_name| to the extension's name which is more clear
+    // to the user if the |origin| is for an extension and the extension name
+    // can be found in the |profile|.
+    if (origin.SchemeIs(extensions::kExtensionScheme)) {
+      DCHECK(profile);
+      const auto* extension_registry =
+          extensions::ExtensionRegistry::Get(profile);
+      const extensions::Extension* extension =
+          extension_registry->GetExtensionById(
+              origin.host(), extensions::ExtensionRegistry::EVERYTHING);
+      if (extension) {
+        site_display_name = extension->name();
+      }
+    }
+#endif
 
     auto& this_provider_sites =
         all_provider_sites[HostContentSettingsMap::GetProviderTypeFromSource(
             source)];
-
-    for (const auto& embedding_origin_incognito_pair : details.second) {
-      const GURL& embedding_origin = embedding_origin_incognito_pair.first;
-      const bool incognito = embedding_origin_incognito_pair.second;
-      base::Value::Dict site;
-
-      site.Set(kOrigin, requesting_origin.spec());
-      site.Set(kDisplayName, requesting_origin.spec());
-      site.Set(kEmbeddingOrigin, embedding_origin.is_empty()
-                                     ? std::string()
-                                     : embedding_origin.spec());
-      site.Set(kSetting, setting_string);
-      site.Set(kSource, source);
-      site.Set(kIncognito, incognito);
-      this_provider_sites.push_back(std::move(site));
-    }
+    base::Value::Dict site;
+    site.Set(kOrigin, origin.spec());
+    site.Set(kDisplayName, site_display_name);
+    site.Set(kSetting, setting_string);
+    site.Set(kSource, source);
+    site.Set(kIncognito, incognito);
+    this_provider_sites.push_back(std::move(site));
   }
 
   base::Value::List sites;
@@ -1024,13 +1035,8 @@ base::Value::List GetChooserExceptionListFromProfile(
     std::string source = GetSourceStringForChooserException(
         profile, content_type, object->source);
 
-    const auto origin_source_pair = std::make_pair(object->origin, source);
-    auto& origin_incognito_pair_set =
-        chooser_exception_details[origin_source_pair];
-
-    const auto origin_incognito_pair =
-        std::make_pair(object->origin, object->incognito);
-    origin_incognito_pair_set.insert(origin_incognito_pair);
+    chooser_exception_details.insert(
+        {object->origin, source, object->incognito});
   }
 
   for (const auto& all_chooser_objects_entry : all_chooser_objects) {
@@ -1039,7 +1045,7 @@ base::Value::List GetChooserExceptionListFromProfile(
     const ChooserExceptionDetails& chooser_exception_details =
         all_chooser_objects_entry.second;
     exceptions.Append(CreateChooserExceptionObject(
-        name, object, chooser_type.name, chooser_exception_details));
+        name, object, chooser_type.name, chooser_exception_details, profile));
   }
 
   return exceptions;

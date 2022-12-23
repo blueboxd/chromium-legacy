@@ -116,6 +116,7 @@
 <translation id="1908234395526491708">Bajarilmagan UDP soʻrovlari</translation>
 <translation id="1947737735496445907">Chop etildi</translation>
 <translation id="1951012854035635156">Assistent</translation>
+<translation id="1962550982027027473">Standart APN talab qilinadi</translation>
 <translation id="1977994649430373166">Google profil surati</translation>
 <translation id="1979103255016296513">Parolni almashtirish muddati tugadi</translation>
 <translation id="1999615961760456652">Kirish portali</translation>
@@ -186,6 +187,7 @@
 <translation id="2570743873672969996"><ph name="TEST_NAME" /> testi bajarilmoqda...</translation>
 <translation id="2584559707064218956">Sozlash uchun Sozlamalarni oching</translation>
 <translation id="2597774443162333062">Fayllar batafsil koʻrib chiqilishi uchun Google serverlariga yuboriladi</translation>
+<translation id="2599691907981599502">{NUMBER_OF_PAGES,plural, =1{Skanerlandi. 1 ta sahifa skanerlandi}other{Skanerlandi. {NUMBER_OF_PAGES} ta sahifa skanerlandi}}</translation>
 <translation id="2619761439309613843">Kundalik yangilash</translation>
 <translation id="2620436844016719705">Tizim</translation>
 <translation id="2638662041295312666">Kirish sahifasidagi rasm</translation>
@@ -392,6 +394,7 @@
 <translation id="4793710386569335688">Yana yordam olish uchun <ph name="BEGIN_LINK" />Yordam markazi<ph name="END_LINK" /> sahifasini oching.</translation>
 <translation id="4793756956024303490">Arxivlash algoritmi</translation>
 <translation id="4794140124556169553">Protsessorni tekshirish (CPU test) tizim unumdorligiga taʼsir qilishi mumkin</translation>
+<translation id="4798078634453489142">Yangi kirish nuqtasini qoʻshish uchun mavjudlaridan birini oʻchiring</translation>
 <translation id="4800589996161293643">Chromebook hamjamiyati</translation>
 <translation id="4803391892369051319">IPv4</translation>
 <translation id="4808449224298348341">Chop etilishi bekor qilindi: <ph name="DOCUMENT_TITLE" /></translation>
@@ -633,6 +636,7 @@ Mikrofon ustiga bosing va savolni ayting.</translation>
 <translation id="6791471867139427246">klaviatura chirogʻi rangi</translation>
 <translation id="680983167891198932">Kalit</translation>
 <translation id="6816797338148849397">Tanlovga aloqador axborot mavjud. Uni ochish uchun tepaga strelkani bosing.</translation>
+<translation id="6838167112108853532">Bu APN faoliszlantirilmadi yoki olib tashlanmadi. Unga ulangan APN nuqtalari faolsizlantirilishi yoki olib tashlanishi kerak</translation>
 <translation id="6853312040151791195">Quvvat sarflanishi tezligi</translation>
 <translation id="6889786074662672253">Oʻchib yonayotganda tashqi qurilmani uzmay va kompyuterni oʻchirmay turing. Bu oynani yigʻish mumkin. Bu bir necha daqiqa vaqt oladi va bu vaqtda tashqi qurilma ishlamay turishi mumkin.</translation>
 <translation id="6905724422583748843"><ph name="PAGE_NAME" /> sahifasiga qaytish</translation>
@@ -722,6 +726,7 @@ Mikrofon ustiga bosing va savolni ayting.</translation>
 <translation id="7769672763586021400">Model identifikatori</translation>
 <translation id="7778717409420828014">Fikr-mulohazalaringiz Chromebook xizmatini yaxshilashga yordam beradi va jamoamiz tomonidan tekshiriladi. Murojaatlar soni juda koʻpligi uchun har biriga javob qaytara olmaymiz.</translation>
 <translation id="7784116172884276937">DNS serverlar sozlanmagan</translation>
+<translation id="7791543448312431591">Qo‘shish</translation>
 <translation id="779591286616261875">Yangi hisobot yuborish</translation>
 <translation id="7799817062559422778">Kunduzgi rejim</translation>
 <translation id="780301667611848630">Kerak emas</translation>

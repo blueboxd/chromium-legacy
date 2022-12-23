@@ -48,6 +48,8 @@ using ::chromeos::settings::mojom::kExternalStorageSubpagePath;
 using ::chromeos::settings::mojom::kKeyboardSubpagePath;
 using ::chromeos::settings::mojom::kPerDeviceKeyboardSubpagePath;
 using ::chromeos::settings::mojom::kPerDeviceMouseSubpagePath;
+using ::chromeos::settings::mojom::kPerDevicePointingStickSubpagePath;
+using ::chromeos::settings::mojom::kPerDeviceTouchpadSubpagePath;
 using ::chromeos::settings::mojom::kPointersSubpagePath;
 using ::chromeos::settings::mojom::kPowerSubpagePath;
 using ::chromeos::settings::mojom::kStorageSubpagePath;
@@ -1014,6 +1016,21 @@ void DeviceSection::RegisterHierarchy(HierarchyGenerator* generator) const {
                                        mojom::SearchResultIcon::kMouse,
                                        mojom::SearchResultDefaultRank::kMedium,
                                        mojom::kPerDeviceMouseSubpagePath);
+
+    // Per-device Touchpad.
+    generator->RegisterTopLevelSubpage(IDS_SETTINGS_TOUCHPAD_TITLE,
+                                       mojom::Subpage::kPerDeviceTouchpad,
+                                       mojom::SearchResultIcon::kDisplay,
+                                       mojom::SearchResultDefaultRank::kMedium,
+                                       mojom::kPerDeviceTouchpadSubpagePath);
+
+    // Per-device Pointing stick.
+    generator->RegisterTopLevelSubpage(
+        IDS_SETTINGS_POINTING_STICK_TITLE,
+        mojom::Subpage::kPerDevicePointingStick,
+        mojom::SearchResultIcon::kDisplay,
+        mojom::SearchResultDefaultRank::kMedium,
+        mojom::kPerDevicePointingStickSubpagePath);
   }
 
   // Keyboard.
@@ -1118,14 +1135,8 @@ void DeviceSection::HapticTouchpadExists(bool exists) {
     return;
   }
 
-  if (base::FeatureList::IsEnabled(
-          ::features::kAllowDisableTouchpadHapticFeedback)) {
-    updater.AddSearchTags(GetTouchpadHapticFeedback());
-  }
-  if (base::FeatureList::IsEnabled(
-          ::features::kAllowTouchpadHapticClickSettings)) {
-    updater.AddSearchTags(GetTouchpadHapticClickSensitivity());
-  }
+  updater.AddSearchTags(GetTouchpadHapticFeedback());
+  updater.AddSearchTags(GetTouchpadHapticClickSensitivity());
 }
 
 void DeviceSection::MouseExists(bool exists) {
@@ -1337,12 +1348,7 @@ void DeviceSection::AddDevicePointersStrings(
                          GetHelpUrlWithBoard(chrome::kHapticFeedbackHelpURL));
 
   html_source->AddBoolean("allowScrollSettings", AreScrollSettingsAllowed());
-  html_source->AddBoolean("allowTouchpadHapticFeedback",
-                          base::FeatureList::IsEnabled(
-                              ::features::kAllowDisableTouchpadHapticFeedback));
-  html_source->AddBoolean("allowTouchpadHapticClickSettings",
-                          base::FeatureList::IsEnabled(
-                              ::features::kAllowTouchpadHapticClickSettings));
+
   html_source->AddBoolean(
       "enableAudioSettingsPage",
       base::FeatureList::IsEnabled(ash::features::kAudioSettingsPage));

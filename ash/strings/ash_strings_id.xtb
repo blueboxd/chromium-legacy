@@ -37,6 +37,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="1175572348579024023">Scroll</translation>
 <translation id="1178581264944972037">Jeda</translation>
 <translation id="1181037720776840403">Hapus</translation>
+<translation id="1182225749592316782">Tindakan ini akan mengizinkan akses untuk semua aplikasi dan situs yang memiliki izin kamera dan mikrofon</translation>
 <translation id="1183863904939664422">Tidak tertarik dengan saran ini</translation>
 <translation id="118437560755358292">Masukkan sandi atau PIN untuk keamanan tambahan</translation>
 <translation id="118532027333893379">Ketuk di mana saja untuk mengambil gambar dalam layar penuh</translation>
@@ -128,6 +129,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="1611993646327628135">Aktif</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1632985212731562677">Tombol Akses dapat dinonaktifkan di Setelan &gt; Aksesibilitas.</translation>
+<translation id="163517899691012366">Notifikasi dibisukan saat Jangan ganggu aktif</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> perangkat</translation>
 <translation id="1639239467298939599">Memuat</translation>
 <translation id="1654477262762802994">Mulai kueri suara</translation>
@@ -174,7 +176,6 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
         <ph name="LOCALE" /></translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1830308660060964064"><ph name="ITEM_TITLE" /> telah dilepas pinnya</translation>
-<translation id="1836215606488044471">Asisten (sedang dimuat...)</translation>
 <translation id="1838895407229022812">Cahaya Malam nonaktif.</translation>
 <translation id="1854180393107901205">Hentikan transmisi</translation>
 <translation id="1862380676329487333">Update dan logout</translation>
@@ -262,7 +263,6 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="2359808026110333948">Lanjutkan</translation>
 <translation id="2367186422933365202">Tidak dapat login ke Chromebook</translation>
 <translation id="2369165858548251131">"Halo" dalam bahasa China</translation>
-<translation id="2375445874393996153">Penelusuran konten layar dengan Asisten Google tidak lagi didukung.</translation>
 <translation id="2390318262976603432">Setelan Lokal</translation>
 <translation id="240006516586367791">Kontrol media</translation>
 <translation id="2402411679569069051">Untuk membuka kunci Chromebook, gunakan sidik jari atau buka kunci ponsel</translation>
@@ -284,7 +284,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="2475982808118771221">Terjadi error</translation>
 <translation id="2482878487686419369">Notifikasi</translation>
 <translation id="2484513351006226581">Tekan <ph name="KEYBOARD_SHORTCUT" /> untuk mengganti tata letak keyboard.</translation>
-<translation id="2501920221385095727">Tombol sticky</translation>
+<translation id="2501920221385095727">Tombol lekat</translation>
 <translation id="2509468283778169019">CAPS LOCK aktif</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2542089167727451762">Ketuk gambar profil Anda</translation>
@@ -376,6 +376,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="3047761520276763270">Coba ucapkan:</translation>
 <translation id="3051189971848907985">Mengganti nama profil. Tunggu beberapa menit.</translation>
 <translation id="3055162170959710888">Anda menggunakan perangkat ini selama <ph name="USED_TIME" /> hari ini</translation>
+<translation id="3062298103034426069">Tidak didukung</translation>
 <translation id="3068711042108640621">Rak di bagian kiri</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">Luaskan menu</translation>
@@ -410,6 +411,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="3249513730522716925">Jendela <ph name="WINDOW_TITLE" /> berpindah dari Desktop <ph name="ACTIVE_DESK" /> ke Desktop <ph name="TARGET_DESK" /></translation>
 <translation id="3252573918265662711">Penyiapan</translation>
 <translation id="3255483164551725916">Apa yang bisa kamu lakukan?</translation>
+<translation id="3260969790895726815">Ucapan diproses secara lokal dan dikte berfungsi secara offline, tetapi beberapa perintah suara tidak akan berfungsi.</translation>
 <translation id="3269597722229482060">Klik Kanan</translation>
 <translation id="3289544412142055976">Aplikasi Linux saat ini tidak didukung</translation>
 <translation id="3289674678944039601">Mengisi daya melalui adaptor</translation>
@@ -457,9 +459,11 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="3513798432020909783">Akun dikelola oleh <ph name="MANAGER_EMAIL" /></translation>
 <translation id="352245152354538528">{0,plural, =1{Update perangkat dalam 1 menit}other{Update perangkat dalam # menit}}</translation>
 <translation id="353086728817903341">Terhubung ke <ph name="NUM_DEVICES" /> perangkat</translation>
+<translation id="3533126039236445965">Aplikasi di rak</translation>
 <translation id="3542066395059568317">Rekomendasi akan ditampilkan sehingga Anda dapat melanjutkan aktivitas terakhir yang Anda lakukan. Anda dapat mengklik kanan untuk menghapus rekomendasi.</translation>
 <translation id="3552189655002856821">Wi-Fi dinonaktifkan</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> telah dipasangi pin</translation>
+<translation id="3558768885091059911">Aktifkan akses kamera dan mikrofon?</translation>
 <translation id="3560174576767922131">Rekam video</translation>
 <translation id="3563775809269155755">Aktifkan hotspot</translation>
 <translation id="3566240529365775567">Baru saja dibuka</translation>
@@ -605,7 +609,6 @@ Hubungkan perangkat ke sumber listrik.</translation>
 <translation id="4324840740119394760">Tindakan ini akan mengizinkan akses kamera untuk <ph name="APP_NAME" /> dan semua aplikasi serta situs yang memiliki izin kamera</translation>
 <translation id="4333628967105022692">Lacros tidak didukung saat beberapa pengguna login.</translation>
 <translation id="4338109981321384717">Kaca pembesar</translation>
-<translation id="4351433414020964307">Asisten sedang dimuat...</translation>
 <translation id="4371348193907997655">Setelan Transmisi</translation>
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />, kekuatan sinyal <ph name="SIGNAL_STRENGTH" /> persen</translation>
 <translation id="4378551569595875038">Menghubungkan...</translation>
@@ -793,9 +796,11 @@ Hubungkan perangkat ke sumber listrik.</translation>
 <translation id="5331975486040154427">Perangkat USB-C (port belakang sebelah kiri)</translation>
 <translation id="533282197239610265">Tampilkan perangkat transmisi</translation>
 <translation id="5344128444027639014"><ph name="BATTERY_PERCENTAGE" />% (Kanan)</translation>
+<translation id="5351427059191534258">Nonaktifkan akses kamera?</translation>
 <translation id="5352250171825660495">Tema gelap aktif</translation>
 <translation id="5356963482258194581">Berpindah-pindah antara tema gelap dan terang. Klik kanan desktop lalu pilih Wallpaper &amp; Gaya.</translation>
 <translation id="536019650977002321">Administrator tidak mengizinkan perekaman audio. Hubungi administrator untuk mendapatkan info selengkapnya.</translation>
+<translation id="5361524080961918551">File ucapan <ph name="LANGUAGE" /> didownload sebagian</translation>
 <translation id="5363163447017455357"><ph name="DELIMITER" /> Buka tab ini</translation>
 <translation id="5377367976106153749">Aktifkan akses kamera?</translation>
 <translation id="5379115545237091094">Terlalu banyak upaya gagal</translation>
@@ -868,6 +873,7 @@ Hubungkan perangkat ke sumber listrik.</translation>
 <translation id="5763928712329149804">Shelf Party nonaktif.</translation>
 <translation id="576453121877257266">Mode Cahaya Malam aktif.</translation>
 <translation id="5769373120130404283">Layar privasi</translation>
+<translation id="5773950591113557721">Tindakan ini akan mengizinkan akses untuk <ph name="APP_NAME" /> dan semua aplikasi dan situs yang memiliki izin kamera dan mikrofon</translation>
 <translation id="5777841717266010279">Berhenti membagikan layar?</translation>
 <translation id="5779721926447984944">File tersemat</translation>
 <translation id="5788127256798019331">File Play</translation>
@@ -905,6 +911,7 @@ Hubungkan perangkat ke sumber listrik.</translation>
 <translation id="5980301590375426705">Hentikan sesi tamu</translation>
 <translation id="598407983968395253">Gunakan template</translation>
 <translation id="598882571027504733">Untuk mendapatkan update, nyalakan ulang Chromebook dengan keyboard dalam keadaan terhubung.</translation>
+<translation id="6002179289567220515">Anda menggunakan tombol fisik untuk menonaktifkan 1 kamera. Anda juga dapat menonaktifkan akses untuk semua kamera.</translation>
 <translation id="6012623610530968780">Halaman <ph name="SELECTED_PAGE" /> dari <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6018164090099858612">Keluar dari mode transmisi</translation>
 <translation id="602001110135236999">Scroll ke kiri</translation>
@@ -945,9 +952,11 @@ Hubungkan perangkat ke sumber listrik.</translation>
 <translation id="619279033188484792">Lihat foto terbaru, media, dan notifikasi dari ponsel Anda di <ph name="DEVICE_TYPE" /></translation>
 <translation id="619335566042889110">Diisi penuh sekarang</translation>
 <translation id="6193431488227440296">Dev</translation>
+<translation id="6200515304866777730">Tidak didukung oleh aplikasi</translation>
 <translation id="6210042900243040400">Hubungkan <ph name="NAME" /> yang sebelumnya disimpan ke <ph name="EMAIL" /></translation>
 <translation id="6220928844947387476">Anda kini dapat merekam diri Anda dan layar secara bersamaan</translation>
 <translation id="622484624075952240">Bawah</translation>
+<translation id="623116199192908855">Transmisikan layar dari Chromebook</translation>
 <translation id="6231419273573514727">Performa periferal mungkin dibatasi</translation>
 <translation id="6232891689835436217"><ph name="APP_NAME" /> sedang menggunakan kamera dan mikrofon Anda</translation>
 <translation id="6237231532760393653">1X</translation>
@@ -989,8 +998,10 @@ Hubungkan perangkat ke sumber listrik.</translation>
 <translation id="6491071886865974820"><ph name="MANAGER" /> mengharuskan Anda mengupdate <ph name="DEVICE_TYPE" /> sebelum tiba batas waktu</translation>
 <translation id="649452524636452238">PIN kartu smart</translation>
 <translation id="6495400115277918834">Picture-in-picture dimulai, Alt+Shift+V untuk memfokuskan</translation>
+<translation id="6497418457565568043">Fitur jangan ganggu aktif</translation>
 <translation id="6500896621837555595">Update</translation>
 <translation id="6501401484702599040">Mentransmisi layar ke <ph name="RECEIVER_NAME" /></translation>
+<translation id="6508923215158854599">Pastikan Chromebook berada di jaringan Wi-Fi yang sama dengan perangkat Chromecast.</translation>
 <translation id="6515727200518652613">Koneksi kamera terputus, mencoba menghubungkan kembali.</translation>
 <translation id="6520517963145875092">Pilih jendela untuk diambil gambarnya</translation>
 <translation id="652139407789908527">Layar Anda akan kosong lebih lama dari biasanya (hingga satu menit) selama update ini berlangsung. Jangan tekan tombol daya saat proses update berlangsung.</translation>
@@ -1050,6 +1061,7 @@ Baru diinstal</translation>
 <translation id="6787595647772650851">Pulihkan sesi terakhir</translation>
 <translation id="6790428901817661496">Putar</translation>
 <translation id="6801878137098616817">Diedit baru-baru ini</translation>
+<translation id="6802687695197837794">Tindakan ini akan mengizinkan akses untuk <ph name="APP1_NAME" />, <ph name="APP2_NAME" />, dan semua aplikasi dan situs yang memiliki izin kamera dan mikrofon</translation>
 <translation id="6803622936009808957">Tidak dapat menggandakan tampilan karena tidak ditemukan resolusi yang didukung. Memasuki desktop yang diperluas sebagai gantinya.</translation>
 <translation id="6812232930908427253">Tidak dapat menyimpan desktop. Terlalu banyak jendela atau tab.</translation>
 <translation id="6818242057446442178">Mundur per kata</translation>
@@ -1082,6 +1094,7 @@ Baru diinstal</translation>
 <translation id="6965382102122355670">Oke</translation>
 <translation id="6972754398087986839">Mulai</translation>
 <translation id="6979158407327259162">Google Drive</translation>
+<translation id="6981291220124935078">Aktifkan akses</translation>
 <translation id="6981982820502123353">Aksesibilitas</translation>
 <translation id="698231206551913481">Semua file dan data lokal yang dikaitkan ke pengguna ini akan dihapus secara permanen setelah pengguna ini dihapus.</translation>
 <translation id="7005239792648594238">Buka aplikasi untuk memulai</translation>
@@ -1222,7 +1235,6 @@ Baru diinstal</translation>
 <translation id="7768784765476638775">Klik untuk diucapkan</translation>
 <translation id="7780094051999721182">pintasan</translation>
 <translation id="7780159184141939021">Memutar Layar</translation>
-<translation id="7796353162336583443">Ketuk tombol stilus di rak untuk mencatat, mengambil screenshot, menggunakan asisten, penunjuk laser, atau kaca pembesar.</translation>
 <translation id="7796735576426975947">Notifikasi baru disembunyikan</translation>
 <translation id="7798302898096527229">Tekan Search atau Shift untuk membatalkan.</translation>
 <translation id="7807067443225230855">Penelusuran dan Asisten</translation>

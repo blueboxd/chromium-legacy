@@ -16,6 +16,7 @@ GEN('#include "components/content_settings/core/common/features.h"');
 GEN('#include "components/performance_manager/public/features.h"');
 GEN('#include "components/privacy_sandbox/privacy_sandbox_features.h"');
 GEN('#include "components/autofill/core/common/autofill_features.h"');
+GEN('#include "components/privacy_sandbox/privacy_sandbox_features.h"');
 GEN('#include "content/public/common/content_features.h"');
 GEN('#include "content/public/test/browser_test.h"');
 
@@ -372,6 +373,15 @@ var CrSettingsSiteListTest = class extends CrSettingsBrowserTest {
   get browsePreload() {
     return 'chrome://settings/test_loader.html?module=settings/site_list_tests.js';
   }
+
+  /** @override */
+  get featureListInternal() {
+    return {
+      enabled: [
+        'privacy_sandbox::kPrivacySandboxSettings4',
+      ],
+    };
+  }
 };
 
 // Copied from Polymer 2 test:
@@ -392,6 +402,10 @@ TEST_F('CrSettingsSiteListTest', 'SiteListCookiesExceptionTypes', function() {
   runMochaSuite('SiteListCookiesExceptionTypes');
 });
 
+TEST_F('CrSettingsSiteListTest', 'SiteListSearchTests', function() {
+  runMochaSuite('SiteListSearchTests');
+});
+
 TEST_F('CrSettingsSiteListTest', 'EditExceptionDialog', function() {
   runMochaSuite('EditExceptionDialog');
 });
@@ -400,10 +414,26 @@ TEST_F('CrSettingsSiteListTest', 'AddExceptionDialog', function() {
   runMochaSuite('AddExceptionDialog');
 });
 
+// TODO(crbug.com/1378703): Remove after crbug/1378703 launched.
+TEST_F(
+    'CrSettingsSiteListTest', 'AddExceptionDialog_PrivacySandbox4Disabled',
+    function() {
+      runMochaSuite('AddExceptionDialog_PrivacySandbox4Disabled');
+    });
+
 var CrSettingsSiteDetailsTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://settings/test_loader.html?module=settings/site_details_tests.js';
+  }
+
+  /** @override */
+  get featureListInternal() {
+    return {
+      enabled: [
+        'privacy_sandbox::kPrivacySandboxSettings4',
+      ],
+    };
   }
 };
 
@@ -521,6 +551,7 @@ var CrSettingsPrivacyPageTest = class extends CrSettingsBrowserTest {
     return {
       enabled: [
         'features::kPrivacyGuide2',
+        'privacy_sandbox::kPrivacySandboxSettings4',
       ],
     };
   }
@@ -543,8 +574,8 @@ TEST_F('CrSettingsPrivacyPageTest', 'MAYBE_PrivacyPageTests', function() {
   runMochaSuite('PrivacyPage');
 });
 
-TEST_F('CrSettingsPrivacyPageTest', 'PrivacySandboxEnabled', function() {
-  runMochaSuite('PrivacySandboxEnabled');
+TEST_F('CrSettingsPrivacyPageTest', 'PrivacySandbox4Enabled', function() {
+  runMochaSuite('PrivacySandbox4Enabled');
 });
 
 TEST_F('CrSettingsPrivacyPageTest', 'PrivacyGuideRowTests', function() {
@@ -580,25 +611,11 @@ TEST_F(
       runMochaSuite('NativeCertificateManager');
     });
 GEN('#endif');
-
-var CrSettingsPrivacyPageWithPrivacySandbox4Test =
-    class extends CrSettingsPrivacyPageTest {
-  /** @override */
-  get featureListInternal() {
-    return {
-      enabled: [
-        'features::kPrivacyGuide2',
-        'privacy_sandbox::kPrivacySandboxSettings4',
-      ],
-    };
-  }
-};
-
-TEST_F(
-    'CrSettingsPrivacyPageWithPrivacySandbox4Test', 'PrivacySandbox4Enabled',
-    function() {
-      runMochaSuite('PrivacySandbox4Enabled');
-    });
+// TODO(crbug.com/1378703): Remove once PrivacySandboxSettings4 has been rolled
+// out.
+TEST_F('CrSettingsPrivacyPageTest', 'PrivacySandboxEnabled', function() {
+  runMochaSuite('PrivacySandboxEnabled');
+});
 
 var CrSettingsPrivacySandboxPageTest = class extends CrSettingsBrowserTest {
   /** @override */
@@ -621,16 +638,13 @@ TEST_F(
       runMochaSuite('PrivacySandboxPageTests');
     });
 
-// TODO(crbug.com/1400768): Flaky on Mac.
-GEN('#if BUILDFLAG(IS_MAC)');
-GEN('#define MAYBE_TopicsSubpageTests DISABLED_TopicsSubpageTests');
-GEN('#else');
-GEN('#define MAYBE_TopicsSubpageTests TopicsSubpageTests');
-GEN('#endif');
-TEST_F(
-    'CrSettingsPrivacySandboxPageTest', 'MAYBE_TopicsSubpageTests', function() {
-      runMochaSuite('PrivacySandboxTopicsSubpageTests');
-    });
+TEST_F('CrSettingsPrivacySandboxPageTest', 'TopicsSubpageTests', function() {
+  runMochaSuite('PrivacySandboxTopicsSubpageTests');
+});
+
+TEST_F('CrSettingsPrivacySandboxPageTest', 'FledgeSubpageTests', function() {
+  runMochaSuite('PrivacySandboxFledgeSubpageTests');
+});
 
 TEST_F(
     'CrSettingsPrivacySandboxPageTest', 'AdMeasurementSubpageTests',
@@ -891,27 +905,60 @@ var CrSettingsSiteSettingsPageTest = class extends CrSettingsBrowserTest {
   }
 };
 
-TEST_F('CrSettingsSiteSettingsPageTest', 'SiteSettingsPage', function() {
+// TODO(crbug.com/1401833): Flaky.
+GEN('#if BUILDFLAG(IS_LINUX) && !defined(NDEBUG)');
+GEN('#define MAYBE_SiteSettingsPage DISABLED_SiteSettingsPage');
+GEN('#else');
+GEN('#define MAYBE_SiteSettingsPage SiteSettingsPage');
+GEN('#endif');
+TEST_F('CrSettingsSiteSettingsPageTest', 'MAYBE_SiteSettingsPage', function() {
   mocha.run();
 });
 
+// TODO(crbug.com/1401833): Flaky.
+GEN('#if BUILDFLAG(IS_LINUX) && !defined(NDEBUG)');
+GEN('#define MAYBE_UnusedSitePermissionsReview DISABLED_UnusedSitePermissionsReview');
+GEN('#else');
+GEN('#define MAYBE_UnusedSitePermissionsReview UnusedSitePermissionsReview');
+GEN('#endif');
 TEST_F(
-    'CrSettingsSiteSettingsPageTest', 'PrivacySandboxSettings4Disabled',
+    'CrSettingsSiteSettingsPageTest', 'MAYBE_UnusedSitePermissionsReview',
     function() {
       mocha.run();
     });
 
+// TODO(crbug.com/1401833): Flaky.
+GEN('#if BUILDFLAG(IS_LINUX) && !defined(NDEBUG)');
+GEN('#define MAYBE_UnusedSitePermissionsReviewDisabled DISABLED_UnusedSitePermissionsReviewDisabled');
+GEN('#else');
+GEN('#define MAYBE_UnusedSitePermissionsReviewDisabled UnusedSitePermissionsReviewDisabled');
+GEN('#endif');
 TEST_F(
-    'CrSettingsSiteSettingsPageTest', 'UnusedSitePermissionsReview',
-    function() {
+    'CrSettingsSiteSettingsPageTest',
+    'MAYBE_UnusedSitePermissionsReviewDisabled', function() {
       mocha.run();
     });
 
-TEST_F(
-    'CrSettingsSiteSettingsPageTest', 'UnusedSitePermissionsReviewDisabled',
-    function() {
-      mocha.run();
-    });
+var CrSettingsMenuTest = class extends CrSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/settings_menu_test.js';
+  }
+
+  /** @override */
+  get featureList() {
+    return {
+      disabled: [
+        'performance_manager::features::kHighEfficiencyModeAvailable',
+        'performance_manager::features::kBatterySaverModeAvailable',
+      ],
+    };
+  }
+};
+
+TEST_F('CrSettingsMenuTest', 'All', function() {
+  mocha.run()
+});
 
 [['AppearanceFontsPage', 'appearance_fonts_page_test.js'],
  [
@@ -931,7 +978,6 @@ TEST_F(
  ['DropdownMenu', 'dropdown_menu_tests.js'],
  ['ExtensionControlledIndicator', 'extension_controlled_indicator_tests.js'],
  ['HelpPage', 'help_page_test.js'],
- ['Menu', 'settings_menu_test.js'],
  ['PasswordView', 'password_view_test.js'],
  ['PasswordsExportDialog', 'passwords_export_dialog_test.js'],
  ['PasswordsImportDialog', 'passwords_import_dialog_test.js'],

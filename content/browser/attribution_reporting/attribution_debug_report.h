@@ -5,8 +5,6 @@
 #ifndef CONTENT_BROWSER_ATTRIBUTION_REPORTING_ATTRIBUTION_DEBUG_REPORT_H_
 #define CONTENT_BROWSER_ATTRIBUTION_REPORTING_ATTRIBUTION_DEBUG_REPORT_H_
 
-#include <vector>
-
 #include "base/values.h"
 #include "components/attribution_reporting/suitable_origin.h"
 #include "content/browser/attribution_reporting/attribution_storage.h"
@@ -25,30 +23,6 @@ class StorableSource;
 // debug report.
 class CONTENT_EXPORT AttributionDebugReport {
  public:
-  enum class DataType {
-    kSourceDestinationLimit,
-    kSourceNoised,
-    kSourceStorageLimit,
-    kSourceUnknownError,
-    kTriggerNoMatchingSource,
-    kTriggerAttributionsPerSourceDestinationLimit,
-    kTriggerNoMatchingFilterData,
-    kTriggerReportingOriginLimit,
-    kTriggerEventDeduplicated,
-    kTriggerEventNoMatchingConfigurations,
-    kTriggerEventNoise,
-    kTriggerEventLowPriority,
-    kTriggerEventExcessiveReports,
-    kTriggerEventStorageLimit,
-    kTriggerEventReportWindowPassed,
-    kTriggerAggregateDeduplicated,
-    kTriggerAggregateNoContributions,
-    kTriggerAggregateInsufficientBudget,
-    kTriggerAggregateStorageLimit,
-    kTriggerAggregateReportWindowPassed,
-    kTriggerUnknownError,
-  };
-
   static absl::optional<AttributionDebugReport> Create(
       const StorableSource& source,
       bool is_debug_cookie_set,
@@ -67,18 +41,16 @@ class CONTENT_EXPORT AttributionDebugReport {
   AttributionDebugReport(AttributionDebugReport&&);
   AttributionDebugReport& operator=(AttributionDebugReport&&);
 
-  base::Value::List ReportBody() const;
+  const base::Value::List& ReportBody() const { return report_body_; }
 
   GURL ReportURL() const;
 
  private:
-  class ReportData;
-
   AttributionDebugReport(
-      std::vector<ReportData> report_data,
+      base::Value::List report_body,
       attribution_reporting::SuitableOrigin reporting_origin);
 
-  std::vector<ReportData> report_data_;
+  base::Value::List report_body_;
   attribution_reporting::SuitableOrigin reporting_origin_;
 };
 

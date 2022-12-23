@@ -12,6 +12,7 @@
 
 #include "base/callback.h"
 #include "base/feature_list.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -25,6 +26,8 @@
 #include "components/drive/file_errors.h"
 #include "components/drive/file_system_core_util.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "google_apis/common/api_error_codes.h"
+#include "google_apis/common/auth_service_interface.h"
 
 class Profile;
 
@@ -111,6 +114,9 @@ class DriveIntegrationService : public KeyedService,
                               std::vector<drivefs::mojom::QueryItemPtr>)>;
   using GetThumbnailCallback =
       base::OnceCallback<void(const absl::optional<std::vector<uint8_t>>&)>;
+  using GetReadOnlyAuthenticationTokenCallback =
+      base::OnceCallback<void(google_apis::ApiErrorCode code,
+                              const std::string& access_token)>;
 
   // test_mount_point_name, test_cache_root and
   // test_drivefs_mojo_listener_factory are used by tests to inject customized
@@ -277,6 +283,12 @@ class DriveIntegrationService : public KeyedService,
   void ForceReSyncFile(const base::FilePath& local_path,
                        base::OnceClosure callback);
 
+  // Gets a read-only OAuth token that allows downloading files from the user's
+  // Drive. If an error occurs or the user does not have access to download
+  // files from Drive, `access_token` will be an empty string.
+  void GetReadOnlyAuthenticationToken(
+      GetReadOnlyAuthenticationTokenCallback callback);
+
  private:
   enum State {
     NOT_INITIALIZED,
@@ -293,13 +305,17 @@ class DriveIntegrationService : public KeyedService,
   // Must be called on UI thread.
   bool IsDriveEnabled();
 
+  enum class DirResult { kError, kExisting, kCreated };
+  static DirResult EnsureDirectoryExists(const base::FilePath& data_dir);
+
   // Registers remote file system for drive mount point. If DriveFS is enabled,
   // but not yet mounted, this will start it mounting and wait for it to
   // complete before adding the mount point.
   void AddDriveMountPoint();
 
   // Mounts Drive if the directory exists.
-  void MaybeMountDrive(bool data_directory_exists);
+  void MaybeMountDrive(const base::FilePath& data_dir,
+                       DirResult data_dir_result);
 
   // Registers remote file system for drive mount point.
   bool AddDriveMountPointAfterMounted();
@@ -397,11 +413,16 @@ class DriveIntegrationService : public KeyedService,
   int drivefs_consecutive_failures_count_ = 0;
   bool remount_when_online_ = false;
 
+  // Used to fetch authentication and refresh tokens from Drive.
+  std::unique_ptr<google_apis::AuthServiceInterface> auth_service_;
+
   base::TimeTicks mount_start_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<DriveIntegrationService> weak_ptr_factory_{this};
+
+  FRIEND_TEST_ALL_PREFIXES(DriveIntegrationServiceTest, EnsureDirectoryExists);
 };
 
 // Singleton that owns all instances of DriveIntegrationService and

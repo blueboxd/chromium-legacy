@@ -1642,8 +1642,8 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
   if (policy.has_tpm_firmware_update_settings()) {
     policies->Set(key::kTPMFirmwareUpdateSettings, POLICY_LEVEL_MANDATORY,
                   POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-                  std::move(*(ash::tpm_firmware_update::DecodeSettingsProto(
-                      policy.tpm_firmware_update_settings()))),
+                  ash::tpm_firmware_update::DecodeSettingsProto(
+                      policy.tpm_firmware_update_settings()),
                   nullptr);
   }
 
@@ -1976,14 +1976,6 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
                     POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
                     base::Value(container.enabled()), nullptr);
     }
-  }
-
-  if (policy.has_device_borealis_allowed() &&
-      policy.device_borealis_allowed().has_allowed()) {
-    policies->Set(key::kDeviceBorealisAllowed, POLICY_LEVEL_MANDATORY,
-                  POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-                  base::Value(policy.device_borealis_allowed().allowed()),
-                  nullptr);
   }
 
   if (policy.has_device_allowed_bluetooth_services()) {

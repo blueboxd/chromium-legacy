@@ -12,6 +12,8 @@ import './device_page/display_overscan_dialog.js';
 import './device_page/keyboard.js';
 import './device_page/per_device_keyboard.js';
 import './device_page/per_device_mouse.js';
+import './device_page/per_device_pointing_stick.js';
+import './device_page/per_device_touchpad.js';
 import './device_page/pointers.js';
 import './device_page/power.js';
 import './device_page/storage.js';
@@ -103,6 +105,9 @@ import './os_toolbar/os_toolbar.js';
 import './parental_controls_page/parental_controls_page.js';
 import './settings_scheduler_slider/settings_scheduler_slider.js';
 
+import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
+import {startColorChangeUpdater} from 'chrome://resources/cr_components/color_change_listener/colors_css_updater.js';
+
 import * as crosAudioConfigMojomWebui from '../mojom-webui/audio/cros_audio_config.mojom-webui.js';
 import * as appNotificationHandlerMojomWebui from '../mojom-webui/os_apps_page/app_notification_handler.mojom-webui.js';
 import * as personalizationSearchMojomWebui from '../mojom-webui/personalization/search.mojom-webui.js';
@@ -188,4 +193,21 @@ export {
   searchResultIconMojomWebui,
   settingMojomWebui,
   userActionRecorderMojomWebui,
+};
+
+// TODO(b/257329722) After the Jelly experiment is launched, add the CSS link
+// element directly to the HTML.
+const jellyEnabled = loadTimeData.getBoolean('isJellyEnabled');
+if (jellyEnabled) {
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = 'chrome://theme/colors.css?sets=legacy,sys';
+  document.head.appendChild(link);
+  document.body.classList.add('jelly-enabled');
+}
+
+window.onload = () => {
+  if (jellyEnabled) {
+    startColorChangeUpdater();
+  }
 };

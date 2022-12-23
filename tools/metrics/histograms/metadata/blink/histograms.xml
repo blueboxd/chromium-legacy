@@ -674,7 +674,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Blink.ContentDocumentUpdate.UpdateTime"
-    units="microseconds" expires_after="2023-04-16">
+    units="microseconds" expires_after="2023-06-18">
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePreFCPSuffixes" -->
 
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePostFCPSuffixes" -->
@@ -767,7 +767,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.CullRect.UpdateTime" units="microseconds"
-    expires_after="2023-04-16">
+    expires_after="2023-06-18">
   <owner>pdr@chromium.org</owner>
   <owner>wangxianzhu@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
@@ -806,7 +806,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.DecodedImage.JpegDensity.KiBWeighted"
-    units="0.01 bits per pixel" expires_after="2023-04-16">
+    units="0.01 bits per pixel" expires_after="2023-06-18">
   <owner>jyrki@google.com</owner>
   <owner>compression-dev@google.com</owner>
   <summary>
@@ -1070,7 +1070,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.FedCm.Timing.CancelOnDialog" units="ms"
-    expires_after="2023-03-12">
+    expires_after="2023-06-18">
   <owner>yigu@chromium.org</owner>
   <owner>web-identity-eng@google.com</owner>
   <summary>
@@ -1317,7 +1317,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Blink.HandleInputEvents.UpdateTime"
-    units="microseconds" expires_after="2023-04-16">
+    units="microseconds" expires_after="2023-06-18">
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePreFCPSuffixes" -->
 
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePostFCPSuffixes" -->
@@ -1726,7 +1726,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Blink.IntersectionObservation.UpdateTime"
-    units="microseconds" expires_after="2023-04-16">
+    units="microseconds" expires_after="2023-06-18">
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePreFCPSuffixes" -->
 
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePostFCPSuffixes" -->
@@ -1785,7 +1785,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.JavaJsBridge.MethodInvocationError"
-    enum="JavaJsBridgeMethodInvocationError" expires_after="2022-12-31">
+    enum="JavaJsBridgeMethodInvocationError" expires_after="2023-06-04">
   <owner>torne@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>Records the Java/JS bridge method invocation errors.</summary>
@@ -1888,53 +1888,6 @@ chromium-metrics-reviews@google.com.
     Note: The histograms with PreFCP/PostFCP/AggregatedPreFCP suffixes before
     105.0.5175.0 were impacted by https://crbug.com/1330675. Be careful when
     aggregating or comparing these histograms across the version.
-  </summary>
-</histogram>
-
-<histogram
-    name="Blink.LazyLoad.CrossOriginFrames.InitialDeferralAction{BlinkLazyLoadEffectiveConnectionTypeSuffixes}"
-    enum="LazyLoad.FrameInitialDeferralAction" expires_after="2021-03-07">
-  <owner>sclittle@chromium.org</owner>
-  <summary>
-    Records the initial lazy loading action taken for a cross-origin iframe.
-    {BlinkLazyLoadEffectiveConnectionTypeSuffixes}
-  </summary>
-  <token key="BlinkLazyLoadEffectiveConnectionTypeSuffixes">
-    <variant name=""/>
-    <variant name=".2G" summary="2G effective connection type"/>
-    <variant name=".3G" summary="3G effective connection type"/>
-    <variant name=".4G" summary="4G effective connection type"/>
-    <variant name=".Offline" summary="Offline effective connection type"/>
-    <variant name=".Slow2G" summary="Slow-2G effective connection type"/>
-    <variant name=".Unknown" summary="Unknown effective connection type"/>
-  </token>
-</histogram>
-
-<histogram
-    name="Blink.LazyLoad.CrossOriginFrames.LoadStartedAfterBeingDeferred"
-    enum="NQEEffectiveConnectionType" expires_after="2021-02-21">
-  <owner>sclittle@chromium.org</owner>
-  <summary>
-    Records the effective connection type whenever a lazily-loaded iframe that
-    wasn't initially hidden or near the viewport starts loading. The count for
-    an effective connection type in this histogram can be subtracted from the
-    'Deferred' bucket from the
-    Blink.LazyLoad.CrossOriginFrames.InitialDeferralAction.* histogram for the
-    corresponding effective connection type to determine the number of iframes
-    that LazyLoad is avoiding to load altogether.
-  </summary>
-</histogram>
-
-<histogram name="Blink.LazyLoad.CrossOriginFrames.VisibleAfterBeingDeferred"
-    enum="NQEEffectiveConnectionType" expires_after="2021-02-21">
-  <owner>sclittle@chromium.org</owner>
-  <summary>
-    Records the effective connection type whenever a lazily-loaded iframe that
-    wasn't initially hidden or near the viewport becomes visible. The count for
-    an effective connection type in this histogram can be subtracted from the
-    corresponding count in
-    Blink.LazyLoad.CrossOriginFrames.LoadStartedAfterBeingDeferred to determine
-    how many iframes were loaded unnecessarily by LazyLoad.
   </summary>
 </histogram>
 
@@ -2244,7 +2197,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Paint.PaintArtifactCompositorUpdateReason"
-    enum="PaintArtifactCompositorUpdateReason" expires_after="2023-04-16">
+    enum="PaintArtifactCompositorUpdateReason" expires_after="2023-06-18">
   <owner>pdr@chromium.org</owner>
   <owner>rego@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
@@ -2323,7 +2276,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.PreloadRequestWaitTime" units="ms"
-    expires_after="2023-04-16">
+    expires_after="2023-06-18">
   <owner>cduvall@chromium.org</owner>
   <owner>swarm-team@google.com</owner>
   <summary>
@@ -2771,7 +2724,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Blink.Style.UpdateTime" units="microseconds"
-    expires_after="2023-04-16">
+    expires_after="2023-06-18">
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePreFCPSuffixes" -->
 
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePostFCPSuffixes" -->
@@ -2795,7 +2748,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.SVGImage.DataChanged" units="microseconds"
-    expires_after="2023-04-16">
+    expires_after="2023-06-18">
   <owner>pdr@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>
@@ -2994,7 +2947,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.UseCounter.FeaturePolicy.Header"
-    enum="FeaturePolicyFeature" expires_after="2023-04-16">
+    enum="FeaturePolicyFeature" expires_after="2023-06-18">
   <owner>iclelland@chromium.org</owner>
   <owner>feature-control@chromium.org</owner>
   <summary>
@@ -3193,7 +3146,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.UseCounter.File.Features" enum="FeatureObserver"
-    expires_after="2021-01-10">
+    expires_after="2024-01-01">
   <owner>yhirano@chromium.org</owner>
   <owner>mkwst@chromium.org</owner>
   <summary>
@@ -3203,6 +3156,8 @@ chromium-metrics-reviews@google.com.
     (which that histogram does not include).
 
     Refer to &quot;Blink.UseCounter.Features&quot; for more details.
+
+    This counter expired on 2021-01-28 and was re-enabled on 2022-12-19.
   </summary>
 </histogram>
 
@@ -3227,7 +3182,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.UseCounter.PermissionsPolicy.Allow2"
-    enum="FeaturePolicyFeature" expires_after="2023-04-16">
+    enum="FeaturePolicyFeature" expires_after="2023-06-18">
   <owner>iclelland@chromium.org</owner>
   <owner>feature-control@chromium.org</owner>
   <summary>
@@ -3310,16 +3265,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Blink.VisibleBeforeLoaded.LazyLoadEligibleFrames.BelowTheFold"
-    enum="NQEEffectiveConnectionType" expires_after="2021-02-21">
-  <owner>sclittle@chromium.org</owner>
-  <summary>
-    Records the effective connection type whenever a lazyload-eligible (i.e.
-    cross-origin and non-hidden) iframe that was initially below the fold
-    becomes visible before it finishes loading.
-  </summary>
-</histogram>
-
 <histogram name="Blink.VisibleBeforeLoaded.LazyLoadImages.AboveTheFold"
     enum="NQEEffectiveConnectionType" expires_after="2023-09-01">
   <owner>sclittle@chromium.org</owner>
@@ -3340,36 +3285,6 @@ chromium-metrics-reviews@google.com.
     Records the effective connection type whenever a lazily loaded image that
     was initially below the fold becomes visible before it finishes loading.
   </summary>
-</histogram>
-
-<histogram
-    name="Blink.VisibleLoadTime.LazyLoadEligibleFrames.AboveTheFold{BlinkVisibleLoadTimeSuffixes}"
-    units="ms" expires_after="2021-08-29">
-  <owner>sclittle@chromium.org</owner>
-  <summary>
-    Milliseconds spent waiting for an above the fold iframe to load. Only fires
-    for iframes that would be eligible for lazy loading, i.e. cross-origin and
-    non-hidden. {BlinkVisibleLoadTimeSuffixes}
-  </summary>
-  <token key="BlinkVisibleLoadTimeSuffixes"
-      variants="BlinkVisibleLoadTimeSuffixes">
-    <variant name=""/>
-  </token>
-</histogram>
-
-<histogram
-    name="Blink.VisibleLoadTime.LazyLoadEligibleFrames.BelowTheFold{BlinkVisibleLoadTimeSuffixes}"
-    units="ms" expires_after="2021-02-21">
-  <owner>sclittle@chromium.org</owner>
-  <summary>
-    Milliseconds spent waiting for a below the fold iframe to load. Only fires
-    for iframes that would be eligible for lazy loading, i.e. cross-origin and
-    non-hidden. {BlinkVisibleLoadTimeSuffixes}
-  </summary>
-  <token key="BlinkVisibleLoadTimeSuffixes"
-      variants="BlinkVisibleLoadTimeSuffixes">
-    <variant name=""/>
-  </token>
 </histogram>
 
 <histogram

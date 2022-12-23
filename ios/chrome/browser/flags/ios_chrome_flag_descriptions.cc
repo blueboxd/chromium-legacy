@@ -270,11 +270,6 @@ const char kEnableDiscoverFeedDiscoFeedEndpointName[] =
 const char kEnableDiscoverFeedDiscoFeedEndpointDescription[] =
     "Enable using the discofeed endpoint for the discover feed.";
 
-const char kEnableDiscoverFeedGhostCardsName[] =
-    "Enable discover feed ghost cards";
-const char kEnableDiscoverFeedGhostCardsDescription[] =
-    "Show ghost cards when refreshing the discover feed.";
-
 const char kEnableFREDefaultBrowserPromoScreenName[] =
     "Enable FRE default browser screen";
 const char kEnableFREDefaultBrowserPromoScreenDescription[] =
@@ -410,12 +405,6 @@ const char kHttpsOnlyModeDescription[] = "Enables the HTTPS-Only Mode setting";
 const char kIncognitoNtpRevampName[] = "Revamped Incognito New Tab Page";
 const char kIncognitoNtpRevampDescription[] =
     "When enabled, Incognito new tab page will have an updated UI.";
-
-const char kInterestFeedV2ClickAndViewActionsConditionalUploadName[] =
-    "New Content Suggestions taps/views conditional upload";
-const char kInterestFeedV2ClickAndViewActionsConditionalUploadDescription[] =
-    "Only enable the upload of taps/views after satisfying conditions (e.g., "
-    "user views X cards)";
 
 const char kInProductHelpDemoModeName[] = "In-Product Help Demo Mode";
 const char kInProductHelpDemoModeDescription[] =
@@ -638,10 +627,6 @@ const char kOmniboxOnDeviceTailSuggestionsDescription[] =
     "Google tail non personalized search suggestions provided by a compact on "
     "device model.";
 
-const char kIOSOmniboxUpdatedPopupUIName[] = "Popup refresh";
-const char kIOSOmniboxUpdatedPopupUIDescription[] =
-    "Enable the new Popup implementation with Actions";
-
 const char kOptimizationGuideDebugLogsName[] =
     "Enable optimization guide debug logs";
 const char kOptimizationGuideDebugLogsDescription[] =
@@ -762,13 +747,6 @@ const char kSyncTrustedVaultPassphrasePromoName[] =
 const char kSyncTrustedVaultPassphrasePromoDescription[] =
     "Enables promos for an experimental sync passphrase type, referred to as "
     "trusted vault.";
-
-const char kSyncTrustedVaultPassphraseRecoveryName[] =
-    "Enable sync trusted vault passphrase with improved recovery.";
-const char kSyncTrustedVaultPassphraseRecoveryDescription[] =
-    "Enables support for an experimental sync passphrase type, referred to as "
-    "trusted vault, including logic and APIs for improved account recovery "
-    "flows.";
 
 const char kSyncInvalidationsName[] = "Use Sync standalone invalidations";
 const char kSyncInvalidationsDescription[] =

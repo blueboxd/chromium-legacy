@@ -37,7 +37,6 @@
 #include "chrome/browser/ash/login/signin_partition_manager.h"
 #include "chrome/browser/ash/login/test/device_state_mixin.h"
 #include "chrome/browser/ash/login/test/embedded_policy_test_server_mixin.h"
-#include "chrome/browser/ash/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/ash/login/test/fake_recovery_service_mixin.h"
 #include "chrome/browser/ash/login/test/js_checker.h"
 #include "chrome/browser/ash/login/test/login_manager_mixin.h"
@@ -72,6 +71,7 @@
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/fake_gaia_mixin.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/ash/components/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/ash/components/login/auth/public/user_context.h"
@@ -668,8 +668,6 @@ class WebviewLoginTestWithSyncTrustedVaultEnabled : public WebviewLoginTest {
  public:
   WebviewLoginTestWithSyncTrustedVaultEnabled() {
     scoped_feature_list_.Reset();
-    scoped_feature_list_.InitAndEnableFeature(
-        ::syncer::kSyncTrustedVaultPassphraseRecovery);
   }
 };
 
@@ -817,8 +815,8 @@ IN_PROC_BROWSER_TEST_F(WebviewDeviceOwnedLoginTest, AllowNewUser) {
   test::OobeJS().ExpectTrue(frame_url + ".search('flow=nosignup') == -1");
 
   // Disallow new users - we also need to set an allowlist due to weird logic.
-  scoped_testing_cros_settings_.device_settings()->Set(kAccountsPrefUsers,
-                                                       base::ListValue());
+  scoped_testing_cros_settings_.device_settings()->Set(
+      kAccountsPrefUsers, base::Value(base::Value::List()));
   scoped_testing_cros_settings_.device_settings()->Set(
       kAccountsPrefAllowNewUser, base::Value(false));
   WaitForGaiaPageReload();

@@ -5,7 +5,7 @@
 #ifndef BASE_ALLOCATOR_PARTITION_ALLOC_FEATURES_H_
 #define BASE_ALLOCATOR_PARTITION_ALLOC_FEATURES_H_
 
-#include "base/allocator/buildflags.h"
+#include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
 #include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
@@ -115,6 +115,7 @@ extern const BASE_EXPORT base::FeatureParam<bool>
 extern const BASE_EXPORT base::FeatureParam<AlternateBucketDistributionMode>
     kPartitionAllocAlternateBucketDistributionParam;
 
+BASE_EXPORT BASE_DECLARE_FEATURE(kLowerPAMemoryLimitForNonMainRenderers);
 BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocPCScanMUAwareScheduler);
 BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocPCScanStackScanning);
 BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocDCScan);

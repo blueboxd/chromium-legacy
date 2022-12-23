@@ -257,9 +257,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     private static final String ACTION_CLOSE_TABS =
             "com.google.android.apps.chrome.ACTION_CLOSE_TABS";
 
-    @VisibleForTesting
-    public static final String STARTUP_UMA_HISTOGRAM_SUFFIX = ".Tabbed";
-
     // Name of the ChromeTabbedActivity alias that handles MAIN intents.
     public static final String MAIN_LAUNCHER_ACTIVITY_NAME = "com.google.android.apps.chrome.Main";
 
@@ -768,7 +765,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 getTabCreatorManagerSupplier().get(), getMenuOrKeyboardActionController(),
                 getMultiWindowModeStateDispatcher(), mJankTracker, getToolbarManager()::getToolbar,
                 new CrowButtonDelegateImpl(), mBackPressManager,
-                mRootUiCoordinator.getIncognitoReauthControllerSupplier());
+                mRootUiCoordinator.getIncognitoReauthControllerSupplier(),
+                v -> onTabSwitcherClicked());
     }
 
     private void createGridTabSwitcher(
@@ -812,27 +810,28 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         return mLayoutManager != null;
     }
 
+    private void onTabSwitcherClicked() {
+        Profile profile = mTabModelProfileSupplier.get();
+        if (profile != null) {
+            TrackerFactory.getTrackerForProfile(profile).notifyEvent(
+                    EventConstants.TAB_SWITCHER_BUTTON_CLICKED);
+        }
+
+        if (getFullscreenManager().getPersistentFullscreenMode()) {
+            return;
+        }
+
+        if (isInOverviewMode() && !ReturnToChromeUtil.isStartSurfaceEnabled(this)) {
+            hideOverview();
+        } else {
+            showOverview(StartSurfaceState.SHOWING_TABSWITCHER);
+        }
+    }
+
     private void initializeToolbarManager() {
         try (TraceEvent e = TraceEvent.scoped("ChromeTabbedActivity.initializeToolbarManager")) {
             mUndoBarPopupController.initialize();
 
-            OnClickListener tabSwitcherClickHandler = v -> {
-                Profile profile = mTabModelProfileSupplier.get();
-                if (profile != null) {
-                    TrackerFactory.getTrackerForProfile(profile).notifyEvent(
-                            EventConstants.TAB_SWITCHER_BUTTON_CLICKED);
-                }
-
-                if (getFullscreenManager().getPersistentFullscreenMode()) {
-                    return;
-                }
-
-                if (isInOverviewMode() && !ReturnToChromeUtil.isStartSurfaceEnabled(this)) {
-                    hideOverview();
-                } else {
-                    showOverview(StartSurfaceState.SHOWING_TABSWITCHER);
-                }
-            };
             OnClickListener newTabClickHandler = v -> {
                 getTabModelSelector().getModel(false).commitAllTabClosures();
                 // This assumes that the keyboard can not be seen at the same time as the
@@ -864,7 +863,9 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 return false;
             };
 
-            getToolbarManager().initializeWithNative(mLayoutManager, tabSwitcherClickHandler,
+            getToolbarManager().initializeWithNative(mLayoutManager,
+                    v
+                    -> onTabSwitcherClicked(),
                     newTabClickHandler, bookmarkClickHandler, null, showStartSurfaceSupplier);
 
             if (!isInstantStartEnabled()) {
@@ -1202,7 +1203,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         assert getActivityTabStartupMetricsTracker() != null;
 
         if (shouldTrackColdStartupMetrics) {
-            getActivityTabStartupMetricsTracker().trackStartupMetrics(STARTUP_UMA_HISTOGRAM_SUFFIX);
+            getActivityTabStartupMetricsTracker().setHistogramSuffix(ActivityType.TABBED);
         } else {
             getActivityTabStartupMetricsTracker().cancelTrackingStartupMetrics();
         }

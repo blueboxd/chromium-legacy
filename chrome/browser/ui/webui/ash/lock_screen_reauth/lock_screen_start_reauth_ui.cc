@@ -16,9 +16,9 @@
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/gaia_auth_host_resources_map.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/lock_screen_reauth_resources.h"
+#include "chrome/grit/lock_screen_reauth_resources_map.h"
 #include "chrome/grit/oobe_unconditional_resources_map.h"
-#include "chrome/grit/password_change_resources.h"
-#include "chrome/grit/password_change_resources_map.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/devicetype_utils.h"
@@ -41,8 +41,8 @@ LockScreenStartReauthUI::LockScreenStartReauthUI(content::WebUI* web_ui)
     email = user->GetDisplayEmail();
   }
 
-  content::WebUIDataSource* source = content::WebUIDataSource::Create(
-      chrome::kChromeUILockScreenStartReauthHost);
+  content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
+      profile, chrome::kChromeUILockScreenStartReauthHost);
 
   auto main_handler = std::make_unique<LockScreenReauthHandler>(email);
   main_handler_ = main_handler.get();
@@ -120,14 +120,13 @@ LockScreenStartReauthUI::LockScreenStartReauthUI(content::WebUI* web_ui)
       "samlChangeProviderButton",
       l10n_util::GetStringUTF16(IDS_LOGIN_SAML_CHANGE_PROVIDER_BUTTON));
 
-  source->AddResourcePaths(
-      base::make_span(kPasswordChangeResources, kPasswordChangeResourcesSize));
-  source->SetDefaultResource(IDR_PASSWORD_CHANGE_LOCK_SCREEN_REAUTH_APP_HTML);
+  source->AddResourcePaths(base::make_span(kLockScreenReauthResources,
+                                           kLockScreenReauthResourcesSize));
+  source->SetDefaultResource(
+      IDR_LOCK_SCREEN_REAUTH_LOCK_SCREEN_REAUTH_APP_HTML);
 
   // Add OOBE and Gaia Authenticator resources
   OobeUI::AddOobeComponents(source);
-
-  content::WebUIDataSource::Add(profile, source);
 }
 
 LockScreenStartReauthUI::~LockScreenStartReauthUI() = default;

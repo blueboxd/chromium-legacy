@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <utility>
 
+#include "base/allocator/partition_alloc_support.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
@@ -28,7 +29,6 @@
 #include "build/chromeos_buildflags.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/content_switches_internal.h"
-#include "content/common/partition_alloc_support.h"
 #include "content/common/skia_utils.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -263,6 +263,23 @@ int RendererMain(MainFunctionParams parameters) {
     if (base::FeatureList::IsEnabled(
             features::kHandleRendererThreadTypeChangesInBrowser)) {
       RendererThreadTypeHandler::Create();
+
+      // Change the main thread type. On Linux and ChromeOS this needs to be
+      // done only if kHandleRendererThreadTypeChangesInBrowser is enabled to
+      // avoid child threads inheriting the main thread settings.
+      if (base::FeatureList::IsEnabled(
+              features::kMainThreadCompositingPriority)) {
+        base::PlatformThread::SetCurrentThreadType(
+            base::ThreadType::kCompositing);
+      }
+    }
+#else
+    if (base::FeatureList::IsEnabled(
+            features::kMainThreadCompositingPriority)) {
+      base::PlatformThread::SetCurrentThreadType(
+          base::ThreadType::kCompositing);
+    } else {
+      base::PlatformThread::SetCurrentThreadType(base::ThreadType::kDefault);
     }
 #endif
 
@@ -312,8 +329,8 @@ int RendererMain(MainFunctionParams parameters) {
     mojo::BeginRandomMojoDelays();
 #endif
 
-    internal::PartitionAllocSupport::Get()->ReconfigureAfterTaskRunnerInit(
-        switches::kRendererProcess);
+    base::allocator::PartitionAllocSupport::Get()
+        ->ReconfigureAfterTaskRunnerInit(switches::kRendererProcess);
 
     base::HighResolutionTimerManager hi_res_timer_manager;
 

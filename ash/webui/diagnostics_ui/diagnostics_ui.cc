@@ -43,7 +43,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/chromeos/strings/network/network_element_localized_strings_provider.h"
-#include "ui/resources/grit/webui_generated_resources.h"
+#include "ui/resources/grit/webui_resources.h"
 
 namespace ash {
 
@@ -371,21 +371,17 @@ void SetUpWebUIDataSource(content::WebUIDataSource* source,
                           int default_resource) {
   source->AddResourcePaths(resources);
   source->AddResourcePath("", default_resource);
-  source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER_HTML);
+  source->AddResourcePath("test_loader.html", IDR_WEBUI_TEST_LOADER_HTML);
   source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER_JS);
   source->AddResourcePath("test_loader_util.js",
                           IDR_WEBUI_JS_TEST_LOADER_UTIL_JS);
   source->AddBoolean("isLoggedIn", LoginState::Get()->IsUserLoggedIn());
   source->AddBoolean("isInputEnabled",
                      features::IsInputInDiagnosticsAppEnabled());
-  source->AddBoolean("isNetworkingEnabled",
-                     features::IsNetworkingInDiagnosticsAppEnabled());
   source->AddBoolean("isTouchpadEnabled",
                      features::IsTouchpadInDiagnosticsAppEnabled());
   source->AddBoolean("isTouchscreenEnabled",
                      features::IsTouchscreenInDiagnosticsAppEnabled());
-  source->AddBoolean("enableArcNetworkDiagnostics",
-                     features::IsArcNetworkDiagnosticsButtonEnabled());
 }
 
 void SetUpPluralStringHandler(content::WebUI* web_ui) {
@@ -457,12 +453,10 @@ DiagnosticsDialogUI::~DiagnosticsDialogUI() {
 
 void DiagnosticsDialogUI::BindInterface(
     mojo::PendingReceiver<diagnostics::mojom::NetworkHealthProvider> receiver) {
-  if (features::IsNetworkingInDiagnosticsAppEnabled()) {
-    diagnostics::NetworkHealthProvider* network_health_provider =
-        diagnostics_manager_->GetNetworkHealthProvider();
-    if (network_health_provider) {
-      network_health_provider->BindInterface(std::move(receiver));
-    }
+  diagnostics::NetworkHealthProvider* network_health_provider =
+      diagnostics_manager_->GetNetworkHealthProvider();
+  if (network_health_provider) {
+    network_health_provider->BindInterface(std::move(receiver));
   }
 }
 

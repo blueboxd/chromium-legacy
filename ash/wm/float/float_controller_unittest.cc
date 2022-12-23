@@ -1294,6 +1294,35 @@ TEST_F(TabletWindowFloatTest, UntuckWindowOnActivation) {
   EXPECT_TRUE(WindowState::Get(window.get())->IsFloated());
 }
 
+// Tests that the tucked window is invisible while it is fully tucked.
+TEST_F(TabletWindowFloatTest, TuckedWindowVisibility) {
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  std::unique_ptr<aura::Window> window = CreateFloatedWindow();
+
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // Fling to tuck the window in the bottom right. Test that the window is
+  // invisible once the animation is finished.
+  auto* float_controller = Shell::Get()->float_controller();
+  FlingWindow(window.get(), /*left=*/false, /*up=*/false);
+  EXPECT_TRUE(window->IsVisible());
+  ShellTestApi().WaitForWindowFinishAnimating(window.get());
+  EXPECT_FALSE(window->IsVisible());
+  ASSERT_TRUE(float_controller->IsFloatedWindowTuckedForTablet(window.get()));
+
+  // Tests that there is an overview item created for the tucked window.
+  ToggleOverview();
+  WaitForOverviewEnterAnimation();
+  EXPECT_TRUE(GetOverviewItemForWindow(window.get()));
+
+  // Tests that after we activate the window, the window is visible again as it
+  // is getting untucked.
+  wm::ActivateWindow(window.get());
+  ShellTestApi().WaitForWindowFinishAnimating(window.get());
+  EXPECT_TRUE(window->IsVisible());
+}
+
 // Tests that the expected window gets activation after tucking a floated
 // window, and that on untucking the floated window, it gains activation.
 TEST_F(TabletWindowFloatTest, WindowActivationAfterTuckingUntucking) {
@@ -1491,6 +1520,36 @@ TEST_F(TabletWindowFloatTest, ClickOnEdgeDoesNotUntuck) {
   EXPECT_TRUE(float_controller->IsFloatedWindowTuckedForTablet(window.get()));
 }
 
+// Tests that the tuck handle is offscreen in overview mode.
+TEST_F(TabletWindowFloatTest, TuckHandleOffscreenInOverview) {
+  const gfx::Rect display_bounds =
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  std::unique_ptr<aura::Window> window = CreateFloatedWindow();
+  auto* float_controller = Shell::Get()->float_controller();
+
+  // Tuck the window in the bottom right.
+  FlingWindow(window.get(), /*left=*/false, /*up=*/false);
+  ASSERT_TRUE(float_controller->IsFloatedWindowTuckedForTablet(window.get()));
+
+  // The tuck handle widget is normally onscreen.
+  views::Widget* tuck_handle_widget =
+      float_controller->GetTuckHandleWidget(window.get());
+  EXPECT_TRUE(
+      display_bounds.Contains(tuck_handle_widget->GetWindowBoundsInScreen()));
+
+  // Tests that on entering overview, the tuck handle is offscreen.
+  EnterOverview();
+  EXPECT_FALSE(
+      display_bounds.Contains(tuck_handle_widget->GetWindowBoundsInScreen()));
+
+  // Tests that on leaving overview, the tuck handle is onscreen again.
+  ExitOverview();
+  EXPECT_TRUE(
+      display_bounds.Contains(tuck_handle_widget->GetWindowBoundsInScreen()));
+}
+
 TEST_F(TabletWindowFloatTest, UntuckWindowGestures) {
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   // The window is magnetized to the bottom right by default.
@@ -1552,11 +1611,11 @@ TEST_F(TabletWindowFloatSplitviewTest, BothSnappedToFloat) {
 
   // Create two windows and snap one on each side.
   auto left_window = CreateAppWindow();
-  const WindowSnapWMEvent snap_left(WM_EVENT_SNAP_PRIMARY);
+  const WMEvent snap_left(WM_EVENT_SNAP_PRIMARY);
   WindowState::Get(left_window.get())->OnWMEvent(&snap_left);
 
   auto right_window = CreateAppWindow();
-  const WindowSnapWMEvent snap_right(WM_EVENT_SNAP_SECONDARY);
+  const WMEvent snap_right(WM_EVENT_SNAP_SECONDARY);
   WindowState::Get(right_window.get())->OnWMEvent(&snap_right);
 
   auto* split_view_controller =
@@ -1583,7 +1642,7 @@ TEST_F(TabletWindowFloatSplitviewTest, FloatToSnapped) {
 
   // If there are no other windows, expect to enter overview. The hotseat will
   // extended and users can pick a second app from there.
-  const WindowSnapWMEvent snap_left(WM_EVENT_SNAP_PRIMARY);
+  const WMEvent snap_left(WM_EVENT_SNAP_PRIMARY);
   WindowState::Get(window.get())->OnWMEvent(&snap_left);
   ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
   ASSERT_TRUE(split_view_controller->InSplitViewMode());

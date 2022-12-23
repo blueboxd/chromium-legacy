@@ -55,11 +55,6 @@ BASE_FEATURE(kOmniboxRemoveSuggestionsFromClipboard,
              "OmniboxRemoveSuggestionsFromClipboard",
              enabled_by_default_android_only);
 
-// Auxiliary search for Android. See http://crbug/1310100 for more details.
-BASE_FEATURE(kAndroidAuxiliarySearch,
-             "AndroidAuxiliarySearch",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enables various tweaks to `AutocompleteController` autocompletion twiddling
 // that may improve autocompletion stability. Feature params control which
 // tweaks specifically are enabled. Enabling this feature without params is a
@@ -78,11 +73,10 @@ BASE_FEATURE(kDocumentProviderDedupingOptimization,
              "OmniboxDocumentProviderDedupingOptimization",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Feature to tweak how the default suggestion is preserved. Feature params
-// control which tweaks specifically are enabled. Enabling this feature without
-// params is a no-op.
-BASE_FEATURE(kPreserveDefault,
-             "OmniboxPreserveDefault",
+// When enabled, uses the grouping framework (i.e.
+// autocomplete_grouper_sections.h) to limit and group (but not sort) matches.
+BASE_FEATURE(kGroupingFramework,
+             "OmniboxGroupingFramework",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Demotes the relevance scores when comparing suggestions based on the
@@ -99,6 +93,20 @@ BASE_FEATURE(kOmniboxRemoveExcessiveRecycledViewClearCalls,
              "OmniboxRemoveExcessiveRecycledViewClearCalls",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Feature to tweak how the default suggestion is preserved. Feature params
+// control which tweaks specifically are enabled. Enabling this feature without
+// params is a no-op.
+BASE_FEATURE(kPreserveDefault,
+             "OmniboxPreserveDefault",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// When disabled, when providers update their matches, the new set of matches
+// are sorted and culled, then merged with the old matches, then sorted and
+// culled again. When enabled, the first sort and cull is skipped.
+BASE_FEATURE(kSingleSortAndCullPass,
+             "OmniboxSingleSortAndCullPass",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Feature to enable memoizing URLs when replacing search terms in
 // `AutocompleteMatch::GURLToStrippedGURL()`.
 // TODO(manukh) Enabled by default on 10/20/22 m109. Clean up feature code
@@ -110,13 +118,6 @@ BASE_FEATURE(kStrippedGurlOptimization,
 // Feature to debounce `AutocompleteController::NotifyChanged()`.
 BASE_FEATURE(kUpdateResultDebounce,
              "OmniboxUpdateResultDebounce",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// When disabled, when providers update their matches, the new set of matches
-// are sorted and culled, then merged with the old matches, then sorted and
-// culled again. When enabled, the first sort and cull is skipped.
-BASE_FEATURE(kSingleSortAndCullPass,
-             "OmniboxSingleSortAndCullPass",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Feature used to cap max zero suggestions shown according to the param
@@ -201,26 +202,11 @@ BASE_FEATURE(kKeepSecondaryZeroSuggest,
              "KeepSecondaryZeroSuggest",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Revamps how local search history is extracted and processed for generating
-// zero-prefix and prefix suggestions.
-BASE_FEATURE(kLocalHistorySuggestRevamp,
-             "LocalHistorySuggestRevamp",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables local history zero-prefix suggestions in every context in which the
 // remote zero-prefix suggestions are enabled.
 BASE_FEATURE(kLocalHistoryZeroSuggestBeyondNTP,
              "LocalHistoryZeroSuggestBeyondNTP",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Used to adjust the age threshold since the last visit in order to consider a
-// normalized keyword search term as a zero-prefix suggestion. If disabled, the
-// default value of 90 days for Desktop and 60 days for Android and iOS is used.
-// If enabled, the age threshold is determined by this feature's companion
-// parameter, OmniboxFieldTrial::kOmniboxLocalZeroSuggestAgeThresholdParam.
-BASE_FEATURE(kOmniboxLocalZeroSuggestAgeThreshold,
-             "OmniboxLocalZeroSuggestAgeThreshold",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Mainly used to enable sending INTERACTION_CLOBBER focus type for zero-prefix
 // requests with an empty input on Web/SRP on Mobile. Enabled by default on
@@ -380,12 +366,6 @@ BASE_FEATURE(kSuggestionAnswersColorReverse,
 BASE_FEATURE(kMostVisitedTiles,
              "OmniboxMostVisitedTiles",
              enabled_by_default_android_only);
-
-// If enabled, permits the title on the MostVisitedTiles to wrap around to
-// second line.
-BASE_FEATURE(kMostVisitedTilesTitleWrapAround,
-             "OmniboxMostVisitedTilesTitleWrapAround",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, expands autocompletion to possibly (depending on params) include
 // suggestion titles and non-prefixes as opposed to be restricted to URL

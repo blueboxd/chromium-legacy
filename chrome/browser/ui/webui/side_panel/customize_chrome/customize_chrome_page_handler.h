@@ -10,9 +10,11 @@
 #include "chrome/browser/search/background/ntp_background_service.h"
 #include "chrome/browser/search/background/ntp_background_service_observer.h"
 #include "chrome/browser/search/background/ntp_custom_background_service.h"
+#include "chrome/browser/search/background/ntp_custom_background_service_observer.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_observer.h"
 #include "chrome/browser/ui/webui/side_panel/customize_chrome/customize_chrome.mojom.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -31,6 +33,7 @@ class CustomizeChromePageHandler
       public NtpBackgroundServiceObserver,
       public ui::NativeThemeObserver,
       public ThemeServiceObserver,
+      public NtpCustomBackgroundServiceObserver,
       public ui::SelectFileDialog::Listener {
  public:
   CustomizeChromePageHandler(
@@ -52,13 +55,23 @@ class CustomizeChromePageHandler
   void GetChromeColors(GetChromeColorsCallback callback) override;
   void GetBackgroundCollections(
       GetBackgroundCollectionsCallback callback) override;
+  void GetBackgroundImages(const std::string& collection_id,
+                           GetBackgroundImagesCallback callback) override;
+  void UpdateModulesSettings() override;
   void UpdateTheme() override;
   void SetDefaultColor() override;
-  void SetForegroundColor(SkColor foreground_color) override;
+  void SetSeedColor(SkColor seed_color) override;
   void SetClassicChromeDefaultTheme() override;
   void ChooseLocalCustomBackground(
       ChooseLocalCustomBackgroundCallback callback) override;
+  void SetBackgroundImage(const std::string& attribution_1,
+                          const std::string& attribution_2,
+                          const GURL& attribution_url,
+                          const GURL& image_url,
+                          const GURL& thumbnail_url) override;
   void OpenChromeWebStore() override;
+  void SetModulesVisible(bool visible) override;
+  void SetModuleDisabled(const std::string& module_id, bool disabled) override;
 
  private:
   // ui::NativeThemeObserver:
@@ -66,6 +79,10 @@ class CustomizeChromePageHandler
 
   // ThemeServiceObserver:
   void OnThemeChanged() override;
+
+  // NtpCustomBackgroundServiceObserver:
+  void OnCustomBackgroundImageUpdated() override;
+  void OnNtpCustomBackgroundServiceShuttingDown() override;
 
   bool IsCustomLinksEnabled() const;
   bool IsShortcutsVisible() const;
@@ -90,12 +107,20 @@ class CustomizeChromePageHandler
   raw_ptr<NtpBackgroundService> ntp_background_service_;
   GetBackgroundCollectionsCallback background_collections_callback_;
   base::TimeTicks background_collections_request_start_time_;
+  std::string images_request_collection_id_;
+  GetBackgroundImagesCallback background_images_callback_;
+  base::TimeTicks background_images_request_start_time_;
   raw_ptr<ThemeService> theme_service_;
+  const std::vector<std::pair<const std::string, int>> module_id_names_;
 
+  PrefChangeRegistrar pref_change_registrar_;
   base::ScopedObservation<ui::NativeTheme, ui::NativeThemeObserver>
       native_theme_observation_{this};
   base::ScopedObservation<ThemeService, ThemeServiceObserver>
       theme_service_observation_{this};
+  base::ScopedObservation<NtpCustomBackgroundService,
+                          NtpCustomBackgroundServiceObserver>
+      ntp_custom_background_service_observation_{this};
 
   mojo::Remote<side_panel::mojom::CustomizeChromePage> page_;
   mojo::Receiver<side_panel::mojom::CustomizeChromePageHandler> receiver_;

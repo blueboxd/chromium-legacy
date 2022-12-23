@@ -116,6 +116,7 @@
 <translation id="1908234395526491708">Erros nas solicitudes de UDP</translation>
 <translation id="1947737735496445907">Impreso</translation>
 <translation id="1951012854035635156">Asistente</translation>
+<translation id="1962550982027027473">Requírese un APN predeterminado</translation>
 <translation id="1977994649430373166">Foto do perfil de Google</translation>
 <translation id="1979103255016296513">Produciuse un atraso no cambio de contrasinal</translation>
 <translation id="1999615961760456652">Portal cativo</translation>
@@ -186,6 +187,7 @@
 <translation id="2570743873672969996">Executando proba de <ph name="TEST_NAME" />…</translation>
 <translation id="2584559707064218956">Para axustar as opcións, vai a Configuración</translation>
 <translation id="2597774443162333062">Enviaranse os ficheiros a Google para proceder á depuración</translation>
+<translation id="2599691907981599502">{NUMBER_OF_PAGES,plural, =1{A operación rematou. Explorouse 1 páxina}other{A operación rematou. Exploráronse {NUMBER_OF_PAGES} páxinas}}</translation>
 <translation id="2619761439309613843">Actualización diaria</translation>
 <translation id="2620436844016719705">Sistema</translation>
 <translation id="2638662041295312666">Imaxe de inicio de sesión</translation>
@@ -392,6 +394,7 @@
 <translation id="4793710386569335688">Para obter máis axuda, vai ao <ph name="BEGIN_LINK" />Centro de Axuda<ph name="END_LINK" />.</translation>
 <translation id="4793756956024303490">Algoritmo de compresión</translation>
 <translation id="4794140124556169553">A execución de probas de CPU pódelle afectar ao rendemento do sistema</translation>
+<translation id="4798078634453489142">Quita un APN para engadir un novo</translation>
 <translation id="4800589996161293643">Comunidade de Chromebook</translation>
 <translation id="4803391892369051319">IPv4</translation>
 <translation id="4808449224298348341">Cancelouse o traballo de impresión <ph name="DOCUMENT_TITLE" /></translation>
@@ -633,6 +636,7 @@ Proba a tocar o micrófono para preguntarme algo.</translation>
 <translation id="6791471867139427246">cor da luz do teclado</translation>
 <translation id="680983167891198932">Clave</translation>
 <translation id="6816797338148849397">Hai dispoñible información sobre a túa selección. Utilizar frecha arriba para acceder.</translation>
+<translation id="6838167112108853532">Non se puido desactivar ou quitar este APN. Asegúrate de que os APN asociados estean desactivados ou quitados.</translation>
 <translation id="6853312040151791195">Taxa de descarga</translation>
 <translation id="6889786074662672253">Mentres se reinicia este dispositivo externo, non o desenchufes nin apagues o ordenador. Podes minimizar esta ventá. Esta acción pode tardar uns minutos en completarse e é posible que o dispositivo externo non funcione durante o proceso.</translation>
 <translation id="6905724422583748843">Volver a <ph name="PAGE_NAME" /></translation>
@@ -722,6 +726,7 @@ Proba a tocar o micrófono para preguntarme algo.</translation>
 <translation id="7769672763586021400">ID do modelo</translation>
 <translation id="7778717409420828014">O noso equipo revisará os teus comentarios, que nos axudan a mellorar a experiencia que ofrecemos cos Chromebooks. Non imos poder enviar unha resposta debido ao gran número de informes que recibimos.</translation>
 <translation id="7784116172884276937">Non hai ningún servidor DNS configurado</translation>
+<translation id="7791543448312431591">Engadir</translation>
 <translation id="779591286616261875">Enviar informe novo</translation>
 <translation id="7799817062559422778">Modo claro</translation>
 <translation id="780301667611848630">Non, grazas</translation>

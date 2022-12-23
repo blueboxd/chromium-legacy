@@ -417,6 +417,7 @@ test("components_unittests") {
       "//components/safe_browsing/core/browser:token_fetcher_unit_tests",
       "//components/safe_browsing/core/browser/realtime:unit_tests",
       "//components/safe_browsing/core/browser/tailored_security_service:unit_tests",
+      "//components/safe_browsing/core/browser/utils:unit_tests",
       "//components/safe_browsing/core/common:unit_tests",
       "//components/safety_check:unit_tests",
       "//components/security_interstitials/content:unit_tests",
@@ -652,9 +653,6 @@ test("components_unittests") {
     ]
   } else if (safe_browsing_mode == 2) {
     deps += [ "//components/safe_browsing/android:unit_tests_mobile" ]
-
-    # Used by real_time_url_checks_allowlist_unittest.cc
-    data += [ "//components/safe_browsing/content/resources/real_time_url_checks_allowlist.pb" ]
   }
 
   if (safe_browsing_mode == 1) {

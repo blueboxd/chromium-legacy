@@ -1235,6 +1235,23 @@ RenderFrameHostManager::GetFrameHostForNavigation(NavigationRequest* request,
       ShouldSkipEarlyCommitPendingForCrashedFrame() &&
       render_frame_host_->must_be_replaced();
   if (use_current_rfh) {
+    // For navigation queueing, if the speculative RFH is already committing a
+    // cross-document navigation, avoid discarding it here: the commit needs to
+    // complete in order for the browser and the renderer state to remain in
+    // sync. See https://crbug.com/838348.
+    //
+    // In theory, it would be possible to simply avoid discarding it (see the
+    // later branch for the kAvoidUnnecessaryNavigationCancellations feature;
+    // however, this navigation race should be fairly rare, so for navigation
+    // queueing, do the simple thing and give up trying to assign a
+    // RenderFrameHost for the navigation.
+    if (speculative_render_frame_host_ &&
+        speculative_render_frame_host_
+            ->HasPendingCommitForCrossDocumentNavigation() &&
+        base::FeatureList::IsEnabled(kQueueNavigationsWhileWaitingForCommit)) {
+      return base::unexpected(
+          GetFrameHostForNavigationFailed::kBlockedByPendingCommit);
+    }
     // If the navigation is to a WebUI and the current RenderFrameHost is going
     // to be used, there are only two possible ways to get here:
     // * The navigation is between two different documents belonging to the same
@@ -1310,8 +1327,19 @@ RenderFrameHostManager::GetFrameHostForNavigation(NavigationRequest* request,
       // If a previous speculative RenderFrameHost didn't exist or if its
       // SiteInstance differs from the one for the current URL, a new one needs
       // to be created.
-      // TODO(https://crbug.com/1220337): Don't delete the speculative
-      // RenderFrameHost when it is pending commit.
+      //
+      // However, if the speculative RFH is already committing a cross-document
+      // navigation, avoid discarding it now: the commit needs to complete in
+      // order for the browser and the renderer state to remain in sync. See
+      // https://crbug.com/838348.
+      if (base::FeatureList::IsEnabled(
+              kQueueNavigationsWhileWaitingForCommit) &&
+          speculative_render_frame_host_ &&
+          speculative_render_frame_host_
+              ->HasPendingCommitForCrossDocumentNavigation()) {
+        return base::unexpected(
+            GetFrameHostForNavigationFailed::kBlockedByPendingCommit);
+      }
       DiscardSpeculativeRFH(NavigationDiscardReason::kNewNavigation);
       bool success = CreateSpeculativeRenderFrameHost(
           current_site_instance, dest_site_instance.get(),
@@ -2429,8 +2457,7 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
 
   // If we haven't used our SiteInstance yet, then we can use it for this
   // navigation.  We won't commit the SiteInstance to this site until the
-  // response is received (in OnResponseStarted), unless the navigation entry
-  // was restored or it's a Web UI as described below.
+  // response is received (in OnResponseStarted).
   // TODO(ahemery): In theory we should be able to go for an unused
   // SiteInstance with the same web exposed isolation status.
   if (!current_instance->HasSite() && !dest_url_info.IsIsolated() &&
@@ -2478,25 +2505,6 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
                    "!current_instance->IsSuitable");
       return SiteInstanceDescriptor(dest_url_info,
                                     SiteInstanceRelation::RELATED);
-    }
-
-    // Normally the "site" on the SiteInstance is set lazily when the response
-    // is received and SiteInstance selection is finalized. This is to
-    // support better process sharing in case the site redirects to some other
-    // site: we want to use the destination site in the site instance.
-    //
-    // In the case of session restore, as it loads all the pages immediately
-    // we need to set the site first, otherwise after a restore none of the
-    // pages would share renderers in process-per-site.
-    //
-    // The embedder can request some urls never to be assigned to SiteInstance
-    // through the ShouldAssignSiteForURL() content client method, so that
-    // renderers created for particular chrome urls (e.g. the chrome-native://
-    // scheme) can be reused for subsequent navigations in the same WebContents.
-    // See http://crbug.com/386542.
-    if (dest_is_restore &&
-        SiteInstanceImpl::ShouldAssignSiteForURL(dest_url_info.url)) {
-      current_instance->ConvertToDefaultOrSetSite(dest_url_info);
     }
 
     AppendReason(reason, "DetermineSiteInstanceForURL => current_instance");

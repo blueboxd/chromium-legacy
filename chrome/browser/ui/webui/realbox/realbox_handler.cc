@@ -62,7 +62,7 @@
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/base/window_open_disposition_utils.h"
 #include "ui/gfx/vector_icon_types.h"
-#include "ui/resources/grit/webui_generated_resources.h"
+#include "ui/resources/grit/webui_resources.h"
 
 namespace {
 
@@ -685,7 +685,8 @@ void RealboxHandler::OpenAutocompleteMatch(
           : std::u16string::npos,
       /*elapsed_time_since_last_change_to_default_match=*/
       elapsed_time_since_last_change_to_default_match,
-      /*result=*/autocomplete_controller_->result(), match.destination_url);
+      /*result=*/autocomplete_controller_->result(), match.destination_url,
+      /*is_incognito=*/profile_->IsOffTheRecord());
   autocomplete_controller_->AddProviderAndTriggeringLogs(&log);
 
   OmniboxEventGlobalTracker::GetInstance()->OnURLOpened(&log);

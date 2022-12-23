@@ -88,13 +88,14 @@ public class MessageAnimationCoordinator implements SwipeAnimationHandler {
 
                     mAnimatorSet = new AnimatorSet();
                     mAnimatorSet.play(animator);
-                    mAnimatorSet.addListener(
-                            new MessageAnimationListener(mMessageQueueDelegate::onAnimationEnd));
+                    mAnimatorSet.addListener(new MessageAnimationListener(() -> {
+                        mMessageQueueDelegate.onAnimationEnd();
+                        onFinished.run();
+                    }));
                     mMessageQueueDelegate.onAnimationStart();
                     mAnimatorStartCallback.onResult(mAnimatorSet);
                 });
                 mLastShownMessage = mCurrentDisplayedMessage;
-                onFinished.run();
             });
         } else {
             Runnable runnable = () -> {
@@ -262,7 +263,7 @@ public class MessageAnimationCoordinator implements SwipeAnimationHandler {
             mMessageQueueDelegate.onStartShowing(() -> {
                 if (candidates.get(0) == mCurrentDisplayedMessages.get(0)
                         && candidates.get(1) == mCurrentDisplayedMessages.get(1)) {
-                    triggerStackingAnimation(candidates, onFinished);
+                    triggerStackingAnimation(candidates, onFinished, mFrontAnimator, mBackAnimator);
                 }
             });
         } else if (nextFront == null) {
@@ -272,20 +273,27 @@ public class MessageAnimationCoordinator implements SwipeAnimationHandler {
                 mCurrentDisplayedMessages = new ArrayList<>(candidates);
                 onFinished.run();
             };
-            triggerStackingAnimation(candidates, runnable);
+            triggerStackingAnimation(candidates, runnable, mFrontAnimator, mBackAnimator);
         } else {
             mCurrentDisplayedMessages = new ArrayList<>(candidates);
-            triggerStackingAnimation(candidates, onFinished);
+            triggerStackingAnimation(candidates, onFinished, mFrontAnimator, mBackAnimator);
         }
     }
 
-    private void triggerStackingAnimation(List<MessageState> candidates, Runnable onFinished) {
+    private void triggerStackingAnimation(List<MessageState> candidates, Runnable onFinished,
+            Animator frontAnimator, Animator backAnimator) {
         Runnable runnable = () -> {
+            // While the runnable is waiting to be triggered, hiding animation might be triggered:
+            // while the hiding animation is running, declare this runnable as obsolete so that
+            // it won't cancel the hiding animation.
+            if (isAnimatorExpired(frontAnimator, backAnimator)) {
+                return;
+            }
             mAnimatorSet.cancel();
             mAnimatorSet.removeAllListeners();
             mAnimatorSet = new AnimatorSet();
-            mAnimatorSet.play(mFrontAnimator);
-            mAnimatorSet.play(mBackAnimator);
+            mAnimatorSet.play(frontAnimator);
+            mAnimatorSet.play(backAnimator);
             mAnimatorSet.addListener(new MessageAnimationListener(() -> {
                 mMessageQueueDelegate.onAnimationEnd();
                 onFinished.run();
@@ -298,6 +306,10 @@ public class MessageAnimationCoordinator implements SwipeAnimationHandler {
         } else {
             mContainer.runAfterInitialMessageLayout(runnable);
         }
+    }
+
+    private boolean isAnimatorExpired(Animator frontAnimator, Animator backAnimator) {
+        return mFrontAnimator != frontAnimator || mBackAnimator != backAnimator;
     }
 
     @Override

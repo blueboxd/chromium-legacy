@@ -217,9 +217,6 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(AwFeatures.WEBVIEW_USE_METRICS_UPLOAD_SERVICE,
                     "Upload UMA metrics logs through MetricsUploadService not via GMS-core"
                             + " directly."),
-            Flag.baseFeature(BlinkFeatures.FORCE_MAJOR_VERSION_IN_MINOR_POSITION_IN_USER_AGENT,
-                    "Force the Chrome major version number to 99 and put the major version"
-                            + " number in the minor version position in the User-Agent string."),
             Flag.baseFeature(NetFeatures.OPTIMIZE_NETWORK_BUFFERS,
                     "Optimizes buffer size for reading from the network or InputStream."),
             Flag.baseFeature(BlinkFeatures.SET_TIMEOUT_WITHOUT_CLAMP,
@@ -281,6 +278,8 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(BlinkFeatures.EARLY_EXIT_ON_NOOP_CLASS_OR_STYLE_CHANGE,
                     "Early exit when the style or class attribute of a DOM element is set to the"
                             + " same value as before."),
+            Flag.baseFeature(BlinkFeatures.INVALIDATION_SET_CLASS_BLOOM_FILTER,
+                    "If enabled, style invalidation will use a Bloom filter."),
             Flag.baseFeature(BlinkFeatures.THREADED_PRELOAD_SCANNER,
                     "If enabled, the HTMLPreloadScanner will run on a worker thread."),
             Flag.baseFeature(BlinkFeatures.TIMED_HTML_PARSER_BUDGET,
@@ -323,8 +322,6 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(CcFeatures.NON_BLOCKING_COMMIT,
                     "Don't block the renderer main thread unconditionally while waiting "
                             + "for commit to finish on the compositor thread."),
-            Flag.baseFeature(AwFeatures.WEBVIEW_CLIENT_HINTS_CONTROLLER_DELEGATE,
-                    "This persists client hints between top-level navigations."),
             Flag.baseFeature(CcFeatures.USE_DMSAA_FOR_TILES,
                     "Switches skia to use DMSAA instead of MSAA for tile raster"),
             Flag.baseFeature(

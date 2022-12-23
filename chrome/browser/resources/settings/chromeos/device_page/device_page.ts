@@ -12,6 +12,8 @@ import './display.js';
 import './keyboard.js';
 import './per_device_keyboard.js';
 import './per_device_mouse.js';
+import './per_device_pointing_stick.js';
+import './per_device_touchpad.js';
 import './pointers.js';
 import './power.js';
 import './storage.js';
@@ -134,7 +136,14 @@ class SettingsDevicePageElement extends SettingsDevicePageElementBase {
           if (routes.PER_DEVICE_MOUSE) {
             map.set(routes.PER_DEVICE_MOUSE.path, '#perDeviceMouseRow');
           }
-          // TODO(@wangdanny): Add route for Per-device touchpad settings page.
+          if (routes.PER_DEVICE_TOUCHPAD) {
+            map.set(routes.PER_DEVICE_TOUCHPAD.path, '#perDeviceTouchpadRow');
+          }
+          if (routes.PER_DEVICE_POINTING_STICK) {
+            map.set(
+                routes.PER_DEVICE_POINTING_STICK.path,
+                '#perDevicePointingStickRow');
+          }
           if (routes.PER_DEVICE_KEYBOARD) {
             map.set(routes.PER_DEVICE_KEYBOARD.path, '#perDeviceKeyboardRow');
           }
@@ -250,6 +259,20 @@ class SettingsDevicePageElement extends SettingsDevicePageElementBase {
    */
   private onPerDeviceMouseTap_() {
     Router.getInstance().navigateTo(routes.PER_DEVICE_MOUSE);
+  }
+
+  /**
+   * Handler for tapping the Touchpad settings menu item.
+   */
+  private onPerDeviceTouchpadTap_() {
+    Router.getInstance().navigateTo(routes.PER_DEVICE_TOUCHPAD);
+  }
+
+  /**
+   * Handler for tapping the Pointing stick settings menu item.
+   */
+  private onPerDevicePointingStickTap_() {
+    Router.getInstance().navigateTo(routes.PER_DEVICE_POINTING_STICK);
   }
 
   /**

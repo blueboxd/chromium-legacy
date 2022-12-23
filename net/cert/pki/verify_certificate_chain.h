@@ -210,20 +210,21 @@ class NET_EXPORT VerifyCertificateChainDelegate {
 // SPKI, are checked during verification. This is the usual
 // interpretation for a "trust anchor".
 //
-// TRUSTED_ANCHOR_WITH_EXPIRATION:
+// enforce_anchor_expiry=true:
 //
 // The validity period of the root is checked, in addition to Subject and SPKI.
 //
-// TRUSTED_ANCHOR_WITH_CONSTRAINTS:
+// enforce_anchor_constraints=true:
 //
-// Only a subset of extensions and properties from the certificate are checked,
-// as described by RFC 5937.
+// Only a subset of extensions and properties from the certificate are checked.
+// In general, constraints encoded by extensions are only enforced if the
+// extension is present.
 //
 //  * Signature:             No
 //  * Validity (expiration): No
-//  * Key usage:             No
-//  * Extended key usage:    Yes (not part of RFC 5937)
-//  * Basic constraints:     Yes, but only the pathlen (CA=false is accepted)
+//  * Key usage:             Yes
+//  * Extended key usage:    Yes (required if required_key_purpose is STRICT)
+//  * Basic constraints:     Yes
 //  * Name constraints:      Yes
 //  * Certificate policies:  Not currently, TODO(crbug.com/634453)
 //  * Policy Mappings:       No

@@ -22,7 +22,6 @@ this.ShimlessRmaBrowserTest = class extends PolymerTest {
     return {
       enabled: [
         'ash::features::kShimlessRMAFlow',
-        'ash::features::kShimlessRMAEnableStandalone',
         'ash::features::kShimlessRMAOsUpdate',
       ],
     };
@@ -68,7 +67,7 @@ const tests = [
   ['RebootPageTest', 'reboot_page_test.js'],
   [
     'ReimagingCalibrationFailedPageTest',
-    'reimaging_calibration_failed_page_test.js', 'DISABLED_All'
+    'reimaging_calibration_failed_page_test.js'
   ],
   ['ReimagingCalibrationRunPageTest', 'reimaging_calibration_run_page_test.js'],
   [

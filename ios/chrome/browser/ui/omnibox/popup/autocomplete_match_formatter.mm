@@ -12,6 +12,7 @@
 #import "components/omnibox/browser/autocomplete_match.h"
 #import "components/omnibox/browser/autocomplete_provider.h"
 #import "components/omnibox/browser/suggestion_answer.h"
+#import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_ui_features.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_util.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_icon_formatter.h"
@@ -121,8 +122,7 @@ UIColor* DimColorIncognito() {
     // suggestions. For non-search suggestions (URLs), a highlight color is used
     // instead.
     UIColor* suggestionDetailTextColor = nil;
-    if (_match.type != AutocompleteMatchType::SEARCH_SUGGEST_ENTITY ||
-        IsOmniboxActionsVisualTreatment2()) {
+    if (_match.type != AutocompleteMatchType::SEARCH_SUGGEST_ENTITY) {
       suggestionDetailTextColor = SuggestionDetailTextColor();
     } else {
       suggestionDetailTextColor = SuggestionTextColor();

@@ -20,16 +20,18 @@
 
 namespace ash::audio_config {
 
-const uint8_t kTestOutputVolumePercent = 80u;
-const uint8_t kTestUnderMuteThreshholdVolumePercent = 0u;
-const uint8_t kTestOverMaxOutputVolumePercent = 105u;
-const int8_t kTestUnderMinOutputVolumePercent = -5;
+constexpr uint8_t kTestOutputVolumePercent = 80u;
+constexpr uint8_t kTestUnderMuteThreshholdVolumePercent = 0u;
+constexpr uint8_t kTestOverMaxOutputVolumePercent = 105u;
+constexpr int8_t kTestUnderMinOutputVolumePercent = -5;
 
-const int8_t kDefaultOutputVolumePercent =
+constexpr int8_t kDefaultOutputVolumePercent =
     AudioDevicesPrefHandler::kDefaultOutputVolumePercent;
 
-const uint64_t kInternalSpeakerId = 10001;
-const uint64_t kMicJackId = 10010;
+constexpr uint64_t kInternalSpeakerId = 10001;
+constexpr uint64_t kMicJackId = 10010;
+constexpr uint64_t kHDMIOutputId = 10020;
+constexpr uint64_t kUsbMicId = 10030;
 
 struct AudioNodeInfo {
   bool is_input;
@@ -40,17 +42,23 @@ struct AudioNodeInfo {
   const uint32_t audio_effect;
 };
 
-const uint32_t kInputMaxSupportedChannels = 1;
-const uint32_t kOutputMaxSupportedChannels = 2;
+constexpr uint32_t kInputMaxSupportedChannels = 1;
+constexpr uint32_t kOutputMaxSupportedChannels = 2;
 
-const int32_t kInputNumberOfVolumeSteps = 0;
-const int32_t kOutputNumberOfVolumeSteps = 25;
+constexpr int32_t kInputNumberOfVolumeSteps = 0;
+constexpr int32_t kOutputNumberOfVolumeSteps = 25;
 
-const AudioNodeInfo kInternalSpeaker[] = {
+constexpr AudioNodeInfo kInternalSpeaker[] = {
     {false, kInternalSpeakerId, "Fake Speaker", "INTERNAL_SPEAKER", "Speaker"}};
 
-const AudioNodeInfo kMicJack[] = {
+constexpr AudioNodeInfo kMicJack[] = {
     {true, kMicJackId, "Fake Mic Jack", "MIC", "Mic Jack"}};
+
+constexpr AudioNodeInfo kHDMIOutput[] = {
+    {false, kHDMIOutputId, "HDMI output", "HDMI", "HDMI output"}};
+
+constexpr AudioNodeInfo kUsbMic[] = {
+    {true, kUsbMicId, "Fake USB Mic", "USB", "USB Mic"}};
 
 class FakeAudioSystemPropertiesObserver
     : public mojom::AudioSystemPropertiesObserver {
@@ -106,6 +114,11 @@ class CrosAudioConfigImplTest : public testing::Test {
     return fake_observer;
   }
 
+  void SimulateSetActiveDevice(const uint64_t& device_id) {
+    remote_->SetActiveDevice(device_id);
+    base::RunLoop().RunUntilIdle();
+  }
+
   void SetOutputVolumePercent(uint8_t volume_percent) {
     remote_->SetOutputVolumePercent(volume_percent);
     base::RunLoop().RunUntilIdle();
@@ -126,6 +139,16 @@ class CrosAudioConfigImplTest : public testing::Test {
         audio_pref_handler_->SetAudioOutputAllowedValue(false);
         break;
     }
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void SetActiveInputNodes(const std::vector<uint64_t>& ids) {
+    cras_audio_handler_->SetActiveInputNodes(ids);
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void SetActiveOutputNodes(const std::vector<uint64_t>& ids) {
+    cras_audio_handler_->SetActiveOutputNodes(ids);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -297,13 +320,18 @@ TEST_F(CrosAudioConfigImplTest, GetOutputMuteStateMutedByPolicy) {
 
 TEST_F(CrosAudioConfigImplTest, GetOutputAudioDevices) {
   std::unique_ptr<FakeAudioSystemPropertiesObserver> fake_observer = Observe();
-  ASSERT_EQ(1u, fake_observer->num_properties_updated_calls_);
+  size_t expected_observer_calls = 1u;
+  ASSERT_EQ(expected_observer_calls,
+            fake_observer->num_properties_updated_calls_);
 
   // Test default audio node list, which includes one input and one output node.
   SetAudioNodes({kInternalSpeaker, kMicJack});
+  // Multiple calls to observer triggered by setting active nodes triggered by
+  // AudioObserver events volume, active output, and nodes changed.
+  expected_observer_calls += 4u;
 
-  // |fake_observer| is called two times because OutputNodeVolume changes.
-  ASSERT_EQ(3u, fake_observer->num_properties_updated_calls_);
+  ASSERT_EQ(expected_observer_calls,
+            fake_observer->num_properties_updated_calls_);
   ASSERT_TRUE(fake_observer->last_audio_system_properties_.has_value());
   EXPECT_EQ(1u, fake_observer->last_audio_system_properties_.value()
                     ->output_devices.size());
@@ -314,13 +342,21 @@ TEST_F(CrosAudioConfigImplTest, GetOutputAudioDevices) {
 
   // Test removing output device.
   RemoveAudioNode(kInternalSpeakerId);
-  ASSERT_EQ(4u, fake_observer->num_properties_updated_calls_);
+  // Multiple calls to observer triggered by setting active nodes triggered by
+  // AudioObserver events volume, active output, and nodes changed.
+  expected_observer_calls += 2u;
+  ASSERT_EQ(expected_observer_calls,
+            fake_observer->num_properties_updated_calls_);
   EXPECT_EQ(0u, fake_observer->last_audio_system_properties_.value()
                     ->output_devices.size());
 
-  // Test inserting output device.
+  // Test inserting inactive output device.
   InsertAudioNode(kInternalSpeaker);
-  ASSERT_EQ(6u, fake_observer->num_properties_updated_calls_);
+  // Multiple calls to observer triggered by setting active nodes triggered by
+  // AudioObserver events volume, active output, and nodes changed.
+  expected_observer_calls += 3u;
+  ASSERT_EQ(expected_observer_calls,
+            fake_observer->num_properties_updated_calls_);
   EXPECT_EQ(1u, fake_observer->last_audio_system_properties_.value()
                     ->output_devices.size());
   EXPECT_EQ(kInternalSpeakerId,
@@ -331,19 +367,29 @@ TEST_F(CrosAudioConfigImplTest, GetOutputAudioDevices) {
 
 TEST_F(CrosAudioConfigImplTest, GetInputAudioDevices) {
   std::unique_ptr<FakeAudioSystemPropertiesObserver> fake_observer = Observe();
-  ASSERT_EQ(1u, fake_observer->num_properties_updated_calls_);
+  size_t expected_observer_calls = 1u;
+  ASSERT_EQ(expected_observer_calls,
+            fake_observer->num_properties_updated_calls_);
 
-  // Test default audio node list, which includes one input and one output node.
+  // Consfigure initial node set for test.
   SetAudioNodes({kInternalSpeaker});
+  // Multiple calls to observer triggered by setting active nodes triggered by
+  // AudioObserver events volume, active output, and nodes changed.
+  expected_observer_calls += 4u;
 
-  ASSERT_EQ(3u, fake_observer->num_properties_updated_calls_);
+  ASSERT_EQ(expected_observer_calls,
+            fake_observer->num_properties_updated_calls_);
   ASSERT_TRUE(fake_observer->last_audio_system_properties_.has_value());
   EXPECT_EQ(0u, fake_observer->last_audio_system_properties_.value()
                     ->input_devices.size());
 
   InsertAudioNode(kMicJack);
+  // Multiple calls to observer triggered by setting active nodes triggered by
+  // AudioObserver events active input and nodes changed.
+  expected_observer_calls += 2;
 
-  ASSERT_EQ(4u, fake_observer->num_properties_updated_calls_);
+  ASSERT_EQ(expected_observer_calls,
+            fake_observer->num_properties_updated_calls_);
   ASSERT_TRUE(fake_observer->last_audio_system_properties_.has_value());
   EXPECT_EQ(1u, fake_observer->last_audio_system_properties_.value()
                     ->input_devices.size());
@@ -352,11 +398,124 @@ TEST_F(CrosAudioConfigImplTest, GetInputAudioDevices) {
                             ->id);
 
   RemoveAudioNode(kMicJackId);
+  // Multiple calls to observer triggered by setting active nodes triggered by
+  // AudioObserver events active input and nodes changed.
+  expected_observer_calls += 2;
 
-  ASSERT_EQ(5u, fake_observer->num_properties_updated_calls_);
+  ASSERT_EQ(expected_observer_calls,
+            fake_observer->num_properties_updated_calls_);
   ASSERT_TRUE(fake_observer->last_audio_system_properties_.has_value());
   EXPECT_EQ(0u, fake_observer->last_audio_system_properties_.value()
                     ->input_devices.size());
+}
+
+TEST_F(CrosAudioConfigImplTest, HandleExternalActiveOutputDeviceUpdate) {
+  std::unique_ptr<FakeAudioSystemPropertiesObserver> fake_observer = Observe();
+  // Setup test with two output and one input device. CrasAudioHandler will set
+  // the first device to active.
+  SetAudioNodes({kHDMIOutput, kInternalSpeaker, kMicJack});
+  SetActiveOutputNodes({kHDMIOutputId});
+
+  ASSERT_FALSE(fake_observer->last_audio_system_properties_.value()
+                   ->output_devices[0]
+                   ->is_active);
+  ASSERT_TRUE(fake_observer->last_audio_system_properties_.value()
+                  ->output_devices[1]
+                  ->is_active);
+  ASSERT_EQ(kHDMIOutputId, fake_observer->last_audio_system_properties_.value()
+                               ->output_devices[1]
+                               ->id);
+
+  SetActiveOutputNodes({kInternalSpeakerId});
+
+  ASSERT_TRUE(fake_observer->last_audio_system_properties_.value()
+                  ->output_devices[0]
+                  ->is_active);
+  ASSERT_EQ(kInternalSpeakerId,
+            fake_observer->last_audio_system_properties_.value()
+                ->output_devices[0]
+                ->id);
+  ASSERT_FALSE(fake_observer->last_audio_system_properties_.value()
+                   ->output_devices[1]
+                   ->is_active);
+}
+
+TEST_F(CrosAudioConfigImplTest, HandleExternalActiveInputDeviceUpdate) {
+  std::unique_ptr<FakeAudioSystemPropertiesObserver> fake_observer = Observe();
+  // Setup test with two input and one output device. CrasAudioHandler will set
+  // the first device to active.
+  SetAudioNodes({kInternalSpeaker, kMicJack, kUsbMic});
+  SetActiveInputNodes({kUsbMicId});
+
+  ASSERT_FALSE(fake_observer->last_audio_system_properties_.value()
+                   ->input_devices[0]
+                   ->is_active);
+  ASSERT_TRUE(fake_observer->last_audio_system_properties_.value()
+                  ->input_devices[1]
+                  ->is_active);
+  ASSERT_EQ(kUsbMicId, fake_observer->last_audio_system_properties_.value()
+                           ->input_devices[1]
+                           ->id);
+
+  SetActiveInputNodes({kMicJackId});
+
+  ASSERT_TRUE(fake_observer->last_audio_system_properties_.value()
+                  ->input_devices[0]
+                  ->is_active);
+  ASSERT_EQ(kMicJackId, fake_observer->last_audio_system_properties_.value()
+                            ->input_devices[0]
+                            ->id);
+  ASSERT_FALSE(fake_observer->last_audio_system_properties_.value()
+                   ->input_devices[1]
+                   ->is_active);
+}
+
+TEST_F(CrosAudioConfigImplTest, SetActiveOutputDevice) {
+  std::unique_ptr<FakeAudioSystemPropertiesObserver> fake_observer = Observe();
+
+  // Test default audio node list, with two output and one input node.
+  SetAudioNodes({kInternalSpeaker, kHDMIOutput, kMicJack});
+  // Set active output node for test.
+  SetActiveOutputNodes({kInternalSpeakerId});
+  ASSERT_TRUE(fake_observer->last_audio_system_properties_.value()
+                  ->output_devices[0]
+                  ->is_active);
+  ASSERT_FALSE(fake_observer->last_audio_system_properties_.value()
+                   ->output_devices[1]
+                   ->is_active);
+
+  SimulateSetActiveDevice(kHDMIOutputId);
+
+  ASSERT_FALSE(fake_observer->last_audio_system_properties_.value()
+                   ->output_devices[0]
+                   ->is_active);
+  ASSERT_TRUE(fake_observer->last_audio_system_properties_.value()
+                  ->output_devices[1]
+                  ->is_active);
+}
+
+TEST_F(CrosAudioConfigImplTest, SetActiveInputDevice) {
+  std::unique_ptr<FakeAudioSystemPropertiesObserver> fake_observer = Observe();
+
+  // Test default audio node list, with two input and one output node.
+  SetAudioNodes({kInternalSpeaker, kMicJack, kUsbMic});
+  // Set active output node for test.
+  SetActiveInputNodes({kMicJackId});
+  ASSERT_TRUE(fake_observer->last_audio_system_properties_.value()
+                  ->input_devices[0]
+                  ->is_active);
+  ASSERT_FALSE(fake_observer->last_audio_system_properties_.value()
+                   ->input_devices[1]
+                   ->is_active);
+
+  SimulateSetActiveDevice(kUsbMicId);
+
+  ASSERT_FALSE(fake_observer->last_audio_system_properties_.value()
+                   ->input_devices[0]
+                   ->is_active);
+  ASSERT_TRUE(fake_observer->last_audio_system_properties_.value()
+                  ->input_devices[1]
+                  ->is_active);
 }
 
 }  // namespace ash::audio_config

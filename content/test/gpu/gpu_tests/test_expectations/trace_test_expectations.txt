@@ -197,7 +197,6 @@ crbug.com/1151767 [ win10 amd-0x7340 ] VideoPathTraceTest_DirectComposition_Vide
 crbug.com/1151767 [ win10 amd-0x7340 ] VideoPathTraceTest_DirectComposition_Video_VP9_YUY2 [ Failure ]
 
 # Flakes on linux-rel.
-crbug.com/1216377 [ linux ] TraceTest_Video_Media_Stream_Incompatible_Stride [ RetryOnFailure ]
 
 # WebGL's accelerated canvas capture is currently only supported on Win, Mac, ChromeOS.
 crbug.com/1345777 [ android ] WebGLCanvasCaptureTraceTest_VideoStreamFromWebGLCanvas* [ Skip ]
@@ -236,9 +235,8 @@ crbug.com/1382796 [ android android-pixel-4 angle-opengles passthrough ] TraceTe
 crbug.com/1382796 [ android android-pixel-4 angle-opengles passthrough ] WebGLCanvasCaptureTraceTest_VideoStreamFromWebGLAlphaCanvas [ RetryOnFailure ]
 # finder:group-end
 
-# 2DCanvasWebGL flakily crashes, which then affects the following test.
-crbug.com/1383609 [ android android-sm-a235m ] TraceTest_2DCanvasWebGL [ Failure ]
-crbug.com/1383609 [ android android-sm-a235m ] TraceTest_BackgroundImage [ Failure ]
+crbug.com/1402261 [ win intel ] OverlayModeTraceTest_DirectComposition_Video_* [ RetryOnFailure ]
+crbug.com/1402261 [ win amd ] OverlayModeTraceTest_DirectComposition_Video_* [ RetryOnFailure ]
 
 #######################################################################
 # Automated Entries After This Point - Do Not Manually Add Below Here #

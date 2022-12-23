@@ -19,7 +19,6 @@ DIR_SRC_ROOT = os.path.abspath(
     os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir))
 REPO_ALIAS = 'fuchsia.com'
 SDK_ROOT = os.path.join(DIR_SRC_ROOT, 'third_party', 'fuchsia-sdk', 'sdk')
-
 SDK_TOOLS_DIR = os.path.join(SDK_ROOT, 'tools', get_host_arch())
 _FFX_TOOL = os.path.join(SDK_TOOLS_DIR, 'ffx')
 
@@ -174,6 +173,12 @@ def run_ffx_command(cmd: Iterable[str],
                               env=env,
                               **kwargs)
     except subprocess.CalledProcessError as cpe:
+        logging.error(
+            '%s failed with returncode %s.',
+            os.path.relpath(_FFX_TOOL) + subprocess.list2cmdline(ffx_cmd[1:]),
+            cpe.returncode)
+        if cpe.output:
+            logging.error('stdout of the command: %s', cpe.output)
         if suppress_repair or (cpe.output
                                and not _run_repair_command(cpe.output)):
             raise

@@ -37,6 +37,7 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="1175572348579024023">Cuộn</translation>
 <translation id="1178581264944972037">Tạm dừng</translation>
 <translation id="1181037720776840403">Xóa</translation>
+<translation id="1182225749592316782">Điều này cho phép truy cập máy ảnh và micrô đối với tất cả ứng dụng và trang web có quyền truy cập máy ảnh và micrô</translation>
 <translation id="1183863904939664422">Không quan tâm đến nội dung đề xuất này</translation>
 <translation id="118437560755358292">Hãy nhập mật khẩu hoặc mã PIN để tăng cường bảo mật</translation>
 <translation id="118532027333893379">Nhấn vào vị trí bất kỳ để chụp toàn màn hình</translation>
@@ -120,6 +121,7 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="15373452373711364">Con trỏ chuột lớn</translation>
 <translation id="1546492247443594934">Không gian làm việc 2</translation>
 <translation id="1546930421365146760">Hãy yêu cầu quản trị viên thiết lập thiết bị này trong Bảng điều khiển dành cho quản trị viên của Google</translation>
+<translation id="1550406609415860283">Có sẵn thiết bị</translation>
 <translation id="1550523713251050646">Nhấp để xem các tùy chọn khác</translation>
 <translation id="1555130319947370107">Xanh lam</translation>
 <translation id="1589090746204042747">Truy cập vào tất cả hoạt động của bạn trong phiên này</translation>
@@ -174,7 +176,6 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
         <ph name="LOCALE" /></translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1830308660060964064">Đã bỏ ghim <ph name="ITEM_TITLE" /></translation>
-<translation id="1836215606488044471">Trợ lý (đang tải...)</translation>
 <translation id="1838895407229022812">Chế độ Ánh sáng đêm đang tắt.</translation>
 <translation id="1854180393107901205">Dừng truyền</translation>
 <translation id="1862380676329487333">Cập nhật và đăng xuất</translation>
@@ -262,7 +263,6 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="2359808026110333948">Tiếp tục</translation>
 <translation id="2367186422933365202">Không thể đăng nhập vào Chromebook của bạn</translation>
 <translation id="2369165858548251131">"Xin chào" bằng tiếng Trung</translation>
-<translation id="2375445874393996153">Tính năng Tìm kiếm nội dung trên màn hình của tôi thông qua Trợ lý Google không còn được hỗ trợ nữa.</translation>
 <translation id="2390318262976603432">Cài đặt ngôn ngữ</translation>
 <translation id="240006516586367791">Điều khiển nội dung nghe nhìn</translation>
 <translation id="2402411679569069051">Hãy dùng vân tay hoặc mở khóa điện thoại của bạn để mở khóa Chromebook</translation>
@@ -459,9 +459,12 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="3513798432020909783">Người quản lý tài khoản: <ph name="MANAGER_EMAIL" /></translation>
 <translation id="352245152354538528">{0,plural, =1{Cập nhật thiết bị trong vòng 1 phút}other{Cập nhật thiết bị trong vòng # phút}}</translation>
 <translation id="353086728817903341">Đã kết nối với <ph name="NUM_DEVICES" /> thiết bị</translation>
+<translation id="3533126039236445965">Ứng dụng trong kệ</translation>
 <translation id="3542066395059568317">Bạn sẽ thấy các đề xuất để có thể tiếp tục từ nơi mình chưa xong. Bạn có thể nhấp chuột phải để xoá đề xuất.</translation>
 <translation id="3552189655002856821">Wi-Fi đang tắt</translation>
 <translation id="3554637740840164787">Đã ghim <ph name="ITEM_TITLE" /></translation>
+<translation id="3558768885091059911">Bật quyền truy cập vào máy ảnh và micrô?</translation>
+<translation id="3560174576767922131">Quay video</translation>
 <translation id="3563775809269155755">Bật điểm phát sóng</translation>
 <translation id="3566240529365775567">Vừa mới mở</translation>
 <translation id="3571734092741541777">Thiết lập</translation>
@@ -606,7 +609,6 @@ Hãy sạc thiết bị.</translation>
 <translation id="4324840740119394760">Điều này cho phép sử dụng máy ảnh đối với <ph name="APP_NAME" /> và tất cả ứng dụng cũng như trang web có quyền sử dụng máy ảnh</translation>
 <translation id="4333628967105022692">Trình duyệt Lacros chưa hỗ trợ chế độ đăng nhập nhiều người dùng.</translation>
 <translation id="4338109981321384717">Kính lúp</translation>
-<translation id="4351433414020964307">Trợ lý đang tải...</translation>
 <translation id="4371348193907997655">Cài đặt phương thức truyền</translation>
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />, cường độ tín hiệu: <ph name="SIGNAL_STRENGTH" />%</translation>
 <translation id="4378551569595875038">Đang kết nối…</translation>
@@ -654,6 +656,7 @@ Hãy sạc thiết bị.</translation>
 <translation id="4577274620589681794">Hết giờ · <ph name="LABEL" /></translation>
 <translation id="4577990005084629481">Hiển thị bản xem trước</translation>
 <translation id="4578906031062871102">Đã mở trình đơn Cài đặt</translation>
+<translation id="458210817642223147">Ghi GIF</translation>
 <translation id="4585337515783392668">Dừng truyền trên bộ thu không xác định</translation>
 <translation id="4596144739579517758">Giao diện tối đang tắt</translation>
 <translation id="4611292653554630842">Đăng nhập</translation>
@@ -733,6 +736,7 @@ Hãy sạc thiết bị.</translation>
         <ph name="NUM_OTHER_NOTIFICATION" /></translation>
 <translation id="4987738733603015246">Không gian làm việc 16</translation>
 <translation id="5003993274120026347">Câu tiếp theo</translation>
+<translation id="5004607513195820459">Mạng được quản lý</translation>
 <translation id="5016558321564993266">Bật/tắt tính năng đánh dấu. <ph name="STATE_TEXT" /></translation>
 <translation id="5029356738310729434">Quyền truy cập vào micrô trên thiết bị đang bật</translation>
 <translation id="5030687792513154421">Đã hết thời gian</translation>
@@ -869,6 +873,7 @@ Hãy sạc thiết bị.</translation>
 <translation id="5763928712329149804">Đã tắt chế độ Shelf Party.</translation>
 <translation id="576453121877257266">Chế độ Ánh sáng đêm đang bật.</translation>
 <translation id="5769373120130404283">Màn hình bảo vệ quyền riêng tư</translation>
+<translation id="5773950591113557721">Điều này cho phép truy cập máy ảnh và micrô đối với <ph name="APP_NAME" /> và tất cả ứng dụng cũng như trang web có quyền truy cập máy ảnh và micrô</translation>
 <translation id="5777841717266010279">Bạn muốn dừng chia sẻ màn hình?</translation>
 <translation id="5779721926447984944">Tệp đã ghim</translation>
 <translation id="5788127256798019331">Tệp Play</translation>
@@ -1056,6 +1061,7 @@ Mới cài đặt</translation>
 <translation id="6787595647772650851">Khôi phục phiên gần đây nhất</translation>
 <translation id="6790428901817661496">Phát</translation>
 <translation id="6801878137098616817">Mới chỉnh sửa gần đây</translation>
+<translation id="6802687695197837794">Điều này cho phép truy cập máy ảnh và micrô đối với <ph name="APP1_NAME" />, <ph name="APP2_NAME" /> và tất cả ứng dụng cũng như trang web có quyền truy cập máy ảnh và micrô</translation>
 <translation id="6803622936009808957">Không thể phản chiếu màn hình do không tìm thấy độ phân giải được hỗ trợ. Thay vào đó, đã chuyển sang chế độ màn hình mở rộng.</translation>
 <translation id="6812232930908427253">Không thể lưu không gian làm việc. Có quá nhiều cửa sổ hoặc thẻ.</translation>
 <translation id="6818242057446442178">Lùi một từ</translation>
@@ -1078,6 +1084,7 @@ Mới cài đặt</translation>
 <translation id="6901883536534621389">Thử một số cử chỉ để thao tác</translation>
 <translation id="6919251195245069855">Không nhận dạng được thẻ thông minh của bạn. Vui lòng thử lại.</translation>
 <translation id="6931576957638141829">Lưu vào</translation>
+<translation id="6942518653766415536">Trình đơn định dạng bản ghi</translation>
 <translation id="6945221475159498467">Chọn</translation>
 <translation id="6960565108681981554">Chưa kích hoạt. Hãy liên hệ với nhà mạng của bạn.</translation>
 <translation id="6961121602502368900">Bạn không dùng được tính năng Tắt tiếng điện thoại trên hồ sơ công việc</translation>
@@ -1087,6 +1094,7 @@ Mới cài đặt</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6972754398087986839">Bắt đầu</translation>
 <translation id="6979158407327259162">Google Drive</translation>
+<translation id="6981291220124935078">Bật quyền truy cập</translation>
 <translation id="6981982820502123353">Hỗ trợ tiếp cận</translation>
 <translation id="698231206551913481">Tất cả các tệp và dữ liệu cục bộ liên quan tới người dùng này sẽ bị xóa vĩnh viễn sau khi người dùng này bị xóa.</translation>
 <translation id="7005239792648594238">Mở một ứng dụng để bắt đầu</translation>
@@ -1227,7 +1235,6 @@ Mới cài đặt</translation>
 <translation id="7768784765476638775">Chọn để nói</translation>
 <translation id="7780094051999721182">lối tắt</translation>
 <translation id="7780159184141939021">Xoay màn hình</translation>
-<translation id="7796353162336583443">Hãy nhấn vào nút bút cảm ứng trên giá để ghi chú, chụp ảnh màn hình, sử dụng Trợ lý Google, chế độ con trỏ laser hoặc kính lúp.</translation>
 <translation id="7796735576426975947">Đã ẩn thông báo mới</translation>
 <translation id="7798302898096527229">Nhấn phím Search hoặc Shift để hủy.</translation>
 <translation id="7807067443225230855">Tìm kiếm và trợ lý</translation>

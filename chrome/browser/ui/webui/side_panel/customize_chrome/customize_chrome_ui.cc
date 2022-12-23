@@ -26,29 +26,45 @@ CustomizeChromeUI::CustomizeChromeUI(content::WebUI* web_ui)
       profile_(Profile::FromWebUI(web_ui)),
       web_contents_(web_ui->GetWebContents()),
       page_factory_receiver_(this) {
-  content::WebUIDataSource* source = content::WebUIDataSource::Create(
-      chrome::kChromeUICustomizeChromeSidePanelHost);
+  content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
+      profile_, chrome::kChromeUICustomizeChromeSidePanelHost);
 
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      // Side panel strings.
+      {"backButton", IDS_ACCNAME_BACK},
+      {"title", IDS_SIDE_PANEL_CUSTOMIZE_CHROME_TITLE},
+      // Header strings.
+      {"appearanceHeader", IDS_NTP_CUSTOMIZE_APPEARANCE_LABEL},
+      {"cardsHeader", IDS_NTP_CUSTOMIZE_MENU_MODULES_LABEL},
+      {"categoriesHeader", IDS_NTP_CUSTOMIZE_THEMES_HEADER},
+      {"shortcutsHeader", IDS_NTP_CUSTOMIZE_MENU_SHORTCUTS_LABEL},
+      // Appearance strings.
+      {"changeTheme", IDS_NTP_CUSTOMIZE_CHROME_CHANGE_THEME_LABEL},
+      {"chromeColors", IDS_NTP_CUSTOMIZE_CHROME_COLORS_LABEL},
+      {"chromeWebStore", IDS_EXTENSION_WEB_STORE_TITLE},
       {"classicChrome", IDS_NTP_CUSTOMIZE_NO_BACKGROUND_LABEL},
       {"colorsContainerLabel", IDS_NTP_THEMES_CONTAINER_LABEL},
       {"colorPickerLabel", IDS_NTP_CUSTOMIZE_COLOR_PICKER_LABEL},
-      {"customizeThisPage", IDS_NTP_CUSTOM_BG_CUSTOMIZE_NTP_LABEL},
-      {"appearanceHeader", IDS_NTP_CUSTOMIZE_APPEARANCE_LABEL},
       {"defaultColorName", IDS_NTP_CUSTOMIZE_DEFAULT_LABEL},
+      {"mainColorName", IDS_NTP_CUSTOMIZE_MAIN_COLOR_LABEL},
+      {"managedColorsTitle", IDS_NTP_THEME_MANAGED_DIALOG_TITLE},
+      {"managedColorsBody", IDS_NTP_THEME_MANAGED_DIALOG_BODY},
+      {"uploadImage", IDS_NTP_CUSTOM_BG_UPLOAD_AN_IMAGE},
+      {"uploadedImage", IDS_NTP_CUSTOMIZE_UPLOADED_IMAGE_LABEL},
+      {"resetToClassicChrome",
+       IDS_NTP_CUSTOMIZE_CHROME_RESET_TO_CLASSIC_CHROME_LABEL},
+      // Shortcut strings.
       {"mostVisited", IDS_NTP_CUSTOMIZE_MOST_VISITED_LABEL},
       {"myShortcuts", IDS_NTP_CUSTOMIZE_MY_SHORTCUTS_LABEL},
       {"shortcutsCurated", IDS_NTP_CUSTOMIZE_MY_SHORTCUTS_DESC},
-      {"shortcutsHeader", IDS_NTP_CUSTOMIZE_MENU_SHORTCUTS_LABEL},
       {"shortcutsSuggested", IDS_NTP_CUSTOMIZE_MOST_VISITED_DESC},
       {"showShortcutsToggle", IDS_NTP_CUSTOMIZE_SHOW_SHORTCUTS_LABEL},
-      {"title", IDS_SIDE_PANEL_CUSTOMIZE_CHROME_TITLE},
-      {"uploadedImage", IDS_NTP_CUSTOMIZE_UPLOADED_IMAGE_LABEL},
-      {"backButton", IDS_ACCNAME_BACK},
-      {"categoriesHeader", IDS_NTP_CUSTOMIZE_THEMES_HEADER},
-      {"uploadImage", IDS_NTP_CUSTOM_BG_UPLOAD_AN_IMAGE},
-      {"chromeWebStore", IDS_EXTENSION_WEB_STORE_TITLE},
-      {"chromeColors", IDS_NTP_CUSTOMIZE_CHROME_COLORS_LABEL},
+      // Card strings.
+      {"showCardsToggleTitle", IDS_NTP_CUSTOMIZE_SHOW_CARDS_LABEL},
+      // Required by <managed-dialog>.
+      {"controlledSettingPolicy", IDS_CONTROLLED_SETTING_POLICY},
+      {"close", IDS_NEW_TAB_VOICE_CLOSE_TOOLTIP},
+      {"ok", IDS_OK},
   };
   source->AddLocalizedStrings(kLocalizedStrings);
 
@@ -57,8 +73,6 @@ CustomizeChromeUI::CustomizeChromeUI(content::WebUI* web_ui)
       base::make_span(kSidePanelCustomizeChromeResources,
                       kSidePanelCustomizeChromeResourcesSize),
       IDR_SIDE_PANEL_CUSTOMIZE_CHROME_CUSTOMIZE_CHROME_HTML);
-
-  content::WebUIDataSource::Add(profile_, source);
 }
 
 CustomizeChromeUI::~CustomizeChromeUI() = default;

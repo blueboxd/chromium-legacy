@@ -41,7 +41,7 @@ namespace paint_preview {
 
 namespace {
 
-sk_sp<cc::PaintRecord> AddLink(const std::string& link, const SkRect& rect) {
+cc::PaintRecord AddLink(const std::string& link, const SkRect& rect) {
   cc::PaintRecorder link_recorder;
   cc::PaintCanvas* link_canvas = link_recorder.beginRecording();
   link_canvas->Annotate(cc::PaintCanvas::AnnotationType::URL, rect,
@@ -101,7 +101,7 @@ TEST(PaintPreviewRecorderUtilsTest, TestParseLinks) {
   outer_canvas->restore();
 
   outer_canvas->save();
-  outer_canvas->concat(SkMatrix::Translate(40, 50));
+  outer_canvas->translate(40, 50);
   outer_canvas->scale(2, 4);
   std::string link_2 = "http://www.bar.com/";
   SkRect rect_2 = SkRect::MakeXYWH(1, 2, 3, 4);
@@ -118,8 +118,7 @@ TEST(PaintPreviewRecorderUtilsTest, TestParseLinks) {
   outer_canvas->restore();
 
   outer_canvas->save();
-  outer_canvas->translate(20, 50);
-  outer_canvas->setMatrix(SkMatrix::Translate(10, 30));
+  outer_canvas->setMatrix(SkM44::Translate(10, 30));
   std::string link_4 = "http://www.example.com/";
   SkRect rect_4 = SkRect::MakeXYWH(10, 30, 40, 50);
   outer_canvas->drawPicture(AddLink(link_4, rect_4));

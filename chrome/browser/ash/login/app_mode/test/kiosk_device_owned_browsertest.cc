@@ -12,6 +12,7 @@
 #include "ash/public/cpp/shelf_test_api.h"
 #include "base/barrier_closure.h"
 #include "base/test/bind.h"
+#include "base/test/gtest_tags.h"
 #include "base/test/test_future.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ash/accessibility/speech_monitor.h"
@@ -36,7 +37,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/ash/login/error_screen_handler.h"
-#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom-forward.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chromeos/ash/components/network/portal_detector/network_portal_detector.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
@@ -152,6 +153,9 @@ class KioskDeviceOwnedTest : public KioskBaseTest {
 };
 
 IN_PROC_BROWSER_TEST_F(KioskDeviceOwnedTest, InstallAndLaunchApp) {
+  base::AddFeatureIdTagToTestResult(
+      "screenplay-5e6b8c54-2eab-4ac0-a484-b9738466bb9b");
+
   StartAppLaunchFromLoginScreen(
       NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
   WaitForAppLaunchSuccess();

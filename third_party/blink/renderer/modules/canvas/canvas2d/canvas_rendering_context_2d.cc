@@ -189,10 +189,7 @@ bool CanvasRenderingContext2D::IsOriginTopLeft() const {
 }
 
 bool CanvasRenderingContext2D::IsComposited() const {
-  if (Canvas2DLayerBridge* layer_bridge = canvas()->GetCanvas2DLayerBridge()) {
-    return layer_bridge->IsComposited();
-  }
-  return false;
+  return IsAccelerated();
 }
 
 void CanvasRenderingContext2D::Stop() {
@@ -960,14 +957,14 @@ void CanvasRenderingContext2D::drawFormattedText(
     setFont(font());
 
   gfx::RectF bounds;
-  sk_sp<PaintRecord> recording = formatted_text->PaintFormattedText(
+  PaintRecord recording = formatted_text->PaintFormattedText(
       canvas()->GetDocument(), GetState().GetFontDescription(), x, y, bounds,
       exception_state);
-  if (recording) {
+  if (recording.size()) {
     Draw<OverdrawOp::kNone>(
-        [recording](cc::PaintCanvas* c,
-                    const cc::PaintFlags* flags)  // draw lambda
-        { c->drawPicture(recording); },
+        [&recording](cc::PaintCanvas* c,
+                     const cc::PaintFlags* flags)  // draw lambda
+        { c->drawPicture(std::move(recording)); },
         [](const SkIRect& rect) { return false; }, gfx::RectFToSkRect(bounds),
         CanvasRenderingContext2DState::PaintType::kFillPaintType,
         CanvasRenderingContext2DState::kNoImage,

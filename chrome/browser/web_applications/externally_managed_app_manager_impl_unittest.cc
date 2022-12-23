@@ -281,7 +281,6 @@ class TestExternallyManagedAppManager : public ExternallyManagedAppManagerImpl {
         : ExternallyManagedAppInstallTask(
               profile,
               test_url_loader,
-              externally_managed_app_manager_impl->registrar(),
               externally_managed_app_manager_impl->ui_manager(),
               externally_managed_app_manager_impl->finalizer(),
               externally_managed_app_manager_impl->command_scheduler(),
@@ -312,11 +311,11 @@ class TestExternallyManagedAppManager : public ExternallyManagedAppManagerImpl {
           auto web_app =
               test::CreateWebApp(install_url, WebAppManagement::kPolicy);
           {
-            ScopedRegistryUpdate update(&provider().sync_bridge());
+            ScopedRegistryUpdate update(&provider().sync_bridge_unsafe());
             update->CreateApp(std::move(web_app));
           }
           test::AddInstallUrlAndPlaceholderData(
-              profile_->GetPrefs(), &provider().sync_bridge(), *app_id,
+              profile_->GetPrefs(), &provider().sync_bridge_unsafe(), *app_id,
               install_url, install_source, result.did_install_placeholder);
         }
       }
@@ -581,7 +580,7 @@ class ExternallyManagedAppManagerImplTest
 
   WebAppRegistrar& registrar() { return provider().registrar_unsafe(); }
 
-  WebAppSyncBridge& sync_bridge() { return provider().sync_bridge(); }
+  WebAppSyncBridge& sync_bridge() { return provider().sync_bridge_unsafe(); }
 
   FakeWebAppProvider& provider() { return *provider_; }
 

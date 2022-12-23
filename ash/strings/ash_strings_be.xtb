@@ -37,6 +37,7 @@
 <translation id="1175572348579024023">Прагартаць</translation>
 <translation id="1178581264944972037">Прыпыніць</translation>
 <translation id="1181037720776840403">Выдаліць</translation>
+<translation id="1182225749592316782">Доступ атрымаюць усе праграмы і вэб-сайты, якія маюць дазволы выкарыстоўваць мікрафон і камеру</translation>
 <translation id="1183863904939664422">Мне не цікавая гэта прапанова</translation>
 <translation id="118437560755358292">Для дадатковай бяспекі ўвядзіце пароль або PIN-код</translation>
 <translation id="118532027333893379">Каб зняць увесь экран, націсніце ў любым яго месцы</translation>
@@ -120,6 +121,7 @@
 <translation id="15373452373711364">Вялікі курсор мышы</translation>
 <translation id="1546492247443594934">Стол 2</translation>
 <translation id="1546930421365146760">Папрасіце адміністратара наладзіць гэту прыладу ў кансолі адміністратара Google</translation>
+<translation id="1550406609415860283">Даступныя прылады</translation>
 <translation id="1550523713251050646">Націсніце, каб убачыць дадатковыя параметры</translation>
 <translation id="1555130319947370107">Сіні</translation>
 <translation id="1589090746204042747">Атрымліваць доступ да ўсіх вашых дзеянняў у гэтым сеансе</translation>
@@ -127,6 +129,7 @@
 <translation id="1611993646327628135">Уключана</translation>
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1632985212731562677">Доступ праз пераключальнікі можна выключыць у раздзеле "Налады &gt; Спецыяльныя магчымасці".</translation>
+<translation id="163517899691012366">Калі ўключаны рэжым "Не турбаваць", апавяшчэнні не паказваюцца</translation>
 <translation id="1637505162081889933">Прылад: <ph name="NUM_DEVICES" /></translation>
 <translation id="1639239467298939599">Ідзе загрузка</translation>
 <translation id="1654477262762802994">Пачаць галасавы запыт</translation>
@@ -173,7 +176,6 @@
         <ph name="LOCALE" /></translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1830308660060964064">Элемент "<ph name="ITEM_TITLE" />" адмацаваны</translation>
-<translation id="1836215606488044471">Памочнік (загружаецца...)</translation>
 <translation id="1838895407229022812">Начная падсветка выключана.</translation>
 <translation id="1854180393107901205">Спыніць трансляцыю</translation>
 <translation id="1862380676329487333">Абнавіць і выйсці</translation>
@@ -261,7 +263,6 @@
 <translation id="2359808026110333948">Працягнуць</translation>
 <translation id="2367186422933365202">Не ўдаецца выканаць уваход на прыладзе Chromebook</translation>
 <translation id="2369165858548251131">"Вітаю" па-кітайску</translation>
-<translation id="2375445874393996153">Пошук размешчаных на экране аб'ектаў з дапамогай Памочніка Google больш не падтрымліваецца.</translation>
 <translation id="2390318262976603432">Рэгіянальныя налады</translation>
 <translation id="240006516586367791">Элементы кіравання мультымедыя</translation>
 <translation id="2402411679569069051">Каб разблакіраваць Chromebook, выкарыстайце функцыю разблакіравання адбіткам пальца або разблакіруйце тэлефон</translation>
@@ -375,6 +376,7 @@
 <translation id="3047761520276763270">Паспрабуйце сказаць:</translation>
 <translation id="3051189971848907985">Ідзе перайменаванне профілю. Пачакайце некалькі хвілін.</translation>
 <translation id="3055162170959710888">Сёння гэтай прыладай карысталіся <ph name="USED_TIME" /></translation>
+<translation id="3062298103034426069">Не падтрымліваецца</translation>
 <translation id="3068711042108640621">Паліца злева</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">Разгарнуць меню</translation>
@@ -409,6 +411,7 @@
 <translation id="3249513730522716925">Акно "<ph name="WINDOW_TITLE" />" было перанесена са Стала <ph name="ACTIVE_DESK" /> на Стол <ph name="TARGET_DESK" /></translation>
 <translation id="3252573918265662711">Наладка</translation>
 <translation id="3255483164551725916">Што ты ўмееш?</translation>
+<translation id="3260969790895726815">Запісы голасу апрацоўваюцца на прыладзе і нікуды не перадаюцца. Галасавы ўвод працуе па-за сеткай. Некаторыя галасавыя каманды могуць не працаваць.</translation>
 <translation id="3269597722229482060">Націснуць правай кнопкай мышы</translation>
 <translation id="3289544412142055976">Праграмы Linux цяпер не падтрымліваюцца</translation>
 <translation id="3289674678944039601">Ідзе зарадка праз адаптар</translation>
@@ -456,9 +459,12 @@
 <translation id="3513798432020909783">Уліковы запіс пад кіраваннем <ph name="MANAGER_EMAIL" /></translation>
 <translation id="352245152354538528">{0,plural, =1{Абнавіце прыладу на працягу 1 хвіліны}one{Абнавіце прыладу на працягу # хвіліны}few{Абнавіце прыладу на працягу # хвілін}many{Абнавіце прыладу на працягу # хвілін}other{Абнавіце прыладу на працягу # хвілін}}</translation>
 <translation id="353086728817903341">Устаноўлена падключэнне да некалькіх (<ph name="NUM_DEVICES" />) прылад</translation>
+<translation id="3533126039236445965">Праграмы на панэлі доступу</translation>
 <translation id="3542066395059568317">Выкарыстоўвайце рэкамендацыі, каб працягваць работу з таго месца, на якім вы спыніліся. Каб выдаліць рэкамендацыю, націсніце на яе правай кнопкай мышы.</translation>
 <translation id="3552189655002856821">Wi-Fi выключаны</translation>
 <translation id="3554637740840164787">Элемент "<ph name="ITEM_TITLE" />" замацаваны</translation>
+<translation id="3558768885091059911">Даць доступ да мікрафона і камеры?</translation>
+<translation id="3560174576767922131">Запісаць відэа</translation>
 <translation id="3563775809269155755">Уключыць хот-спот</translation>
 <translation id="3566240529365775567">Адкрывалася толькі што</translation>
 <translation id="3571734092741541777">Наладзіць</translation>
@@ -603,7 +609,6 @@
 <translation id="4324840740119394760">Доступ да камеры атрымае праграма "<ph name="APP_NAME" />" і ўсе праграмы і вэб-сайты, якія маюць дазвол выкарыстоўваць камеру</translation>
 <translation id="4333628967105022692">Lacros не падтрымліваецца, калі ўваход ажыццёўлены з некалькіх уліковых запісаў адразу.</translation>
 <translation id="4338109981321384717">Павелічальнае шкло</translation>
-<translation id="4351433414020964307">Ідзе загрузка Памочніка...</translation>
 <translation id="4371348193907997655">Налады трансляцыі</translation>
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />, магутнасць сігналу – <ph name="SIGNAL_STRENGTH" />%</translation>
 <translation id="4378551569595875038">Падключэнне...</translation>
@@ -651,6 +656,7 @@
 <translation id="4577274620589681794">Час выйшаў · <ph name="LABEL" /></translation>
 <translation id="4577990005084629481">Уключыць перадпрагляд</translation>
 <translation id="4578906031062871102">Меню налад адкрыта</translation>
+<translation id="458210817642223147">Запісаць GIF</translation>
 <translation id="4585337515783392668">Спыніць трансляцыю невядомаму атрымальніку</translation>
 <translation id="4596144739579517758">Цёмная тэма выключана</translation>
 <translation id="4611292653554630842">Увайсці</translation>
@@ -730,6 +736,7 @@
         <ph name="NUM_OTHER_NOTIFICATION" /></translation>
 <translation id="4987738733603015246">Працоўны стол 16</translation>
 <translation id="5003993274120026347">Наступны сказ</translation>
+<translation id="5004607513195820459">Сетка знаходзіцца пад кіраваннем</translation>
 <translation id="5016558321564993266">Уключыць або выключыць маркер. <ph name="STATE_TEXT" /></translation>
 <translation id="5029356738310729434">Доступ да мікрафона прылады дазволены</translation>
 <translation id="5030687792513154421">Час выйшаў</translation>
@@ -789,9 +796,11 @@
 <translation id="5331975486040154427">Прылада USB-C (задні порт злева)</translation>
 <translation id="533282197239610265">Паказаць прылады для трансляцыі</translation>
 <translation id="5344128444027639014"><ph name="BATTERY_PERCENTAGE" />% (правы)</translation>
+<translation id="5351427059191534258">Забараніць доступ да камеры?</translation>
 <translation id="5352250171825660495">Цёмная тэма ўключана</translation>
 <translation id="5356963482258194581">Вы можаце пераключацца паміж цёмнай і светлай тэмамі. Націсніце правай кнопкай мышы на працоўны стол і выберыце "Шпалеры і стыль".</translation>
 <translation id="536019650977002321">Адміністратар не дазваляе запісваць аўдыя. Па дадатковую інфармацыю звяртайцеся да яго.</translation>
+<translation id="5361524080961918551"><ph name="LANGUAGE" />: файлы для распазнавання маўлення часткова спампаваны</translation>
 <translation id="5363163447017455357"><ph name="DELIMITER" /> Перайсці на гэту ўкладку</translation>
 <translation id="5377367976106153749">Дазволіць доступ да камеры?</translation>
 <translation id="5379115545237091094">Занадта шмат спроб</translation>
@@ -864,6 +873,7 @@
 <translation id="5763928712329149804">Рэжым Shelf Party выключаны.</translation>
 <translation id="576453121877257266">Начная падсветка ўключана.</translation>
 <translation id="5769373120130404283">Экран прыватнасці</translation>
+<translation id="5773950591113557721">Доступ атрымае праграма "<ph name="APP_NAME" />" і ўсе праграмы і вэб-сайты, якія маюць дазволы выкарыстоўваць мікрафон і камеру</translation>
 <translation id="5777841717266010279">Спыніць абагульванне экрана?</translation>
 <translation id="5779721926447984944">Замацаваныя файлы</translation>
 <translation id="5788127256798019331">Файлы Play</translation>
@@ -901,6 +911,7 @@
 <translation id="5980301590375426705">Выйсці з гасцявога рэжыму</translation>
 <translation id="598407983968395253">Выкарыстаць шаблон</translation>
 <translation id="598882571027504733">Для абнаўлення падключыце клавіятуру і перазапусціце Chromebook.</translation>
+<translation id="6002179289567220515">Вы выключылі адну камеру фізічным пераключальнікам. Таксама можна выключыць доступ для ўсіх камер.</translation>
 <translation id="6012623610530968780">Старонка <ph name="SELECTED_PAGE" /> з <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6018164090099858612">Выхад з рэжыму адлюстравання</translation>
 <translation id="602001110135236999">Прагартаць улева</translation>
@@ -941,9 +952,11 @@
 <translation id="619279033188484792">Праглядайце на прыладзе <ph name="DEVICE_TYPE" /> нядаўнія апавяшчэнні з тэлефона, а таксама медыяфайлы і фота</translation>
 <translation id="619335566042889110">Зарадзіць акумулятар поўнасцю</translation>
 <translation id="6193431488227440296">Для распрацоўшчыкаў</translation>
+<translation id="6200515304866777730">Не падтрымліваецца праграмай</translation>
 <translation id="6210042900243040400">Можна падключыцца да прылады "<ph name="NAME" />", якая была захавана раней ва ўліковым запісе <ph name="EMAIL" /></translation>
 <translation id="6220928844947387476">Цяпер можна адначасова весці запіс экрана і відарыса з камеры</translation>
 <translation id="622484624075952240">Уніз</translation>
+<translation id="623116199192908855">Трансляцыя экрана з прылады Chromebook</translation>
 <translation id="6231419273573514727">Прадукцыйнасць перыферыйных прылад можа быць абмежаванай</translation>
 <translation id="6232891689835436217">Зараз <ph name="APP_NAME" /> выкарыстоўвае камеру і мікрафон</translation>
 <translation id="6237231532760393653">1X</translation>
@@ -985,8 +998,10 @@
 <translation id="6491071886865974820"><ph name="MANAGER" /> патрабуе, каб вы абнавілі прыладу <ph name="DEVICE_TYPE" /> да заканчэння тэрміну</translation>
 <translation id="649452524636452238">PIN-код разумнай карткі</translation>
 <translation id="6495400115277918834">Рэжым "Відарыс у відарысе" запушчаны, для пераходу выкарыстайце спалучэнне клавіш Alt + Shift + V</translation>
+<translation id="6497418457565568043">Рэжым "Не турбаваць" уключаны</translation>
 <translation id="6500896621837555595">Абнавіць</translation>
 <translation id="6501401484702599040">Ідзе трансляцыя экрана на <ph name="RECEIVER_NAME" /></translation>
+<translation id="6508923215158854599">Chromebook і прыладу Chromecast трэба падключыць да адной сеткі Wi-Fi.</translation>
 <translation id="6515727200518652613">Сувязь з камерай страчана. Ажыццяўляецца спроба паўторнага падключэння.</translation>
 <translation id="6520517963145875092">Выберыце акно для здымкі</translation>
 <translation id="652139407789908527">Падчас гэтага абнаўлення экран будзе выключаным даўжэй, чым звычайна (да хвіліны). Не націскайце кнопку сілкавання, пакуль ідзе абнаўленне.</translation>
@@ -1046,6 +1061,7 @@
 <translation id="6787595647772650851">Аднавіць апошні сеанс</translation>
 <translation id="6790428901817661496">Прайграць</translation>
 <translation id="6801878137098616817">Зменена нядаўна</translation>
+<translation id="6802687695197837794">Доступ атрымаюць праграмы "<ph name="APP1_NAME" />", "<ph name="APP2_NAME" />" і ўсе праграмы і вэб-сайты, якія маюць дазволы выкарыстоўваць мікрафон і камеру</translation>
 <translation id="6803622936009808957">Не ўдалося ўключыць рэжым адлюстравання дысплэяў, бо не была знойдзена раздзяляльнасць, якая б падтрымлівалася. Выкарыстоўваецца рэжым "Пашыраны працоўны стол".</translation>
 <translation id="6812232930908427253">Не ўдалося захаваць працоўны стол: акон або ўкладак занадта шмат.</translation>
 <translation id="6818242057446442178">Назад на адно слова</translation>
@@ -1068,6 +1084,7 @@
 <translation id="6901883536534621389">Паспрабуйце выкарыстоўваць для навігацыі жэсты</translation>
 <translation id="6919251195245069855">Не ўдалося распазнаць вашу разумную картку. Паўтарыце спробу.</translation>
 <translation id="6931576957638141829">Захаваць у</translation>
+<translation id="6942518653766415536">Меню фарматаў запісу</translation>
 <translation id="6945221475159498467">Выбраць</translation>
 <translation id="6960565108681981554">Сетка не актывавана. Звярніцеся да аператара.</translation>
 <translation id="6961121602502368900">Функцыя "Тэлефон без гуку" недаступная пры выкарыстанні працоўнага профілю</translation>
@@ -1077,6 +1094,7 @@
 <translation id="6965382102122355670">ОК</translation>
 <translation id="6972754398087986839">Пачатак працы</translation>
 <translation id="6979158407327259162">Google Дыск</translation>
+<translation id="6981291220124935078">Даць доступ</translation>
 <translation id="6981982820502123353">Спец. магчымасці</translation>
 <translation id="698231206551913481">Пры выдаленні карыстальніка будуць выдалены ўсе звязаныя з ім файлы і лакальныя даныя.</translation>
 <translation id="7005239792648594238">Каб пачаць, адкрыйце праграму</translation>
@@ -1217,7 +1235,6 @@
 <translation id="7768784765476638775">Чытаць уголас</translation>
 <translation id="7780094051999721182">ярлыкі</translation>
 <translation id="7780159184141939021">Паварот экрана</translation>
-<translation id="7796353162336583443">Націсніце кнопку стыла на паліцы, каб зрабіць нататку, здымак экрана, выкарыстаць Памочніка Google, лазерную ўказку або павелічальнае шкло.</translation>
 <translation id="7796735576426975947">Новае апавяшчэнне схавана</translation>
 <translation id="7798302898096527229">Каб скасаваць, націсніце "Пошук" або "Shift".</translation>
 <translation id="7807067443225230855">Пошук і Памочнік</translation>

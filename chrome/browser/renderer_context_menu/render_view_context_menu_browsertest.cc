@@ -1881,97 +1881,6 @@ class SearchByRegionBrowserBaseTest : public InProcessBrowserTest {
   base::RepeatingClosure quit_closure_;
 };
 
-class SearchByRegionWithSidePanelBrowserTest
-    : public SearchByRegionBrowserBaseTest {
- protected:
-  void SetUp() override {
-    // The test server must start first, so that we know the port that the test
-    // server is using.
-    ASSERT_TRUE(embedded_test_server()->Start());
-    base::test::ScopedFeatureList feature_list;
-    // This test is for the Lens V1 side panel, so we explicitly disable the
-    // unified side panel.
-    feature_list.InitWithFeaturesAndParameters(
-        /*enabled_features=*/{{lens::features::kLensStandalone,
-                               {{lens::features::kEnableSidePanelForLens.name,
-                                 "true"}}}},
-        /*disabled_features=*/{features::kUnifiedSidePanel});
-
-    // This does not use SearchByRegionBrowserTest::SetUp because that function
-    // does its own conflicting initialization of a FeatureList.
-    InProcessBrowserTest::SetUp();
-  }
-
-  void SimulateDragAndVerifyLensRequest(RenderViewContextMenu* menu) {
-    // Create the Lens side panel controller if it does not exist. This allows
-    // us to get the side panel web contents without waiting for it to be
-    // created post-drag on a first time start up.
-    lens::CreateLensSidePanelControllerForTesting(browser());
-    SearchByRegionBrowserBaseTest::SimulateDragAndVerifyOverlayUI(menu);
-
-    // We need to verify the contents after the drag is finished.
-    content::WebContents* contents =
-        lens::GetLensSidePanelWebContentsForTesting(browser());
-    EXPECT_TRUE(contents);
-
-    // Wait for the drag to commence a navigation upon the side panel web
-    // contents.
-    content::TestNavigationObserver nav_observer(contents);
-    nav_observer.Wait();
-
-    std::string expected_content = GetLensRegionSearchURL().GetContent();
-    std::string side_panel_content =
-        contents->GetLastCommittedURL().GetContent();
-    VerifyLensUrl(side_panel_content, expected_content);
-    ExpectThatRequestContainsImageData(contents);
-  }
-
-  void AttemptLensRegionSearchWithSidePanel() {
-    // |menu_observer_| will cause the search lens for image menu item to be
-    // clicked. Sets a callback to simulate dragging a region on the screen once
-    // the region search UI has been set up.
-    menu_observer_ = std::make_unique<ContextMenuNotificationObserver>(
-        IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH, ui::EF_MOUSE_BUTTON,
-        base::BindOnce(&SearchByRegionWithSidePanelBrowserTest::
-                           SimulateDragAndVerifyLensRequest,
-                       base::Unretained(this)));
-    RightClickToOpenContextMenu();
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(SearchByRegionWithSidePanelBrowserTest,
-                       LensRegionSearchWithValidRegionSidePanel) {
-  SetupAndLoadPage("/empty.html");
-  // We need a base::RunLoop to ensure that our test does not finish until the
-  // side panel has opened and we have verified the URL.
-  base::RunLoop loop;
-  quit_closure_ = base::BindRepeating(loop.QuitClosure());
-  // The browser should open a draggable UI for a region search.
-  AttemptLensRegionSearchWithSidePanel();
-  loop.Run();
-}
-
-// While this test is under the SearchByRegionWithSidePanelBrowserTest, this is
-// only to confirm that when the UnifiedSidePanel is disabled and the Lens side
-// panel is enabled, that non Google region searches still are redirected to a
-// new tab.
-IN_PROC_BROWSER_TEST_F(SearchByRegionWithSidePanelBrowserTest,
-                       NonGoogleRegionSearchWithValidRegionAndSideImageSearch) {
-  SetupAndLoadPage("/empty.html");
-  SetupNonGoogleRegionSearchEngine();
-  // The browser should open a draggable UI for a region search. The result
-  // should open in a new tab.
-  ui_test_utils::AllBrowserTabAddedWaiter add_tab;
-  AttemptNonGoogleRegionSearch();
-
-  // Get the result URL in the new tab and verify.
-  content::WebContents* new_tab = add_tab.Wait();
-  content::WaitForLoadStop(new_tab);
-  std::string new_tab_content = new_tab->GetLastCommittedURL().GetContent();
-  std::string expected_content = GetNonGoogleRegionSearchURL().GetContent();
-  EXPECT_EQ(new_tab_content, expected_content);
-}
-
 class SearchByRegionWithUnifiedSidePanelBrowserTest
     : public SearchByRegionBrowserBaseTest {
  protected:
@@ -1981,11 +1890,12 @@ class SearchByRegionWithUnifiedSidePanelBrowserTest
     ASSERT_TRUE(embedded_test_server()->Start());
     base::test::ScopedFeatureList feature_list;
     feature_list.InitWithFeaturesAndParameters(
-        {{lens::features::kLensStandalone,
-          {{lens::features::kEnableSidePanelForLens.name, "true"},
-           {lens::features::kHomepageURLForLens.name,
-            GetLensRegionSearchURL().spec()}}},
-         {features::kUnifiedSidePanel, {{}}}},
+        {
+            {lens::features::kLensStandalone,
+             {{lens::features::kEnableSidePanelForLens.name, "true"},
+              {lens::features::kHomepageURLForLens.name,
+               GetLensRegionSearchURL().spec()}}},
+        },
         {});
 
     // This does not use SearchByRegionBrowserBaseTest::SetUp because that
@@ -2291,6 +2201,8 @@ IN_PROC_BROWSER_TEST_F(PdfPluginContextMenuBrowserTest, Rotate) {
   }
 }
 
+// TODO(crbug.com/1393069): Consider removing this build flag when enabling
+// this browser test.
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 class PdfOcrContextMenuBrowserTest : public PdfPluginContextMenuBrowserTest,
                                      public ::testing::WithParamInterface<int> {
@@ -2329,11 +2241,10 @@ class PdfOcrContextMenuBrowserTest : public PdfPluginContextMenuBrowserTest,
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-// TODO(crbug.com/1278249): Re-enable this test once a mock OCR Service has been
-// created.
+// TODO(crbug.com/1393069): Re-enable this test.
 IN_PROC_BROWSER_TEST_P(PdfOcrContextMenuBrowserTest, DISABLED_PdfOcr) {
   std::unique_ptr<TestRenderViewContextMenu> menu = SetupAndCreateMenu();
-  ASSERT_EQ(menu->IsItemPresent(IDC_CONTENT_CONTEXT_RUN_PDF_OCR),
+  ASSERT_EQ(menu->IsItemPresent(IDC_CONTENT_CONTEXT_PDF_OCR),
             IsPdfOcrEnabled() && IsScreenReaderEnabled() && IsComponentReady());
 }
 
@@ -2341,8 +2252,7 @@ INSTANTIATE_TEST_SUITE_P(All,
                          PdfOcrContextMenuBrowserTest,
                          ::testing::Range(0, 8));
 
-#endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE) && (BUILDFLAG(IS_LINUX) ||
-        // BUILDFLAG(IS_MAC))
+#endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
 #endif  // BUILDFLAG(ENABLE_PDF)
 

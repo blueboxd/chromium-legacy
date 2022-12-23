@@ -471,7 +471,7 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness,
 #endif
 
   WebAppRegistrar& app_registrar() { return provider()->registrar_unsafe(); }
-  WebAppSyncBridge& sync_bridge() { return provider()->sync_bridge(); }
+  WebAppSyncBridge& sync_bridge() { return provider()->sync_bridge_unsafe(); }
   WebAppPolicyManager& policy_manager() { return provider()->policy_manager(); }
 
   FakeExternallyManagedAppManager& externally_managed_app_manager() {
@@ -926,6 +926,7 @@ TEST_P(WebAppPolicyManagerTest, DynamicRefresh) {
 TEST_P(WebAppPolicyManagerTest, UninstallAppInstalledInPreviousSession) {
   if (ShouldSkipPWASpecificTest())
     return;
+
   // Simulate two policy apps and a regular app that were installed in the
   // previous session.
   SimulatePreviouslyInstalledApp(GURL(kWindowedUrl),

@@ -135,7 +135,7 @@
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/latency/latency_info.h"
-#include "ui/resources/grit/webui_generated_resources.h"
+#include "ui/resources/grit/webui_resources.h"
 
 #if BUILDFLAG(IS_WIN)
 #include <combaseapi.h>
@@ -3188,15 +3188,20 @@ TestNavigationManager::~TestNavigationManager() {
   ResumeIfPaused();
 }
 
-void TestNavigationManager::WaitForFirstYieldAfterDidStartNavigation() {
+bool TestNavigationManager::WaitForFirstYieldAfterDidStartNavigation() {
   TRACE_EVENT(
       "test",
       "TestNavigationManager::WaitForFirstYieldAfterDidStartNavigation");
   if (current_state_ >= NavigationState::WILL_START)
-    return;
+    return true;
 
   DCHECK_EQ(desired_state_, NavigationState::WILL_START);
-  WaitForDesiredState();
+  // Ignore the result because DidStartNavigation will update |desired_state_|
+  // we check below.
+  (void)WaitForDesiredState();
+  // This returns false if the runloop was terminated by a timeout rather than
+  // reaching the |WILL_START|.
+  return current_state_ >= NavigationState::WILL_START;
 }
 
 bool TestNavigationManager::WaitForRequestStart() {
@@ -3224,10 +3229,10 @@ bool TestNavigationManager::WaitForResponse() {
   return WaitForDesiredState();
 }
 
-void TestNavigationManager::WaitForNavigationFinished() {
+bool TestNavigationManager::WaitForNavigationFinished() {
   TRACE_EVENT("test", "TestNavigationManager::WaitForNavigationFinished");
   desired_state_ = NavigationState::FINISHED;
-  WaitForDesiredState();
+  return WaitForDesiredState();
 }
 
 void TestNavigationManager::DidStartNavigation(NavigationHandle* handle) {

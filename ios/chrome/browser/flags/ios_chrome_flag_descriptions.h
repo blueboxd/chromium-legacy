@@ -252,11 +252,6 @@ extern const char kEnableCBDSignOutDescription[];
 extern const char kEnableDiscoverFeedDiscoFeedEndpointName[];
 extern const char kEnableDiscoverFeedDiscoFeedEndpointDescription[];
 
-// Title and description for the flag to show ghost cards when refreshing the
-// discover feed.
-extern const char kEnableDiscoverFeedGhostCardsName[];
-extern const char kEnableDiscoverFeedGhostCardsDescription[];
-
 // Title and description for the flag to remove the Feed from the NTP.
 extern const char kEnableFeedAblationName[];
 extern const char kEnableFeedAblationDescription[];
@@ -363,12 +358,6 @@ extern const char kHttpsOnlyModeDescription[];
 // Title and description for the flag to enable revamped Incognito NTP page.
 extern const char kIncognitoNtpRevampName[];
 extern const char kIncognitoNtpRevampDescription[];
-
-// Title and description for the flag that conditionally uploads clicks and view
-// actions in the feed (e.g., the user needs to view X cards).
-extern const char kInterestFeedV2ClickAndViewActionsConditionalUploadName[];
-extern const char
-    kInterestFeedV2ClickAndViewActionsConditionalUploadDescription[];
 
 // Title and description for the flag to enable feature_engagement::Tracker
 // demo mode.
@@ -569,11 +558,6 @@ extern const char kOmniboxZeroSuggestInMemoryCachingDescription[];
 extern const char kOmniboxOnDeviceTailSuggestionsName[];
 extern const char kOmniboxOnDeviceTailSuggestionsDescription[];
 
-// Title and description for the flag to enable ChromeActions (and optionally
-// SwiftUI omnibox popup implementation).
-extern const char kIOSOmniboxUpdatedPopupUIName[];
-extern const char kIOSOmniboxUpdatedPopupUIDescription[];
-
 // Title and description for the flag to enable Optimization Guide debug logs.
 extern const char kOptimizationGuideDebugLogsName[];
 extern const char kOptimizationGuideDebugLogsDescription[];
@@ -684,11 +668,6 @@ extern const char kSyncEnableHistoryDataTypeDescription[];
 // trusted vault passphrase promos.
 extern const char kSyncTrustedVaultPassphrasePromoName[];
 extern const char kSyncTrustedVaultPassphrasePromoDescription[];
-
-// Title and description for the flag to control if Chrome Sync should support
-// trusted vault passphrase type with improved recovery.
-extern const char kSyncTrustedVaultPassphraseRecoveryName[];
-extern const char kSyncTrustedVaultPassphraseRecoveryDescription[];
 
 // Title and description for the flag to enable Sync standalone invalidations.
 extern const char kSyncInvalidationsName[];

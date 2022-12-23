@@ -200,8 +200,7 @@ class ArcPolicyBridgeTestBase {
 
   void DoSetUp(bool is_affiliated) {
     // Set up fake StatisticsProvider.
-    chromeos::system::StatisticsProvider::SetTestProvider(
-        &statistics_provider_);
+    ash::system::StatisticsProvider::SetTestProvider(&statistics_provider_);
 
     // Set up ArcBridgeService.
     bridge_service_ = std::make_unique<ArcBridgeService>();
@@ -325,7 +324,7 @@ class ArcPolicyBridgeTestBase {
   TestingProfile* profile() { return profile_; }
   ArcBridgeService* bridge_service() { return bridge_service_.get(); }
   CertStoreService* cert_store_service() { return cert_store_service_; }
-  chromeos::system::FakeStatisticsProvider statistics_provider_;
+  ash::system::FakeStatisticsProvider statistics_provider_;
 
  private:
   content::BrowserTaskEnvironment task_environment_;
@@ -513,12 +512,12 @@ TEST_F(ArcPolicyBridgeTest, ExternalStorageDisabledTest) {
 }
 
 TEST_F(ArcPolicyBridgeTest, WallpaperImageSetTest) {
-  base::DictionaryValue dict;
-  dict.SetStringKey("url", "https://example.com/wallpaper.jpg");
-  dict.SetStringKey("hash", "somehash");
+  base::Value::Dict dict;
+  dict.Set("url", "https://example.com/wallpaper.jpg");
+  dict.Set("hash", "somehash");
   policy_map().Set(policy::key::kWallpaperImage, policy::POLICY_LEVEL_MANDATORY,
                    policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-                   dict.Clone(), nullptr);
+                   base::Value(std::move(dict)).Clone(), nullptr);
   GetPoliciesAndVerifyResult("{\"apkCacheEnabled\":true,\"guid\":\"" +
                              instance_guid() + "\"," +
                              kMountPhysicalMediaDisabledPolicySetting + "," +
@@ -526,12 +525,12 @@ TEST_F(ArcPolicyBridgeTest, WallpaperImageSetTest) {
 }
 
 TEST_F(ArcPolicyBridgeTest, WallpaperImageSet_NotCompletePolicyTest) {
-  base::DictionaryValue dict;
-  dict.SetString("url", "https://example.com/wallpaper.jpg");
+  base::Value::Dict dict;
+  dict.Set("url", "https://example.com/wallpaper.jpg");
   // "hash" attribute is missing, so the policy shouldn't be set
   policy_map().Set(policy::key::kWallpaperImage, policy::POLICY_LEVEL_MANDATORY,
                    policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-                   dict.Clone(), nullptr);
+                   base::Value(std::move(dict)).Clone(), nullptr);
   GetPoliciesAndVerifyResult("{\"apkCacheEnabled\":true,\"guid\":\"" +
                              instance_guid() + "\"," +
                              kMountPhysicalMediaDisabledPolicySetting + "}");

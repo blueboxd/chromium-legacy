@@ -14,6 +14,7 @@ import android.view.MenuItem;
 
 import androidx.annotation.Nullable;
 import androidx.browser.customtabs.CustomTabsIntent;
+import androidx.fragment.app.Fragment;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 
@@ -22,6 +23,9 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.privacy_sandbox.v4.PrivacySandboxSettingsFragmentV4;
+import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
+import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
+import org.chromium.components.browser_ui.settings.FragmentSettingsLauncher;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 
 /**
@@ -30,13 +34,16 @@ import org.chromium.components.browser_ui.settings.SettingsLauncher;
  *
  * Subclasses have to call super.onCreatePreferences(bundle, s) when overriding onCreatePreferences.
  */
-public abstract class PrivacySandboxSettingsBaseFragment extends PreferenceFragmentCompat {
+public abstract class PrivacySandboxSettingsBaseFragment
+        extends PreferenceFragmentCompat implements FragmentSettingsLauncher {
     // Key for the argument with which the PrivacySandbox fragment will be launched. The value for
     // this argument should be part of the PrivacySandboxReferrer enum, which contains all points of
     // entry to the Privacy Sandbox UI.
     public static final String PRIVACY_SANDBOX_REFERRER = "privacy-sandbox-referrer";
 
     private PrivacySandboxHelpers.CustomTabIntentHelper mCustomTabHelper;
+    private SettingsLauncher mSettingsLauncher;
+    private SnackbarManager mSnackbarManager;
 
     /**
      * Launches the right version of PrivacySandboxSettings depending on feature flags.
@@ -106,6 +113,16 @@ public abstract class PrivacySandboxSettingsBaseFragment extends PreferenceFragm
         IntentUtils.safeStartActivity(getContext(), intent);
     }
 
+    public void setSnackbarManager(SnackbarManager snackbarManager) {
+        mSnackbarManager = snackbarManager;
+    }
+
+    protected void showSnackbar(int stringResId, SnackbarManager.SnackbarController controller,
+            int type, int identifier) {
+        mSnackbarManager.showSnackbar(
+                Snackbar.make(getResources().getString(stringResId), controller, type, identifier));
+    }
+
     protected void parseAndRecordReferrer() {
         Bundle extras = getArguments();
         assert (extras != null)
@@ -121,5 +138,16 @@ public abstract class PrivacySandboxSettingsBaseFragment extends PreferenceFragm
         } else if (referrer == PrivacySandboxReferrer.COOKIES_SNACKBAR) {
             RecordUserAction.record("Settings.PrivacySandbox.OpenedFromCookiesPageToast");
         }
+    }
+
+    protected void launchSettingsActivity(Class<? extends Fragment> fragment) {
+        if (mSettingsLauncher != null) {
+            mSettingsLauncher.launchSettingsActivity(getContext(), fragment);
+        }
+    }
+
+    @Override
+    public void setSettingsLauncher(SettingsLauncher settingsLauncher) {
+        mSettingsLauncher = settingsLauncher;
     }
 }

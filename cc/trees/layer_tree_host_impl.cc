@@ -904,7 +904,7 @@ PaintWorkletJobMap LayerTreeHostImpl::GatherDirtyPaintWorklets(
     for (const auto& entry : layer->GetPaintWorkletRecordMap()) {
       const scoped_refptr<const PaintWorkletInput>& input = entry.first;
       const PaintImage::Id& paint_image_id = entry.second.first;
-      const sk_sp<PaintRecord>& record = entry.second.second;
+      const absl::optional<PaintRecord>& record = entry.second.second;
       // If we already have a record we can reuse it and so the
       // PaintWorkletInput isn't dirty.
       if (record)
@@ -2985,9 +2985,6 @@ bool LayerTreeHostImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
   total_frame_counter_.OnBeginFrame(args);
   devtools_instrumentation::DidBeginFrame(id_, args.frame_time,
                                           args.frame_id.sequence_number);
-
-  UMA_HISTOGRAM_CUSTOM_COUNTS("GPU.AcceleratedSurfaceRefreshRate",
-                              1 / args.interval.InSecondsF(), 0, 121, 122);
 
   // When there is a |target_local_surface_id_|, we do not wish to begin
   // producing Impl Frames for an older viz::LocalSurfaceId, as it will never

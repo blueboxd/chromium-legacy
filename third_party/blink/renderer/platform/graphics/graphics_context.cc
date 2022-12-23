@@ -272,7 +272,7 @@ void GraphicsContext::SetColorFilter(ColorFilter color_filter) {
       WebCoreColorFilterToSkiaColorFilter(color_filter));
 }
 
-void GraphicsContext::Concat(const SkMatrix& matrix) {
+void GraphicsContext::Concat(const SkM44& matrix) {
   DCHECK(canvas_);
   canvas_->concat(matrix);
 }
@@ -317,27 +317,27 @@ void GraphicsContext::BeginRecording() {
     canvas_->SetPaintPreviewTracker(paint_preview_tracker_);
 }
 
-sk_sp<PaintRecord> GraphicsContext::EndRecording() {
-  sk_sp<PaintRecord> record = paint_recorder_.finishRecordingAsPicture();
+PaintRecord GraphicsContext::EndRecording() {
   canvas_ = nullptr;
-  DCHECK(record);
-  return record;
+  return paint_recorder_.finishRecordingAsPicture();
 }
 
-void GraphicsContext::DrawRecord(sk_sp<const PaintRecord> record) {
-  if (!record || !record->size())
+void GraphicsContext::DrawRecord(PaintRecord record) {
+  if (record.empty()) {
     return;
+  }
 
   DCHECK(canvas_);
   canvas_->drawPicture(std::move(record));
 }
 
-void GraphicsContext::CompositeRecord(sk_sp<PaintRecord> record,
+void GraphicsContext::CompositeRecord(PaintRecord record,
                                       const gfx::RectF& dest,
                                       const gfx::RectF& src,
                                       SkBlendMode op) {
-  if (!record)
+  if (record.empty()) {
     return;
+  }
   DCHECK(canvas_);
 
   cc::PaintFlags flags;
@@ -347,13 +347,14 @@ void GraphicsContext::CompositeRecord(sk_sp<PaintRecord> record,
       static_cast<cc::PaintFlags::FilterQuality>(ImageInterpolationQuality())));
   canvas_->save();
   canvas_->concat(
-      SkMatrix::RectToRect(gfx::RectFToSkRect(src), gfx::RectFToSkRect(dest)));
-  canvas_->drawImage(PaintImageBuilder::WithDefault()
-                         .set_paint_record(record, gfx::ToRoundedRect(src),
-                                           PaintImage::GetNextContentId())
-                         .set_id(PaintImage::GetNextId())
-                         .TakePaintImage(),
-                     0, 0, sampling, &flags);
+      SkM44::RectToRect(gfx::RectFToSkRect(src), gfx::RectFToSkRect(dest)));
+  canvas_->drawImage(
+      PaintImageBuilder::WithDefault()
+          .set_paint_record(std::move(record), gfx::ToRoundedRect(src),
+                            PaintImage::GetNextContentId())
+          .set_id(PaintImage::GetNextId())
+          .TakePaintImage(),
+      0, 0, sampling, &flags);
   canvas_->restore();
 }
 
@@ -584,31 +585,16 @@ void GraphicsContext::DrawRect(const gfx::Rect& rect,
   }
 }
 
-template <typename TextPaintInfo>
-void GraphicsContext::DrawTextInternal(const Font& font,
-                                       const TextPaintInfo& text_info,
-                                       const gfx::PointF& point,
-                                       const cc::PaintFlags& flags,
-                                       DOMNodeId node_id,
-                                       const AutoDarkMode& auto_dark_mode) {
-  DarkModeFlags dark_mode_flags(this, auto_dark_mode, flags);
-  if (sk_sp<SkTextBlob> text_blob = paint_controller_.CachedTextBlob()) {
-    canvas_->drawTextBlob(text_blob, point.x(), point.y(), node_id, flags);
-    return;
-  }
-  font.DrawText(canvas_, text_info, point, device_scale_factor_, node_id,
-                dark_mode_flags,
-                printing_ ? Font::DrawType::kGlyphsAndClusters
-                          : Font::DrawType::kGlyphsOnly);
-}
-
 void GraphicsContext::DrawText(const Font& font,
                                const TextRunPaintInfo& text_info,
                                const gfx::PointF& point,
                                const cc::PaintFlags& flags,
                                DOMNodeId node_id,
                                const AutoDarkMode& auto_dark_mode) {
-  DrawTextInternal(font, text_info, point, flags, node_id, auto_dark_mode);
+  font.DrawText(canvas_, text_info, point, device_scale_factor_, node_id,
+                DarkModeFlags(this, auto_dark_mode, flags),
+                printing_ ? Font::DrawType::kGlyphsAndClusters
+                          : Font::DrawType::kGlyphsOnly);
 }
 
 void GraphicsContext::DrawText(const Font& font,
@@ -617,7 +603,10 @@ void GraphicsContext::DrawText(const Font& font,
                                const cc::PaintFlags& flags,
                                DOMNodeId node_id,
                                const AutoDarkMode& auto_dark_mode) {
-  DrawTextInternal(font, text_info, point, flags, node_id, auto_dark_mode);
+  font.DrawText(canvas_, text_info, point, device_scale_factor_, node_id,
+                DarkModeFlags(this, auto_dark_mode, flags),
+                printing_ ? Font::DrawType::kGlyphsAndClusters
+                          : Font::DrawType::kGlyphsOnly);
 }
 
 template <typename DrawTextFunc>
@@ -640,14 +629,26 @@ void GraphicsContext::DrawTextPasses(const AutoDarkMode& auto_dark_mode,
   }
 }
 
+template <typename TextPaintInfo>
+void GraphicsContext::DrawTextInternal(const Font& font,
+                                       const TextPaintInfo& text_info,
+                                       const gfx::PointF& point,
+                                       DOMNodeId node_id,
+                                       const AutoDarkMode& auto_dark_mode) {
+  DrawTextPasses(auto_dark_mode, [&](const cc::PaintFlags& flags) {
+    font.DrawText(canvas_, text_info, point, device_scale_factor_, node_id,
+                  DarkModeFlags(this, auto_dark_mode, flags),
+                  printing_ ? Font::DrawType::kGlyphsAndClusters
+                            : Font::DrawType::kGlyphsOnly);
+  });
+}
+
 void GraphicsContext::DrawText(const Font& font,
                                const TextRunPaintInfo& text_info,
                                const gfx::PointF& point,
                                DOMNodeId node_id,
                                const AutoDarkMode& auto_dark_mode) {
-  DrawTextPasses(auto_dark_mode, [&](const cc::PaintFlags& flags) {
-    DrawTextInternal(font, text_info, point, flags, node_id, auto_dark_mode);
-  });
+  DrawTextInternal(font, text_info, point, node_id, auto_dark_mode);
 }
 
 void GraphicsContext::DrawText(const Font& font,
@@ -655,9 +656,7 @@ void GraphicsContext::DrawText(const Font& font,
                                const gfx::PointF& point,
                                DOMNodeId node_id,
                                const AutoDarkMode& auto_dark_mode) {
-  DrawTextPasses(auto_dark_mode, [&](const cc::PaintFlags& flags) {
-    DrawTextInternal(font, text_info, point, flags, node_id, auto_dark_mode);
-  });
+  DrawTextInternal(font, text_info, point, node_id, auto_dark_mode);
 }
 
 template <typename TextPaintInfo>
@@ -1188,7 +1187,7 @@ void GraphicsContext::SetURLDestinationLocation(const String& name,
 }
 
 void GraphicsContext::ConcatCTM(const AffineTransform& affine) {
-  Concat(AffineTransformToSkMatrix(affine));
+  Concat(AffineTransformToSkM44(affine));
 }
 
 void GraphicsContext::AdjustLineToPixelBoundaries(gfx::PointF& p1,

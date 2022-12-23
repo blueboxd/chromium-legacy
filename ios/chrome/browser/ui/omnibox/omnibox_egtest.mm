@@ -714,59 +714,6 @@ void FocusFakebox() {
 
 @end
 
-// Test case for the NTP home UI, except the new omnibox popup flag is enabled.
-@interface NewOmniboxPopupLocationBarSteadyStateTestCase
-    : LocationBarSteadyStateTestCase {
-  // Which variant of the new popup flag to use.
-  std::string _variant;
-}
-@end
-
-@implementation NewOmniboxPopupLocationBarSteadyStateTestCase
-
-- (AppLaunchConfiguration)appConfigurationForTestCase {
-  AppLaunchConfiguration config = [super appConfigurationForTestCase];
-
-  config.additional_args.push_back(
-      "--enable-features=" + std::string(kIOSOmniboxUpdatedPopupUI.name) + "<" +
-      std::string(kIOSOmniboxUpdatedPopupUI.name));
-
-  config.additional_args.push_back(
-      "--force-fieldtrials=" + std::string(kIOSOmniboxUpdatedPopupUI.name) +
-      "/Test");
-
-  config.additional_args.push_back(
-      "--force-fieldtrial-params=" +
-      std::string(kIOSOmniboxUpdatedPopupUI.name) + ".Test:" +
-      std::string(kIOSOmniboxUpdatedPopupUIVariationName) + "/" + _variant);
-
-  return config;
-}
-
-@end
-
-// Test case for the NTP home UI, except the new omnibox popup flag is enabled
-// with variant 1.
-@interface NewOmniboxPopupLocationBarSteadyStateVariant1TestCase
-    : NewOmniboxPopupLocationBarSteadyStateTestCase
-@end
-
-@implementation NewOmniboxPopupLocationBarSteadyStateVariant1TestCase
-
-- (void)setUp {
-  _variant = std::string(kIOSOmniboxUpdatedPopupUIVariation1UIKit);
-
-  // `appConfigurationForTestCase` is called during [super setUp], and
-  // depends on _variant.
-  [super setUp];
-}
-
-// This is currently needed to prevent this test case from being ignored.
-- (void)testEmpty {
-}
-
-@end
-
 #pragma mark - Edit state tests
 
 @interface LocationBarEditStateTestCase : ChromeTestCase
@@ -789,6 +736,12 @@ void FocusFakebox() {
 // it should be displayed. Select & SelectAll buttons should be hidden when the
 // omnibox is empty.
 - (void)testEmptyOmnibox {
+  // TODO(crbug.com/1209342): this test fails on iOS 15 devices.
+  if (base::ios::IsRunningOnIOS15OrLater() &&
+      !base::ios::IsRunningOnIOS16OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 15.");
+  }
+
   // Focus omnibox.
   [self focusFakebox];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
@@ -934,12 +887,12 @@ void FocusFakebox() {
 }
 
 - (void)testNoDefaultMatch {
-  // TODO(crbug.com/1253345) Re-enable this test for iOS 15 and earlier. There
-  // is currently a problem with the test on iOS 15 devices where copying to the
-  // pasteboard fails.
-  if (!base::ios::IsRunningOnIOS16OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 15 and earlier.");
+  // TODO(crbug.com/1253345) This test fails on iOS 15 devices.
+  if (base::ios::IsRunningOnIOS15OrLater() &&
+      !base::ios::IsRunningOnIOS16OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 15.");
   }
+
   NSString* copiedText = @"test no default match1";
 
   // Put some text in pasteboard.

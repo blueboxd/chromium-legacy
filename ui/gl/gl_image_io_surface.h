@@ -58,10 +58,8 @@ class GL_EXPORT GLImageIOSurface : public GLImage {
   gfx::Size GetSize() override;
   unsigned GetInternalFormat() override;
   unsigned GetDataType() override;
-  BindOrCopy ShouldBindOrCopy() override;
   bool BindTexImage(unsigned target) override;
   void ReleaseTexImage(unsigned target) override;
-  void SetColorSpace(const gfx::ColorSpace& color_space) override;
   void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
                     uint64_t process_tracing_id,
                     const std::string& dump_name) override;
@@ -78,8 +76,6 @@ class GL_EXPORT GLImageIOSurface : public GLImage {
   GLImageIOSurface(const gfx::Size& size);
   ~GLImageIOSurface() override;
 
-  Type GetType() const override;
-
   const gfx::Size size_;
   gfx::BufferFormat format_ = gfx::BufferFormat::RGBA_8888;
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface_;
@@ -94,6 +90,11 @@ class GL_EXPORT GLImageIOSurface : public GLImage {
   base::ThreadChecker thread_checker_;
 
   bool disable_in_use_by_window_server_ = false;
+
+ private:
+  void SetColorSpace(const gfx::ColorSpace& color_space);
+
+  gfx::ColorSpace color_space_;
 };
 
 }  // namespace gl

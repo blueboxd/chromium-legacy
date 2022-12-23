@@ -190,8 +190,9 @@ InstanceBuilder::InstanceBuilder(fuchsia::component::Realm& realm,
       args_(launch_args) {}
 
 InstanceBuilder::~InstanceBuilder() {
-  if (instance_dir_)
+  if (instance_dir_) {
     DestroyChildDirectory(GetWebInstancesCollectionDir(), name_);
+  }
 }
 
 void InstanceBuilder::AppendOffersForServices(
@@ -290,8 +291,9 @@ Instance InstanceBuilder::Build(
   sys::ServiceDirectory instance_services(std::move(instance_services_handle));
   fuchsia::component::BinderPtr binder_ptr;
   instance_services.Connect(binder_ptr.NewRequest());
-  if (debug_request_)
+  if (debug_request_) {
     instance_services.Connect(std::move(debug_request_));
+  }
   instance_services.CloneChannel(std::move(services_request));
 
   // Ownership of the child and `instance_dir_` are now passed to the caller.
@@ -302,8 +304,9 @@ Instance InstanceBuilder::Build(
 void InstanceBuilder::ServeCommandLine() {
   DCHECK(instance_dir_);
 
-  if (args_.argv().size() < 2)
+  if (args_.argv().size() < 2) {
     return;
+  }
 
   auto config_dir = std::make_unique<vfs::PseudoDir>();
 
@@ -365,8 +368,9 @@ void HandleDataDirectoryParam(InstanceBuilder& builder,
 
 bool HandleContentDirectoriesParam(InstanceBuilder& builder,
                                    fuchsia::web::CreateContextParams& params) {
-  if (!params.has_content_directories())
+  if (!params.has_content_directories()) {
     return true;
+  }
 
   for (const auto& directory : params.content_directories()) {
     if (!IsValidContentDirectoryName(directory.name())) {
@@ -398,13 +402,15 @@ zx_status_t WebInstanceHost::CreateInstanceForContextWithCopiedArgs(
     fidl::InterfaceRequest<fuchsia::io::Directory> services_request,
     base::CommandLine extra_args) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!is_initialized())
+  if (!is_initialized()) {
     Initialize();
+  }
 
   auto expected_builder =
       InstanceBuilder::Create(*realm_, std::move(extra_args));
-  if (!expected_builder.has_value())
+  if (!expected_builder.has_value()) {
     return expected_builder.error();
+  }
   auto& builder = expected_builder.value();
 
   if (zx_status_t status = AppendLaunchArgs(params, builder->args());
@@ -425,13 +431,15 @@ zx_status_t WebInstanceHost::CreateInstanceForContextWithCopiedArgs(
 
   HandleDataDirectoryParam(*builder, params);
 
-  if (!HandleContentDirectoriesParam(*builder, params))
+  if (!HandleContentDirectoriesParam(*builder, params)) {
     return ZX_ERR_INVALID_ARGS;
+  }
 
   // TODO(crbug.com/1395774): Replace this with normal routing of tmp from
   // web_engine_shell's parent down to web_instance.
-  if (tmp_dir_.is_valid())
+  if (tmp_dir_.is_valid()) {
     builder->ServeTmpDirectory(std::move(tmp_dir_));
+  }
 
   // If one or more Debug protocol clients are active then enable debugging,
   // and connect the instance to the fuchsia.web.Debug proxy.
@@ -506,6 +514,7 @@ void WebInstanceHost::OnComponentBinderClosed(const base::GUID& id,
   // Drop the directory subtree for the child instance.
   DestroyChildDirectory(GetWebInstancesCollectionDir(), name);
 
-  if (instances_.empty())
+  if (instances_.empty()) {
     Uninitialize();
+  }
 }

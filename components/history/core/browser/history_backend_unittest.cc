@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <iterator>
+#include <limits>
 #include <memory>
 #include <set>
 #include <string>
@@ -40,6 +41,7 @@
 #include "components/history/core/browser/in_memory_database.h"
 #include "components/history/core/browser/in_memory_history_backend.h"
 #include "components/history/core/browser/keyword_search_term.h"
+#include "components/history/core/browser/keyword_search_term_util.h"
 #include "components/history/core/browser/sync/typed_url_sync_bridge.h"
 #include "components/history/core/test/database_test_utils.h"
 #include "components/history/core/test/history_client_fake_bookmarks.h"
@@ -590,9 +592,13 @@ class InMemoryHistoryBackendTest : public HistoryBackendTestBase {
 
   size_t GetNumberOfMatchingSearchTerms(const int keyword_id,
                                         const std::u16string& prefix) {
+    URLDatabase* url_db = mem_backend_->db();
+    auto enumerator =
+        url_db->CreateKeywordSearchTermVisitEnumerator(keyword_id, prefix);
     KeywordSearchTermVisitList matching_terms;
-    mem_backend_->db()->GetMostRecentKeywordSearchTerms(
-        keyword_id, prefix, 1, &matching_terms);
+    GetAutocompleteSearchTermsFromEnumerator(
+        *enumerator, /*count=*/SIZE_MAX, /*ignore_duplicate_visits=*/true,
+        SearchTermRankingPolicy::kRecency, &matching_terms);
     return matching_terms.size();
   }
 
@@ -3586,12 +3592,8 @@ TEST_F(HistoryBackendTest, QueryMostRepeatedQueriesForKeyword) {
     EXPECT_EQ(u"first5", queries[1]->normalized_term);
     EXPECT_EQ(u"first4", queries[2]->normalized_term);
 
-    histogram_tester.ExpectTotalCount("History.QueryMostRepeatedQueriesTime",
+    histogram_tester.ExpectTotalCount("History.QueryMostRepeatedQueriesTimeV2",
                                       1);
-    histogram_tester.ExpectTotalCount("History.QueryMostRepeatedQueriesCount",
-                                      1);
-    histogram_tester.ExpectUniqueSample("History.QueryMostRepeatedQueriesCount",
-                                        result_count * 2, 1);
   }
 }
 
@@ -4060,7 +4062,8 @@ TEST_F(HistoryBackendTest, ReserveNextClusterId_GetCluster) {
   // additional checking around visit count.
   auto cluster = backend_->db_->GetCluster(cluster_id);
   EXPECT_EQ(cluster.cluster_id, cluster_id);
-  EXPECT_TRUE(cluster.should_show_on_prominent_ui_surfaces);
+  EXPECT_FALSE(cluster.should_show_on_prominent_ui_surfaces);
+  EXPECT_FALSE(cluster.triggerability_calculated);
 }
 
 TEST_F(HistoryBackendTest, ReserveNextClusterId_AddVisitsToCluster_GetCluster) {

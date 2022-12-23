@@ -9,6 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/hash/legacy_hash.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -86,6 +87,8 @@ std::string GetStringNameForOptimizationTarget(
       return "OmniboxOnDeviceTailSuggest";
     case proto::OPTIMIZATION_TARGET_CLIENT_SIDE_PHISHING:
       return "ClientSidePhishing";
+    case proto::OPTIMIZATION_TARGET_OMNIBOX_URL_SCORING:
+      return "OmniboxUrlScoring";
       // Whenever a new value is added, make sure to add it to the OptTarget
       // variant list in
       // //tools/metrics/histograms/metadata/optimization/histograms.xml.
@@ -205,6 +208,13 @@ std::string GetModelCacheKeyHash(proto::ModelCacheKey model_cache_key) {
   // Convert the hash to hex encoding and not as base64 and other encodings,
   // since it will be used as filepath names.
   return base::HexEncode(base::as_bytes(base::make_span(&hash, 1)));
+}
+
+void RecordPredictionModelStoreModelRemovalVersionHistogram(
+    PredictionModelStoreModelRemovalReason model_removal_reason) {
+  base::UmaHistogramEnumeration(
+      "OptimizationGuide.PredictionModelStore.ModelRemovalReason",
+      model_removal_reason);
 }
 
 }  // namespace optimization_guide

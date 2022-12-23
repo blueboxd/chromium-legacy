@@ -116,6 +116,8 @@ class StylePropertyMapReadOnly;
 class StyleRecalcContext;
 class StyleRequest;
 class V8UnionBooleanOrScrollIntoViewOptions;
+class ComputedStyleBuilder;
+class StyleAdjuster;
 
 enum class CSSPropertyID;
 enum class CSSValueID;
@@ -1008,6 +1010,10 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // FIXME: public for LayoutTreeBuilder, we shouldn't expose this though.
   scoped_refptr<ComputedStyle> StyleForLayoutObject(const StyleRecalcContext&);
 
+  // Called by StyleAdjuster during style resolution. Provides an opportunity to
+  // make final Element-specific adjustments to the ComputedStyle.
+  void AdjustStyle(base::PassKey<StyleAdjuster>, ComputedStyleBuilder&);
+
   bool HasID() const;
   bool HasClass() const;
   const SpaceSplitString& ClassNames() const;
@@ -1216,6 +1222,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   virtual void DidRecalcStyle(const StyleRecalcChange);
   virtual scoped_refptr<ComputedStyle> CustomStyleForLayoutObject(
       const StyleRecalcContext&);
+  virtual void AdjustStyle(ComputedStyleBuilder&);
 
   virtual NamedItemType GetNamedItemType() const {
     return NamedItemType::kNone;
@@ -1573,12 +1580,21 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void PseudoStateChanged(CSSSelector::PseudoType pseudo,
                           AffectedByPseudoStateChange&&);
 
+  enum class HighlightRecalc {
+    // No highlight recalc is needed.
+    kNone,
+    // The HighlightData from the old style can be re-used.
+    kReuse,
+    // Highlights must be calculated in full.
+    kFull,
+  };
+
   // Highlight pseudos inherit all properties from the corresponding highlight
   // in the parent, but virtually all existing content uses universal rules
   // like *::selection. To improve runtime and keep copy-on-write inheritance,
   // avoid recalc if neither parent nor child matched any non-universal rules.
-  bool TryToSkipHighlightPseudos(const ComputedStyle* old_style,
-                                 ComputedStyle& new_style) const;
+  HighlightRecalc CalculateHighlightRecalc(const ComputedStyle* old_style,
+                                           const ComputedStyle* new_style);
 
   Member<ElementData> element_data_;
 };

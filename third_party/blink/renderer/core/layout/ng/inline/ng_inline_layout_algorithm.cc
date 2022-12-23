@@ -179,7 +179,7 @@ void NGInlineLayoutAlgorithm::RebuildBoxStates(
   line_info.ItemsData().GetOpenTagItems(break_token->ItemIndex(), &open_items);
 
   // Create box states for tags that are not closed yet.
-  NGLogicalLineItems& line_box = *MakeGarbageCollected<NGLogicalLineItems>();
+  NGLogicalLineItems& line_box = context_->AcquireTempLogicalLineItems();
   box_states->OnBeginPlaceItems(Node(), line_info.LineStyle(), baseline_type_,
                                 quirks_mode_, &line_box);
   for (const NGInlineItem* item : open_items) {
@@ -188,7 +188,7 @@ void NGInlineLayoutAlgorithm::RebuildBoxStates(
                                         Node().IsSvgText(), &item_result);
     HandleOpenTag(*item, item_result, &line_box, box_states);
   }
-  line_box.clear();
+  context_->ReleaseTempLogicalLineItems(line_box);
 }
 
 #if DCHECK_IS_ON()
@@ -197,12 +197,12 @@ void NGInlineLayoutAlgorithm::CheckBoxStates(
     const NGInlineBreakToken* break_token) const {
   NGInlineLayoutStateStack rebuilt;
   RebuildBoxStates(line_info, break_token, &rebuilt);
-  NGLogicalLineItems& line_box = *MakeGarbageCollected<NGLogicalLineItems>();
+  NGLogicalLineItems& line_box = context_->AcquireTempLogicalLineItems();
   rebuilt.OnBeginPlaceItems(Node(), line_info.LineStyle(), baseline_type_,
                             quirks_mode_, &line_box);
   DCHECK(box_states_);
   box_states_->CheckSame(rebuilt);
-  line_box.clear();
+  context_->ReleaseTempLogicalLineItems(line_box);
 }
 #endif
 
@@ -1214,6 +1214,9 @@ const NGLayoutResult* NGInlineLayoutAlgorithm::Layout() {
   //   - `clear` in start direction of initial letter containing block.
   //
   // [1] https://drafts.csswg.org/css-inline/#short-para-initial-letter
+  // TODO(crbug.com/1402001): `LogicalLineItems()` is unused, and thus is always
+  // empty. Replace it with the correct condition, then remove
+  // `LogicalLineItems()`.
   if (context_->LogicalLineItems()->IsEmpty()) {
     const EClear clear_type =
         UNLIKELY(Node().HasInitialLetterBox())
@@ -1244,10 +1247,10 @@ const NGLayoutResult* NGInlineLayoutAlgorithm::Layout() {
 
   const NGInlineBreakToken* break_token = BreakToken();
 
-  NGFragmentItemsBuilder* items_builder = context_->ItemsBuilder();
-  NGLogicalLineItems* line_box = items_builder
-                                     ? items_builder->AcquireLogicalLineItems()
-                                     : context_->LogicalLineItems();
+  NGFragmentItemsBuilder* const items_builder = context_->ItemsBuilder();
+  DCHECK(items_builder);
+  NGLogicalLineItems* const line_box = items_builder->AcquireLogicalLineItems();
+  DCHECK(line_box);
 
   bool is_line_created = false;
   LayoutUnit line_block_size;
@@ -1632,14 +1635,13 @@ void NGInlineLayoutAlgorithm::BidiReorder(TextDirection base_direction,
   NGBidiParagraph::IndicesInVisualOrder(levels, &indices_in_visual_order);
 
   // Reorder to the visual order.
-  NGLogicalLineItems& visual_items =
-      *MakeGarbageCollected<NGLogicalLineItems>();
+  NGLogicalLineItems& visual_items = context_->AcquireTempLogicalLineItems();
   visual_items.ReserveInitialCapacity(line_box->size());
   for (unsigned logical_index : indices_in_visual_order)
     visual_items.AddChild(std::move((*line_box)[logical_index]));
   DCHECK_EQ(line_box->size(), visual_items.size());
   line_box->swap(visual_items);
-  visual_items.clear();
+  context_->ReleaseTempLogicalLineItems(visual_items);
 }
 
 }  // namespace blink

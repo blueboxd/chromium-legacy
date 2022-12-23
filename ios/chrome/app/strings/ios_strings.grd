@@ -1973,6 +1973,24 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_PERMISSIONS_CAMERA" desc="Usually used to show whether user has enabled a site's permission to use the device camera.">
         Camera
       </message>
+      <message name="IDS_IOS_PERMISSIONS_ALERT_DIALOG_BUTTON_TEXT_DENY" desc="Button text to deny access to permissions. This should match the iOS built-in alert for permissions access.">
+        Don't Allow
+      </message>
+      <message name="IDS_IOS_PERMISSIONS_ALERT_DIALOG_BUTTON_TEXT_GRANT" desc="Button text to allow access to permissions. This should match the iOS built-in alert for permissions access.">
+        Allow
+      </message>
+      <message name="IDS_IOS_PERMISSIONS_ALERT_DIALOG_MESSAGE" desc="Message shown in the alert asking users for access to permissions. This should match the iOS built-in alert for permissions access.">
+        Allow "<ph name="SITE_NAME">$1<ex>permission.site</ex></ph>" to use your <ph name="PERMISSION">$2<ex>camera and microphone</ex></ph>?
+      </message>
+      <message name="IDS_IOS_PERMISSIONS_ALERT_DIALOG_PERMISSION_CAMERA" desc="Name of permission shown in the alert asking users for access to permissions. This should match the iOS built-in alert for permissions access.">
+        camera
+      </message>
+      <message name="IDS_IOS_PERMISSIONS_ALERT_DIALOG_PERMISSION_CAMERA_AND_MICROPHONE" desc="Name of permission shown in the alert asking users for access to permissions. This should match the iOS built-in alert for permissions access.">
+        camera and microphone
+      </message>
+      <message name="IDS_IOS_PERMISSIONS_ALERT_DIALOG_PERMISSION_MICROPHONE" desc="Name of permission shown in the alert asking users for access to permissions. This should match the iOS built-in alert for permissions access.">
+        microphone
+      </message>
       <message name="IDS_IOS_PERMISSIONS_INFOBAR_BANNER_CAMERA_ACCESSIBLE" desc="Message shown in the infobar when camera access is enabled.">
         Camera Access Allowed
       </message>
@@ -1993,6 +2011,9 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       </message>
       <message name="IDS_IOS_PERMISSIONS_INFOBAR_OVERFLOW_POPUP_TITLE" desc="Title of the infobar modal shown when the user taps Camera/Microphone access.">
         Edit Permissions
+      </message>
+      <message name="IDS_IOS_PINNED_TABS_DRAG_TO_PIN_LABEL" desc="Label displayed in the pin tab toolbar when a Tab is being dragged.">
+        Drag here to Pin Tab
       </message>
       <message name="IDS_IOS_PHOTO_LIBRARY_ADD_USAGE_DESCRIPTION" desc="Specifies the reason for writing to the user's photo library while the app is in use [Length: unlimited] [iOS only].">
         This lets you save photos to your photo library.
@@ -3269,6 +3290,18 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       </message>
       <message name="IDS_IOS_TAB_GRID_CLOSE_ALL_BUTTON" desc="Title of the button in the tab grid UI that closes all the tabs in the grid. [iOS only]">
         Close All
+      </message>
+      <message name="IDS_IOS_TAB_GRID_CLOSE_ALL_TABS" desc="Title of the button in the action sheet that close all tabs. [iOS only]">
+        Close All
+      </message>
+      <message name="IDS_IOS_TAB_GRID_CLOSE_ALL_TABS_ACTION_SHEET_TITLE" desc="Title of the action sheet that confirms closing all tabs or non-pinned tabs only. [iOS only]">
+        Close All Tabs?
+      </message>
+      <message name="IDS_IOS_TAB_GRID_CLOSE_ALL_TABS_ACTION_SHEET_MESSAGE" desc="Message of the action sheet that confirms closing all tabs or non-pinned tabs only. [iOS only]">
+        Closing all tabs will close pinned tabs as well.
+      </message>
+      <message name="IDS_IOS_TAB_GRID_CLOSE_NON_PINNED_TABS_ONLY" desc="Title of the button in the action sheet that close all non-pinned tabs only. [iOS only]">
+        Close Regular Tabs Only
       </message>
       <message name="IDS_IOS_TAB_GRID_CLOSE_ALL_TABS_CONFIRMATION" desc="Title of the button in the action sheet that close all tabs. COUNT refers to the number of tabs open. According to its value, the string goes from singular to plural. [iOS only]">
         {COUNT, plural,

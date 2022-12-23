@@ -36,16 +36,8 @@ BASE_FEATURE(kMessagesForAndroidAdsBlocked,
              "MessagesForAndroidAdsBlocked",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kMessagesForAndroidChromeSurvey,
-             "MessagesForAndroidChromeSurvey",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kMessagesForAndroidInfrastructure,
              "MessagesForAndroidInfrastructure",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kMessagesForAndroidNearOomReduction,
-             "MessagesForAndroidNearOomReduction",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kMessagesForAndroidNotificationBlocked,
@@ -64,10 +56,6 @@ BASE_FEATURE(kMessagesForAndroidPopupBlocked,
              "MessagesForAndroidPopupBlocked",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kMessagesForAndroidReaderMode,
-             "MessagesForAndroidReaderMode",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kMessagesForAndroidSaveCard,
              "MessagesForAndroidSaveCard",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -79,11 +67,6 @@ BASE_FEATURE(kMessagesForAndroidStackingAnimation,
 bool IsAdsBlockedMessagesUiEnabled() {
   return base::FeatureList::IsEnabled(kMessagesForAndroidInfrastructure) &&
          base::FeatureList::IsEnabled(kMessagesForAndroidAdsBlocked);
-}
-
-bool IsNearOomReductionMessagesUiEnabled() {
-  return base::FeatureList::IsEnabled(kMessagesForAndroidInfrastructure) &&
-         base::FeatureList::IsEnabled(kMessagesForAndroidNearOomReduction);
 }
 
 bool IsOfferNotificationMessagesUiEnabled() {

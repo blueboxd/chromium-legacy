@@ -41,7 +41,9 @@
 
 namespace {
 
+constexpr base::TimeDelta kRetroactiveDevicePairingTimeout = base::Seconds(60);
 constexpr char kTestDeviceAddress[] = "11:12:13:14:15:16";
+constexpr char kTestDeviceAddress2[] = "11:12:13:14:15:17";
 constexpr char kTestBleDeviceName[] = "Test Device Name";
 constexpr char kValidModelId[] = "718c17";
 const std::string kUserEmail = "test@test.test";
@@ -123,6 +125,9 @@ class RetroactivePairingDetectorTest
     : public AshTestBase,
       public RetroactivePairingDetector::Observer {
  public:
+  RetroactivePairingDetectorTest()
+      : AshTestBase(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
+
   void SetUp() override {
     AshTestBase::SetUp();
     adapter_ =
@@ -1774,6 +1779,139 @@ TEST_F(RetroactivePairingDetectorTest, DontNotifyIfAlreadySavedToAcount) {
   base::RunLoop().RunUntilIdle();
 
   fake_socket_->TriggerReceiveCallback();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(retroactive_pair_found_);
+}
+
+// There are two ways to get to `CheckAndRemoveIfDeviceExpired `. One is by
+// `GetModelIdAndAddressFromMessageStream` which is triggered when the
+// MessageStream already has the model id and BLE address messages on
+// connection. The second way is through `CheckPairingInformation` which is
+// triggered when the MessageStream does not have the model id and BLE
+// address on connection, and the model id and BLE address are observed later
+// on.
+TEST_F(RetroactivePairingDetectorTest,
+       DontNotify_ExpiryTimeoutReached_GetModelIdAndAddressFromMessageStream) {
+  Login(user_manager::UserType::USER_TYPE_REGULAR);
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{features::kFastPairSavedDevices},
+      /*disabled_features=*/{features::kFastPairSavedDevicesStrictOptIn});
+  fast_pair_repository_.SetOptInStatus(
+      nearby::fastpair::OptInStatus::STATUS_OPTED_OUT);
+  base::RunLoop().RunUntilIdle();
+  CreateRetroactivePairingDetector();
+
+  EXPECT_FALSE(retroactive_pair_found_);
+
+  // Pair a device with classic Bluetooth pairing and set the MessageStream
+  // with model id and BLE address bytes to successfully detect the scenario.
+  // At this point, the device is in the `device_pairing_information_` map with
+  // an expiry timestamp.
+  SetMessageStream(kModelIdBleAddressBytes);
+  PairFastPairDeviceWithClassicBluetooth(
+      /*new_paired_status=*/true, kTestDeviceAddress);
+
+  // Fast forward by |kRetroactiveDevicePairingTimeout| in order to simulate
+  // that the device's |expiry_timestamp| has been reached. Because the
+  // timeout has been reached, we expect that the retroactive pairing
+  // scenario to not be triggered.
+  task_environment()->FastForwardBy(kRetroactiveDevicePairingTimeout);
+  fake_socket_->TriggerReceiveCallback();
+  NotifyMessageStreamConnected(kTestDeviceAddress);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(retroactive_pair_found_);
+}
+
+TEST_F(RetroactivePairingDetectorTest,
+       DontNotify_ExpiryTimeoutReached_CheckPairingInformation) {
+  Login(user_manager::UserType::USER_TYPE_REGULAR);
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{features::kFastPairSavedDevices},
+      /*disabled_features=*/{features::kFastPairSavedDevicesStrictOptIn});
+  fast_pair_repository_.SetOptInStatus(
+      nearby::fastpair::OptInStatus::STATUS_OPTED_OUT);
+  base::RunLoop().RunUntilIdle();
+  CreateRetroactivePairingDetector();
+
+  EXPECT_FALSE(retroactive_pair_found_);
+
+  // Pair a device with classic Bluetooth pairing and set the MessageStream
+  // with no bytes to successfully detect the scenario.
+  // At this point, the device is in the `device_pairing_information_` map with
+  // an expiry timestamp. Because there are no BLE address bytes or model id
+  // bytes in the connected MessageStream, the RetroactivePairingDetector adds
+  // itself as an observer to wait for these messages.
+  PairFastPairDeviceWithClassicBluetooth(
+      /*new_paired_status=*/true, kTestDeviceAddress);
+  NotifyMessageStreamConnected(kTestDeviceAddress);
+
+  // Fast forward by |kRetroactiveDevicePairingTimeout| in order to simulate
+  // that the device's |expiry_timestamp| has been reached. Because the
+  // timeout has been reached, we expect that the retroactive pairing
+  // scenario to not be triggered.
+  task_environment()->FastForwardBy(kRetroactiveDevicePairingTimeout);
+
+  // Set up the socket with the model id bytes and BLE address bytes to
+  // successfully detect the scenario, and trigger the bytes being received
+  // after the timeout to trigger the check in `CheckPairingInformation`
+  // which happens in the overridden observed red functions for
+  // `OnModelIdMessage` and `OnBleAddressUpdateMessage`.
+  fake_socket_->SetIOBufferFromBytes(kModelIdBleAddressBytes);
+
+  // TODO(b/263391358): Refactor `TriggerReceiveCallback` to take a
+  // base::RunLoop parameter and remove `base::RunLoop().RunUntilIdle()`.
+  fake_socket_->TriggerReceiveCallback();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(retroactive_pair_found_);
+}
+
+TEST_F(RetroactivePairingDetectorTest,
+       DontNotify_ExpiryTimeoutReached_DifferentDeviceTriggerRemoval) {
+  Login(user_manager::UserType::USER_TYPE_REGULAR);
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{features::kFastPairSavedDevices},
+      /*disabled_features=*/{features::kFastPairSavedDevicesStrictOptIn});
+  fast_pair_repository_.SetOptInStatus(
+      nearby::fastpair::OptInStatus::STATUS_OPTED_OUT);
+  base::RunLoop().RunUntilIdle();
+  CreateRetroactivePairingDetector();
+
+  EXPECT_FALSE(retroactive_pair_found_);
+
+  // Simulate a first device being found with classic Bluetooth pairing.
+  // At this point, the device is in the `device_pairing_information_` map with
+  // an expiry timestamp. This device does not have a MessageStream associated,
+  // so `CheckPairingInformation` will never be fired because it doesn't have
+  // a model id or BLE event, and thus alone, its expiry event will never be
+  // triggered.
+  PairFastPairDeviceWithClassicBluetooth(
+      /*new_paired_status=*/true, kTestDeviceAddress);
+
+  // Fast forward by |kRetroactiveDevicePairingTimeout| in order to simulate
+  // that the device's |expiry_timestamp| has been reached.
+  task_environment()->FastForwardBy(kRetroactiveDevicePairingTimeout);
+
+  // Simulate another device being found for retroactive pairing. This device
+  // will also be added to `device_pairing_information_` map with an expiry
+  // timeout, and its addition will trigger
+  // `RemoveExpiredDevicesFromStoredDeviceData`, which will remove the
+  // first device since it has expired.
+  PairFastPairDeviceWithClassicBluetooth(
+      /*new_paired_status=*/true, kTestDeviceAddress2);
+
+  // Trigger a Message Stream event for the first device with the model id and
+  // BLE address. Although there is a check in `CheckPairingInformation`,
+  // the device was already removed in
+  // `RemoveExpiredDevicesFromStoredDeviceData`.
+  SetMessageStream(kModelIdBleAddressBytes);
+  fake_socket_->TriggerReceiveCallback();
+  NotifyMessageStreamConnected(kTestDeviceAddress);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(retroactive_pair_found_);

@@ -75,11 +75,11 @@ base::Value RuleSetToDict(const browser_switcher::RuleSet& ruleset) {
   for (const auto& rule : ruleset.greylist)
     greylist.Append(rule->ToString());
 
-  base::Value dict(base::Value::Type::DICTIONARY);
-  dict.SetKey("sitelist", std::move(sitelist));
-  dict.SetKey("greylist", std::move(greylist));
+  base::Value::Dict dict;
+  dict.Set("sitelist", std::move(sitelist));
+  dict.Set("greylist", std::move(greylist));
 
-  return dict;
+  return base::Value(std::move(dict));
 }
 
 browser_switcher::BrowserSwitcherService* GetBrowserSwitcherService(
@@ -88,10 +88,9 @@ browser_switcher::BrowserSwitcherService* GetBrowserSwitcherService(
       web_ui->GetWebContents()->GetBrowserContext());
 }
 
-content::WebUIDataSource* CreateBrowserSwitchUIHTMLSource(
-    content::WebUI* web_ui) {
-  content::WebUIDataSource* source =
-      content::WebUIDataSource::Create(chrome::kChromeUIBrowserSwitchHost);
+void CreateAndAddBrowserSwitchUIHTMLSource(content::WebUI* web_ui) {
+  content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
+      Profile::FromWebUI(web_ui), chrome::kChromeUIBrowserSwitchHost);
 
   auto* service = GetBrowserSwitcherService(web_ui);
   source->AddInteger("launchDelay", service->prefs().GetDelay());
@@ -203,8 +202,6 @@ content::WebUIDataSource* CreateBrowserSwitchUIHTMLSource(
       "internals", IDR_BROWSER_SWITCH_INTERNALS_BROWSER_SWITCH_INTERNALS_HTML);
 
   source->UseStringsJs();
-
-  return source;
 }
 
 }  // namespace
@@ -550,7 +547,5 @@ BrowserSwitchUI::BrowserSwitchUI(content::WebUI* web_ui)
   web_ui->AddMessageHandler(std::make_unique<BrowserSwitchHandler>());
 
   // Set up the chrome://browser-switch source.
-  Profile* profile = Profile::FromWebUI(web_ui);
-  content::WebUIDataSource::Add(profile,
-                                CreateBrowserSwitchUIHTMLSource(web_ui));
+  CreateAndAddBrowserSwitchUIHTMLSource(web_ui);
 }

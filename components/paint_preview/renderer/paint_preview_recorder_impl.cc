@@ -153,7 +153,7 @@ void SerializeMemoryBufferRecording(
 
 // Finishes the recording process by converting the `recording` to an SkPicture.
 // Serialization is then delegated based on the type of `persistence`.
-void FinishRecordingOnUIThread(sk_sp<const cc::PaintRecord> recording,
+void FinishRecordingOnUIThread(cc::PaintRecord recording,
                                const gfx::Rect& bounds,
                                std::unique_ptr<PaintPreviewTracker> tracker,
                                RecordingPersistence persistence,
@@ -338,7 +338,7 @@ void PaintPreviewRecorderImpl::CapturePaintPreviewInternal(
   cc::PaintRecorder recorder;
   cc::PaintCanvas* canvas = recorder.beginRecording();
   canvas->save();
-  canvas->concat(SkMatrix::Translate(-bounds.x(), -bounds.y()));
+  canvas->translate(-bounds.x(), -bounds.y());
   canvas->SetPaintPreviewTracker(tracker.get());
 
   // Use time ticks manually rather than a histogram macro so as to;

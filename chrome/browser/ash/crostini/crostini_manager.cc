@@ -98,10 +98,10 @@ void InvokeAndErasePendingCallbacks(
     std::map<guest_os::GuestId, base::OnceCallback<void(Parameters...)>>*
         vm_keyed_map,
     const std::string& vm_name,
-    Arguments&&... arguments) {
+    Arguments... arguments) {
   for (auto it = vm_keyed_map->begin(); it != vm_keyed_map->end();) {
     if (it->first.vm_name == vm_name) {
-      std::move(it->second).Run(std::forward<Arguments>(arguments)...);
+      std::move(it->second).Run(arguments...);
       vm_keyed_map->erase(it++);
     } else {
       ++it;
@@ -110,21 +110,17 @@ void InvokeAndErasePendingCallbacks(
 }
 
 // Find any callbacks for the specified |vm_name|, invoke them with
-// |arguments|... and erase them from the map.
-template <typename... Parameters, typename... Arguments>
+// |result| and erase them from the map.
 void InvokeAndErasePendingCallbacks(
-    std::map<std::string, base::OnceCallback<void(Parameters...)>>*
-        vm_keyed_map,
+    std::multimap<std::string, CrostiniManager::CrostiniResultCallback>*
+        vm_callbacks,
     const std::string& vm_name,
-    Arguments&&... arguments) {
-  for (auto it = vm_keyed_map->begin(); it != vm_keyed_map->end();) {
-    if (it->first == vm_name) {
-      std::move(it->second).Run(std::forward<Arguments>(arguments)...);
-      vm_keyed_map->erase(it++);
-    } else {
-      ++it;
-    }
+    CrostiniResult result) {
+  auto range = vm_callbacks->equal_range(vm_name);
+  for (auto it = range.first; it != range.second; ++it) {
+    std::move(it->second).Run(result);
   }
+  vm_callbacks->erase(range.first, range.second);
 }
 
 // Find any container callbacks for the specified |container_id|, invoke them
@@ -204,7 +200,7 @@ CrostiniManager::RestartOptions& CrostiniManager::RestartOptions::operator=(
 
 class CrostiniManager::CrostiniRestarter
     : public ash::VmShutdownObserver,
-      public chromeos::SchedulerConfigurationManagerBase::Observer {
+      public ash::SchedulerConfigurationManagerBase::Observer {
  public:
   struct RestartRequest {
     RestartId restart_id;
@@ -282,7 +278,7 @@ class CrostiniManager::CrostiniRestarter
   void CreateDiskImageFinished(int64_t disk_size_bytes,
                                CrostiniResult result,
                                const base::FilePath& result_path);
-  // chromeos::SchedulerConfigurationManagerBase::Observer:
+  // ash::SchedulerConfigurationManagerBase::Observer:
   void OnConfigurationSet(bool success, size_t num_cores_disabled) override;
   void OnConfigureContainerFinished(bool success);
   void OnWaylandServerCreated(guest_os::GuestOsWaylandServer::Result result);
@@ -349,8 +345,8 @@ class CrostiniManager::CrostiniRestarter
 
   mojom::InstallerState stage_ = mojom::InstallerState::kStart;
 
-  base::ScopedObservation<chromeos::SchedulerConfigurationManagerBase,
-                          chromeos::SchedulerConfigurationManagerBase::Observer>
+  base::ScopedObservation<ash::SchedulerConfigurationManagerBase,
+                          ash::SchedulerConfigurationManagerBase::Observer>
       scheduler_configuration_manager_observation_{this};
   base::ScopedObservation<CrostiniManager, ash::VmShutdownObserver>
       vm_shutdown_observation_{this};
@@ -738,7 +734,7 @@ void CrostiniManager::CrostiniRestarter::CreateDiskImageFinished(
                      scheduler_configuration->second);
 }
 
-// chromeos::SchedulerConfigurationManagerBase::Observer:
+// ash::SchedulerConfigurationManagerBase::Observer:
 void CrostiniManager::CrostiniRestarter::OnConfigurationSet(
     bool success,
     size_t num_cores_disabled) {

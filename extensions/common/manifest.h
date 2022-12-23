@@ -176,10 +176,6 @@ class Manifest final {
   const base::Value* FindDictPathAsValue(base::StringPiece path) const;
 
   // Deprecated: Use the FindDictPath(asValue) functions instead.
-  bool GetDictionary(const std::string& path,
-                     const base::DictionaryValue** out_value) const;
-  bool GetDictionary(const std::string& path,
-                     const base::Value** out_value) const;
   bool GetList(const std::string& path, const base::Value** out_value) const;
 
   // Returns true if this equals the |other| manifest.
@@ -189,15 +185,10 @@ class Manifest final {
   // Note: only use this when you KNOW you don't need the validation.
   const base::Value::Dict* value() const { return &value_; }
 
-  // Gets the underlying DictionaryValue representing the manifest with all
+  // Gets the underlying `base::Value::Dict` representing the manifest with all
   // unavailable manifest keys removed.
-  const base::DictionaryValue& available_values() const {
-    return base::Value::AsDictionaryValue(available_values_);
-  }
-
-  // Same as previous but returns `base::Value::Dict`.
-  const base::Value::Dict& available_values_dict() const {
-    return available_values_.GetDict();
+  const base::Value::Dict& available_values() const {
+    return available_values_;
   }
 
  private:
@@ -223,9 +214,7 @@ class Manifest final {
   const base::Value::Dict value_;
 
   // Same as |value_| but comprises only of keys available to this manifest.
-  // TODO(https://crbug.com/1366865): Make base::Value::Dict when callers of
-  // `available_value()` are migrated.
-  base::Value available_values_;
+  base::Value::Dict available_values_;
 
   const Type type_;
 

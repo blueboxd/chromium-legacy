@@ -10,9 +10,9 @@
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/reading_list/reading_list_model_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
-#include "chrome/browser/ui/read_later/reading_list_model_factory.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/side_panel/read_later_side_panel_web_view.h"
@@ -24,10 +24,6 @@
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/button_controller.h"
 #include "ui/views/view_class_properties.h"
-
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-#include "chrome/browser/ui/views/lens/lens_side_panel_controller.h"
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 SidePanelToolbarButton::SidePanelToolbarButton(Browser* browser)
     : ToolbarButton(base::BindRepeating(&SidePanelToolbarButton::ButtonPressed,

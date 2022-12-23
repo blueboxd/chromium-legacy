@@ -315,6 +315,26 @@ FederatedAuthRequestPageData* GetPageData(RenderFrameHost* render_frame_host) {
       render_frame_host->GetPage());
 }
 
+void FilterAccountsWithLoginHint(
+    const std::string& login_hint,
+    IdpNetworkRequestManager::AccountList& accounts) {
+  if (login_hint.empty()) {
+    return;
+  }
+
+  // Remove all accounts whose ID and whose email do not match the login hint.
+  // Note that it is technically possible for us to end up with more than one
+  // account afterwards, in which case the multiple account chooser would be
+  // shown.
+  accounts.erase(
+      std::remove_if(accounts.begin(), accounts.end(),
+                     [&login_hint](const IdentityRequestAccount& account) {
+                       return account.id != login_hint &&
+                              account.email != login_hint;
+                     }),
+      accounts.end());
+}
+
 }  // namespace
 
 FederatedAuthRequestImpl::IdentityProviderGetInfo::IdentityProviderGetInfo(
@@ -537,18 +557,13 @@ void FederatedAuthRequestImpl::RequestToken(
 
   int icon_ideal_size = request_dialog_controller_->GetBrandIconIdealSize();
   int icon_minimum_size = request_dialog_controller_->GetBrandIconMinimumSize();
-  std::unique_ptr<FederatedProviderFetcher> provider_fetcher =
-      std::make_unique<FederatedProviderFetcher>(network_manager_.get());
 
-  // FederatedProviderFetcher is passed as a parameter of
-  // OnAllConfigAndWellKnownFetched() so that FederatedProviderFetcher is
-  // destroyed when FederatedAuthRequestImpl is destroyed.
-  FederatedProviderFetcher* provider_fetcher_ptr = provider_fetcher.get();
-  provider_fetcher_ptr->Start(
+  provider_fetcher_ =
+      std::make_unique<FederatedProviderFetcher>(network_manager_.get());
+  provider_fetcher_->Start(
       idp_order_, icon_ideal_size, icon_minimum_size,
       base::BindOnce(&FederatedAuthRequestImpl::OnAllConfigAndWellKnownFetched,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     std::move(provider_fetcher), std::move(get_infos)));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(get_infos)));
 }
 
 void FederatedAuthRequestImpl::CancelTokenRequest() {
@@ -645,9 +660,10 @@ bool FederatedAuthRequestImpl::HasPendingRequest() const {
 }
 
 void FederatedAuthRequestImpl::OnAllConfigAndWellKnownFetched(
-    std::unique_ptr<FederatedProviderFetcher> provider_fetcher,
     base::flat_map<GURL, IdentityProviderGetInfo> get_infos,
     std::vector<FederatedProviderFetcher::FetchResult> fetch_results) {
+  provider_fetcher_.reset();
+
   for (const FederatedProviderFetcher::FetchResult& fetch_result :
        fetch_results) {
     const GURL& identity_provider_config_url =
@@ -798,7 +814,8 @@ void FederatedAuthRequestImpl::MaybeShowAccountsDialog() {
 
   WebContents* rp_web_contents =
       WebContents::FromRenderFrameHost(&render_frame_host());
-  DCHECK(render_frame_host().GetMainFrame()->IsInPrimaryMainFrame());
+  // RenderFrameHost should be in the primary page (ex not in the BFCache).
+  DCHECK(render_frame_host().GetPage().IsPrimary());
 
   bool screen_reader_is_on = rp_web_contents->GetAccessibilityMode().has_mode(
       ui::AXMode::kScreenReader);
@@ -847,13 +864,23 @@ void FederatedAuthRequestImpl::HandleAccountsFetchFailure(
     return;
   }
 
+  bool is_visible = (render_frame_host().IsActive() &&
+                     render_frame_host().GetVisibilityState() ==
+                         content::PageVisibilityState::kVisible);
+  if (!is_visible) {
+    CompleteRequestWithError(FederatedAuthRequestResult::kErrorRpPageNotVisible,
+                             TokenStatus::kRpPageNotVisible,
+                             /*should_delay_callback=*/true);
+    return;
+  }
+
   // TODO(crbug.com/1357790): we should figure out how to handle multiple IDP
   // w.r.t. showing a static failure UI. e.g. one IDP is always successful and
   // one always returns 404.
   WebContents* rp_web_contents =
       WebContents::FromRenderFrameHost(&render_frame_host());
-  DCHECK(render_frame_host().GetMainFrame()->IsInPrimaryMainFrame());
-
+  // RenderFrameHost should be in the primary page (ex not in the BFCache).
+  DCHECK(render_frame_host().GetPage().IsPrimary());
   // TODO(crbug.com/1382495): Handle failure UI in the multi IDP case.
   request_dialog_controller_->ShowFailureDialog(
       rp_web_contents, FormatOriginForDisplay(GetEmbeddingOrigin()),
@@ -905,6 +932,18 @@ void FederatedAuthRequestImpl::OnAccountsResponseReceived(
       return;
     }
     case IdpNetworkRequestManager::ParseStatus::kSuccess: {
+      if (IsFedCmLoginHintEnabled()) {
+        FilterAccountsWithLoginHint(idp_info->provider.login_hint, accounts);
+        if (accounts.empty()) {
+          // TODO(crbug.com/1356021): send the right errors here. Also determine
+          // the right behavior with respect to the IDP Sign-In status.
+          HandleAccountsFetchFailure(
+              std::move(idp_info),
+              FederatedAuthRequestResult::kErrorFetchingAccountsNoResponse,
+              TokenStatus::kAccountsInvalidResponse);
+          return;
+        }
+      }
       ComputeLoginStateAndReorderAccounts(idp_info->provider, accounts);
 
       if (!idp_info->has_failing_idp_signin_status) {
@@ -1078,9 +1117,6 @@ void FederatedAuthRequestImpl::OnTokenResponseReceived(
     const IdentityProviderConfig& idp,
     IdpNetworkRequestManager::FetchStatus status,
     const std::string& id_token) {
-  if (!auth_request_callback_)
-    return;
-
   // When fetching id tokens we show a "Verify" sheet to users in case fetching
   // takes a long time due to latency etc.. In case that the fetching process is
   // fast, we still want to show the "Verify" sheet for at least
@@ -1295,6 +1331,7 @@ void FederatedAuthRequestImpl::CleanUp() {
   network_manager_.reset();
   // Given that |request_dialog_controller_| has reference to this web content
   // instance we destroy that first.
+  provider_fetcher_.reset();
   account_id_ = std::string();
   start_time_ = base::TimeTicks();
   show_accounts_dialog_time_ = base::TimeTicks();
@@ -1352,9 +1389,7 @@ bool FederatedAuthRequestImpl::ShouldCompleteRequestImmediately() {
 }
 
 url::Origin FederatedAuthRequestImpl::GetEmbeddingOrigin() const {
-  RenderFrameHost* main_frame = render_frame_host().GetMainFrame();
-  DCHECK(main_frame->IsInPrimaryMainFrame());
-  return main_frame->GetLastCommittedOrigin();
+  return render_frame_host().GetMainFrame()->GetLastCommittedOrigin();
 }
 
 void FederatedAuthRequestImpl::CompleteLogoutRequest(

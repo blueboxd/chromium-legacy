@@ -10,6 +10,7 @@
   }
 
   .header {
+    color: var(--cr-primary-text-color);
     font-size: 14px;
     font-weight: 500;
     line-height: 20px;
@@ -22,6 +23,21 @@
     background-color: var(--horizontal-rule-color);
     border: none;
     height: 2px;
+    margin: 0;
+    width: 100%;
+  }
+
+  customize-chrome-appearance {
+    margin-bottom: 16px;
+  }
+
+  customize-chrome-appearance,
+  customize-chrome-shortcuts,
+  customize-chrome-cards,
+  customize-chrome-categories,
+  customize-chrome-themes {
+    display: block;
+    max-width: 320px;
     width: 100%;
   }
 </style>
@@ -34,6 +50,9 @@
     <hr class="horizontal-rule">
     <h1 class="header">$i18n{shortcutsHeader}</h1>
     <customize-chrome-shortcuts></customize-chrome-shortcuts>
+    <hr class="horizontal-rule">
+    <h1 class="header">$i18n{cardsHeader}</h1>
+    <customize-chrome-cards></customize-chrome-cards>
   </div>
   <customize-chrome-categories on-back-click="onBackClick_"
       on-collection-select="onCollectionSelect_" page-name="categories"
@@ -41,6 +60,6 @@
   </customize-chrome-categories>
   <customize-chrome-themes on-back-click="onBackClick_"
       on-theme-select="onThemeSelect_" page-name="themes"
-      id="themesPage">
+      id="themesPage" selected-collection="[[selectedCollection_]]">
   </customize-chrome-themes>
 </iron-pages>

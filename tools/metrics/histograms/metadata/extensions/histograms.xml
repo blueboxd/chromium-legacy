@@ -670,7 +670,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.DeclarativeNetRequest.ManifestEnabledRulesCount2"
-    units="rules" expires_after="2023-04-16">
+    units="rules" expires_after="2023-06-18">
   <owner>kelvinjiang@chromium.org</owner>
   <owner>src/extensions/OWNERS</owner>
   <summary>
@@ -1920,7 +1920,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.GoogleDocOffline.AvailabilityOnResourceRequest"
-    enum="GoogleDocsExtensionAvailablity" expires_after="2023-04-16">
+    enum="GoogleDocsExtensionAvailablity" expires_after="2023-06-18">
   <owner>arabm@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
   <summary>
@@ -2850,7 +2850,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.SearchEngineOverrides" units="units"
-    expires_after="2023-04-16">
+    expires_after="2023-06-18">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>kelvinjiang@chromium.org</owner>
   <summary>
@@ -2883,7 +2883,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.ServiceWorkerBackground.RegistrationStatus"
-    enum="Boolean" expires_after="2023-04-16">
+    enum="Boolean" expires_after="2023-06-18">
   <owner>lazyboy@chromium.org</owner>
   <owner>dbertoni@chromium.org</owner>
   <summary>
@@ -2911,7 +2911,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.ServiceWorkerBackground.StartWorkerStatus"
-    enum="Boolean" expires_after="2023-04-16">
+    enum="Boolean" expires_after="2023-06-18">
   <owner>lazyboy@chromium.org</owner>
   <owner>dbertoni@chromium.org</owner>
   <summary>
@@ -2931,7 +2931,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Extensions.SettingsOverridden.BackToGoogleNtpOverriddenDialogResult"
-    enum="SettingsOverriddenDialogResult" expires_after="2022-10-04">
+    enum="SettingsOverriddenDialogResult" expires_after="2023-12-15">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -2945,7 +2945,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Extensions.SettingsOverridden.BackToGoogleSearchOverriddenDialogResult"
-    enum="SettingsOverriddenDialogResult" expires_after="2022-12-04">
+    enum="SettingsOverriddenDialogResult" expires_after="2023-12-15">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -2959,7 +2959,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Extensions.SettingsOverridden.BackToOtherSearchOverriddenDialogResult"
-    enum="SettingsOverriddenDialogResult" expires_after="2023-01-01">
+    enum="SettingsOverriddenDialogResult" expires_after="2023-12-15">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -2973,7 +2973,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Extensions.SettingsOverridden.GenericNtpOverriddenDialogResult"
-    enum="SettingsOverriddenDialogResult" expires_after="2022-10-04">
+    enum="SettingsOverriddenDialogResult" expires_after="2023-12-15">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -2986,7 +2986,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Extensions.SettingsOverridden.GenericSearchOverriddenDialogResult"
-    enum="SettingsOverriddenDialogResult" expires_after="2022-12-11">
+    enum="SettingsOverriddenDialogResult" expires_after="2023-12-15">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -3139,6 +3139,36 @@ chromium-metrics-reviews@google.com.
     recorded when the browser intercepts navigation with one of the type
     handlers.
   </summary>
+</histogram>
+
+<histogram
+    name="Extensions.WebRequest.BeforeRequestDeclarativeNetRequestEvaluationTime"
+    units="ms" expires_after="2023-12-01">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <owner>src/extensions/OWNERS</owner>
+  <summary>
+    The total amount of time taken to evaluate declarativeNetRequest rules in
+    the onBeforeRequest stage, measured in milliseconds. Recorded once per
+    request if and only if at least one declarativeNetRequest rule is present.
+  </summary>
+</histogram>
+
+<histogram
+    name="Extensions.WebRequest.BeforeRequestListenerEvaluationTime.{HandlerTypes}"
+    units="ms" expires_after="2023-12-01">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <owner>src/extensions/OWNERS</owner>
+  <summary>
+    The total amount of time, measured in milliseconds, between when an event is
+    dispatched to webRequest listeners and when all responses are received and
+    handled for an onBeforeRequest event. Emitted when there are {HandlerTypes}
+    for the request. Recorded once per request if the request completes.
+  </summary>
+  <token key="HandlerTypes">
+    <variant name="WebRequestAndDeclarativeNetRequest"
+        summary="both webRequest listeners and declarativeNetRequest rules"/>
+    <variant name="WebRequestOnly" summary="only webRequest listeners"/>
+  </token>
 </histogram>
 
 <histogram name="Extensions.WebRequest.EventListenerFlag"

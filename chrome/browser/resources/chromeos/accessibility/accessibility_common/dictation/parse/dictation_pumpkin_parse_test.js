@@ -8,14 +8,8 @@ GEN_INCLUDE(['../dictation_test_base.js']);
  * Dictation tests for speech parsing with Pumpkin. These tests do not use the
  * live Pumpkin DLC, but instead use a local tar archive that mirrors the DLC.
  * It's important that we keep the live DLC and the local tar archive in sync.
- * SandboxedPumpkinTagger emits several logs during the initialization
- * phase e.g. "Pumpkin module loaded". Setup this test so that it doesn't
- * fail when something is logged to the console.
- * TODO(https://crbug.com/1258190): Remove DictationE2ETestAllowConsole and
- * override the message filter so that wasm console messages don't cause the
- * test to fail.
  */
-DictationPumpkinParseTest = class extends DictationE2ETestAllowConsole {
+DictationPumpkinParseTest = class extends DictationE2ETestBase {
   /** @override */
   async setUpDeferred() {
     await this.mockAccessibilityPrivate.initializePumpkinData();
@@ -149,24 +143,24 @@ AX_TEST_F('DictationPumpkinParseTest', 'SmartMacros', async function() {
 
   let macro =
       await this.getPumpkinParseStrategy().parse('delete avada kedavra');
-  assertEquals('SMART_DELETE_PHRASE', macro.getMacroNameString());
+  assertEquals('SMART_DELETE_PHRASE', macro.getNameAsString());
   assertEquals('avada kedavra', macro.phrase_);
 
   macro =
       await this.getPumpkinParseStrategy().parse('replace hello with goodbye');
-  assertEquals('SMART_REPLACE_PHRASE', macro.getMacroNameString());
+  assertEquals('SMART_REPLACE_PHRASE', macro.getNameAsString());
   assertEquals('hello', macro.deletePhrase_);
   assertEquals('goodbye', macro.insertPhrase_);
 
   macro = await this.getPumpkinParseStrategy().parse(
       'insert hello in front of goodbye');
-  assertEquals('SMART_INSERT_BEFORE', macro.getMacroNameString());
+  assertEquals('SMART_INSERT_BEFORE', macro.getNameAsString());
   assertEquals('hello', macro.insertPhrase_);
   assertEquals('goodbye', macro.beforePhrase_);
 
   macro = await this.getPumpkinParseStrategy().parse(
       'highlight everything between hello and goodbye');
-  assertEquals('SMART_SELECT_BTWN_INCL', macro.getMacroNameString());
+  assertEquals('SMART_SELECT_BTWN_INCL', macro.getNameAsString());
   assertEquals('hello', macro.startPhrase_);
   assertEquals('goodbye', macro.endPhrase_);
 });

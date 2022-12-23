@@ -300,6 +300,14 @@ void TestAllOSSettingPages(const GURL& base_url) {
       ChromePage::PERDEVICEMOUSE,
       base_url.Resolve(chromeos::settings::mojom::kPerDeviceMouseSubpagePath));
   TestOpenOSSettingsChromePage(
+      ChromePage::PERDEVICETOUCHPAD,
+      base_url.Resolve(
+          chromeos::settings::mojom::kPerDeviceTouchpadSubpagePath));
+  TestOpenOSSettingsChromePage(
+      ChromePage::PERDEVICEPOINTINGSTICK,
+      base_url.Resolve(
+          chromeos::settings::mojom::kPerDevicePointingStickSubpagePath));
+  TestOpenOSSettingsChromePage(
       ChromePage::HELP,
       base_url.Resolve(chromeos::settings::mojom::kAboutChromeOsSectionPath));
   TestOpenOSSettingsChromePage(

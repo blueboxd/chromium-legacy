@@ -13,7 +13,13 @@ export interface BookmarksApiProxy {
   callbackRouter: {[key: string]: ChromeEvent<Function>};
   bookmarkCurrentTabInFolder(folderId: string): void;
   cutBookmark(id: string): void;
+  contextMenuOpenBookmarkInNewTab(id: string, source: ActionSource): void;
+  contextMenuOpenBookmarkInNewWindow(id: string, source: ActionSource): void;
+  contextMenuOpenBookmarkInIncognitoWindow(id: string, source: ActionSource):
+      void;
+  contextMenuDelete(id: string, source: ActionSource): void;
   copyBookmark(id: string): Promise<void>;
+  createFolder(parentId: string, title: string): void;
   deleteBookmarks(ids: string[]): Promise<void>;
   getActiveUrl(): Promise<string|undefined>;
   getFolders(): Promise<chrome.bookmarks.BookmarkTreeNode[]>;
@@ -21,6 +27,7 @@ export interface BookmarksApiProxy {
       id: string, depth: number, clickModifiers: ClickModifiers,
       source: ActionSource): void;
   pasteToBookmark(parentId: string, destinationId?: string): Promise<void>;
+  renameBookmark(id: string, title: string): void;
   showContextMenu(id: string, x: number, y: number, source: ActionSource): void;
   showUi(): void;
 }
@@ -55,10 +62,30 @@ export class BookmarksApiProxyImpl implements BookmarksApiProxy {
     chrome.bookmarkManagerPrivate.cut([id]);
   }
 
+  contextMenuOpenBookmarkInNewTab(id: string, source: ActionSource) {
+    this.handler.executeOpenInNewTabCommand(BigInt(id), source);
+  }
+
+  contextMenuOpenBookmarkInNewWindow(id: string, source: ActionSource) {
+    this.handler.executeOpenInNewWindowCommand(BigInt(id), source);
+  }
+
+  contextMenuOpenBookmarkInIncognitoWindow(id: string, source: ActionSource) {
+    this.handler.executeOpenInIncognitoWindowCommand(BigInt(id), source);
+  }
+
+  contextMenuDelete(id: string, source: ActionSource) {
+    this.handler.executeDeleteCommand(BigInt(id), source);
+  }
+
   copyBookmark(id: string) {
     return new Promise<void>(resolve => {
       chrome.bookmarkManagerPrivate.copy([id], resolve);
     });
+  }
+
+  createFolder(parentId: string, title: string) {
+    chrome.bookmarks.create({parentId: parentId, title: title, index: 0});
   }
 
   deleteBookmarks(ids: string[]) {
@@ -98,6 +125,10 @@ export class BookmarksApiProxyImpl implements BookmarksApiProxy {
     return new Promise<void>(resolve => {
       chrome.bookmarkManagerPrivate.paste(parentId, destination, resolve);
     });
+  }
+
+  renameBookmark(id: string, title: string) {
+    chrome.bookmarks.update(id, {title: title});
   }
 
   showContextMenu(id: string, x: number, y: number, source: ActionSource) {

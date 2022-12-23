@@ -604,11 +604,22 @@ void PrerenderHostRegistry::OnActivationFinished(int frame_tree_node_id) {
   DCHECK(!base::Contains(prerender_host_by_frame_tree_node_id_,
                          frame_tree_node_id));
 
-  if (!reserved_prerender_host_)
+  if (!reserved_prerender_host_) {
+    // The activation finished successfully and has already activated the
+    // reserved host.
     return;
+  }
 
+  // The activation navigation is cancelled before activating the prerendered
+  // page, which means the activation failed.
   DCHECK_EQ(frame_tree_node_id, reserved_prerender_host_->frame_tree_node_id());
-  reserved_prerender_host_.reset();
+
+  // TODO(https://crbug.com/1378151): Monitor the final status metric and see
+  // whether it could be possible.
+  ScheduleToDeleteAbandonedHost(
+      std::move(reserved_prerender_host_),
+      PrerenderCancellationReason(
+          PrerenderFinalStatus::kActivationNavigationDestroyedBeforeSuccess));
 }
 
 PrerenderHost* PrerenderHostRegistry::FindNonReservedHostById(
@@ -794,16 +805,25 @@ void PrerenderHostRegistry::ResourceLoadComplete(
     RenderFrameHost* render_frame_host,
     const GlobalRequestID& request_id,
     const blink::mojom::ResourceLoadInfo& resource_load_info) {
+  DCHECK(render_frame_host);
+
+  if (render_frame_host->GetLifecycleState() !=
+      RenderFrameHost::LifecycleState::kPrerendering) {
+    return;
+  }
+
+  // This function only handles ERR_BLOCKED_BY_CLIENT error for now.
+  if (resource_load_info.net_error != net::Error::ERR_BLOCKED_BY_CLIENT) {
+    return;
+  }
+
+  // Cancel the corresponding prerender if the resource load is blocked.
   for (auto& iter : prerender_host_by_frame_tree_node_id_) {
-    // Observe resource loads only in the prerendering frame tree.
     if (&render_frame_host->GetPage() !=
         &iter.second->GetPrerenderedMainFrameHost()->GetPage()) {
       continue;
     }
-
-    if (resource_load_info.net_error == net::Error::ERR_BLOCKED_BY_CLIENT) {
-      CancelHost(iter.first, PrerenderFinalStatus::kBlockedByClient);
-    }
+    CancelHost(iter.first, PrerenderFinalStatus::kBlockedByClient);
     break;
   }
 }

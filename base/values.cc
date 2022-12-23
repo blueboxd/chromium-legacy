@@ -218,20 +218,6 @@ Value::Value(Dict&& value) noexcept : data_(std::move(value)) {}
 
 Value::Value(List&& value) noexcept : data_(std::move(value)) {}
 
-Value::Value(const LegacyDictStorage& storage)
-    : data_(absl::in_place_type_t<Dict>()) {
-  dict().reserve(storage.size());
-  for (const auto& it : storage) {
-    dict().try_emplace(dict().end(), it.first,
-                       std::make_unique<Value>(it.second->Clone()));
-  }
-}
-
-Value::Value(LegacyDictStorage&& storage) noexcept
-    : data_(absl::in_place_type_t<Dict>()) {
-  dict() = std::move(storage);
-}
-
 Value::Value(absl::monostate) {}
 
 Value::Value(DoubleStorage storage) : data_(std::move(storage)) {}
@@ -1595,12 +1581,6 @@ std::unique_ptr<DictionaryValue> DictionaryValue::From(
 
 DictionaryValue::DictionaryValue() : Value(Type::DICTIONARY) {}
 
-DictionaryValue::DictionaryValue(const LegacyDictStorage& storage)
-    : Value(storage) {}
-
-DictionaryValue::DictionaryValue(LegacyDictStorage&& storage) noexcept
-    : Value(std::move(storage)) {}
-
 Value* DictionaryValue::Set(StringPiece path, std::unique_ptr<Value> in_value) {
   DCHECK(IsStringUTF8AllowingNoncharacters(path));
   DCHECK(in_value);
@@ -1643,10 +1623,6 @@ Value* DictionaryValue::SetBoolean(StringPiece path, bool in_value) {
   return Set(path, std::make_unique<Value>(in_value));
 }
 
-Value* DictionaryValue::SetInteger(StringPiece path, int in_value) {
-  return Set(path, std::make_unique<Value>(in_value));
-}
-
 Value* DictionaryValue::SetString(StringPiece path, StringPiece in_value) {
   return Set(path, std::make_unique<Value>(in_value));
 }
@@ -1656,49 +1632,12 @@ Value* DictionaryValue::SetString(StringPiece path,
   return Set(path, std::make_unique<Value>(in_value));
 }
 
-bool DictionaryValue::Get(StringPiece path, const Value** out_value) const {
-  DCHECK(IsStringUTF8AllowingNoncharacters(path));
-  const Value* value = FindPath(path);
-  if (!value)
-    return false;
-  if (out_value)
-    *out_value = value;
-  return true;
-}
-
-bool DictionaryValue::Get(StringPiece path, Value** out_value) {
-  return std::as_const(*this).Get(path, const_cast<const Value**>(out_value));
-}
-
-bool DictionaryValue::GetInteger(StringPiece path, int* out_value) const {
-  const Value* value;
-  if (!Get(path, &value))
-    return false;
-
-  bool is_int = value->is_int();
-  if (is_int && out_value)
-    *out_value = value->GetInt();
-  return is_int;
-}
-
-bool DictionaryValue::GetString(StringPiece path,
-                                std::string* out_value) const {
-  const Value* value;
-  if (!Get(path, &value))
-    return false;
-
-  const bool is_string = value->is_string();
-  if (is_string && out_value)
-    *out_value = value->GetString();
-  return is_string;
-}
-
 bool DictionaryValue::GetDictionary(StringPiece path,
                                     const DictionaryValue** out_value) const {
-  const Value* value;
-  bool result = Get(path, &value);
-  if (!result || !value->is_dict())
+  const Value* value = GetDict().FindByDottedPath(path);
+  if (!value || !value->is_dict()) {
     return false;
+  }
 
   if (out_value)
     *out_value = static_cast<const DictionaryValue*>(value);
@@ -1710,24 +1649,6 @@ bool DictionaryValue::GetDictionary(StringPiece path,
                                     DictionaryValue** out_value) {
   return std::as_const(*this).GetDictionary(
       path, const_cast<const DictionaryValue**>(out_value));
-}
-
-bool DictionaryValue::GetList(StringPiece path,
-                              const ListValue** out_value) const {
-  const Value* value;
-  bool result = Get(path, &value);
-  if (!result || !value->is_list())
-    return false;
-
-  if (out_value)
-    *out_value = static_cast<const ListValue*>(value);
-
-  return true;
-}
-
-bool DictionaryValue::GetList(StringPiece path, ListValue** out_value) {
-  return std::as_const(*this).GetList(path,
-                                      const_cast<const ListValue**>(out_value));
 }
 
 ///////////////////// ListValue ////////////////////

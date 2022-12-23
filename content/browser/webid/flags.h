@@ -30,6 +30,12 @@ bool IsFedCmMetricsEndpointEnabled();
 // Whether the UserInfo API is enabled.
 bool IsFedCmUserInfoEnabled();
 
+// Whether the Selective Disclosure API is enabled.
+bool IsFedCmSelectiveDisclosureEnabled();
+
+// Whether the login hint parameter is enabled.
+bool IsFedCmLoginHintEnabled();
+
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_WEBID_FLAGS_H_

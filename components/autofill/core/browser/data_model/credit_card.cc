@@ -473,10 +473,9 @@ std::u16string CreditCard::GetRawInfo(ServerFieldType type) const {
   }
 }
 
-void CreditCard::SetRawInfoWithVerificationStatus(
-    ServerFieldType type,
-    const std::u16string& value,
-    structured_address::VerificationStatus status) {
+void CreditCard::SetRawInfoWithVerificationStatus(ServerFieldType type,
+                                                  const std::u16string& value,
+                                                  VerificationStatus status) {
   DCHECK_EQ(FieldTypeGroup::kCreditCard, AutofillType(type).group());
   switch (type) {
     case CREDIT_CARD_NAME_FULL:
@@ -911,13 +910,14 @@ std::u16string CreditCard::NetworkForDisplay() const {
   return CreditCard::NetworkForDisplay(network_);
 }
 
-std::u16string CreditCard::ObfuscatedLastFourDigits(
+std::u16string CreditCard::ObfuscatedNumberWithVisibleLastFourDigits(
     int obfuscation_length) const {
   return internal::GetObfuscatedStringForCardDigits(LastFourDigits(),
                                                     obfuscation_length);
 }
 
-std::u16string CreditCard::ObfuscatedLastFourDigitsForSplitFields() const {
+std::u16string
+CreditCard::ObfuscatedNumberWithVisibleLastFourDigitsForSplitFields() const {
   // For split credit card number fields, use plain dots without spacing and no
   // LTR formatting. Only obfuscate 12 dots and append the last four digits of
   // the credit card number.
@@ -975,7 +975,8 @@ std::u16string CreditCard::CardNameForAutofillDisplay(
 
 #if BUILDFLAG(IS_ANDROID)
 std::u16string CreditCard::CardIdentifierStringForManualFilling() const {
-  std::u16string obfuscated_number = ObfuscatedLastFourDigits();
+  std::u16string obfuscated_number =
+      ObfuscatedNumberWithVisibleLastFourDigits();
   if (record_type_ == VIRTUAL_CARD) {
     return l10n_util::GetStringUTF16(
                IDS_AUTOFILL_VIRTUAL_CARD_SUGGESTION_OPTION_VALUE) +
@@ -1031,11 +1032,6 @@ std::u16string CreditCard::Expiration2DigitYearAsString() const {
 
 std::u16string CreditCard::Expiration4DigitYearAsString() const {
   return data_util::Expiration4DigitYearAsString(expiration_year_);
-}
-
-bool CreditCard::HasFirstAndLastName() const {
-  return !temp_card_first_name_.empty() && !temp_card_last_name_.empty() &&
-         !name_on_card_.empty();
 }
 
 bool CreditCard::HasNameOnCard() const {
@@ -1099,7 +1095,7 @@ bool CreditCard::SetInfoWithVerificationStatusImpl(
     const AutofillType& type,
     const std::u16string& value,
     const std::string& app_locale,
-    structured_address::VerificationStatus status) {
+    VerificationStatus status) {
   ServerFieldType storable_type = type.GetStorableType();
   if (storable_type == CREDIT_CARD_EXP_MONTH)
     return SetExpirationMonthFromString(value, app_locale);

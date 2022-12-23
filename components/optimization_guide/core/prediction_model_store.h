@@ -12,6 +12,7 @@
 #include "base/sequence_checker.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/values.h"
+#include "components/optimization_guide/core/model_enums.h"
 #include "components/optimization_guide/proto/models.pb.h"
 
 class PrefService;
@@ -58,6 +59,12 @@ class PredictionModelStore {
   bool HasModel(proto::OptimizationTarget optimization_target,
                 const proto::ModelCacheKey& model_cache_key) const;
 
+  // Returns whether the model represented by |optimization_target| and
+  // |model_cache_key| with |version| is available in the store.
+  bool HasModelWithVersion(proto::OptimizationTarget optimization_target,
+                           const proto::ModelCacheKey& model_cache_key,
+                           int64_t version);
+
   // Loads the model represented by |optimization_target| and
   // |model_cache_key|. Once the model is loaded and validated |callback|
   // is invoked. On any failures, callback is run with nullptr.
@@ -88,6 +95,13 @@ class PredictionModelStore {
       proto::OptimizationTarget optimization_target,
       const proto::ModelCacheKey& model_cache_key);
 
+  // Updates the mapping of |client_model_cache_key| to |server_model_cache_key|
+  // for |optimization_target|.
+  void UpdateModelCacheKeyMapping(
+      proto::OptimizationTarget optimization_target,
+      const proto::ModelCacheKey& client_model_cache_key,
+      const proto::ModelCacheKey& server_model_cache_key);
+
  private:
   friend base::NoDestructor<PredictionModelStore>;
 
@@ -111,6 +125,28 @@ class PredictionModelStore {
                              const proto::ModelCacheKey& model_cache_key,
                              base::OnceClosure callback,
                              bool model_paths_exist);
+
+  // Removes the model represented by |optimization_target| and
+  // |model_cache_key| from the store if it exists. The model metadata will be
+  // removed immediately while the model directories will be slated for removal
+  // at next startup, by CleanUpOldModelFiles.
+  void RemoveModel(proto::OptimizationTarget optimization_target,
+                   const proto::ModelCacheKey& model_cache_key,
+                   PredictionModelStoreModelRemovalReason model_removal_reason);
+
+  // Removes all models that are considered inactive, such as expired models,
+  // models unused for a long time. When models' |keep_beyond_valid_duration| is
+  // set they are not treated as expired. This is called on startup, so the
+  // model files can be deleted instantaneously.
+  // TODO(b/244649670): Remove models that are unused for a long time.
+  void PurgeInactiveModels();
+
+  // Called at startup to remove the old model files slated for deletion in the
+  // previous sessions.
+  void CleanUpOldModelFiles();
+
+  // Invoked when model files gets deleted.
+  void OnFilePathDeleted(const std::string& path_to_delete, bool success);
 
   // Local state that stores the prefs across all profiles. Not owned and
   // outlives |this|.

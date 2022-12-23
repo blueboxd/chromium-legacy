@@ -51,6 +51,7 @@
 
 #include "private/buf.h"
 #include "private/error.h"
+#include "private/xpath.h"
 
 #ifdef LIBXML_PATTERN_ENABLED
 #define XPATH_STREAMING
@@ -486,14 +487,21 @@ double xmlXPathNINF = 0.0;
 /**
  * xmlXPathInit:
  *
- * DEPRECATED: This function will be made private. Call xmlInitParser to
- * initialize the library.
+ * DEPRECATED: Alias for xmlInitParser.
+ */
+void
+xmlXPathInit(void) {
+    xmlInitParser();
+}
+
+/**
+ * xmlInitXPathInternal:
  *
  * Initialize the XPath environment
  */
 ATTRIBUTE_NO_SANITIZE("float-divide-by-zero")
 void
-xmlXPathInit(void) {
+xmlInitXPathInternal(void) {
 #if defined(NAN) && defined(INFINITY)
     xmlXPathNAN = NAN;
     xmlXPathPINF = INFINITY;
@@ -13644,8 +13652,6 @@ xmlXPathRunStreamEval(xmlXPathContextPtr ctxt, xmlPatternPtr comp,
     xmlNodePtr cur = NULL, limit = NULL;
     xmlStreamCtxtPtr patstream = NULL;
 
-    int nb_nodes = 0;
-
     if ((ctxt == NULL) || (comp == NULL))
         return(-1);
     max_depth = xmlPatternMaxDepth(comp);
@@ -13762,8 +13768,6 @@ next_node:
             ctxt->opCount++;
         }
 
-        nb_nodes++;
-
 	switch (cur->type) {
 	    case XML_ELEMENT_NODE:
 	    case XML_TEXT_NODE:
@@ -13854,11 +13858,6 @@ scan_children:
     } while ((cur != NULL) && (depth >= 0));
 
 done:
-
-#if 0
-    printf("stream eval: checked %d nodes selected %d\n",
-           nb_nodes, retObj->nodesetval->nodeNr);
-#endif
 
     if (patstream)
 	xmlFreeStreamCtxt(patstream);

@@ -48,6 +48,7 @@ Só alguém com a sua frase de acesso pode ler os dados encriptados. A Google n�
 <translation id="1265739287306757398">Saiba como</translation>
 <translation id="1272079795634619415">Parar</translation>
 <translation id="1275718070701477396">Linha selecionada</translation>
+<translation id="1279024913354609713">Não permitir</translation>
 <translation id="1281818060020671000">Faça a gestão de dados</translation>
 <translation id="1282311502488501110">Não iniciar sessão</translation>
 <translation id="1283524564873030414">Últimas 24 horas</translation>
@@ -148,6 +149,7 @@ Só alguém com a sua frase de acesso pode ler os dados encriptados. A Google n�
 <translation id="2074131957428911366">Pode escolher o que pretende sincronizar nas <ph name="BEGIN_LINK" />definições<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Anular</translation>
 <translation id="2080769225927880590">Inicie sessão com uma conta válida</translation>
+<translation id="2090878303988764231">Inicie sessão para gerir o conteúdo que vê</translation>
 <translation id="2103075008456228677">Abrir history.google.com</translation>
 <translation id="21133533946938348">Fixar Separador</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> itens movidos</translation>
@@ -508,6 +510,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="481968316161811770">Cookies, dados de sites</translation>
 <translation id="4824497107140370669">{count,plural, =0{{domain}}=1{{domain} e mais 1}other{{domain} e mais {count}}}</translation>
 <translation id="4826218269716039351">Bloquear terceiros</translation>
+<translation id="4826588772550366629">câmara e microfone</translation>
 <translation id="4826726074642088322">Partilhar realce</translation>
 <translation id="48274138579728272">Marcar como lido</translation>
 <translation id="4833686396768033263">Os separadores recentes estão indisponíveis</translation>
@@ -560,6 +563,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5190835502935405962">Barra de marcadores</translation>
 <translation id="519530786644929958">A transferência falhou e não pode tentar novamente.</translation>
 <translation id="5197255632782567636">Internet</translation>
+<translation id="5211488077761630279">Permitir que "<ph name="SITE_NAME" />" use a autorização <ph name="PERMISSION" />?</translation>
 <translation id="5219295696240154694">Ajude a melhorar a segurança na Web para todos</translation>
 <translation id="5228579091201413441">Ativar a sincronização</translation>
 <translation id="5232485538978018676">Inicie sessão com uma conta gerida</translation>
@@ -787,6 +791,7 @@ Quando estiver na Navegação anónima, os sites não podem utilizar cookies par
 <translation id="6710079714193676716">Gerido pela sua entidade. Algumas funcionalidades podem estar indisponíveis. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Não é possível exportar palavras-passe</translation>
+<translation id="6732087373923685049">câmara</translation>
 <translation id="6748108480210050150">De</translation>
 <translation id="6760509555861141183">Volte ao separador Recentes</translation>
 <translation id="6762812039470893796">Desmarcar tudo</translation>
@@ -973,6 +978,7 @@ Os sites podem utilizar cookies para ver a sua atividade de navegação em difer
 <translation id="8197543752516192074">Traduzir página</translation>
 <translation id="8205564605687841303">Cancelar</translation>
 <translation id="8206354486702514201">Esta definição é aplicada pelo gestor.</translation>
+<translation id="821809831108207540">Para personalizar o feed do Discover e o Chrome, inicie sessão e ative a sincronização.</translation>
 <translation id="8225985093977202398">Imagens e ficheiros em cache</translation>
 <translation id="8237382152611443140">Abra as Definições do preenchimento automático de palavras-passe</translation>
 <translation id="8261506727792406068">Eliminar</translation>
@@ -1039,6 +1045,7 @@ Os sites podem utilizar cookies para ver a sua atividade de navegação em difer
 <translation id="8764015330924122850">Deixar de seguir <ph name="DOMAIN_NAME" /></translation>
 <translation id="8775144690796719618">URL inválido</translation>
 <translation id="8787968206789828143">Pesquise na Web</translation>
+<translation id="8792626944327216835">microfone</translation>
 <translation id="8803639129939845298">Seguro</translation>
 <translation id="8806823403540278281">A sua entidade requer que navegue em privado. Os separados não são guardados no Modo de navegação anónima.
 <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
@@ -1094,6 +1101,7 @@ Os sites podem utilizar cookies para ver a sua atividade de navegação em difer
 <translation id="9157836665414082580">Supr. caixas diálogo</translation>
 <translation id="9177438225260810839">Procurar nos separadores abertos</translation>
 <translation id="9188680907066685419">Terminar sessão na conta gerida</translation>
+<translation id="9193147658040604536">Arrastar para aqui para fixar o separador</translation>
 <translation id="9200875785104711666">Há <ph name="TIME" /> d</translation>
 <translation id="9203116392574189331">Entrega</translation>
 <translation id="9219154867334666734">Pesquisar separadores…</translation>

@@ -116,6 +116,7 @@
 <translation id="1908234395526491708">UDP တောင်းဆိုချက် ချွတ်ယွင်းမှုများ</translation>
 <translation id="1947737735496445907">ပုံနှိပ်ထုတ်ပြီးပြီ</translation>
 <translation id="1951012854035635156">Assistant</translation>
+<translation id="1962550982027027473">မူရင်း APN လိုအပ်သည်</translation>
 <translation id="1977994649430373166">Google ပရိုဖိုင်ဓာတ်ပုံ</translation>
 <translation id="1979103255016296513">စကားဝှက်ပြောင်းလဲမှု သက်တမ်းကုန်သွားပါပြီ</translation>
 <translation id="1999615961760456652">စတင်ဝင်ရန် စာမျက်နှာ</translation>
@@ -186,6 +187,7 @@
 <translation id="2570743873672969996"><ph name="TEST_NAME" /> စစ်ဆေးမှု လုပ်ဆောင်နေသည်...</translation>
 <translation id="2584559707064218956">စနစ်ထည့်သွင်းရန် ဆက်တင်များသို့ သွားပါ</translation>
 <translation id="2597774443162333062">အမှားရှာပြင်ရန် ဖိုင်များကို Google သို့ ပို့ပါမည်</translation>
+<translation id="2599691907981599502">{NUMBER_OF_PAGES,plural, =1{စကင်ဖတ်ပြီးပြီ။ စာမျက်နှာ ၁ မျက်နှာကို စကင်ဖတ်ထားသည်}other{စကင်ဖတ်ပြီးပြီ။ စာမျက်နှာ {NUMBER_OF_PAGES} မျက်နှာကို စကင်ဖတ်ထားသည်}}</translation>
 <translation id="2619761439309613843">နေ့စဉ် ပြန်လည်စတင်ရန်</translation>
 <translation id="2620436844016719705">စနစ်</translation>
 <translation id="2638662041295312666">လက်မှတ်ထိုးဝင်ရန်ပုံ</translation>
@@ -392,6 +394,7 @@
 <translation id="4793710386569335688">နောက်ထပ်အကူအညီအတွက် <ph name="BEGIN_LINK" />ကူညီရေးဌာန<ph name="END_LINK" /> သို့ သွားနိုင်သည်။</translation>
 <translation id="4793756956024303490">ချုံ့ခြင်း လုပ်နည်းစနစ်</translation>
 <translation id="4794140124556169553">CPU စစ်ဆေးမှု လုပ်ဆောင်ခြင်းက သင့်စနစ်၏ စွမ်းဆောင်ရည်အပေါ် သက်ရောက်မှုရှိနိုင်သည်</translation>
+<translation id="4798078634453489142">APN အသစ်ထည့်ရန် APN တစ်ခုဖယ်ရှားပါ</translation>
 <translation id="4800589996161293643">Chromebook ကွန်မြူနတီ</translation>
 <translation id="4803391892369051319">IPv4</translation>
 <translation id="4808449224298348341"><ph name="DOCUMENT_TITLE" /> ပရင့်ထုတ်ခြင်းကို ပယ်ဖျက်လိုက်သည်။</translation>
@@ -632,6 +635,7 @@
 <translation id="6791471867139427246">ကီးဘုတ်မီးအရောင်</translation>
 <translation id="680983167891198932">ကီး</translation>
 <translation id="6816797338148849397">သင်ရွေးထားသည့်အရာနှင့် သက်ဆိုင်သည့် အချက်အလက်များ ရနိုင်သည်။ ဝင်ကြည့်ရန် အပေါ်ညွှန်မြား အသုံးပြုပါ။</translation>
+<translation id="6838167112108853532">ဤ APN ကို ပိတ်၍မရပါ (သို့) ဖယ်ရှား၍မရပါ။ ဖွင့်ထားသော ပူးတွဲပါ APN များကို ပိတ်ထားကြောင်း (သို့) ဖယ်ရှားထားကြောင်း သေချာပါစေ။</translation>
 <translation id="6853312040151791195">အားလျော့နှုန်း</translation>
 <translation id="6889786074662672253">ပြန်စနေစဉ် ဤပြင်ပစက်ပစ္စည်းကို ပလတ်မဖြုတ်ပါနှင့် (သို့) သင့်ကွန်ပျူတာကို အပြီးမပိတ်ပါနှင့်။ ဤဝင်းဒိုးကို ချုံ့နိုင်သည်။ မိနစ်အနည်းငယ်ကြာနိုင်ပြီး ဤအချိန်အတွင်း သင်၏ပြင်ပစက်ပစ္စည်း အလုပ်လုပ်နိုင်မည်မဟုတ်ပါ။</translation>
 <translation id="6905724422583748843"><ph name="PAGE_NAME" /> သို့ ပြန်သွားရန်</translation>
@@ -721,6 +725,7 @@
 <translation id="7769672763586021400">မော်ဒယ်နံပါတ်</translation>
 <translation id="7778717409420828014">သင့်အကြံပြုချက်သည် Chromebook အသုံးပြုမှုကို ပိုမိုကောင်းမွန်စေရန် ကူညီပေးပြီး ၎င်းကို ကျွန်ုပ်တို့၏အဖွဲ့က စိစစ်ပါမည်။ အကြောင်းကြားချက်ပေးပို့မှု အလွန်များသဖြင့် အကြောင်းပြန်နိုင်မည် မဟုတ်ပါ။</translation>
 <translation id="7784116172884276937">DNS ဆာဗာများ စနစ်ထည့်သွင်းမထားပါ</translation>
+<translation id="7791543448312431591">ထည့်ရန်</translation>
 <translation id="779591286616261875">အကြောင်းကြားချက် အသစ်ပို့ရန်</translation>
 <translation id="7799817062559422778">အလင်းမုဒ်</translation>
 <translation id="780301667611848630">မလိုပါ</translation>

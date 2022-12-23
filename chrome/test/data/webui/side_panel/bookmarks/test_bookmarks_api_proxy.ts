@@ -28,9 +28,15 @@ export class TestBookmarksApiProxy extends TestBrowserProxy implements
       'bookmarkCurrentTabInFolder',
       'openBookmark',
       'cutBookmark',
+      'contextMenuOpenBookmarkInNewTab',
+      'contextMenuOpenBookmarkInNewWindow',
+      'contextMenuOpenBookmarkInIncognitoWindow',
+      'contextMenuDelete',
       'copyBookmark',
+      'createFolder',
       'deleteBookmarks',
       'pasteToBookmark',
+      'renameBookmark',
       'showContextMenu',
       'showUi',
     ]);
@@ -70,9 +76,29 @@ export class TestBookmarksApiProxy extends TestBrowserProxy implements
     this.folders_ = folders;
   }
 
+  contextMenuOpenBookmarkInNewTab(id: string, source: ActionSource) {
+    this.methodCalled('contextMenuOpenBookmarkInNewTab', id, source);
+  }
+
+  contextMenuOpenBookmarkInNewWindow(id: string, source: ActionSource) {
+    this.methodCalled('contextMenuOpenBookmarkInNewWindow', id, source);
+  }
+
+  contextMenuOpenBookmarkInIncognitoWindow(id: string, source: ActionSource) {
+    this.methodCalled('contextMenuOpenBookmarkInIncognitoWindow', id, source);
+  }
+
+  contextMenuDelete(id: string, source: ActionSource) {
+    this.methodCalled('contextMenuDelete', id, source);
+  }
+
   copyBookmark(id: string): Promise<void> {
     this.methodCalled('copyBookmark', id);
     return Promise.resolve();
+  }
+
+  createFolder(parentId: string, title: string) {
+    this.methodCalled('createFolder', parentId, title);
   }
 
   cutBookmark(id: string) {
@@ -87,6 +113,10 @@ export class TestBookmarksApiProxy extends TestBrowserProxy implements
   pasteToBookmark(parentId: string, destinationId?: string): Promise<void> {
     this.methodCalled('pasteToBookmark', parentId, destinationId);
     return Promise.resolve();
+  }
+
+  renameBookmark(id: string, title: string) {
+    this.methodCalled('renameBookmark', id, title);
   }
 
   showContextMenu(id: string, x: number, y: number, source: ActionSource) {

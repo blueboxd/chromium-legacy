@@ -48,6 +48,7 @@
 <translation id="1265739287306757398">詳細</translation>
 <translation id="1272079795634619415">中止</translation>
 <translation id="1275718070701477396">選択中</translation>
+<translation id="1279024913354609713">許可しない</translation>
 <translation id="1281818060020671000">データの管理</translation>
 <translation id="1282311502488501110">ログインしない</translation>
 <translation id="1283524564873030414">過去 24 時間</translation>
@@ -148,6 +149,7 @@
 <translation id="2074131957428911366">同期する項目はいつでも [<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] で選択できます。</translation>
 <translation id="2079545284768500474">元に戻す</translation>
 <translation id="2080769225927880590">有効なアカウントでログインしてください</translation>
+<translation id="2090878303988764231">表示されるコンテンツを管理するにはログインしてください</translation>
 <translation id="2103075008456228677">history.google.com を開く</translation>
 <translation id="21133533946938348">タブを固定</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />件の項目を移動しました</translation>
@@ -190,6 +192,7 @@
 <translation id="2421044535038393232">編集を続ける</translation>
 <translation id="2434405374328098816"><ph name="WEBSITE" /> の「<ph name="USERNAME" />」のパスワードは保存済みです</translation>
 <translation id="2435457462613246316">パスワードを表示</translation>
+<translation id="2451654228769116489">タブを固定</translation>
 <translation id="2461070143328828326">パスワードの設定</translation>
 <translation id="2469960372084740698">セーフ ブラウジングをオフにしますか？</translation>
 <translation id="2473876017985765807"><ph name="WEBSITE" /> のパスワードは保存済みです</translation>
@@ -672,6 +675,7 @@
 <translation id="6059830886158432458">ここで記事やアクティビティを管理します</translation>
 <translation id="6064824697233747382">組織が同期をオフにするよう求めています。</translation>
 <translation id="6066301408025741299">タップしてキャンセルします。</translation>
+<translation id="6071409777669089905">タブの固定を解除</translation>
 <translation id="60829778314739003">同意して続行</translation>
 <translation id="6084848228346514841">タブを選択</translation>
 <translation id="6103540626693881831">オンデバイスの暗号化</translation>
@@ -785,6 +789,7 @@
 <translation id="6710079714193676716">組織によって管理されています。一部の機能は使用できません。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">パスワードをエクスポートできません</translation>
+<translation id="6732087373923685049">カメラ</translation>
 <translation id="6748108480210050150">From</translation>
 <translation id="6760509555861141183">最近使用したタブに戻る</translation>
 <translation id="6762812039470893796">選択をすべて解除</translation>
@@ -971,6 +976,7 @@
 <translation id="8197543752516192074">ページを翻訳する</translation>
 <translation id="8205564605687841303">キャンセル</translation>
 <translation id="8206354486702514201">この設定は管理者によって制御されています。</translation>
+<translation id="821809831108207540">Discover フィードと Chrome をカスタマイズするには、ログインして同期を有効にします。</translation>
 <translation id="8225985093977202398">キャッシュされた画像とファイル</translation>
 <translation id="8237382152611443140">[パスワードを自動入力] 設定を開く</translation>
 <translation id="8261506727792406068">削除</translation>
@@ -1037,6 +1043,7 @@
 <translation id="8764015330924122850"><ph name="DOMAIN_NAME" /> のフォローを解除</translation>
 <translation id="8775144690796719618">無効なURL</translation>
 <translation id="8787968206789828143">ウェブで検索</translation>
+<translation id="8792626944327216835">マイク</translation>
 <translation id="8803639129939845298">この通信は保護されています</translation>
 <translation id="8806823403540278281">組織がシークレット モードで閲覧するよう求めています。シークレット モードではタブは保存されません。
 <ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
@@ -1092,11 +1099,13 @@
 <translation id="9157836665414082580">ダイアログを表示しない</translation>
 <translation id="9177438225260810839">開いているタブを検索</translation>
 <translation id="9188680907066685419">管理対象アカウントからログアウトする</translation>
+<translation id="9193147658040604536">タブを固定するにはここをドラッグします</translation>
 <translation id="9200875785104711666"><ph name="TIME" /> 日前</translation>
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9219154867334666734">タブを検索…</translation>
 <translation id="9223358826628549784">クラッシュレポートを送信しました。</translation>
 <translation id="941747855997058526">パスワードの選択...</translation>
+<translation id="948048872540558976">新しいタブを作成</translation>
 <translation id="952704832371081537">キャンセル</translation>
 <translation id="953008885340860025">Chrome がログアウトされました</translation>
 <translation id="959066944189734975"><ph name="CHANNEL_NAME" /> をフォローしています</translation>

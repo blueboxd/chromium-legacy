@@ -360,6 +360,7 @@ int GetFieldTypeGroupPredictionQualityMetric(
         case NOT_PASSWORD:
         case SINGLE_USERNAME:
         case NOT_USERNAME:
+        case ONE_TIME_CODE:
         case UPI_VPA:
         case NAME_LAST_FIRST:
         case NAME_LAST_CONJUNCTION:
@@ -963,173 +964,6 @@ void AutofillMetrics::LogProgressDialogShown(
   }
   base::UmaHistogramBoolean("Autofill.ProgressDialog." + dialog_type + ".Shown",
                             true);
-}
-
-// static
-void AutofillMetrics::LogCardUnmaskDurationAfterWebauthn(
-    const base::TimeDelta& duration,
-    AutofillClient::PaymentsRpcResult result,
-    AutofillClient::PaymentsRpcCardType card_type) {
-  base::UmaHistogramLongTimes("Autofill.BetterAuth.CardUnmaskDuration.Fido",
-                              duration);
-  base::UmaHistogramLongTimes("Autofill.BetterAuth.CardUnmaskDuration.Fido" +
-                                  GetHistogramStringForCardType(card_type) +
-                                  PaymentsRpcResultToMetricsSuffix(result),
-                              duration);
-}
-
-// static
-void AutofillMetrics::LogCardUnmaskPreflightCalled() {
-  UMA_HISTOGRAM_BOOLEAN("Autofill.BetterAuth.CardUnmaskPreflightCalled", true);
-}
-
-// static
-void AutofillMetrics::LogCardUnmaskPreflightDuration(
-    const base::TimeDelta& duration) {
-  base::UmaHistogramLongTimes("Autofill.BetterAuth.CardUnmaskPreflightDuration",
-                              duration);
-}
-
-// static
-void AutofillMetrics::LogServerCardUnmaskAttempt(
-    AutofillClient::PaymentsRpcCardType card_type) {
-  base::UmaHistogramBoolean("Autofill.ServerCardUnmask" +
-                                GetHistogramStringForCardType(card_type) +
-                                ".Attempt",
-                            true);
-}
-
-// static
-void AutofillMetrics::LogServerCardUnmaskResult(
-    ServerCardUnmaskResult unmask_result,
-    AutofillClient::PaymentsRpcCardType card_type,
-    VirtualCardUnmaskFlowType flow_type) {
-  std::string flow_type_suffix;
-  switch (flow_type) {
-    case VirtualCardUnmaskFlowType::kUnspecified:
-      flow_type_suffix = ".UnspecifiedFlowType";
-      break;
-    case VirtualCardUnmaskFlowType::kFidoOnly:
-      flow_type_suffix = ".Fido";
-      break;
-    case VirtualCardUnmaskFlowType::kOtpOnly:
-      flow_type_suffix = ".Otp";
-      break;
-    case VirtualCardUnmaskFlowType::kOtpFallbackFromFido:
-      flow_type_suffix = ".OtpFallbackFromFido";
-      break;
-  }
-
-  base::UmaHistogramEnumeration("Autofill.ServerCardUnmask" +
-                                    GetHistogramStringForCardType(card_type) +
-                                    ".Result" + flow_type_suffix,
-                                unmask_result);
-}
-
-// static
-void AutofillMetrics::LogServerCardUnmaskFormSubmission(
-    AutofillClient::PaymentsRpcCardType card_type) {
-  base::UmaHistogramBoolean("Autofill.ServerCardUnmask" +
-                                GetHistogramStringForCardType(card_type) +
-                                ".FormSubmission",
-                            true);
-}
-
-// static
-void AutofillMetrics::LogWebauthnOptChangeCalled(
-    bool request_to_opt_in,
-    bool is_checkout_flow,
-    WebauthnOptInParameters metric) {
-  if (!request_to_opt_in) {
-    DCHECK(!is_checkout_flow);
-    base::UmaHistogramBoolean(
-        "Autofill.BetterAuth.OptOutCalled.FromSettingsPage", true);
-    return;
-  }
-
-  std::string histogram_name = "Autofill.BetterAuth.OptInCalled.";
-  histogram_name += is_checkout_flow ? "FromCheckoutFlow" : "FromSettingsPage";
-  base::UmaHistogramEnumeration(histogram_name, metric);
-}
-
-// static
-void AutofillMetrics::LogWebauthnOptInPromoShown(bool is_checkout_flow) {
-  std::string suffix =
-      is_checkout_flow ? "FromCheckoutFlow" : "FromSettingsPage";
-  base::UmaHistogramBoolean("Autofill.BetterAuth.OptInPromoShown." + suffix,
-                            true);
-}
-
-// static
-void AutofillMetrics::LogWebauthnOptInPromoUserDecision(
-    bool is_checkout_flow,
-    WebauthnOptInPromoUserDecisionMetric metric) {
-  std::string suffix =
-      (is_checkout_flow ? "FromCheckoutFlow" : "FromSettingsPage");
-  base::UmaHistogramEnumeration(
-      "Autofill.BetterAuth.OptInPromoUserDecision." + suffix, metric);
-}
-
-// static
-void AutofillMetrics::LogCardUnmaskTypeDecision(
-    CardUnmaskTypeDecisionMetric metric) {
-  base::UmaHistogramEnumeration("Autofill.BetterAuth.CardUnmaskTypeDecision",
-                                metric);
-}
-
-// static
-void AutofillMetrics::LogUserPerceivedLatencyOnCardSelection(
-    PreflightCallEvent event,
-    bool fido_auth_enabled) {
-  std::string histogram_name =
-      "Autofill.BetterAuth.UserPerceivedLatencyOnCardSelection.";
-  histogram_name += fido_auth_enabled ? "OptedIn" : "OptedOut";
-  base::UmaHistogramEnumeration(histogram_name, event);
-}
-
-// static
-void AutofillMetrics::LogUserPerceivedLatencyOnCardSelectionDuration(
-    const base::TimeDelta duration) {
-  base::UmaHistogramLongTimes(
-      "Autofill.BetterAuth.UserPerceivedLatencyOnCardSelection.OptedIn."
-      "Duration",
-      duration);
-}
-
-// static
-void AutofillMetrics::LogUserPerceivedLatencyOnCardSelectionTimedOut(
-    bool did_time_out) {
-  base::UmaHistogramBoolean(
-      "Autofill.BetterAuth.UserPerceivedLatencyOnCardSelection.OptedIn."
-      "TimedOutCvcFallback",
-      did_time_out);
-}
-
-void AutofillMetrics::LogUserVerifiabilityCheckDuration(
-    const base::TimeDelta& duration) {
-  base::UmaHistogramLongTimes(
-      "Autofill.BetterAuth.UserVerifiabilityCheckDuration", duration);
-}
-
-// static
-void AutofillMetrics::LogWebauthnResult(WebauthnFlowEvent event,
-                                        WebauthnResultMetric metric) {
-  std::string histogram_name = "Autofill.BetterAuth.WebauthnResult.";
-  switch (event) {
-    case WebauthnFlowEvent::kImmediateAuthentication:
-      histogram_name += "ImmediateAuthentication";
-      break;
-    case WebauthnFlowEvent::kAuthenticationAfterCvc:
-      histogram_name += "AuthenticationAfterCVC";
-      break;
-    case WebauthnFlowEvent::kCheckoutOptIn:
-      histogram_name += "CheckoutOptIn";
-      break;
-    case WebauthnFlowEvent::kSettingsPageOptIn:
-      histogram_name += "SettingsPageOptIn";
-      break;
-  }
-  base::UmaHistogramEnumeration(histogram_name, metric);
 }
 
 // static
@@ -2658,6 +2492,127 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogFieldType(
 }
 
 void AutofillMetrics::FormInteractionsUkmLogger::
+    LogAutofillFieldInfoAtFormRemove(const FormStructure& form,
+                                     const AutofillField& field) {
+  if (!CanLog()) {
+    return;
+  }
+
+  const std::vector<AutofillField::FieldLogEventType>& field_log_events =
+      field.field_log_events();
+  if (field_log_events.empty()) {
+    return;
+  }
+
+  // Set the fields with autofill information according to Autofill FieldInfo
+  // UKM schema:
+  // https://docs.google.com/document/d/1ZH0JbL6bES3cD4KqZWsGR6n8I-rhnkx6no6nQOgYq5w/
+  OptionalBoolean was_focused = OptionalBoolean::kFalse;
+  OptionalBoolean suggestion_was_available = OptionalBoolean::kUndefined;
+  OptionalBoolean suggestion_was_shown = OptionalBoolean::kUndefined;
+  OptionalBoolean suggestion_was_accepted = OptionalBoolean::kUndefined;
+
+  OptionalBoolean was_autofilled = OptionalBoolean::kUndefined;
+  OptionalBoolean had_value_before_filling = OptionalBoolean::kUndefined;
+  DenseSet<SkipStatus> autofill_skipped_status;
+  size_t autofill_count = 0;
+
+  OptionalBoolean user_typed_into_field = OptionalBoolean::kFalse;
+  OptionalBoolean filled_value_was_modified = OptionalBoolean::kUndefined;
+  OptionalBoolean had_typed_or_filled_value_at_submission =
+      OptionalBoolean::kUndefined;
+  OptionalBoolean had_value_after_filling = OptionalBoolean::kUndefined;
+  OptionalBoolean has_value_after_typing = OptionalBoolean::kUndefined;
+
+  // TODO(crbug.com/1325851): Add a metric in |FieldInfo| UKM event to indicate
+  // whether the user had any data available for the respective field type.
+
+  for (const auto& log_event : field_log_events) {
+    static_assert(absl::variant_size<AutofillField::FieldLogEventType>() == 5,
+                  "When adding new variants check that this function does not "
+                  "need to be updated.");
+    if (auto* event =
+            absl::get_if<AskForValuesToFillFieldLogEvent>(&log_event)) {
+      was_focused = OptionalBoolean::kTrue;
+      suggestion_was_available |= event->has_suggestion;
+      suggestion_was_shown |= event->suggestion_is_shown;
+      if (suggestion_was_shown == OptionalBoolean::kTrue &&
+          suggestion_was_accepted == OptionalBoolean::kUndefined) {
+        // Only switch from unknown to false on the first suggestion.
+        suggestion_was_accepted = OptionalBoolean::kFalse;
+      }
+    }
+
+    if (absl::holds_alternative<TriggerFillFieldLogEvent>(log_event)) {
+      suggestion_was_accepted = OptionalBoolean::kTrue;
+    }
+
+    if (auto* event = absl::get_if<FillFieldLogEvent>(&log_event)) {
+      was_autofilled |= event->was_autofilled;
+      had_value_before_filling |= event->had_value_before_filling;
+      autofill_skipped_status.insert(event->autofill_skipped_status);
+      had_value_after_filling = event->had_value_after_filling;
+      ++autofill_count;
+    }
+
+    if (auto* event = absl::get_if<TypingFieldLogEvent>(&log_event)) {
+      user_typed_into_field = OptionalBoolean::kTrue;
+      filled_value_was_modified |= was_autofilled;
+      has_value_after_typing = event->has_value_after_typing;
+    }
+  }
+
+  if (had_value_after_filling != OptionalBoolean::kUndefined ||
+      has_value_after_typing != OptionalBoolean::kUndefined) {
+    had_typed_or_filled_value_at_submission =
+        ToOptionalBoolean(had_value_after_filling == OptionalBoolean::kTrue ||
+                          has_value_after_typing == OptionalBoolean::kTrue);
+  }
+
+  ukm::builders::Autofill_FieldInfo builder(source_id_);
+  builder
+      .SetFormSessionIdentifier(
+          AutofillMetrics::FormGlobalIdToHash64Bit(form.global_id()))
+      .SetFieldSessionIdentifier(
+          AutofillMetrics::FieldGlobalIdToHash64Bit(field.global_id()))
+      .SetFieldSignature(HashFieldSignature(field.GetFieldSignature()))
+      .SetWasFocused(OptionalBooleanToBool(was_focused));
+
+  if (was_focused == OptionalBoolean::kTrue) {
+    builder
+        .SetSuggestionWasAvailable(
+            OptionalBooleanToBool(suggestion_was_available))
+        .SetSuggestionWasShown(OptionalBooleanToBool(suggestion_was_shown));
+  }
+
+  if (suggestion_was_shown == OptionalBoolean::kTrue) {
+    builder.SetSuggestionWasAccepted(
+        OptionalBooleanToBool(suggestion_was_accepted));
+  }
+
+  if (autofill_count > 0) {
+    builder.SetWasAutofilled(OptionalBooleanToBool(was_autofilled))
+        .SetHadValueBeforeFilling(
+            OptionalBooleanToBool(had_value_before_filling))
+        .SetAutofillSkippedStatus(autofill_skipped_status.to_uint64())
+        .SetWasRefill(autofill_count > 1);
+  }
+
+  if (user_typed_into_field == OptionalBoolean::kTrue) {
+    builder.SetUserTypedIntoField(OptionalBooleanToBool(user_typed_into_field))
+        .SetFilledValueWasModified(
+            OptionalBooleanToBool(filled_value_was_modified));
+  }
+
+  if (had_typed_or_filled_value_at_submission != OptionalBoolean::kUndefined) {
+    builder.SetHadTypedOrFilledValueAtSubmission(
+        OptionalBooleanToBool(had_typed_or_filled_value_at_submission));
+  }
+
+  builder.Record(ukm_recorder_);
+}
+
+void AutofillMetrics::FormInteractionsUkmLogger::
     LogHiddenRepresentationalFieldSkipDecision(const FormStructure& form,
                                                const AutofillField& field,
                                                bool is_skipped) {
@@ -3132,8 +3087,7 @@ void AutofillMetrics::LogVerificationStatusOfNameTokensOnProfileUsage(
       continue;
     }
 
-    structured_address::VerificationStatus status =
-        profile.GetVerificationStatus(type);
+    VerificationStatus status = profile.GetVerificationStatus(type);
     base::UmaHistogramEnumeration(base::StrCat({base_histogram_name, name}),
                                   status);
     base::UmaHistogramEnumeration(base::StrCat({base_histogram_name, "Any"}),
@@ -3152,8 +3106,7 @@ void AutofillMetrics::LogVerificationStatusOfAddressTokensOnProfileUsage(
       continue;
     }
 
-    structured_address::VerificationStatus status =
-        profile.GetVerificationStatus(type);
+    VerificationStatus status = profile.GetVerificationStatus(type);
     base::UmaHistogramEnumeration(base::StrCat({base_histogram_name, name}),
                                   status);
     base::UmaHistogramEnumeration(base::StrCat({base_histogram_name, "Any"}),
@@ -3185,74 +3138,6 @@ void AutofillMetrics::LogAutofillingSourceForStateSelectionFieldAtSubmission(
   base::UmaHistogramEnumeration(
       "Autofill.AutofilledFieldAtSubmission.ByStateSelectionField",
       autofilled_source_metric_for_state_selection_field);
-}
-
-// static
-void AutofillMetrics::LogOtpAuthAttempt() {
-  base::UmaHistogramBoolean("Autofill.OtpAuth.SmsOtp.Attempt", true);
-}
-
-// static
-void AutofillMetrics::LogOtpAuthResult(OtpAuthEvent event) {
-  DCHECK_LE(event, OtpAuthEvent::kMaxValue);
-  base::UmaHistogramEnumeration("Autofill.OtpAuth.SmsOtp.Result", event);
-}
-
-// static
-void AutofillMetrics::LogOtpAuthRetriableError(OtpAuthEvent event) {
-  DCHECK_LE(event, OtpAuthEvent::kMaxValue);
-  base::UmaHistogramEnumeration("Autofill.OtpAuth.SmsOtp.RetriableError",
-                                event);
-}
-
-// static
-void AutofillMetrics::LogOtpAuthUnmaskCardRequestLatency(
-    const base::TimeDelta& duration) {
-  base::UmaHistogramLongTimes(
-      "Autofill.OtpAuth.SmsOtp.RequestLatency.UnmaskCardRequest", duration);
-}
-
-// static
-void AutofillMetrics::LogOtpAuthSelectChallengeOptionRequestLatency(
-    const base::TimeDelta& duration) {
-  base::UmaHistogramLongTimes(
-      "Autofill.OtpAuth.SmsOtp.RequestLatency.SelectChallengeOptionRequest",
-      duration);
-}
-
-// static
-void AutofillMetrics::LogOtpInputDialogShown() {
-  base::UmaHistogramBoolean("Autofill.OtpInputDialog.SmsOtp.Shown", true);
-}
-
-// static
-void AutofillMetrics::LogOtpInputDialogResult(OtpInputDialogResult result,
-                                              bool temporary_error_shown) {
-  DCHECK_GT(result, OtpInputDialogResult::kUnknown);
-  DCHECK_LE(result, OtpInputDialogResult::kMaxValue);
-  std::string temporary_error_shown_suffix = temporary_error_shown
-                                                 ? ".WithPreviousTemporaryError"
-                                                 : ".WithNoTemporaryError";
-  base::UmaHistogramEnumeration("Autofill.OtpInputDialog.SmsOtp.Result",
-                                result);
-  base::UmaHistogramEnumeration(
-      "Autofill.OtpInputDialog.SmsOtp.Result" + temporary_error_shown_suffix,
-      result);
-}
-
-// static
-void AutofillMetrics::LogOtpInputDialogErrorMessageShown(
-    OtpInputDialogError error) {
-  DCHECK_GT(error, OtpInputDialogError::kUnknown);
-  DCHECK_LE(error, OtpInputDialogError::kMaxValue);
-  base::UmaHistogramEnumeration(
-      "Autofill.OtpInputDialog.SmsOtp.ErrorMessageShown", error);
-}
-
-// static
-void AutofillMetrics::LogOtpInputDialogNewOtpRequested() {
-  base::UmaHistogramBoolean("Autofill.OtpInputDialog.SmsOtp.NewOtpRequested",
-                            true);
 }
 
 // static
@@ -3406,6 +3291,22 @@ std::string AutofillMetrics::GetHistogramStringForCardType(
   }
 
   return "";
+}
+
+// static
+uint64_t AutofillMetrics::FormGlobalIdToHash64Bit(
+    const FormGlobalId& form_global_id) {
+  return StrToHash64Bit(
+      base::NumberToString(form_global_id.renderer_id.value()) +
+      form_global_id.frame_token.ToString());
+}
+
+// static
+uint64_t AutofillMetrics::FieldGlobalIdToHash64Bit(
+    const FieldGlobalId& field_global_id) {
+  return StrToHash64Bit(
+      base::NumberToString(field_global_id.renderer_id.value()) +
+      field_global_id.frame_token.ToString());
 }
 
 }  // namespace autofill

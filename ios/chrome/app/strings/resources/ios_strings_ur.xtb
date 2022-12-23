@@ -48,6 +48,7 @@
 <translation id="1265739287306757398">طریقہ جانیں</translation>
 <translation id="1272079795634619415">روکیں</translation>
 <translation id="1275718070701477396">منتخب</translation>
+<translation id="1279024913354609713">اجازت نہ دیں</translation>
 <translation id="1281818060020671000">ڈیٹا کا نظم کریں</translation>
 <translation id="1282311502488501110">سائن ان نہ کریں</translation>
 <translation id="1283524564873030414">گزشتہ 24 گھنٹے</translation>
@@ -148,6 +149,7 @@
 <translation id="2074131957428911366">آپ <ph name="BEGIN_LINK" />ترتیبات<ph name="END_LINK" /> میں کسی بھی وقت اس بات کا انتخاب کر سکتے ہیں کہ کس چیز کی مطابقت پذیری کرنی ہے۔</translation>
 <translation id="2079545284768500474">کالعدم کریں</translation>
 <translation id="2080769225927880590">ایک درست اکاؤنٹ سے سائن ان کریں</translation>
+<translation id="2090878303988764231">آپ جو مواد دیکھتے ہیں اس کا نظم کرنے کے لیے سائن ان کریں</translation>
 <translation id="2103075008456228677">‏history.google.com کھولیں</translation>
 <translation id="21133533946938348">ٹیب کو پن کریں</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> آئٹمز منتقل کر دیے گئے</translation>
@@ -190,6 +192,7 @@
 <translation id="2421044535038393232">ترمیم جاری رکھیں</translation>
 <translation id="2434405374328098816">آپ نے <ph name="WEBSITE" /> پر "<ph name="USERNAME" />" کے لیے پہلے ہی پاس ورڈ محفوظ کر لیا ہے</translation>
 <translation id="2435457462613246316">پاس ورڈ دکھائیں</translation>
+<translation id="2451654228769116489">ٹیب کو پن کریں</translation>
 <translation id="2461070143328828326">پاس ورڈ کی ترتیبات</translation>
 <translation id="2469960372084740698">محفوظ براؤزنگ آف کریں؟</translation>
 <translation id="2473876017985765807">آپ نے پہلے ہی <ph name="WEBSITE" /> کے لیے ایک پاس ورڈ محفوظ کیا ہے</translation>
@@ -672,6 +675,7 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="6059830886158432458">اپنی کہانیوں اور سرگرمی کو یہاں کنٹرول کریں</translation>
 <translation id="6064824697233747382">آپ کی تنظیم آپ سے مطابقت پذیری کو بند کرنے کا تقاضا کرتی ہے۔</translation>
 <translation id="6066301408025741299">منسوخ کرنے کیلئے تھپتھپائیں۔</translation>
+<translation id="6071409777669089905">ٹیب کی پن ہٹائیں</translation>
 <translation id="60829778314739003">قبول کریں اور جاری رکھیں</translation>
 <translation id="6084848228346514841">ٹیبز منتخب کریں</translation>
 <translation id="6103540626693881831">آلے پر مرموزکاری</translation>
@@ -785,6 +789,7 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="6710079714193676716">آپ کی تنظیم کے زیر انتظام۔ ہو سکتا ہے کہ کچھ خصوصیات دستیاب نہ ہوں۔ <ph name="BEGIN_LINK" />مزید جانیں<ph name="END_LINK" /></translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">پاسورڈز برآمد نہیں ہو سکے</translation>
+<translation id="6732087373923685049">کیمرا</translation>
 <translation id="6748108480210050150">منجانب</translation>
 <translation id="6760509555861141183">حالیہ ٹیب میں واپس جائیں</translation>
 <translation id="6762812039470893796">سبھی غیر منتخب کریں</translation>
@@ -971,6 +976,7 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="8197543752516192074">صفحہ کا ترجمہ کریں</translation>
 <translation id="8205564605687841303">منسوخ کریں</translation>
 <translation id="8206354486702514201">اس ترتیب کو آپ کے منتظم نے نافذ کیا ہے۔</translation>
+<translation id="821809831108207540">‏اپنی Discover فیڈ اور Chrome کو ذاتی نوعیت کا بنانے کے لیے، سائن ان کریں اور مطابقت پذیری کو آن کریں۔</translation>
 <translation id="8225985093977202398">کیش کردہ تصاویر اور فائلیں</translation>
 <translation id="8237382152611443140">آٹو فل پاس ورڈ کی ترتیبات کھولیں</translation>
 <translation id="8261506727792406068">حذف کریں</translation>
@@ -1037,6 +1043,7 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="8764015330924122850"><ph name="DOMAIN_NAME" /> کی پیروی ختم کریں</translation>
 <translation id="8775144690796719618">‏غلط URL</translation>
 <translation id="8787968206789828143">ویب پر تلاش کریں</translation>
+<translation id="8792626944327216835">مائیکروفون</translation>
 <translation id="8803639129939845298">محفوظ</translation>
 <translation id="8806823403540278281">آپ کی تنظیم چاہتی ہے کہ آپ نجی طور پر براؤز کریں۔ ٹیبز پوشیدگی وضع میں محفوظ نہیں ہیں۔
 <ph name="BEGIN_LINK" />مزید جانیں<ph name="END_LINK" /></translation>
@@ -1097,6 +1104,7 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="9219154867334666734">ٹیبز تلاش کریں…</translation>
 <translation id="9223358826628549784">کریش رپورٹ بھیج دی گئی۔</translation>
 <translation id="941747855997058526">پاس ورڈ منتخب کریں...</translation>
+<translation id="948048872540558976">نیا ٹیب تخلیق کریں</translation>
 <translation id="952704832371081537">منسوخ کریں</translation>
 <translation id="953008885340860025">‏Chrome سے سائن آوٹ ہو گئے</translation>
 <translation id="959066944189734975">آپ <ph name="CHANNEL_NAME" /> کی پیروی کر رہے ہیں</translation>

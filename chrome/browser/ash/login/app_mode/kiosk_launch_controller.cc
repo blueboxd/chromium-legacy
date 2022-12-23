@@ -54,6 +54,8 @@ base::TimeDelta g_network_wait_time = kKioskNetworkWaitTime;
 // Whether we should skip the wait for minimum screen show time.
 bool g_skip_splash_wait_for_testing = false;
 bool g_block_app_launch_for_testing = false;
+// Whether we should prevent Kiosk launcher from exiting when launch fails.
+bool g_block_exit_on_failure_for_testing = false;
 // Whether we should disable splash wait timer and do not perform any operations
 // using KioskProfileLoader. Used in tests.
 bool g_disable_wait_timer_and_login_operations = false;
@@ -400,9 +402,10 @@ void KioskLaunchController::OnTimerFire() {
     CloseSplashScreen();
   } else if (app_state_ == AppState::kInstalled) {
     LaunchApp();
-  } else {
-    launch_on_install_ = true;
   }
+  // Always set `launch_on_install_` to true so that Kiosk launch will happen
+  // immediately after retrying due to network issue.
+  launch_on_install_ = true;
 }
 
 void KioskLaunchController::CloseSplashScreen() {
@@ -523,6 +526,13 @@ void KioskLaunchController::OnLaunchFailed(KioskAppLaunchError::Error error) {
     // Do not save the error because saved errors would stop app from launching
     // on the next run.
     chrome::AttemptRelaunch();
+    return;
+  }
+
+  // Don't exit on launch failure if a test checks for Kiosk splash screen after
+  // launch fails, which happens to MSan browser_tests since this build variant
+  // runs significantly slower.
+  if (g_block_exit_on_failure_for_testing) {
     return;
   }
 
@@ -803,6 +813,11 @@ std::unique_ptr<base::AutoReset<bool>>
 KioskLaunchController::BlockAppLaunchForTesting() {
   return std::make_unique<base::AutoReset<bool>>(
       &g_block_app_launch_for_testing, true);
+}
+
+// static
+base::AutoReset<bool> KioskLaunchController::BlockExitOnFailureForTesting() {
+  return base::AutoReset<bool>(&g_block_exit_on_failure_for_testing, true);
 }
 
 // static

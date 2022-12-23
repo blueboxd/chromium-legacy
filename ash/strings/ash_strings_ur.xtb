@@ -37,6 +37,7 @@
 <translation id="1175572348579024023">اسکرول کریں</translation>
 <translation id="1178581264944972037">موقوف کریں</translation>
 <translation id="1181037720776840403">ہٹائیں</translation>
+<translation id="1182225749592316782">اس سے کیمرے اور مائیکروفون کی اجازتوں کے ساتھ تمام ایپس اور ویب سائٹس تک رسائی کی اجازت ملتی ہے</translation>
 <translation id="1183863904939664422">اس تجویز میں کوئی دلچسپی نہیں</translation>
 <translation id="118437560755358292">‏مزید سیکیورٹی کے لیے پاس ورڈ یا PIN درج کریں</translation>
 <translation id="118532027333893379">فُل اسکرین کیپچر کرنے کیلئے کہیں پر بھی تھپتھپائیں</translation>
@@ -120,6 +121,7 @@
 <translation id="15373452373711364">بڑا ماؤس کرسر</translation>
 <translation id="1546492247443594934">ڈیسک 2</translation>
 <translation id="1546930421365146760">‏اس آلہ کو Google منتظم کونسول میں سیٹ اپ کرنے کیلئے اپنے منتظم سے مطالبہ کریں</translation>
+<translation id="1550406609415860283">دستیاب آلات</translation>
 <translation id="1550523713251050646">مزید اختیارات کیلئے کلک کریں</translation>
 <translation id="1555130319947370107">نیلا</translation>
 <translation id="1589090746204042747">اس سیشن کی اپنی ہر سرگرمی تک رسائی حاصل کریں</translation>
@@ -127,6 +129,7 @@
 <translation id="1611993646327628135">آن</translation>
 <translation id="1620510694547887537">کیمرا</translation>
 <translation id="1632985212731562677">سوئچ رسائی کو ترتیبات &gt; ایکسیسبیلٹی میں غیر فعال کیا جا سکتا ہے۔</translation>
+<translation id="163517899691012366">ڈسٹرب نہ کریں کے آن ہونے پر اطلاعات خاموش ہو جاتی ہیں</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> آلات</translation>
 <translation id="1639239467298939599">لوڈ ہو رہی ہے</translation>
 <translation id="1654477262762802994">صوتی استفسار شروع کریں</translation>
@@ -173,7 +176,6 @@
         <ph name="LOCALE" /></translation>
 <translation id="1823873187264960516">ایتھرنیٹ: <ph name="ADDRESS" /></translation>
 <translation id="1830308660060964064"><ph name="ITEM_TITLE" /> سے پن کو ختم کر دیا گیا</translation>
-<translation id="1836215606488044471">اسسٹنٹ (لوڈ ہو رہا ہے...)</translation>
 <translation id="1838895407229022812">نائٹ لائٹ آف ہے۔</translation>
 <translation id="1854180393107901205">کاسٹ کرنا بند کریں</translation>
 <translation id="1862380676329487333">اپ ڈیٹ کریں اور سائن آؤٹ کریں</translation>
@@ -261,7 +263,6 @@
 <translation id="2359808026110333948">جاری رکھیں</translation>
 <translation id="2367186422933365202">‏اپنے Chromebook میں سائن ان نہیں کر سکتے</translation>
 <translation id="2369165858548251131">چینی میں "ہیلو"</translation>
-<translation id="2375445874393996153">‏میری اسکرین پر موجود چیزوں کو Google اسسٹنٹ کے ساتھ تلاش کرنے کی خصوصیت اب مزید تعاون یافتہ نہیں ہے۔</translation>
 <translation id="2390318262976603432">مقامی ترتیبات</translation>
 <translation id="240006516586367791">میڈیا کنٹرولز</translation>
 <translation id="2402411679569069051">‏اپنے Chromebook کو غیر مقفل کرنے کیلئے، اپنے فنگر پرنٹ کا استعمال کریں یا اپنے فون کو غیر مقفل کریں</translation>
@@ -375,6 +376,7 @@
 <translation id="3047761520276763270">بولنے کی کوشش کریں:</translation>
 <translation id="3051189971848907985">پروفائل کا نام تبدیل ہو رہا ہے۔ کچھ منٹ انتظار کریں۔</translation>
 <translation id="3055162170959710888">آپ نے اس آلہ کو آج <ph name="USED_TIME" /> تک استعمال کیا ہے</translation>
+<translation id="3062298103034426069">تعاون یافتہ نہیں ہے</translation>
 <translation id="3068711042108640621">شیلف بائیں ہے</translation>
 <translation id="3077734595579995578">شفٹ</translation>
 <translation id="3081696990447829002">مینو کو پھیلائیں</translation>
@@ -409,6 +411,7 @@
 <translation id="3249513730522716925"><ph name="WINDOW_TITLE" /> ونڈو کو <ph name="ACTIVE_DESK" /> ڈیسک سے <ph name="TARGET_DESK" /> ڈیسک میں منتقل کر دیا گیا ہے</translation>
 <translation id="3252573918265662711">سیٹ اپ</translation>
 <translation id="3255483164551725916">آپ کیا کر سکتی ہیں؟</translation>
+<translation id="3260969790895726815">اسپیچ پر مقامی طور پر کارروائی کی جاتی ہے اور ڈکٹیشن آف لائن کام کرتی ہے، لیکن کچھ صوتی کمانڈز کام نہیں کریں گے۔</translation>
 <translation id="3269597722229482060">دائیں طرف کلک کریں</translation>
 <translation id="3289544412142055976">‏Linux ایپس فی الحال تعاون یافتہ نہیں ہیں</translation>
 <translation id="3289674678944039601">ایڈاپٹر کے ذریعے چارج ہو رہا ہے</translation>
@@ -456,9 +459,12 @@
 <translation id="3513798432020909783"><ph name="MANAGER_EMAIL" /> کے زیر نظم اکاؤنٹ</translation>
 <translation id="352245152354538528">{0,plural, =1{1 منٹ کے اندر آلہ کو اپ ڈیٹ کریں}other{# منٹس کے اندر آلہ اپ ڈیٹ کریں}}</translation>
 <translation id="353086728817903341"><ph name="NUM_DEVICES" /> آلات سے منسلک ہیں</translation>
+<translation id="3533126039236445965">شیلف میں ایپس</translation>
 <translation id="3542066395059568317">آپ کو تجاویز نظر آئیں گی تاکہ آپ نے جہاں چھوڑا تھا وہاں سے جاری رکھ سکیں۔ آپ تجاویز کو ہٹانے کے لیے دائیں طرف کلک کر سکتے ہیں۔</translation>
 <translation id="3552189655002856821">‏Wi-Fi آف ہے</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> کو پن کر دیا گیا</translation>
+<translation id="3558768885091059911">کیمرے اور مائیکروفون تک رسائی آن کریں؟</translation>
+<translation id="3560174576767922131">ویڈیو ریکارڈ کریں</translation>
 <translation id="3563775809269155755">ہاٹ اسپاٹ فعال کریں</translation>
 <translation id="3566240529365775567">ابھی کھولا گیا</translation>
 <translation id="3571734092741541777">ترتیب دیں</translation>
@@ -603,7 +609,6 @@
 <translation id="4324840740119394760">اس سے کیمرے کی اجازت کے ساتھ <ph name="APP_NAME" /> اور تمام ایپس اور ویب سائٹس کو کیمرے تک رسائی کی اجازت ملتی ہے</translation>
 <translation id="4333628967105022692">‏متعدد صارفین کے سائن ان کرنے پر Lacros تعاون یافتہ نہیں ہے۔</translation>
 <translation id="4338109981321384717">میگنفائنگ گلاس</translation>
-<translation id="4351433414020964307">اسسٹنٹ لوڈ ہو رہا ہے...</translation>
 <translation id="4371348193907997655">کاسٹ کی ترتیبات</translation>
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />، سگنل کی مضبوطی <ph name="SIGNAL_STRENGTH" /> فیصد</translation>
 <translation id="4378551569595875038">منسلک ہو رہا ہے…</translation>
@@ -651,6 +656,7 @@
 <translation id="4577274620589681794">وقت ختم ہو گیا · <ph name="LABEL" /></translation>
 <translation id="4577990005084629481">پیش مناظر دکھائیں</translation>
 <translation id="4578906031062871102">ترتیبات کا مینو کھولا گیا</translation>
+<translation id="458210817642223147">‏GIF ریکارڈ کریں</translation>
 <translation id="4585337515783392668">کسی نامعلوم موصول کنندہ پر کاسٹ کرنا بند کریں</translation>
 <translation id="4596144739579517758">گہری تھیم آف ہے</translation>
 <translation id="4611292653554630842">لاگ ان کریں</translation>
@@ -730,6 +736,7 @@
         <ph name="NUM_OTHER_NOTIFICATION" /></translation>
 <translation id="4987738733603015246">ڈیسک 16</translation>
 <translation id="5003993274120026347">اگلا جملہ</translation>
+<translation id="5004607513195820459">نیٹ ورک زیر انتظام ہے</translation>
 <translation id="5016558321564993266">مارکر ٹوگل کریں۔ <ph name="STATE_TEXT" /></translation>
 <translation id="5029356738310729434">آلے کے مائیکروفون تک رسائی آن ہے</translation>
 <translation id="5030687792513154421">وقت ختم ہو گیا</translation>
@@ -789,9 +796,11 @@
 <translation id="5331975486040154427">‏USB-C آلہ (بائیں طرف کا پچھلا پورٹ)</translation>
 <translation id="533282197239610265">‏cast آلات دکھائیں</translation>
 <translation id="5344128444027639014"><ph name="BATTERY_PERCENTAGE" />% (دائیں)</translation>
+<translation id="5351427059191534258">کیمرے تک رسائی کو آف کریں؟</translation>
 <translation id="5352250171825660495">گہری تھیم آن ہے</translation>
 <translation id="5356963482258194581">گہری اور ہلکی تھیم کے درمیان سوئچ کریں۔ ڈیسک ٹاپ پر دایاں کلک کریں اور وال پیپر اور اسٹائل منتخب کریں۔</translation>
 <translation id="536019650977002321">آپ کا منتظم آڈیو کیپچر کی اجازت نہیں دیتا ہے۔ مزید معلومات کیلئے اپنے منتظم سے رابطہ کریں۔</translation>
+<translation id="5361524080961918551"><ph name="LANGUAGE" /> اسپیچ کی فائلز جزوی طور پر ڈاؤن لوڈ کی گئیں</translation>
 <translation id="5363163447017455357"><ph name="DELIMITER" /> اس ٹیب پر جائیں</translation>
 <translation id="5377367976106153749">کیمرا تک رسائی آن کریں؟</translation>
 <translation id="5379115545237091094">کافی زیادہ کوششیں</translation>
@@ -864,6 +873,7 @@
 <translation id="5763928712329149804">شیلف پارٹی آف ہے۔</translation>
 <translation id="576453121877257266">نائٹ لائٹ آن ہے۔</translation>
 <translation id="5769373120130404283">رازداری کی اسکرین</translation>
+<translation id="5773950591113557721">اس سے کیمرے اور مائیکروفون کی اجازتوں کے ساتھ <ph name="APP_NAME" /> اور تمام ایپس اور ویب سائٹس تک رسائی کی اجازت ملتی ہے</translation>
 <translation id="5777841717266010279">اسکرین کا اشتراک روکیں؟</translation>
 <translation id="5779721926447984944">فائلز کو پن کیا گیا</translation>
 <translation id="5788127256798019331">‏Play فائلز</translation>
@@ -901,6 +911,7 @@
 <translation id="5980301590375426705">مہمان سیشن ختم کریں</translation>
 <translation id="598407983968395253">تمثیل استعمال کریں</translation>
 <translation id="598882571027504733">‏اپ ڈیٹ حاصل کرنے کیلئے، منسلک شدہ کی بورڈ سے اپنا Chromebook دوبارہ شروع کریں۔</translation>
+<translation id="6002179289567220515">آپ نے 1 کیمرا آف کرنے کے لیے فزیکل سوئچ کا استعمال کیا۔ آپ تمام کیمروں کے لیے رسائی آف بھی کر سکتے ہیں۔</translation>
 <translation id="6012623610530968780">صفحہ <ph name="TOTAL_PAGE_NUM" /> کا <ph name="SELECTED_PAGE" /></translation>
 <translation id="6018164090099858612">مرر وضع سے باہر نکل رہے ہیں</translation>
 <translation id="602001110135236999">بائیں اسکرول کریں</translation>
@@ -941,9 +952,11 @@
 <translation id="619279033188484792">اپنے <ph name="DEVICE_TYPE" /> پر اپنے فون کی حالیہ تصاویر، میڈیا اور اطلاعات دیکھیں</translation>
 <translation id="619335566042889110">اب پوری طرح چارج کریں</translation>
 <translation id="6193431488227440296">Dev</translation>
+<translation id="6200515304866777730">ایپ کے ذریعہ تعاون یافتہ نہیں ہے</translation>
 <translation id="6210042900243040400"><ph name="EMAIL" /> میں پہلے سے محفوظ کردہ <ph name="NAME" /> سے منسلک ہوں</translation>
 <translation id="6220928844947387476">اب آپ اپنے آپ کو اور اپنی اسکرین کو ایک ہی وقت میں ریکارڈ کر سکتے ہیں</translation>
 <translation id="622484624075952240">نیچے</translation>
+<translation id="623116199192908855">‏اپنے Chromebook سے اپنی اسکرین کاسٹ کریں</translation>
 <translation id="6231419273573514727">پیریفیرل کی کارکردگی محدود ہو سکتی ہے</translation>
 <translation id="6232891689835436217"><ph name="APP_NAME" /> فی الحال آپ کا کیمرا اور مائیکروفون استعمال کر رہی ہے</translation>
 <translation id="6237231532760393653">1X</translation>
@@ -985,8 +998,10 @@
 <translation id="6491071886865974820"><ph name="MANAGER" /> کا تقاضہ ہے کہ آپ آخری تاریخ سے پہلے اپنے <ph name="DEVICE_TYPE" /> کو اپ ڈیٹ کریں</translation>
 <translation id="649452524636452238">‏اسمارٹ کارڈ PIN</translation>
 <translation id="6495400115277918834">‏تصویر میں تصویر شروع ہو گئی ہے، فوکس کرنے کے لیے Alt+Shift+V دبائیں</translation>
+<translation id="6497418457565568043">ڈسٹرب نہ کریں آن ہے</translation>
 <translation id="6500896621837555595">اپ ڈیٹ کریں</translation>
 <translation id="6501401484702599040">اسکرین کو <ph name="RECEIVER_NAME" /> پر کاسٹ کیا جا رہا ہے</translation>
+<translation id="6508923215158854599">‏یقینی بنائیں کہ آپ کا Chromebook اسی Wi-Fi نیٹ ورک پر ہے جس پر آپ کا Chromecast آلہ ہے۔</translation>
 <translation id="6515727200518652613">کیمرا غیر منسلک ہو گیا، دوبارہ منسلک کرنے کی کوشش کی جا رہی ہے۔</translation>
 <translation id="6520517963145875092">کیپچر کرنے کیلئے ایک ونڈو منتخب کریں</translation>
 <translation id="652139407789908527">اس اپ ڈیٹ کے دوران آپ کی اسکرین معمول سے زیادہ دیر تک (ایک منٹ تک) خالی ہوگی۔ اپ ڈیٹ جاری ہونے کے دوران براہ کرم پاور بٹن نہ دبائیں۔</translation>
@@ -1045,6 +1060,7 @@
 <translation id="6787595647772650851">آخری سیشن بحال کریں</translation>
 <translation id="6790428901817661496">چلائیں</translation>
 <translation id="6801878137098616817">حال ہی میں ترمیم کیا گیا</translation>
+<translation id="6802687695197837794">اس سے کیمرے اور مائیکروفون کی اجازتوں کے ساتھ <ph name="APP1_NAME" />، <ph name="APP2_NAME" /> اور تمام ایپس اور ویب سائٹس تک رسائی کی اجازت ملتی ہے</translation>
 <translation id="6803622936009808957">ڈسپلیز کی عکاسی نہیں کر سکا کیونکہ کوئی تعاون یافتہ ریزولیوشنز نہیں ملے۔اس کی بجائے توسیع کردہ ڈیسک ٹاپ داخل کیا گیا۔</translation>
 <translation id="6812232930908427253">ڈیسک کو محفوظ نہیں کیا جا سکا۔ بہت ساری ونڈوز یا ٹیبز۔</translation>
 <translation id="6818242057446442178">ایک لفظ پیچھے جائیں</translation>
@@ -1067,6 +1083,7 @@
 <translation id="6901883536534621389">نیویگیٹ کرنے کے لیے اشاروں کو آزمائیں</translation>
 <translation id="6919251195245069855">آپ کے اسمارٹ کارڈ کی شناخت نہیں کی جا سکی۔ پھر آزمائيں۔</translation>
 <translation id="6931576957638141829">اس میں محفوظ کریں</translation>
+<translation id="6942518653766415536">ریکارڈنگ فارمیٹ مینو</translation>
 <translation id="6945221475159498467">منتخب کریں</translation>
 <translation id="6960565108681981554">فعال نہیں ہے۔ اپنے کیریئر سے رابطہ کریں۔</translation>
 <translation id="6961121602502368900">دفتری پروفائل پر فون کو خاموش کرنے کی خصوصیت دستیاب نہیں ہے</translation>
@@ -1076,6 +1093,7 @@
 <translation id="6965382102122355670">ٹھیک ہے</translation>
 <translation id="6972754398087986839">شروع کریں</translation>
 <translation id="6979158407327259162">Google Drive</translation>
+<translation id="6981291220124935078">رسائی آن کریں</translation>
 <translation id="6981982820502123353">ایکسیسبیلٹی</translation>
 <translation id="698231206551913481">اس صارف کو ہٹانے کے بعد اس صارف کے ساتھ وابستہ سبھی فائلیں اور مقامی ڈیٹا کو مستقل طور پر حذف کر دیا جائے گا۔</translation>
 <translation id="7005239792648594238">شروع کرنے کیلئے کوئی ایپ کھولیں</translation>
@@ -1216,7 +1234,6 @@
 <translation id="7768784765476638775">سننے کیلئے منتخب کریں</translation>
 <translation id="7780094051999721182">شارٹ کٹس</translation>
 <translation id="7780159184141939021">اسکرین کو گھمائیں</translation>
-<translation id="7796353162336583443">‏نوٹ لینے، اسکرین شاٹ لینے، Google اسسٹنٹ، لیزر پوائنٹر یا میگنیفائنگ گلاس استعمال کرنے کے لیے شیلف پر موجود اسٹائلس بٹن کو تھپتھپائیں۔</translation>
 <translation id="7796735576426975947">نئی اطلاع پوشیدہ ہے</translation>
 <translation id="7798302898096527229">‏منسوخ کرنے کے لیے Search یا Shift دبائیں۔</translation>
 <translation id="7807067443225230855">تلاش اور اسسٹنٹ</translation>

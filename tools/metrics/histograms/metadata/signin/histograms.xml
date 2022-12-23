@@ -22,7 +22,7 @@ chromium-metrics-reviews@google.com.
 
 <histograms>
 
-<histogram name="Signin" enum="SigninHelperFlow" expires_after="2023-06-11">
+<histogram name="Signin" enum="SigninHelperFlow" expires_after="2023-06-18">
   <owner>mlerman@chromium.org</owner>
   <summary>
     Tracks user interactions as they sign in through a flow. The suffix of the
@@ -95,7 +95,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Signin.AccountConsistencyPromoAction"
-    enum="AccountConsistencyPromoAction" expires_after="2023-04-16">
+    enum="AccountConsistencyPromoAction" expires_after="2023-06-18">
   <owner>bsazonov@chromium.org</owner>
   <owner>aliceywang@chromium.org</owner>
   <summary>
@@ -135,12 +135,13 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Signin.AccountReconcilorState.OnGaiaResponse"
-    enum="SigninAccountReconcilorState" expires_after="2023-04-16">
+    enum="SigninAccountReconcilorState" expires_after="2023-06-18">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
     Records the state of the account reconcilor when GAIA returns a specific
-    response.
+    response. The data in the &quot;Inactive&quot; bucket might be incorrect
+    prior to M111.
   </summary>
 </histogram>
 
@@ -160,7 +161,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.AccountTracker.GaiaIdMigrationState"
-    enum="OAuth2LoginAccountRevokedMigrationState" expires_after="2023-04-16">
+    enum="OAuth2LoginAccountRevokedMigrationState" expires_after="2023-06-18">
   <owner>msarda@chromium.org</owner>
   <owner>sdefresne@chromium.org</owner>
   <summary>
@@ -451,7 +452,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.GetAccessTokenFinished" enum="GoogleServiceAuthError"
-    expires_after="2023-04-16">
+    expires_after="2023-06-18">
   <owner>droger@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <summary>
@@ -1010,6 +1011,17 @@ OAuth Multilogin call. -->
   </summary>
 </histogram>
 
+<histogram name="Signin.SignIn.Completed" enum="SigninAccessPoint"
+    expires_after="2023-12-19">
+  <owner>bsazonov@chromium.org</owner>
+  <owner>dgn@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <summary>
+    Records that the user signed in to Chrome, and logs the original access
+    point associated with this event.
+  </summary>
+</histogram>
+
 <histogram name="Signin.SigninAbortedAccessPoint" enum="SigninAccessPoint"
     expires_after="2023-10-06">
   <owner>bsazonov@chromium.org</owner>
@@ -1060,6 +1072,19 @@ OAuth Multilogin call. -->
   <summary>
     Logs the original access point that displayed the signin or reauth Gaia
     page, before the page is displayed.
+  </summary>
+</histogram>
+
+<histogram name="Signin.SignOut.Completed" enum="SigninSignoutProfile"
+    expires_after="2023-12-19">
+  <owner>bsazonov@chromium.org</owner>
+  <owner>dgn@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <summary>
+    Records that the user signed out of Chrome, and logs the original access
+    point associated with this event. Note that turning off Sync almost always
+    signs the user out, in which case both this histogram and
+    Signin.SyncTurnOff.Completed are recorded.
   </summary>
 </histogram>
 
@@ -1204,10 +1229,49 @@ kept as long as profile signout is possible -->
 </histogram>
 
 <histogram name="Signin.SyncFirstSetupCompleteSource"
-    enum="SyncFirstSetupCompleteSource" expires_after="2023-04-16">
+    enum="SyncFirstSetupCompleteSource" expires_after="2023-06-18">
   <owner>triploblastic@chromium.org</owner>
   <owner>bsazonov@chromium.org</owner>
   <summary>Tracks where FirstSetupComplete bit is set from.</summary>
+</histogram>
+
+<histogram name="Signin.SyncOptIn.Completed" enum="SigninAccessPoint"
+    expires_after="2023-12-19">
+  <owner>bsazonov@chromium.org</owner>
+  <owner>dgn@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <summary>
+    Records that the sync opt-in was completed by the user, and logs the
+    original access point associated with this event. This is recorded when the
+    user chooses to opt-in, whether they chose to proceed with the default
+    settings or to open the sync settings first.
+  </summary>
+</histogram>
+
+<histogram name="Signin.SyncOptIn.OpenedSyncSettings" enum="SigninAccessPoint"
+    expires_after="2023-12-19">
+  <owner>bsazonov@chromium.org</owner>
+  <owner>dgn@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <summary>
+    Records that the user chose to navigate to the sync settings page from the
+    sync confirmation screen. Logs this in the context of the access point
+    associated with this event.
+  </summary>
+</histogram>
+
+<histogram name="Signin.SyncOptIn.Started" enum="SigninAccessPoint"
+    expires_after="2023-12-19">
+  <owner>bsazonov@chromium.org</owner>
+  <owner>dgn@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <summary>
+    Records that the sync confirmation screen was shown to the user, and logs
+    the access point associated with this event. Note that due to some product
+    quirks, this is recorded also when the &quot;sync disabled&quot; screen is
+    shown, matching what happens with the completion event. See
+    crbug.com/1398463 for more info.
+  </summary>
 </histogram>
 
 <histogram name="Signin.SyncPromo.{Action}.Count.{AccessPoint}" units="counts"
@@ -1232,6 +1296,17 @@ kept as long as profile signout is possible -->
     <variant name="RecentTabs" summary="recent tabs page"/>
     <variant name="Settings" summary="settings page"/>
   </token>
+</histogram>
+
+<histogram name="Signin.SyncTurnOff.Completed" enum="SigninSignoutProfile"
+    expires_after="2023-12-19">
+  <owner>bsazonov@chromium.org</owner>
+  <owner>dgn@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <summary>
+    Records that the user turned off sync, and logs the original access point
+    associated with this event.
+  </summary>
 </histogram>
 
 <histogram name="Signin.TokenTable.GetAllTokensSqlStatementValidity"
@@ -1259,7 +1334,7 @@ should be kept for as long as we store refresh tokens in an SQLite DB. -->
 </histogram>
 
 <histogram name="Signin.TransactionalReauthResult" enum="SigninReauthResult"
-    expires_after="2023-04-16">
+    expires_after="2023-06-18">
 <!-- Name completed by histogram_suffixes
 name="TransactionalReauthEntryPoint" -->
 

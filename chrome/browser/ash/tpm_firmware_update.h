@@ -12,7 +12,7 @@
 #include "base/time/time.h"
 
 namespace base {
-class DictionaryValue;
+class Value;
 }
 
 namespace enterprise_management {
@@ -43,7 +43,7 @@ extern const char kSettingsKeyAllowPreserveDeviceState[];
 extern const char kSettingsKeyAutoUpdateMode[];
 
 // Decodes the TPM firmware update settings into base::Value representation.
-std::unique_ptr<base::DictionaryValue> DecodeSettingsProto(
+base::Value DecodeSettingsProto(
     const enterprise_management::TPMFirmwareUpdateSettingsProto& settings);
 
 // Check what update modes are allowed. The |timeout| parameter determines how

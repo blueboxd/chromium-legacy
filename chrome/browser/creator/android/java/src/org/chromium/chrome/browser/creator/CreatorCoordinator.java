@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
 
+import androidx.annotation.VisibleForTesting;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.OnScrollListener;
 
@@ -200,6 +201,11 @@ public class CreatorCoordinator implements FeedAutoplaySettingsDelegate,
         return mCreatorViewGroup;
     }
 
+    @VisibleForTesting
+    public View getProfileView() {
+        return mProfileView;
+    }
+
     public PropertyModel getCreatorModel() {
         return mCreatorModel;
     }
@@ -299,8 +305,7 @@ public class CreatorCoordinator implements FeedAutoplaySettingsDelegate,
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 mCreatorModel.set(CreatorProperties.IS_TOOLBAR_VISIBLE_KEY,
-                        mHybridListRenderer.getListLayoutHelper().findFirstVisibleItemPosition()
-                                > 0);
+                        recyclerView.canScrollVertically(-1));
             }
         });
     }

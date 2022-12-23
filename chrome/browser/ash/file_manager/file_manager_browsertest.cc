@@ -14,6 +14,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/ash/file_manager/copy_or_move_io_task_scanning_impl.h"
 #include "chrome/browser/ash/file_manager/file_manager_browsertest_base.h"
+#include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/policy/dlp/dlp_files_controller.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
@@ -137,11 +138,6 @@ struct TestCase {
     return *this;
   }
 
-  TestCase& EnableFiltersInRecentsV2() {
-    options.enable_filters_in_recents_v2 = true;
-    return *this;
-  }
-
   TestCase& EnableTrash() {
     options.enable_trash = true;
     return *this;
@@ -224,9 +220,6 @@ struct TestCase {
 
     if (options.enable_trash)
       full_name += "_Trash";
-
-    if (options.enable_filters_in_recents_v2)
-      full_name += "_FiltersInRecentsV2";
 
     if (options.enable_mirrorsync)
       full_name += "_MirrorSync";
@@ -349,6 +342,22 @@ class DlpFilesAppBrowserTest : public FilesAppBrowserTest {
   bool HandleDlpCommands(const std::string& name,
                          const base::Value::Dict& value,
                          std::string* output) override {
+    if (name == "setBlockedFilesTransfer") {
+      base::FilePath result =
+          file_manager::util::GetDownloadsFolderForProfile(profile());
+      auto* file_names = value.FindList("fileNames");
+      EXPECT_TRUE(file_names);
+      ::dlp::CheckFilesTransferResponse check_files_transfer_response;
+      for (const auto& file_name : *file_names) {
+        check_files_transfer_response.add_files_paths(
+            result.Append(file_name.GetString()).value());
+      }
+      chromeos::DlpClient::Get()->GetTestInterface()->SetIsAlive(true);
+      chromeos::DlpClient::Get()
+          ->GetTestInterface()
+          ->SetCheckFilesTransferResponse(check_files_transfer_response);
+      return true;
+    }
     if (name == "setIsRestrictedDestinationRestriction") {
       EXPECT_CALL(*mock_rules_manager_, IsRestrictedDestination)
           .WillRepeatedly(
@@ -992,7 +1001,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .EnableGenericDocumentsProvider(),
         TestCase("checkContextMenuFocus"),
         TestCase("checkContextMenusForInputElements"),
-        TestCase("checkDeleteDisabledInRecents"),
+        TestCase("checkDeleteEnabledInRecents"),
         TestCase("checkGoToFileLocationEnabledInRecents"),
         TestCase("checkGoToFileLocationDisabledInMultipleSelection"),
         TestCase("checkDefaultTask"),
@@ -1303,9 +1312,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("dlpContextMenuRestrictionDetails").EnableDlp(),
         TestCase("saveAsDlpRestrictedDirectory").EnableDlp(),
         TestCase("saveAsDlpRestrictedMountableDirectory").EnableDlp(),
+        TestCase("saveAsNonDlpRestricted").EnableDlp(),
+        TestCase("saveAsDlpRestrictedRedirectsToMyFiles").EnableDlp(),
         TestCase("openDlpRestrictedFile").EnableDlp()));
-// TODO(crbug.com/1394305): Re-enable this test
-// TestCase("saveAsDlpRestrictedRedirectsToMyFiles").EnableDlp()));
 
 #define FILE_TRANSFER_TEST_CASE(name) \
   TestCase(name).EnableFileTransferConnector()
@@ -1588,6 +1597,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(TestCase("fileListAriaAttributes"),
                       TestCase("fileListFocusFirstItem"),
                       TestCase("fileListSelectLastFocusedItem"),
+                      TestCase("fileListSortWithKeyboard"),
                       TestCase("fileListKeyboardSelectionA11y"),
                       TestCase("fileListMouseSelectionA11y"),
                       TestCase("fileListDeleteMultipleFiles"),
@@ -1635,19 +1645,14 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FilesAppBrowserTest,
     ::testing::Values(
         TestCase("recentsA11yMessages"),
-        TestCase("recentsAllowCutForDownloads").EnableFiltersInRecentsV2(),
-        TestCase("recentsAllowCutForDrive").EnableFiltersInRecentsV2(),
-        TestCase("recentsAllowCutForPlayFiles")
-            .EnableArc()
-            .EnableFiltersInRecentsV2(),
-        TestCase("recentsAllowDeletion").EnableArc().EnableFiltersInRecentsV2(),
-        TestCase("recentsAllowMultipleFilesDeletion")
-            .EnableArc()
-            .EnableFiltersInRecentsV2(),
-        TestCase("recentsAllowRename").EnableArc().EnableFiltersInRecentsV2(),
-        TestCase("recentsEmptyFolderMessage").EnableFiltersInRecentsV2(),
-        TestCase("recentsEmptyFolderMessageAfterDeletion")
-            .EnableFiltersInRecentsV2(),
+        TestCase("recentsAllowCutForDownloads"),
+        TestCase("recentsAllowCutForDrive"),
+        TestCase("recentsAllowCutForPlayFiles").EnableArc(),
+        TestCase("recentsAllowDeletion").EnableArc(),
+        TestCase("recentsAllowMultipleFilesDeletion").EnableArc(),
+        TestCase("recentsAllowRename").EnableArc(),
+        TestCase("recentsEmptyFolderMessage"),
+        TestCase("recentsEmptyFolderMessageAfterDeletion"),
         TestCase("recentsDownloads"),
         TestCase("recentsDrive"),
         TestCase("recentsCrostiniNotMounted"),
@@ -1657,26 +1662,19 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("recentsDownloadsAndDriveWithOverlap"),
         TestCase("recentsFilterResetToAll"),
         TestCase("recentsNested"),
-        TestCase("recentsNoRenameForPlayFiles")
-            .EnableArc()
-            .EnableFiltersInRecentsV2(),
+        TestCase("recentsNoRenameForPlayFiles").EnableArc(),
         TestCase("recentsPlayFiles").EnableArc(),
-        TestCase("recentsReadOnlyHidden").EnableFiltersInRecentsV2(),
-        TestCase("recentsRespectSearchWhenSwitchingFilter")
-            .EnableFiltersInRecentsV2(),
-        TestCase("recentsRespondToTimezoneChangeForGridView")
-            .EnableFiltersInRecentsV2(),
-        TestCase("recentsRespondToTimezoneChangeForListView")
-            .EnableFiltersInRecentsV2(),
-        TestCase("recentsTimePeriodHeadings").EnableFiltersInRecentsV2(),
+        TestCase("recentsReadOnlyHidden"),
+        TestCase("recentsRespectSearchWhenSwitchingFilter"),
+        TestCase("recentsRespondToTimezoneChangeForGridView"),
+        TestCase("recentsRespondToTimezoneChangeForListView"),
+        TestCase("recentsTimePeriodHeadings"),
         TestCase("recentAudioDownloads"),
         TestCase("recentAudioDownloadsAndDrive"),
         TestCase("recentAudioDownloadsAndDriveAndPlayFiles").EnableArc(),
-        TestCase("recentDocumentsDownloads").EnableFiltersInRecentsV2(),
-        TestCase("recentDocumentsDownloadsAndDrive").EnableFiltersInRecentsV2(),
-        TestCase("recentDocumentsDownloadsAndDriveAndPlayFiles")
-            .EnableArc()
-            .EnableFiltersInRecentsV2(),
+        TestCase("recentDocumentsDownloads"),
+        TestCase("recentDocumentsDownloadsAndDrive"),
+        TestCase("recentDocumentsDownloadsAndDriveAndPlayFiles").EnableArc(),
         TestCase("recentImagesDownloads"),
         TestCase("recentImagesDownloadsAndDrive"),
         TestCase("recentImagesDownloadsAndDriveAndPlayFiles").EnableArc(),
@@ -1769,6 +1767,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("trashEmptyTrash").EnableTrash(),
         TestCase("trashEmptyTrashShortcut").EnableTrash(),
         TestCase("trashDeleteFromTrash").EnableTrash(),
+        TestCase("trashDeleteFromTrashOriginallyFromMyFiles").EnableTrash(),
         TestCase("trashNoTasksInTrashRoot").EnableTrash(),
         TestCase("trashDoubleClickOnFileInTrashRootShowsDialog").EnableTrash(),
         TestCase("trashDragDropRootAcceptsEntries").EnableTrash(),
@@ -1794,7 +1793,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             "trashPressingEnterOnFileInTrashRootShowsDialogWithRestoreButton")
             .EnableTrash(),
         TestCase("trashCantRenameFilesInTrashRoot").EnableTrash(),
-        TestCase("trashNudgeShownOnFirstTrashOperation").EnableTrash()));
+        TestCase("trashNudgeShownOnFirstTrashOperation").EnableTrash(),
+        TestCase("trashStaleTrashInfoFilesAreRemovedAfterOneHour")
+            .EnableTrash()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     AndroidPhotos, /* android_photos.js */

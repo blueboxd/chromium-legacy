@@ -29,15 +29,6 @@ extern const base::FeatureParam<int> kTimeoutDurationSeconds;
 extern const base::FeatureParam<bool> kThrottleBackgroundFetches;
 extern const base::FeatureParam<bool> kOnlySetLastRefreshAttemptOnSuccess;
 
-// TODO(b/213622639): The following two features are obsolete and should be
-// removed.
-// Determines whether conditions should be reached before enabling the upload of
-// click and view actions in the feed (e.g., the user needs to view X cards).
-// For example, this is needed when the notice card is at the second position in
-// the feed.
-BASE_DECLARE_FEATURE(kInterestFeedV1ClicksAndViewsConditionalUpload);
-BASE_DECLARE_FEATURE(kInterestFeedV2ClicksAndViewsConditionalUpload);
-
 // Feature that allows the client to automatically dismiss the notice card based
 // on the clicks and views on the notice card.
 #if BUILDFLAG(IS_IOS)
@@ -54,14 +45,8 @@ BASE_DECLARE_FEATURE(kDiscoFeedEndpoint);
 // xsurface feed.
 BASE_DECLARE_FEATURE(kXsurfaceMetricsReporting);
 
-// Whether to log reliability events.
-BASE_DECLARE_FEATURE(kReliabilityLogging);
-
 // Feature that enables sticky header when users scroll down.
 BASE_DECLARE_FEATURE(kFeedHeaderStickToTop);
-
-// Feature that enables refreshing feeds triggered by the users.
-BASE_DECLARE_FEATURE(kFeedInteractiveRefresh);
 
 // Feature that shows placeholder cards instead of a loading spinner at first
 // load.
@@ -75,10 +60,6 @@ extern const base::FeatureParam<bool>
 // Feature that allows tuning the size of the image memory cache. Value is a
 // percentage of the maximum size calculated for the device.
 BASE_DECLARE_FEATURE(kFeedImageMemoryCacheSizePercentage);
-
-// Feature that enables clearing the image memory cache when the feed is
-// destroyed.
-BASE_DECLARE_FEATURE(kFeedClearImageMemoryCache);
 
 // Feature that enables showing a callout to help users return to the top of the
 // feeds quickly.
@@ -136,36 +117,9 @@ extern const base::FeatureParam<bool> kFeedCloseRefreshRequireInteraction;
 
 // When enabled, no view cache is used.
 BASE_DECLARE_FEATURE(kFeedNoViewCache);
-// When enabled, replace all items.
-BASE_DECLARE_FEATURE(kFeedReplaceAll);
 
 // When enabled, play the feed video via inline playback.
 BASE_DECLARE_FEATURE(kFeedVideoInlinePlayback);
-
-// When enabled, compute Good Visits locally and log them to a histogram.
-BASE_DECLARE_FEATURE(kClientGoodVisits);
-// The maximum time between sequential interactions with the feed that are
-// considered as a single visit.
-extern const base::FeatureParam<base::TimeDelta> kVisitTimeout;
-// A feed visit is "good" if the user spends at least this much time in the feed
-// and scrolls at least once.
-extern const base::FeatureParam<base::TimeDelta> kGoodTimeInFeed;
-// A feed visit is "good" if the user spends at least this much time in an
-// article.
-extern const base::FeatureParam<base::TimeDelta> kLongOpenTime;
-// When calculating time spent in feed for good visits, drop periods of
-// viewport-stable feed viewing shorter than this.
-extern const base::FeatureParam<base::TimeDelta>
-    kMinStableContentSliceVisibilityTime;
-// When calculating time spent in feed for good visits, cap long periods of
-// viewport-stable feed viewing to this time.
-extern const base::FeatureParam<base::TimeDelta>
-    kMaxStableContentSliceVisibilityTime;
-// Minimum slice exposure needed for counting time in feed for good visits.
-extern const base::FeatureParam<double> kSliceVisibleExposureThreshold;
-// Minimum slice coverage of viewport needed for counting time in feed for good
-// visits.
-extern const base::FeatureParam<double> kSliceVisibleCoverageThreshold;
 
 // When enabled, allow tagging experiments with only an experiment ID.
 BASE_DECLARE_FEATURE(kFeedExperimentIDTagging);

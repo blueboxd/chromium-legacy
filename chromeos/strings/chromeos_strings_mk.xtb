@@ -116,6 +116,7 @@
 <translation id="1908234395526491708">Неуспешни UDP-барања</translation>
 <translation id="1947737735496445907">Отпечатено</translation>
 <translation id="1951012854035635156">Помошник</translation>
+<translation id="1962550982027027473">Стандардна APN е задолжителна</translation>
 <translation id="1977994649430373166">Фотографија на профилот на Google</translation>
 <translation id="1979103255016296513">Измина рокот за промена на лозинката</translation>
 <translation id="1999615961760456652">Портал за проверка</translation>
@@ -393,6 +394,7 @@
 <translation id="4793710386569335688">За дополнителна помош, одете во <ph name="BEGIN_LINK" />Центарот за помош<ph name="END_LINK" />.</translation>
 <translation id="4793756956024303490">Алгоритам за компримирање</translation>
 <translation id="4794140124556169553">Извршувањето CPU-тест може да влијае врз изведбата на системот</translation>
+<translation id="4798078634453489142">Отстранете APN за да додадете ново APN</translation>
 <translation id="4800589996161293643">Заедница на Chromebook</translation>
 <translation id="4803391892369051319">IPv4</translation>
 <translation id="4808449224298348341">Откажан налог за печатење: <ph name="DOCUMENT_TITLE" /></translation>
@@ -634,6 +636,7 @@
 <translation id="6791471867139427246">боја на светло на тастатурата</translation>
 <translation id="680983167891198932">Клуч</translation>
 <translation id="6816797338148849397">Достапни се информации поврзани со вашиот избор. Користете го копчето со стрелка нагоре за да пристапите.</translation>
+<translation id="6838167112108853532">Не може да се оневозможи или отстрани оваа APN. Погрижете се дека овозможените прикачени APN се оневозможени или отстранети.</translation>
 <translation id="6853312040151791195">Брзина на празнење</translation>
 <translation id="6889786074662672253">Додека се рестартира, не исклучувајте го надворешниов уред од струја или не исклучувајте го компјутерот. Може да го минимизирате прозорецов. Ова може да потрае неколку минути и надворешниот уред можеби нема да работи во ова време.</translation>
 <translation id="6905724422583748843">Назад на <ph name="PAGE_NAME" /></translation>
@@ -723,6 +726,7 @@
 <translation id="7769672763586021400">ID на модел</translation>
 <translation id="7778717409420828014">Вашите повратни информации ни помагаат да го подобриме доживувањето на Chromebook и ќе бидат разгледани од нашиот тим. Поради големиот број на извештаи, нема да можеме да испратиме одговор.</translation>
 <translation id="7784116172884276937">Нема поставени DNS-сервери</translation>
+<translation id="7791543448312431591">Додај</translation>
 <translation id="779591286616261875">Испратете нова пријава</translation>
 <translation id="7799817062559422778">Светол режим</translation>
 <translation id="780301667611848630">Не, фала</translation>

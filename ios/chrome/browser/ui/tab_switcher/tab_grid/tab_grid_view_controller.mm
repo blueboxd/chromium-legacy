@@ -26,6 +26,7 @@
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller_ui_delegate.h"
 #import "ios/chrome/browser/ui/tab_switcher/pinned_tabs/features.h"
+#import "ios/chrome/browser/ui/tab_switcher/pinned_tabs/pinned_tabs_collection_consumer.h"
 #import "ios/chrome/browser/ui/tab_switcher/pinned_tabs/pinned_tabs_constants.h"
 #import "ios/chrome/browser/ui/tab_switcher/pinned_tabs/pinned_tabs_view_controller.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_collection_consumer.h"
@@ -607,6 +608,10 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 - (void)setPriceCardDataSource:(id<PriceCardDataSource>)priceCardDataSource {
   self.regularTabsViewController.priceCardDataSource = priceCardDataSource;
   _priceCardDataSource = priceCardDataSource;
+}
+
+- (id<PinnedTabsCollectionConsumer>)pinnedTabsConsumer {
+  return self.pinnedTabsViewController;
 }
 
 - (id<TabCollectionConsumer>)incognitoTabsConsumer {
@@ -2319,10 +2324,11 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 - (void)gridViewController:(GridViewController*)gridViewController
          didMoveItemWithID:(NSString*)itemID
                    toIndex:(NSUInteger)destinationIndex {
+  ItemListIndex itemListIndex = ItemListIndex{destinationIndex};
   if (gridViewController == self.regularTabsViewController) {
-    [self.regularTabsDelegate moveItemWithID:itemID toIndex:destinationIndex];
+    [self.regularTabsDelegate moveItemWithID:itemID toIndex:itemListIndex];
   } else if (gridViewController == self.incognitoTabsViewController) {
-    [self.incognitoTabsDelegate moveItemWithID:itemID toIndex:destinationIndex];
+    [self.incognitoTabsDelegate moveItemWithID:itemID toIndex:itemListIndex];
   }
 }
 

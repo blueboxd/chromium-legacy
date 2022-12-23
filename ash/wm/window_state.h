@@ -247,6 +247,11 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // keyboard position changes.
   void UpdatePipBounds();
 
+  // Updates the window bounds. This may get called when a window is resized in
+  // splitview (i.e. a snapped window and overview). Side-by-side snapped
+  // windows will get resized by WorkspaceWindowResizer normally.
+  void UpdateSnappedBounds();
+
   // Replace the State object of a window with a state handler which can
   // implement a new window manager type. The passed object will be owned
   // by this object and the returned object will be owned by the caller.
@@ -577,12 +582,11 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   bool is_moving_to_another_display_ = false;
 
   // Contains the window's target snap ratio if it's going to be snapped by a
-  // WindowSnapWMEvent, and the updated window snap ratio if the snapped
-  // window's bounds are changed while it remains snapped. It will be used to
-  // calculate the desired snapped window bounds for a WindowSnapWMEvent, or
-  // adjust the window's bounds when display or workarea changes, or decide what
-  // the window bounds should be if restoring the window back to a snapped
-  // window state, etc.
+  // WMEvent, and the updated window snap ratio if the snapped window's bounds
+  // are changed while it remains snapped. It will be used to calculate the
+  // desired snapped window bounds for a WMEvent, or adjust the window's bounds
+  // when display or workarea changes, or decide what the window bounds should
+  // be if restoring the window back to a snapped window state, etc.
   absl::optional<float> snap_ratio_;
 
   // A property to remember the window position which was set before the

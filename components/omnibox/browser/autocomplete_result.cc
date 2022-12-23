@@ -14,7 +14,6 @@
 #include "base/containers/adapters.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
-#include "base/containers/cxx20_erase_vector.h"
 #include "base/debug/stack_trace.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
@@ -28,6 +27,7 @@
 #include "components/history_clusters/core/config.h"
 #include "components/omnibox/browser/actions/omnibox_pedal.h"
 #include "components/omnibox/browser/actions/omnibox_pedal_provider.h"
+#include "components/omnibox/browser/autocomplete_grouper_sections.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
@@ -53,6 +53,20 @@ typedef AutocompleteMatchType ACMatchType;
 
 namespace {
 
+constexpr bool is_android =
+#if BUILDFLAG(IS_ANDROID)
+    true;
+#else
+    false;
+#endif
+
+constexpr bool is_ios =
+#if BUILDFLAG(IS_IOS)
+    true;
+#else
+    false;
+#endif
+
 // Rotates |it| to be in the front of |matches|.
 // |it| must be a valid iterator of |matches| or equal to |matches->end()|.
 void RotateMatchToFront(ACMatches::iterator it, ACMatches* matches) {
@@ -63,17 +77,13 @@ void RotateMatchToFront(ACMatches::iterator it, ACMatches* matches) {
   std::rotate(matches->begin(), it, next);
 }
 
-#if BUILDFLAG(IS_IOS)
 // Maximum number of pedals to show.
 // On iOS, the UI for pedals gets too visually cluttered with too many pedals.
-constexpr size_t kMaxPedalCount = 1;
+constexpr size_t kMaxPedalCount =
+    is_ios ? 1 : std::numeric_limits<size_t>::max();
 // Maximum index of a match in a result for which the pedal should be displayed.
-// On iOS, the UI for pedals gets too visually cluttered with too many pedals.
-constexpr size_t kMaxPedalMatchIndex = 3;
-#else
-constexpr size_t kMaxPedalCount = std::numeric_limits<size_t>::max();
-constexpr size_t kMaxPedalMatchIndex = std::numeric_limits<size_t>::max();
-#endif
+constexpr size_t kMaxPedalMatchIndex =
+    is_ios ? 3 : std::numeric_limits<size_t>::max();
 
 enum class DontCopyDoneProviders { kFalse, kTrue, kUnknown };
 
@@ -84,25 +94,21 @@ DontCopyDoneProviders g_dont_copy_done_providers =
 
 // static
 size_t AutocompleteResult::GetMaxMatches(bool is_zero_suggest) {
-#if BUILDFLAG(IS_ANDROID)
-  constexpr size_t kDefaultMaxAutocompleteMatches = 10;
-  constexpr size_t kDefaultMaxZeroSuggestMatches = 15;
-#elif BUILDFLAG(IS_IOS)
-  constexpr size_t kDefaultMaxAutocompleteMatches = 6;
+  constexpr size_t kDefaultMaxAutocompleteMatches =
+      is_android ? 10 : (is_ios ? 6 : 8);
+  constexpr size_t kDefaultMaxZeroSuggestMatches =
+      is_android ? 15 : (is_ios ? 20 : 8);
+#if BUILDFLAG(IS_IOS)
   // By default, iPad has the same max as iPhone.
   // `kDefaultMaxAutocompleteMatches` defines a hard limit on the number of
   // autocomplete suggestions on iPad, so if an experiment defines
   // MaxZeroSuggestMatches to 15, it would be 15 on iPhone and 10 on iPad.
   constexpr size_t kMaxAutocompleteMatchesOnIPad = 10;
-  constexpr size_t kDefaultMaxZeroSuggestMatches = 20;
   // By default, iPad has the same max as iPhone. `kMaxZeroSuggestMatchesOnIPad`
   // defines a hard limit on the number of ZPS suggestions on iPad, so if an
   // experiment defines MaxZeroSuggestMatches to 15, it would be 15 on iPhone
   // and 10 on iPad.
   constexpr size_t kMaxZeroSuggestMatchesOnIPad = 10;
-#else
-  constexpr size_t kDefaultMaxAutocompleteMatches = 8;
-  constexpr size_t kDefaultMaxZeroSuggestMatches = 8;
 #endif
   static_assert(kMaxAutocompletePositionValue > kDefaultMaxAutocompleteMatches,
                 "kMaxAutocompletePositionValue must be larger than the largest "
@@ -150,11 +156,7 @@ size_t AutocompleteResult::GetMaxMatches(bool is_zero_suggest) {
 
 // static
 size_t AutocompleteResult::GetDynamicMaxMatches() {
-#if BUILDFLAG(IS_ANDROID)
-  constexpr const int kDynamicMaxMatchesLimit = 15;
-#else
-  constexpr const int kDynamicMaxMatchesLimit = 10;
-#endif
+  constexpr const int kDynamicMaxMatchesLimit = is_android ? 15 : 10;
   if (!base::FeatureList::IsEnabled(omnibox::kDynamicMaxAutocomplete))
     return AutocompleteResult::GetMaxMatches();
   return base::GetFieldTrialParamByFeatureAsInt(
@@ -189,13 +191,9 @@ void AutocompleteResult::TransferOldMatches(const AutocompleteInput& input,
             : DontCopyDoneProviders::kFalse;
   }
   if (g_dont_copy_done_providers == DontCopyDoneProviders::kTrue) {
-    old_matches->matches_.erase(
-        base::ranges::remove_if(*old_matches,
-                                [](const auto& old_match) {
-                                  return old_match.provider &&
-                                         old_match.provider->done();
-                                }),
-        old_matches->matches_.end());
+    base::EraseIf(old_matches->matches_, [](const auto& old_match) {
+      return old_match.provider && old_match.provider->done();
+    });
   }
 
   if (old_matches->empty())
@@ -203,14 +201,10 @@ void AutocompleteResult::TransferOldMatches(const AutocompleteInput& input,
 
   // Exclude specialized suggestion types from being transferred to prevent
   // user-visible artifacts.
-  old_matches->matches_.erase(
-      std::remove_if(
-          old_matches->begin(), old_matches->end(),
-          [](const auto& match) {
-            return match.type == AutocompleteMatchType::TILE_NAVSUGGEST ||
-                   match.type == AutocompleteMatchType::TILE_SUGGESTION;
-          }),
-      old_matches->matches_.end());
+  base::EraseIf(old_matches->matches_, [](const auto& match) {
+    return match.type == AutocompleteMatchType::TILE_NAVSUGGEST ||
+           match.type == AutocompleteMatchType::TILE_SUGGESTION;
+  });
 
   if (empty()) {
     // If we've got no matches we can copy everything from the last result.
@@ -297,22 +291,23 @@ void AutocompleteResult::SortAndCull(
     const AutocompleteInput& input,
     TemplateURLService* template_url_service,
     const AutocompleteMatch* preserve_default_match) {
+  SCOPED_UMA_HISTOGRAM_TIMER_MICROS(
+      "Omnibox.AutocompletionTime.UpdateResult.SortAndCull");
+
   for (auto& match : matches_)
     match.ComputeStrippedDestinationURL(input, template_url_service);
 
-#if !BUILDFLAG(IS_IOS)
-  DemoteOnDeviceSearchSuggestions();
-#endif  // !BUILDFLAG(IS_IOS)
+  if (!is_ios)
+    DemoteOnDeviceSearchSuggestions();
 
   const auto& page_classification = input.current_page_classification();
   CompareWithDemoteByType<AutocompleteMatch> comparing_object(
       page_classification);
 
-#if !(BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS))
   // Because tail suggestions are a "last resort", we cull the tail suggestions
   // if there are any non-default, non-tail suggestions.
-  MaybeCullTailSuggestions(&matches_, comparing_object);
-#endif
+  if (!is_android && !is_ios)
+    MaybeCullTailSuggestions(&matches_, comparing_object);
 
   DeduplicateMatches(&matches_);
 
@@ -364,82 +359,101 @@ void AutocompleteResult::SortAndCull(
       matches_[0].ComputeStrippedDestinationURL(input, template_url_service);
   }
 
-  // TODO(manukh): Limiting (history clusters, zero suggest, max URL
-  //  suggestions, max suggestions, and max keyword suggestions) should be done
-  //  by the grouping framework.
-  // Limit history cluster suggestions to 1. This has to be done before limiting
-  // URL matches below so that a to-be-removed history cluster suggestion
-  // doesn't waste a URL slot.
-  bool history_cluster_included = false;
-  base::EraseIf(matches_, [&](const auto& match) {
-    // If not a history cluster match, don't erase it.
-    if (match.type != AutocompleteMatch::Type::HISTORY_CLUSTER)
-      return false;
-    // If not the 1st history cluster match, do erase it.
-    if (history_cluster_included)
-      return true;
-    // If the 1st history cluster match, don't erase it.
-    history_cluster_included = true;
-    return false;
-  });
-
-  // Limit URL matches per OmniboxMaxURLMatches.
-  size_t max_url_count = 0;
+  // If `kGroupingFramework` is enabled and the current input & platform are
+  // supported, delegate to the framework.
   const bool is_zero_suggest = input.IsZeroSuggest();
-  if (OmniboxFieldTrial::IsMaxURLMatchesFeatureEnabled() &&
-      (max_url_count = OmniboxFieldTrial::GetMaxURLMatches()) != 0)
-    LimitNumberOfURLsShown(GetMaxMatches(is_zero_suggest), max_url_count,
-                           comparing_object);
-
-  // Limit total matches accounting for suggestions score <= 0, sub matches, and
-  // feature configs such as OmniboxUIExperimentMaxAutocompleteMatches,
-  // OmniboxMaxZeroSuggestMatches, and OmniboxDynamicMaxAutocomplete.
-  const size_t num_matches =
-      CalculateNumMatches(is_zero_suggest, matches_, comparing_object);
-
-  // Group and trim suggestions to the given limit.
-  if (!is_zero_suggest) {
-    // Until limits are applied by the grouping framework, typed suggestions are
-    // trimmed then grouped.
-    // TODO(manukh): Limiting should be done by the grouping framework.
-    matches_.resize(num_matches);
-
-    // Group search suggestions above URL suggestions.
-    if (matches_.size() > 2 &&
-        !base::FeatureList::IsEnabled(omnibox::kAdaptiveSuggestionsCount)) {
-      // TODO(manukh): Grouping search v URL (actually
-      //  `GroupSuggestionsBySearchVsURL` now groups by other types as well)
-      //  should be done by the grouping framework.
-      GroupSuggestionsBySearchVsURL(std::next(matches_.begin()),
-                                    matches_.end());
-    }
-    GroupAndDemoteMatchesInGroups();
-
-  } else if (base::FeatureList::IsEnabled(omnibox::kKeepSecondaryZeroSuggest)) {
-    // Until limits are applied by the grouping framework, zero-prefix
-    // suggestions are grouped then trimmed.
-    // TODO(manukh): Limiting should be done by the grouping framework.
-    GroupAndDemoteMatchesInGroups();
-    size_t num_primary_suggestions = 0;
-    base::EraseIf(matches_, [&](const auto& match) {
-      if (!match.suggestion_group_id.has_value() ||
-          GetSideTypeForSuggestionGroup(match.suggestion_group_id.value()) ==
-              omnibox::GroupConfig_SideType_DEFAULT_PRIMARY) {
-        // Trim the primary suggestions to the given limit.
-        return ++num_primary_suggestions > num_matches;
-      } else {
-        // Keep the secondary suggestions for the NTP realbox.
-        // TODO(ender): Add appropriate page classification for Android.
-        return page_classification != OmniboxEventProto::NTP_REALBOX;
+  if (base::FeatureList::IsEnabled(omnibox::kGroupingFramework) &&
+      !is_zero_suggest && !is_android && !is_ios) {
+    // Grouping requires all matches have a group ID. To keep providers 'dumb',
+    // they only assign IDs when their ID isn't obvious from the match type.
+    // Most matches will instead set IDs here to keep providers 'dumb' and the
+    // type->group mapping consistent between providers.
+    base::ranges::for_each(matches_, [&](auto& match) {
+      if (!match.suggestion_group_id.has_value()) {
+        match.suggestion_group_id =
+            AutocompleteMatch::GetDefaultGroupId(match.type);
       }
+      DCHECK(match.suggestion_group_id.has_value());
     });
 
+    // Some providers give 0 relevance matches that are meant for deduping only
+    // but shouldn't be shown otherwise. Filter them out.
+    base::EraseIf(matches_,
+                  [&](const auto& match) { return match.relevance == 0; });
+
+    // If there's only 1 match, then grouping is a no-op.
+    if (matches_.size() > 2) {
+      PSections sections;
+      sections.push_back(std::make_unique<DesktopNonZpsSection>(matches_));
+      matches_ = Section::GroupMatches(std::move(sections), matches_);
+    }
+
   } else {
-    // Until limits are applied by the grouping framework, zero-prefix
-    // suggestions are grouped then trimmed.
-    // TODO(manukh): Limiting should be done by the grouping framework.
-    GroupAndDemoteMatchesInGroups();
-    matches_.resize(num_matches);
+    // Limit history cluster suggestions to 1. This has to be done before
+    // limiting URL matches below so that a to-be-removed history cluster
+    // suggestion doesn't waste a URL slot.
+    bool history_cluster_included = false;
+    base::EraseIf(matches_, [&](const auto& match) {
+      // If not a history cluster match, don't erase it.
+      if (match.type != AutocompleteMatch::Type::HISTORY_CLUSTER)
+        return false;
+      // If not the 1st history cluster match, do erase it.
+      if (history_cluster_included)
+        return true;
+      // If the 1st history cluster match, don't erase it.
+      history_cluster_included = true;
+      return false;
+    });
+
+    // Limit URL matches per OmniboxMaxURLMatches.
+    size_t max_url_count = 0;
+    if (OmniboxFieldTrial::IsMaxURLMatchesFeatureEnabled() &&
+        (max_url_count = OmniboxFieldTrial::GetMaxURLMatches()) != 0)
+      LimitNumberOfURLsShown(GetMaxMatches(is_zero_suggest), max_url_count,
+                             comparing_object);
+
+    // Limit total matches accounting for suggestions score <= 0, sub matches,
+    // and feature configs such as OmniboxUIExperimentMaxAutocompleteMatches,
+    // OmniboxMaxZeroSuggestMatches, and OmniboxDynamicMaxAutocomplete.
+    const size_t num_matches =
+        CalculateNumMatches(is_zero_suggest, matches_, comparing_object);
+
+    // Group and trim suggestions to the given limit.
+    if (!is_zero_suggest) {
+      // Typed suggestions are trimmed then grouped.
+      matches_.resize(num_matches);
+
+      // Group search suggestions above URL suggestions.
+      if (matches_.size() > 2 &&
+          !base::FeatureList::IsEnabled(omnibox::kAdaptiveSuggestionsCount)) {
+        GroupSuggestionsBySearchVsURL(std::next(matches_.begin()),
+                                      matches_.end());
+      }
+      GroupAndDemoteMatchesInGroups();
+
+    } else if (base::FeatureList::IsEnabled(
+                   omnibox::kKeepSecondaryZeroSuggest)) {
+      // Zero-prefix suggestions are grouped then trimmed.
+      GroupAndDemoteMatchesInGroups();
+      size_t num_primary_suggestions = 0;
+      base::EraseIf(matches_, [&](const auto& match) {
+        if (!match.suggestion_group_id.has_value() ||
+            GetSideTypeForSuggestionGroup(match.suggestion_group_id.value()) ==
+                omnibox::GroupConfig_SideType_DEFAULT_PRIMARY) {
+          // Trim the primary suggestions to the given limit.
+          return ++num_primary_suggestions > num_matches;
+        } else {
+          // Keep the secondary suggestions for the NTP realbox.
+          // TODO(ender): Add appropriate page classification for Android.
+          return page_classification != OmniboxEventProto::NTP_REALBOX;
+        }
+      });
+
+    } else {
+      // Zero-prefix suggestions are grouped then trimmed.
+      GroupAndDemoteMatchesInGroups();
+      matches_.resize(num_matches);
+    }
   }
 
 #if DCHECK_IS_ON()
@@ -1254,15 +1268,11 @@ void AutocompleteResult::LimitNumberOfURLsShown(
   size_t url_count = 0;
   // Erase URL suggestions past the count of allowed ones, or anything past
   // maximum.
-  matches_.erase(
-      std::remove_if(matches_.begin(), matches_.end(),
-                     [&url_count, max_url_count](const AutocompleteMatch& m) {
-                       if (!AutocompleteMatch::IsSearchType(m.type) &&
-                           ++url_count > max_url_count)
-                         return true;
-                       return false;
-                     }),
-      matches_.end());
+  base::EraseIf(matches_,
+                [&url_count, max_url_count](const AutocompleteMatch& m) {
+                  return !AutocompleteMatch::IsSearchType(m.type) &&
+                         ++url_count > max_url_count;
+                });
 }
 
 // static

@@ -90,10 +90,8 @@ void ExpectInstalled(UpdaterScope scope);
 // Installs the updater.
 void Install(UpdaterScope scope);
 
-// Expects that the updater is installed on the system and the launchd tasks
-// are updated correctly.
-void ExpectActiveUpdater(UpdaterScope scope);
-
+// Expects that the updater is installed on the system and the specified
+// version is active.
 void ExpectVersionActive(UpdaterScope scope, const std::string& version);
 void ExpectVersionNotActive(UpdaterScope scope, const std::string& version);
 
@@ -128,7 +126,7 @@ void UpdateAll(UpdaterScope scope);
 void DeleteUpdaterDirectory(UpdaterScope scope);
 
 // Runs the command and waits for it to exit or time out.
-bool Run(UpdaterScope scope, base::CommandLine command_line, int* exit_code);
+void Run(UpdaterScope scope, base::CommandLine command_line, int* exit_code);
 
 // Returns the path of the Updater executable.
 absl::optional<base::FilePath> GetInstalledExecutablePath(UpdaterScope scope);
@@ -223,8 +221,8 @@ void RunHandoff(UpdaterScope scope, const std::string& app_id);
 int CountDirectoryFiles(const base::FilePath& dir);
 
 // Returns true if the `request_body_regex` partially matches `request_body`.
-bool RequestMatcherRegex(const std::string& request_body_regex,
-                         const std::string& request_body);
+[[nodiscard]] bool RequestMatcherRegex(const std::string& request_body_regex,
+                                       const std::string& request_body);
 
 void ExpectSelfUpdateSequence(UpdaterScope scope, ScopedServer* test_server);
 

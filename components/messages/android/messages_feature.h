@@ -13,18 +13,10 @@ namespace messages {
 // Infobars infrastructure.
 BASE_DECLARE_FEATURE(kMessagesForAndroidAdsBlocked);
 
-// Feature that controls whether "survey" prompts use Messages or
-// Infobars infrastructure.
-BASE_DECLARE_FEATURE(kMessagesForAndroidChromeSurvey);
-
 // Feature that controls whether Messages for Android infrastucture components
 // are initialized. When this feature is disabled all individual message
 // implementations also fallback to Infobar implementations.
 BASE_DECLARE_FEATURE(kMessagesForAndroidInfrastructure);
-
-// Feature that controls whether "near OOM reduction" messages use Messages or
-// Infobars infrastructure.
-BASE_DECLARE_FEATURE(kMessagesForAndroidNearOomReduction);
 
 // Feature that controls whether notifiation blocked prompts use Messages or
 // Infobars infrastructure.
@@ -42,10 +34,6 @@ BASE_DECLARE_FEATURE(kMessagesForAndroidPermissionUpdate);
 // Infobars infrastructure.
 BASE_DECLARE_FEATURE(kMessagesForAndroidPopupBlocked);
 
-// Feature that controls whether "reader mode" prompts use Messages or
-// Infobars infrastructure.
-BASE_DECLARE_FEATURE(kMessagesForAndroidReaderMode);
-
 // Feature that controls whether "save card" prompts use Messages or
 // Infobars infrastructure.
 BASE_DECLARE_FEATURE(kMessagesForAndroidSaveCard);
@@ -55,8 +43,6 @@ BASE_DECLARE_FEATURE(kMessagesForAndroidSaveCard);
 BASE_DECLARE_FEATURE(kMessagesForAndroidStackingAnimation);
 
 bool IsAdsBlockedMessagesUiEnabled();
-
-bool IsNearOomReductionMessagesUiEnabled();
 
 bool IsNotificationBlockedMessagesUiEnabled();
 

@@ -1735,10 +1735,15 @@
           ],
         },
       },
+      'android-pie-arm64-coverage-experimental-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.pie_arm64.content_browsertests_coverage.filter',
+        ],
+      },
       'android-pie-arm64-rel': {
         'swarming': {
           'quickrun_shards': 40
-        }
+        },
       },
       'android-pie-x86-rel': {
         'args': [
@@ -2232,6 +2237,11 @@
       'android-nougat-x86-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n.gl_tests.filter',
+        ],
+      },
+      'android-pie-arm64-coverage-experimental-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.pie_arm64_rel.gl_tests.filter', # https://crbug.com/1034007
         ],
       },
       'android-pie-arm64-rel': {
@@ -3277,9 +3287,7 @@
         },
       },
       'Mac12 Tests': {
-        'precommit_args': [
-            '--gtest_filter=-*',
-        ],
+        'ci_only': True,
         'swarming': {
           'shards': 4,
         },
@@ -3984,8 +3992,8 @@
     'modifications': {
       'android-nougat-x86-rel': {
         'args': [
-          # crbug.com/1343008
-          '--gtest_filter=-android.assist.cts.WebViewTest#testWebView',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.webview_cts_tests.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.webview_cts_tests_coverage.filter',
         ],
       },
       'android-pie-arm64-rel': {

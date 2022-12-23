@@ -30,7 +30,7 @@
 #include "fuchsia_web/runners/cast/cast_streaming.h"
 #include "fuchsia_web/runners/cast/pending_cast_component.h"
 #include "fuchsia_web/runners/common/web_content_runner.h"
-#include "fuchsia_web/webinstance_host/web_instance_host.h"
+#include "fuchsia_web/webinstance_host/web_instance_host_v1.h"
 #include "url/gurl.h"
 
 namespace {
@@ -88,9 +88,6 @@ constexpr char kSentinelFileName[] = ".sentinel";
 
 // Ephemeral remote debugging port used by child contexts.
 const uint16_t kEphemeralRemoteDebuggingPort = 0;
-
-// Application URL for the pseudo-component providing fuchsia.web.FrameHost.
-constexpr char kFrameHostComponentName[] = "cast:fuchsia.web.FrameHost";
 
 // Subdirectory used to stage persistent directories to be deleted upon next
 // startup.
@@ -204,53 +201,9 @@ void SetCdmParamsForMainContext(fuchsia::web::CreateContextParams* params) {
   params->set_playready_key_system(kCastPlayreadyKeySystem);
 }
 
-// TODO(crbug.com/1120914): Remove this once Component Framework v2 can be
-// used to route fuchsia.web.FrameHost capabilities cleanly.
-class FrameHostComponent final
-    : public fuchsia::component::runner::ComponentController {
- public:
-  // Creates a FrameHostComponent with lifetime managed by |controller_request|.
-  static void Start(
-      std::unique_ptr<base::StartupContext> startup_context,
-      fidl::InterfaceRequest<fuchsia::component::runner::ComponentController>
-          controller_request,
-      fidl::InterfaceRequestHandler<fuchsia::web::FrameHost>
-          frame_host_request_handler) {
-    // |frame_host_component| deletes itself when the client disconnects.
-    new FrameHostComponent(std::move(startup_context),
-                           std::move(controller_request),
-                           std::move(frame_host_request_handler));
-  }
-
- private:
-  FrameHostComponent(
-      std::unique_ptr<base::StartupContext> startup_context,
-      fidl::InterfaceRequest<fuchsia::component::runner::ComponentController>
-          controller_request,
-      fidl::InterfaceRequestHandler<fuchsia::web::FrameHost>
-          frame_host_request_handler)
-      : startup_context_(std::move(startup_context)),
-        frame_host_binding_(startup_context_->outgoing(),
-                            std::move(frame_host_request_handler)) {
-    startup_context_->ServeOutgoingDirectory();
-    binding_.Bind(std::move(controller_request));
-    binding_.set_error_handler([this](zx_status_t) { Kill(); });
-  }
-  ~FrameHostComponent() override = default;
-
-  // fuchsia::component::runner::ComponentController interface.
-  void Kill() override { delete this; }
-  void Stop() override { delete this; }
-
-  const std::unique_ptr<base::StartupContext> startup_context_;
-  const base::ScopedServicePublisher<fuchsia::web::FrameHost>
-      frame_host_binding_;
-  fidl::Binding<fuchsia::component::runner::ComponentController> binding_{this};
-};
-
 }  // namespace
 
-CastRunner::CastRunner(WebInstanceHost& web_instance_host, Options options)
+CastRunner::CastRunner(WebInstanceHostV1& web_instance_host, Options options)
     : web_instance_host_(web_instance_host),
       is_headless_(options.headless),
       disable_codegen_(options.disable_codegen),
@@ -258,7 +211,7 @@ CastRunner::CastRunner(WebInstanceHost& web_instance_host, Options options)
           base::ComponentContextForProcess()->svc())),
       main_context_(std::make_unique<WebContentRunner>(
           base::BindRepeating(
-              &WebInstanceHost::CreateInstanceForContextWithCopiedArgs,
+              &WebInstanceHostV1::CreateInstanceForContextWithCopiedArgs,
               base::Unretained(&web_instance_host_.get())),
           base::BindRepeating(&CastRunner::GetMainWebInstanceConfig,
                               base::Unretained(this)))),
@@ -556,7 +509,7 @@ WebContentRunner* CastRunner::CreateIsolatedRunner(
   // Create an isolated context which will own the CastComponent.
   auto context = std::make_unique<WebContentRunner>(
       base::BindRepeating(
-          &WebInstanceHost::CreateInstanceForContextWithCopiedArgs,
+          &WebInstanceHostV1::CreateInstanceForContextWithCopiedArgs,
           base::Unretained(&web_instance_host_.get())),
       std::move(config));
   context->SetOnEmptyCallback(
@@ -578,15 +531,6 @@ void CastRunner::StartComponentInternal(
     std::unique_ptr<base::StartupContext> startup_context,
     fidl::InterfaceRequest<fuchsia::component::runner::ComponentController>
         controller_request) {
-  // TODO(crbug.com/1120914): Remove this once Component Framework v2 can be
-  // used to route fuchsia.web.FrameHost capabilities cleanly.
-  if (enable_frame_host_component_ && (url.spec() == kFrameHostComponentName)) {
-    FrameHostComponent::Start(std::move(startup_context),
-                              std::move(controller_request),
-                              main_context_->GetFrameHostRequestHandler());
-    return;
-  }
-
   pending_components_.emplace(std::make_unique<PendingCastComponent>(
       this, std::move(startup_context), std::move(controller_request),
       url.GetContent()));

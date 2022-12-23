@@ -9,13 +9,15 @@ import 'chrome://resources/cr_elements/cr_icons.css.js';
 import 'chrome://resources/cr_elements/icons.html.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 
+import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
+import {PolymerElementProperties} from 'chrome://resources/polymer/v3_0/polymer/interfaces.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './accelerator_edit_view.html.js';
 import {AcceleratorLookupManager} from './accelerator_lookup_manager.js';
 import {ViewState} from './accelerator_view.js';
 import {getShortcutProvider} from './mojo_interface_provider.js';
-import {Accelerator, AcceleratorConfigResult, AcceleratorSource, AcceleratorState, AcceleratorType, DefaultAcceleratorInfo, ShortcutProviderInterface} from './shortcut_types.js';
+import {Accelerator, AcceleratorConfigResult, AcceleratorSource, AcceleratorState, AcceleratorType, ShortcutProviderInterface, StandardAcceleratorInfo} from './shortcut_types.js';
 import {getAccelerator} from './shortcut_utils.js';
 
 export type RequestUpdateAcceleratorEvent =
@@ -32,12 +34,12 @@ const accelerator: Accelerator = {
   keyCode: 0,
 };
 
-const defaultAcceleratorInfoState: DefaultAcceleratorInfo = {
+const standardAcceleratorInfoState: StandardAcceleratorInfo = {
   locked: false,
   state: AcceleratorState.kEnabled,
   type: AcceleratorType.kDefault,
   layoutProperties: {
-    defaultAccelerator: {
+    standardAccelerator: {
       accelerator,
       keyDisplay: '',
     },
@@ -50,25 +52,27 @@ const defaultAcceleratorInfoState: DefaultAcceleratorInfo = {
  * responsible for displaying the edit/remove buttons to an accelerator and also
  * displaying context or errors strings for an accelerator.
  */
-export class AcceleratorEditViewElement extends PolymerElement {
-  static get is() {
+const AcceleratorEditViewElementBase = I18nMixin(PolymerElement);
+
+export class AcceleratorEditViewElement extends AcceleratorEditViewElementBase {
+  static get is(): string {
     return 'accelerator-edit-view';
   }
 
-  static get template() {
+  static get template(): HTMLTemplateElement {
     return getTemplate();
   }
 
-  static get properties() {
+  static get properties(): PolymerElementProperties {
     return {
       acceleratorInfo: {
         type: Object,
-        value: defaultAcceleratorInfoState,
+        value: standardAcceleratorInfoState,
       },
 
       isEditView: {
         type: Boolean,
-        computed: 'showEditView_(viewState)',
+        computed: 'showEditView(viewState)',
         reflectToAttribute: true,
       },
 
@@ -81,7 +85,7 @@ export class AcceleratorEditViewElement extends PolymerElement {
       statusMessage: {
         type: String,
         value: '',
-        observer: 'onStatusMessageChanged_',
+        observer: AcceleratorEditViewElement.prototype.onStatusMessageChanged,
       },
 
       hasError: {
@@ -102,43 +106,41 @@ export class AcceleratorEditViewElement extends PolymerElement {
     };
   }
 
-  acceleratorInfo: DefaultAcceleratorInfo;
+  acceleratorInfo: StandardAcceleratorInfo;
   isEditView: boolean;
   viewState: number;
   hasError: boolean;
   action: number;
   source: AcceleratorSource;
   protected statusMessage: string;
-  private shortcutProvider_: ShortcutProviderInterface;
-  private lookupManager_: AcceleratorLookupManager;
+  private shortcutProvider: ShortcutProviderInterface;
+  private lookupManager: AcceleratorLookupManager;
 
   constructor() {
     super();
 
-    this.shortcutProvider_ = getShortcutProvider();
+    this.shortcutProvider = getShortcutProvider();
 
-    this.lookupManager_ = AcceleratorLookupManager.getInstance();
+    this.lookupManager = AcceleratorLookupManager.getInstance();
   }
 
-  protected onStatusMessageChanged_() {
+  protected onStatusMessageChanged(): void {
     if (this.statusMessage === '') {
-      // TODO(jimmyxgong): i18n this string.
-      this.statusMessage =
-          'Press 1-4 modifiers and 1 other key on your keyboard';
+      this.statusMessage = this.i18n('editViewStatusMessage');
     }
   }
 
-  protected onEditButtonClicked_() {
+  protected onEditButtonClicked(): void {
     this.viewState = ViewState.EDIT;
   }
 
-  protected onDeleteButtonClicked_() {
-    this.shortcutProvider_
+  protected onDeleteButtonClicked(): void {
+    this.shortcutProvider
         .removeAccelerator(
             this.source, this.action, getAccelerator(this.acceleratorInfo))
         .then((result: AcceleratorConfigResult) => {
           if (result === AcceleratorConfigResult.SUCCESS) {
-            this.lookupManager_.removeAccelerator(
+            this.lookupManager.removeAccelerator(
                 this.source, this.action, getAccelerator(this.acceleratorInfo));
 
             this.dispatchEvent(new CustomEvent('request-update-accelerator', {
@@ -150,12 +152,12 @@ export class AcceleratorEditViewElement extends PolymerElement {
         });
   }
 
-  protected onCancelButtonClicked_() {
+  protected onCancelButtonClicked(): void {
     this.statusMessage = '';
     this.viewState = ViewState.VIEW;
   }
 
-  protected showEditView_(): boolean {
+  protected showEditView(): boolean {
     return this.viewState !== ViewState.VIEW;
   }
 }

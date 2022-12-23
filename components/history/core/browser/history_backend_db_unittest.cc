@@ -34,7 +34,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "components/enterprise/common/download_item_reroute_info.h"
 #include "components/history/core/browser/download_constants.h"
 #include "components/history/core/browser/download_row.h"
 #include "components/history/core/browser/history_constants.h"
@@ -252,8 +251,8 @@ TEST_F(HistoryBackendDBTest, MigrateDownloadsReasonPathsAndDangerType) {
       // Implicit dependence on value of kDangerTypeNotDangerous from
       // download_database.cc.
       EXPECT_EQ(0, statement.ColumnInt(4));
-      EXPECT_EQ(nowish.ToInternalValue(), statement.ColumnInt64(5));
-      EXPECT_EQ(nowish.ToInternalValue(), statement.ColumnInt64(6));
+      EXPECT_EQ(nowish, statement.ColumnTime(5));
+      EXPECT_EQ(nowish, statement.ColumnTime(6));
 
       EXPECT_TRUE(statement.Step());
       EXPECT_EQ(2, statement.ColumnInt64(0));
@@ -262,8 +261,8 @@ TEST_F(HistoryBackendDBTest, MigrateDownloadsReasonPathsAndDangerType) {
       EXPECT_EQ("/path/to/some/file", statement.ColumnString(2));
       EXPECT_EQ("/path/to/some/file", statement.ColumnString(3));
       EXPECT_EQ(0, statement.ColumnInt(4));
-      EXPECT_EQ(nowish.ToInternalValue(), statement.ColumnInt64(5));
-      EXPECT_EQ(nowish.ToInternalValue(), statement.ColumnInt64(6));
+      EXPECT_EQ(nowish, statement.ColumnTime(5));
+      EXPECT_EQ(nowish, statement.ColumnTime(6));
 
       EXPECT_FALSE(statement.Step());
     }
@@ -853,7 +852,7 @@ TEST_F(HistoryBackendDBTest, MigrateDownloadsLastAccessTimeAndTransient) {
       sql::Statement s(db.GetUniqueStatement(
           "SELECT last_access_time, transient from downloads"));
       EXPECT_TRUE(s.Step());
-      EXPECT_EQ(base::Time(), base::Time::FromInternalValue(s.ColumnInt64(0)));
+      EXPECT_EQ(base::Time(), s.ColumnTime(0));
       EXPECT_EQ(0, s.ColumnInt(1));
     }
   }
@@ -1406,7 +1405,7 @@ TEST_F(HistoryBackendDBTest, MigratePresentations) {
       s.BindInt64(0, url_id);
       s.BindString(1, url.spec());
       s.BindString16(2, title);
-      s.BindInt64(3, segment_time.ToInternalValue());
+      s.BindTime(3, segment_time);
       ASSERT_TRUE(s.Run());
     }
 
@@ -1431,7 +1430,7 @@ TEST_F(HistoryBackendDBTest, MigratePresentations) {
                            "(?, ?, ?, ?)"));
       s.BindInt64(0, 4);  // id.
       s.BindInt64(1, segment_id);
-      s.BindInt64(2, segment_time.ToInternalValue());
+      s.BindTime(2, segment_time);
       s.BindInt(3, 5);  // visit count.
       ASSERT_TRUE(s.Run());
     }
@@ -1516,7 +1515,7 @@ TEST_F(HistoryBackendDBTest, MigrateVisitSegmentNames) {
       s.BindInt64(0, url_id1);
       s.BindString(1, url1.spec());
       s.BindString16(2, title1);
-      s.BindInt64(3, segment_time.ToInternalValue());
+      s.BindTime(3, segment_time);
       ASSERT_TRUE(s.Run());
     }
 
@@ -1540,7 +1539,7 @@ TEST_F(HistoryBackendDBTest, MigrateVisitSegmentNames) {
           "(?, ?, ?, ?)"));
       s.BindInt64(0, 4);  // id.
       s.BindInt64(1, segment_id1);
-      s.BindInt64(2, segment_time.ToInternalValue());
+      s.BindTime(2, segment_time);
       s.BindInt(3, 11);  // visit count.
       ASSERT_TRUE(s.Run());
     }
@@ -1554,7 +1553,7 @@ TEST_F(HistoryBackendDBTest, MigrateVisitSegmentNames) {
       s.BindInt64(0, url_id2);
       s.BindString(1, url2.spec());
       s.BindString16(2, title2);
-      s.BindInt64(3, segment_time.ToInternalValue());
+      s.BindTime(3, segment_time);
       ASSERT_TRUE(s.Run());
     }
 
@@ -1578,7 +1577,7 @@ TEST_F(HistoryBackendDBTest, MigrateVisitSegmentNames) {
           "(?, ?, ?, ?)"));
       s.BindInt64(0, 5);  // id.
       s.BindInt64(1, segment_id2);
-      s.BindInt64(2, segment_time.ToInternalValue());
+      s.BindTime(2, segment_time);
       s.BindInt(3, 13);  // visit count.
       ASSERT_TRUE(s.Run());
     }
@@ -2611,6 +2610,52 @@ TEST_F(HistoryBackendDBTest, MigrateVisitsAddIsKnownToSyncColumn) {
     ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
     EXPECT_TRUE(db.DoesColumnExist("visits", "is_known_to_sync"));
   }
+}
+
+TEST_F(HistoryBackendDBTest, MigrateClustersAddTriggerabilityCalculatedColumn) {
+  ASSERT_NO_FATAL_FAILURE(CreateDBVersion(59));
+
+  int64_t cluster_id = 1;
+
+  // Open the old version of the DB and make sure the new columns don't exist
+  // yet.
+  {
+    sql::Database db;
+    ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
+    ASSERT_FALSE(db.DoesColumnExist("clusters", "triggerability_calculated"));
+
+    const char kInsertClustersStatement[] =
+        "INSERT INTO clusters"
+        "(cluster_id,should_show_on_prominent_ui_surfaces,label,raw_label)"
+        "VALUES(?,?,?,?)";
+
+    // Add a row to `clusters` table.
+    {
+      sql::Statement s(db.GetUniqueStatement(kInsertClustersStatement));
+      s.BindInt64(0, cluster_id);
+      s.BindBool(1, true);
+      s.BindString16(2, u"");
+      s.BindString16(3, u"");
+      ASSERT_TRUE(s.Run());
+    }
+  }
+
+  // Re-open the db, triggering migration.
+  CreateBackendAndDatabase();
+
+  // The version should have been updated.
+  ASSERT_GE(HistoryDatabase::GetCurrentVersion(), 60);
+
+  // Open the db manually again and make sure the new columns exist.
+  {
+    sql::Database db;
+    ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
+    EXPECT_TRUE(db.DoesColumnExist("clusters", "triggerability_calculated"));
+  }
+
+  // Check contents.
+  Cluster cluster = db_->GetCluster(cluster_id);
+  EXPECT_TRUE(cluster.triggerability_calculated);
 }
 
 // ^^^ NEW MIGRATION TESTS GO HERE ^^^

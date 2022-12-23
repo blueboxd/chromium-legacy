@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_ASH_COMPONENTS_DRIVEFS_DRIVEFS_PIN_MANAGER_H_
 #define CHROMEOS_ASH_COMPONENTS_DRIVEFS_DRIVEFS_PIN_MANAGER_H_
 
+#include <ostream>
 #include <utility>
 #include <vector>
 
@@ -25,6 +26,12 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace drivefs::pinning {
+
+// Prints a size in bytes in a human-readable way.
+enum HumanReadableSize : int64_t;
+
+COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS)
+std::ostream& operator<<(std::ostream& out, HumanReadableSize size);
 
 // Constant representing the GCache folder name.
 extern const char kGCacheFolderName[];
@@ -49,18 +56,24 @@ enum class SetupError {
   kErrorManagerStopped = 10,
 };
 
+COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS)
+std::ostream& operator<<(std::ostream& out, SetupError error);
+
 // The `DriveFsPinManager` first undergoes a setup phase, where it audits the
 // current disk space, pins all available files (disk space willing) then moves
 // to monitoring. This enum represents the various stages the setup goes
 // through.
 enum class SetupStage {
+  kError = -1,
   kNotStarted = 0,
   kStarted = 1,
   kCalculatedFreeLocalDiskSpace = 2,
   kCalculatedRequiredDiskSpace = 3,
-  kFinishedSetupWithError = 4,
-  kFinishedSetup = 5,
+  kFinishedSetup = 4,
 };
+
+COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS)
+std::ostream& operator<<(std::ostream& out, SetupStage stage);
 
 // A delegate to aid in mocking the free disk scenarios for testing, in non-test
 // scenarios this simply calls `base::SysInfo::AmountOfFreeDiskSpace`.
@@ -87,11 +100,12 @@ struct SetupProgress {
   int64_t available_disk_space = 0;
   int64_t pinned_disk_space = 0;
   int32_t batch_size = 50;
+  int32_t error_count = 0;
   SetupStage stage = SetupStage::kNotStarted;
-  SetupError error;
+  SetupError error = SetupError::kSuccess;
 
   // Sets the `SetupProgress` back to the initial values above.
-  void Reset();
+  void Reset() { *this = SetupProgress(); }
 };
 
 // The managers current state.
@@ -174,15 +188,15 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) DriveFsPinManager
     ~InProgressSyncingItems();
 
     // Adds an item to the map.
-    void AddItem(const std::string path);
+    void AddItem(const std::string& path);
 
     // Removes an item from the map, if the item doesn't exist ignores the
     // removal. Returns the total bytes transferred on every removal.
-    int64_t RemoveItem(const std::string path, int64_t total_bytes);
+    int64_t RemoveItem(const std::string& path, int64_t total_bytes);
 
     // Update the item keyed at `path` with the new progress bytes. Returns the
     // total bytes transferred on every update.
-    int64_t UpdateItem(const std::string path,
+    int64_t UpdateItem(const std::string& path,
                        int64_t bytes_transferred,
                        int64_t bytes_to_transfer);
 
@@ -195,10 +209,18 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) DriveFsPinManager
 
    private:
     SEQUENCE_CHECKER(sequence_checker_);
-    // A map that tracks the in progress items by their key to a pair of
-    // `int64_t` with `first` being the number of bytes transferred and `second`
-    // being the `bytes_to_transfer` i.e. the total bytes of the syncing file.
-    using InProgressMap = std::map<std::string, std::pair<int64_t, int64_t>>;
+
+    // Struct keeping track of the progress of a file being synced.
+    struct Progress {
+      // Number of bytes that have been transferred so far.
+      int64_t transferred = 0;
+
+      // Total number of bytes for this file.
+      int64_t total = 0;
+    };
+
+    // Map that tracks the in-progress files indexed by their path.
+    using InProgressMap = std::map<std::string, Progress>;
     InProgressMap in_progress_items_ GUARDED_BY_CONTEXT(sequence_checker_);
 
     // Keeps track of the total bytes transferred by all the in progress syncing
@@ -244,13 +266,13 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) DriveFsPinManager
   // For any paths that are in the unstarted phase (i.e. no `bytes_to_transfer`
   // registered), the metadata must be retrieved to verify their
   // `available_offline` boolean is true OR the size is 0.
-  void GetMetadata(const std::vector<std::string> unstarted_paths);
+  void GetMetadata(const std::vector<std::string>& unstarted_paths);
 
   // When an item goes to completed, it doesn't emit the final chunk of progress
   // nor it's final size, to ensure progress is adequately retrieved, this
   // method is used to get the total size to keep track of.
   void GetMetadataForPath(const base::FilePath& path);
-  void OnMetadataRetrieved(const std::string path,
+  void OnMetadataRetrieved(const std::string& path,
                            drive::FileError error,
                            mojom::FileMetadataPtr metadata);
 

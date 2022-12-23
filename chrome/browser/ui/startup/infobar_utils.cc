@@ -63,6 +63,13 @@ bool IsKioskModeEnabled() {
       switches::kKioskMode);
 }
 
+#if BUILDFLAG(GOOGLE_CHROME_FOR_TESTING_BRANDING)
+bool IsGpuTest() {
+  return base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+             switches::kTestType) == "gpu";
+}
+#endif
+
 }  // namespace
 
 void AddInfoBarsIfNecessary(Browser* browser,
@@ -80,13 +87,11 @@ void AddInfoBarsIfNecessary(Browser* browser,
       browser->tab_strip_model()->GetActiveWebContents();
   DCHECK(web_contents);
 
-  infobars::ContentInfoBarManager* infobar_manager =
-      infobars::ContentInfoBarManager::FromWebContents(web_contents);
-
   if (show_bad_flags_security_warnings) {
 #if BUILDFLAG(GOOGLE_CHROME_FOR_TESTING_BRANDING)
-    // TODO(crbug.com/1336611): Switch to a global infobar.
-    ChromeForTestingInfoBarDelegate::Create(infobar_manager);
+    if (!IsGpuTest()) {
+      ChromeForTestingInfoBarDelegate::Create();
+    }
 #endif
 
     if (IsAutomationEnabled())
@@ -124,6 +129,9 @@ void AddInfoBarsIfNecessary(Browser* browser,
 
     if (show_bad_flags_security_warnings)
       chrome::ShowBadFlagsPrompt(web_contents);
+
+    infobars::ContentInfoBarManager* infobar_manager =
+        infobars::ContentInfoBarManager::FromWebContents(web_contents);
 
     if (!google_apis::HasAPIKeyConfigured())
       GoogleApiKeysInfoBarDelegate::Create(infobar_manager);

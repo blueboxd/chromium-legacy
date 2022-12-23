@@ -684,44 +684,42 @@ static jlong JNI_CableAuthenticator_StartQR(
 
   global_data.event_to_record_if_stopped =
       CableV2MobileEvent::kStoppedWhileAwaitingTunnelServerConnection;
-  global_data
-      .current_transaction = device::cablev2::authenticator::TransactFromQRCode(
-      // Just because the client supports storing linking information doesn't
-      // imply that it supports revision one, but we happened to introduce
-      // these features at the same time.
-      /*protocol_revision=*/decoded_qr->supports_linking.has_value() ? 1 : 0,
-      std::make_unique<AndroidPlatform>(env, cable_authenticator,
-                                        /*is_usb=*/false),
-      global_data.network_context, *global_data.root_secret,
-      ConvertJavaStringToUTF8(authenticator_name), decoded_qr->secret,
-      decoded_qr->peer_identity,
-      link ? global_data.registration->contact_id() : absl::nullopt,
-      // If the QR code knows about at least two registered tunnel server
-      // domains then we consider it recent enough to use the new Crypter mode.
-      /*use_new_crypter_construction=*/decoded_qr->num_known_domains >= 2);
+  global_data.current_transaction =
+      device::cablev2::authenticator::TransactFromQRCode(
+          // Just because the client supports storing linking information
+          // doesn't imply that it supports revision one, but we happened to
+          // introduce these features at the same time.
+          /*protocol_revision=*/decoded_qr->supports_linking.has_value() ? 1
+                                                                         : 0,
+          std::make_unique<AndroidPlatform>(env, cable_authenticator,
+                                            /*is_usb=*/false),
+          global_data.network_context, *global_data.root_secret,
+          ConvertJavaStringToUTF8(authenticator_name), decoded_qr->secret,
+          decoded_qr->peer_identity,
+          link ? global_data.registration->contact_id() : absl::nullopt);
 
   return ++global_data.instance_num;
 }
 
-std::tuple<base::span<const uint8_t, device::kP256X962Length>,
-           base::span<const uint8_t, device::cablev2::kQRSecretSize>,
+std::tuple<std::array<uint8_t, device::kP256X962Length>,
+           std::array<uint8_t, device::cablev2::kQRSecretSize>,
            std::array<uint8_t, device::cablev2::kTunnelIdSize>>
 ParseServerLinkData(JNIEnv* env,
                     const JavaParamRef<jbyteArray>& server_link_data_java) {
-  constexpr size_t kDataSize =
-      device::kP256X962Length + device::cablev2::kQRSecretSize;
-  const std::vector<uint8_t> server_link_data_vec =
+  const std::vector<uint8_t> server_link_data =
       JavaByteArrayToByteVector(env, server_link_data_java);
   // validateServerLinkData should have been called to check this already.
-  CHECK_EQ(server_link_data_vec.size(), kDataSize);
-  base::span<const uint8_t> server_link_data =
-      base::make_span(server_link_data_vec);
+  CHECK_EQ(server_link_data.size(),
+           device::kP256X962Length + device::cablev2::kQRSecretSize);
 
-  const base::span<const uint8_t, device::kP256X962Length> peer_identity =
-      server_link_data.subspan<0, device::kP256X962Length>();
-  const base::span<const uint8_t, device::cablev2::kQRSecretSize> qr_secret =
-      server_link_data
-          .subspan<device::kP256X962Length, device::cablev2::kQRSecretSize>();
+  std::array<uint8_t, device::kP256X962Length> peer_identity;
+  memcpy(peer_identity.data(), server_link_data.data(),
+         device::kP256X962Length);
+
+  std::array<uint8_t, device::cablev2::kQRSecretSize> qr_secret;
+  memcpy(qr_secret.data(), server_link_data.data() + device::kP256X962Length,
+         device::cablev2::kQRSecretSize);
+
   const std::array<uint8_t, device::cablev2::kTunnelIdSize> tunnel_id =
       device::cablev2::Derive<device::cablev2::kTunnelIdSize>(
           qr_secret, base::span<uint8_t>(),
@@ -755,8 +753,7 @@ static jlong JNI_CableAuthenticator_StartServerLink(
           std::make_unique<AndroidPlatform>(env, cable_authenticator,
                                             /*is_usb=*/false),
           global_data.network_context, dummy_root_secret,
-          dummy_authenticator_name, qr_secret, peer_identity, absl::nullopt,
-          /*use_new_crypter_construction=*/false);
+          dummy_authenticator_name, qr_secret, peer_identity, absl::nullopt);
 
   return ++global_data.instance_num;
 }

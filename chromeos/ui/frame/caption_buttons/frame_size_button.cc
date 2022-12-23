@@ -71,7 +71,6 @@ SnapDirection GetSnapDirection(const views::FrameCaptionButton* to_hover) {
       return GetSnapDirectionForWindow(window, /*left_top=*/true);
     case views::CAPTION_BUTTON_ICON_RIGHT_BOTTOM_SNAPPED:
       return GetSnapDirectionForWindow(window, /*left_top=*/false);
-    case views::CAPTION_BUTTON_ICON_FLOAT:
     case views::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE:
     case views::CAPTION_BUTTON_ICON_MINIMIZE:
     case views::CAPTION_BUTTON_ICON_CLOSE:
@@ -369,8 +368,10 @@ void FrameSizeButton::StartSetButtonsToSnapModeTimer(
 
 void FrameSizeButton::StartPieAnimation(base::TimeDelta duration,
                                         MultitaskMenuEntryType entry_type) {
-  if (!chromeos::wm::features::IsFloatWindowEnabled())
+  if (!chromeos::wm::features::IsFloatWindowEnabled() ||
+      chromeos::TabletState::Get()->InTabletMode()) {
     return;
+  }
 
   base::OnceClosure cancel_animation = base::BindOnce(
       &FrameSizeButton::DestroyPieAnimation, base::Unretained(this));

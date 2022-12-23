@@ -23,6 +23,8 @@ namespace localstate {
 
 // Local state prefs.
 extern const char kModelStoreMetadata[];
+extern const char kModelCacheKeyMapping[];
+extern const char kStoreFilePathsToDelete[];
 
 }  // namespace localstate
 

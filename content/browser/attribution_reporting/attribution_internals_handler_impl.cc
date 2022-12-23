@@ -53,6 +53,8 @@ namespace {
 
 using Attributability =
     ::attribution_internals::mojom::WebUISource::Attributability;
+using SourceDebugReporting =
+    ::attribution_internals::mojom::WebUISource::DebugReporting;
 
 using Empty = ::attribution_internals::mojom::Empty;
 using ReportStatus = ::attribution_internals::mojom::ReportStatus;
@@ -66,7 +68,7 @@ attribution_internals::mojom::WebUISourcePtr WebUISource(
     const std::vector<uint64_t>& dedup_keys,
     int64_t aggregatable_budget_consumed,
     const std::vector<uint64_t>& aggregatable_dedup_keys,
-    bool debug_reporting_enabled,
+    SourceDebugReporting debug_reporting_enabled,
     absl::optional<uint64_t> cleared_debug_key) {
   DCHECK_GE(aggregatable_budget_consumed, 0);
 
@@ -123,13 +125,10 @@ void ForwardSourcesToWebUI(
       }
     }
 
-    // Note that debug reporting may be enabled when the source was registered
-    // but the value was not persisted in memory. Showing "disabled" in
-    // internals UI as the value is not relevant at this point.
     web_ui_sources.push_back(WebUISource(
         source.common_info(), attributability, source.dedup_keys(),
         source.aggregatable_budget_consumed(), source.aggregatable_dedup_keys(),
-        /*debug_reporting_enabled=*/false,
+        SourceDebugReporting::kNotApplicable,
         /*cleared_debug_key=*/absl::nullopt));
   }
 
@@ -328,7 +327,9 @@ void AttributionInternalsHandlerImpl::OnSourceHandled(
   auto web_ui_source =
       WebUISource(source.common_info(), attributability, /*dedup_keys=*/{},
                   /*aggregatable_budget_consumed=*/0,
-                  /*aggregatable_dedup_keys=*/{}, source.debug_reporting(),
+                  /*aggregatable_dedup_keys=*/{},
+                  source.debug_reporting() ? SourceDebugReporting::kEnabled
+                                           : SourceDebugReporting::kDisabled,
                   cleared_debug_key);
 
   for (auto& observer : observers_) {
@@ -395,12 +396,14 @@ void AttributionInternalsHandlerImpl::OnDebugReportSent(
 void AttributionInternalsHandlerImpl::OnFailedSourceRegistration(
     const std::string& header_value,
     base::Time source_time,
+    const attribution_reporting::SuitableOrigin& source_origin,
     const attribution_reporting::SuitableOrigin& reporting_origin,
     attribution_reporting::mojom::SourceRegistrationError error) {
   auto web_ui_log =
       attribution_internals::mojom::FailedSourceRegistration::New();
   web_ui_log->header_value = header_value;
   web_ui_log->time = source_time.ToJsTime();
+  web_ui_log->source_origin = source_origin;
   web_ui_log->reporting_origin = reporting_origin;
   web_ui_log->error = error;
 

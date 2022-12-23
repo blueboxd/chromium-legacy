@@ -44,8 +44,6 @@ class FastPairPairerImpl : public FastPairPairer,
     static std::unique_ptr<FastPairPairer> Create(
         scoped_refptr<device::BluetoothAdapter> adapter,
         scoped_refptr<Device> device,
-        base::OnceCallback<void(scoped_refptr<Device>)>
-            handshake_complete_callback,
         base::OnceCallback<void(scoped_refptr<Device>)> paired_callback,
         base::OnceCallback<void(scoped_refptr<Device>, PairFailure)>
             pair_failed_callback,
@@ -62,8 +60,6 @@ class FastPairPairerImpl : public FastPairPairer,
     virtual std::unique_ptr<FastPairPairer> CreateInstance(
         scoped_refptr<device::BluetoothAdapter> adapter,
         scoped_refptr<Device> device,
-        base::OnceCallback<void(scoped_refptr<Device>)>
-            handshake_complete_callback,
         base::OnceCallback<void(scoped_refptr<Device>)> paired_callback,
         base::OnceCallback<void(scoped_refptr<Device>, PairFailure)>
             pair_failed_callback,
@@ -79,8 +75,6 @@ class FastPairPairerImpl : public FastPairPairer,
   FastPairPairerImpl(
       scoped_refptr<device::BluetoothAdapter> adapter,
       scoped_refptr<Device> device,
-      base::OnceCallback<void(scoped_refptr<Device>)>
-          handshake_complete_callback,
       base::OnceCallback<void(scoped_refptr<Device>)> paired_callback,
       base::OnceCallback<void(scoped_refptr<Device>, PairFailure)>
           pair_failed_callback,
@@ -131,6 +125,9 @@ class FastPairPairerImpl : public FastPairPairer,
   // StartPairing.
   void OnCreateBondTimeout();
 
+  // Callback for timeout on waiting to confirm |device_|'s passkey.
+  void OnConfirmPasskeyTimeout();
+
   //  FastPairHandshakeLookup::Create callback
   void OnHandshakeComplete(scoped_refptr<Device> device,
                            absl::optional<PairFailure> failure);
@@ -173,7 +170,6 @@ class FastPairPairerImpl : public FastPairPairer,
   scoped_refptr<Device> device_;
   FastPairGattServiceClient* fast_pair_gatt_service_client_;
   std::string pairing_device_address_;
-  base::OnceCallback<void(scoped_refptr<Device>)> handshake_complete_callback_;
   base::OnceCallback<void(scoped_refptr<Device>)> paired_callback_;
   base::OnceCallback<void(scoped_refptr<Device>, PairFailure)>
       pair_failed_callback_;
@@ -188,6 +184,10 @@ class FastPairPairerImpl : public FastPairPairer,
   // A timer to time the bonding with |device_| in StartPairing and invoke a
   // timeout if necessary.
   base::OneShotTimer create_bond_timeout_timer_;
+
+  // A timer which allows this pairer to time out while waiting to confirm
+  // |device_|'s passkey.
+  base::OneShotTimer confirm_passkey_timeout_timer_;
   base::WeakPtrFactory<FastPairPairerImpl> weak_ptr_factory_{this};
 };
 

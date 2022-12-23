@@ -12,7 +12,6 @@
 #include <type_traits>
 #include <utility>
 
-#include "base/allocator/buildflags.h"
 #include "base/allocator/partition_alloc_features.h"
 #include "base/allocator/partition_alloc_support.h"
 #include "base/allocator/partition_allocator/dangling_raw_ptr_checks.h"
@@ -333,7 +332,7 @@ TEST_F(RawPtrTest, ArrowDereference) {
 
 TEST_F(RawPtrTest, Delete) {
   CountingRawPtr<int> ptr = new int(42);
-  delete ptr;
+  delete ptr.ExtractAsDangling();
   // The pointer was extracted using implicit cast before passing to |delete|.
   EXPECT_THAT((CountingRawPtrExpectations{
                   .get_for_dereference_cnt = 0,
@@ -889,8 +888,8 @@ TEST_F(RawPtrTest, StdSwap) {
 }
 
 TEST_F(RawPtrTest, PostIncrementOperator) {
-  int foo[] = {42, 43, 44, 45};
-  CountingRawPtr<int> ptr = foo;
+  std::vector<int> foo({42, 43, 44, 45});
+  CountingRawPtr<int> ptr = &foo[0];
   for (int i = 0; i < 4; ++i) {
     ASSERT_EQ(*ptr++, 42 + i);
   }
@@ -903,11 +902,13 @@ TEST_F(RawPtrTest, PostIncrementOperator) {
 }
 
 TEST_F(RawPtrTest, PostDecrementOperator) {
-  int foo[] = {42, 43, 44, 45};
+  std::vector<int> foo({42, 43, 44, 45});
   CountingRawPtr<int> ptr = &foo[3];
-  for (int i = 3; i >= 0; --i) {
+  // Avoid decrementing out of the slot holding the vector's backing store.
+  for (int i = 3; i > 0; --i) {
     ASSERT_EQ(*ptr--, 42 + i);
   }
+  ASSERT_EQ(*ptr, 42);
   EXPECT_THAT((CountingRawPtrExpectations{
                   .get_for_dereference_cnt = 4,
                   .get_for_extraction_cnt = 0,
@@ -917,8 +918,8 @@ TEST_F(RawPtrTest, PostDecrementOperator) {
 }
 
 TEST_F(RawPtrTest, PreIncrementOperator) {
-  int foo[] = {42, 43, 44, 45};
-  CountingRawPtr<int> ptr = foo;
+  std::vector<int> foo({42, 43, 44, 45});
+  CountingRawPtr<int> ptr = &foo[0];
   for (int i = 0; i < 4; ++i, ++ptr) {
     ASSERT_EQ(*ptr, 42 + i);
   }
@@ -931,11 +932,13 @@ TEST_F(RawPtrTest, PreIncrementOperator) {
 }
 
 TEST_F(RawPtrTest, PreDecrementOperator) {
-  int foo[] = {42, 43, 44, 45};
+  std::vector<int> foo({42, 43, 44, 45});
   CountingRawPtr<int> ptr = &foo[3];
-  for (int i = 3; i >= 0; --i, --ptr) {
+  // Avoid decrementing out of the slot holding the vector's backing store.
+  for (int i = 3; i > 0; --i, --ptr) {
     ASSERT_EQ(*ptr, 42 + i);
   }
+  ASSERT_EQ(*ptr, 42);
   EXPECT_THAT((CountingRawPtrExpectations{
                   .get_for_dereference_cnt = 4,
                   .get_for_extraction_cnt = 0,
@@ -945,8 +948,8 @@ TEST_F(RawPtrTest, PreDecrementOperator) {
 }
 
 TEST_F(RawPtrTest, PlusEqualOperator) {
-  int foo[] = {42, 43, 44, 45};
-  CountingRawPtr<int> ptr = foo;
+  std::vector<int> foo({42, 43, 44, 45});
+  CountingRawPtr<int> ptr = &foo[0];
   for (int i = 0; i < 4; i += 2, ptr += 2) {
     ASSERT_EQ(*ptr, 42 + i);
   }
@@ -959,8 +962,8 @@ TEST_F(RawPtrTest, PlusEqualOperator) {
 }
 
 TEST_F(RawPtrTest, PlusEqualOperatorTypes) {
-  int foo[] = {42, 43, 44, 45};
-  CountingRawPtr<int> ptr = foo;
+  std::vector<int> foo({42, 43, 44, 45});
+  CountingRawPtr<int> ptr = &foo[0];
   ASSERT_EQ(*ptr, 42);
   ptr += 2;  // Positive literal.
   ASSERT_EQ(*ptr, 44);
@@ -973,11 +976,11 @@ TEST_F(RawPtrTest, PlusEqualOperatorTypes) {
 }
 
 TEST_F(RawPtrTest, MinusEqualOperator) {
-  int foo[] = {42, 43, 44, 45};
+  std::vector<int> foo({42, 43, 44, 45});
   CountingRawPtr<int> ptr = &foo[3];
-  for (int i = 3; i >= 0; i -= 2, ptr -= 2) {
-    ASSERT_EQ(*ptr, 42 + i);
-  }
+  ASSERT_EQ(*ptr, 45);
+  ptr -= 2;
+  ASSERT_EQ(*ptr, 43);
   EXPECT_THAT((CountingRawPtrExpectations{
                   .get_for_dereference_cnt = 2,
                   .get_for_extraction_cnt = 0,
@@ -1105,9 +1108,9 @@ TEST_F(RawPtrTest, FunctionParameters_Copy) {
 }
 
 TEST_F(RawPtrTest, SetLookupUsesGetForComparison) {
-  std::set<CountingRawPtr<int>> set;
   int x = 123;
   CountingRawPtr<int> ptr(&x);
+  std::set<CountingRawPtr<int>> set;
 
   RawPtrCountingImpl::ClearCounters();
   set.emplace(&x);
@@ -1243,7 +1246,7 @@ TEST_F(RawPtrTest, TrivialRelocability) {
       vector.emplace_back(&x);
     number_of_capacity_changes++;
   } while (number_of_capacity_changes < 10);
-#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
+#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) || BUILDFLAG(USE_ASAN_UNOWNED_PTR)
   // TODO(lukasza): In the future (once C++ language and std library
   // support custom trivially relocatable objects) this #if branch can
   // be removed (keeping only the right long-term expectation from the
@@ -1259,7 +1262,8 @@ TEST_F(RawPtrTest, TrivialRelocability) {
   // the EXPECT_EQ is correct + the assertion should be true in the
   // long-term.)
   EXPECT_EQ(0, RawPtrCountingImpl::release_wrapped_ptr_cnt);
-#endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
+#endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) ||
+        // BUILDFLAG(USE_ASAN_UNOWNED_PTR)
 
   // Basic smoke test that raw_ptr elements in a vector work okay.
   for (const auto& elem : vector) {
@@ -1272,7 +1276,8 @@ TEST_F(RawPtrTest, TrivialRelocability) {
   RawPtrCountingImpl::ClearCounters();
   size_t number_of_cleared_elements = vector.size();
   vector.clear();
-#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
+#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) || BUILDFLAG(USE_ASAN_UNOWNED_PTR)
+
   EXPECT_EQ((int)number_of_cleared_elements,
             RawPtrCountingImpl::release_wrapped_ptr_cnt);
 #else
@@ -1284,7 +1289,8 @@ TEST_F(RawPtrTest, TrivialRelocability) {
   // ships to the Stable channel).
   EXPECT_EQ(0, RawPtrCountingImpl::release_wrapped_ptr_cnt);
   std::ignore = number_of_cleared_elements;
-#endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
+#endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) ||
+        // BUILDFLAG(USE_ASAN_UNOWNED_PTR)
 }
 
 struct BaseStruct {

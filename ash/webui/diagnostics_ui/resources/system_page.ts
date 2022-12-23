@@ -17,10 +17,10 @@ import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
 import {CrToastElement} from 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
+import {PolymerElementProperties} from 'chrome://resources/polymer/v3_0/polymer/interfaces.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {DiagnosticsBrowserProxyImpl} from './diagnostics_browser_proxy.js';
-import {ShowCautionBannerEvent} from './diagnostics_sticky_banner.js';
 import {getSystemDataProvider} from './mojo_interface_provider.js';
 import {OverviewCardElement} from './overview_card.js';
 import {TestSuiteStatus} from './routine_list_executor.js';
@@ -42,15 +42,15 @@ export interface SystemPageElement {
 const SystemPageElementBase = I18nMixin(PolymerElement);
 
 export class SystemPageElement extends SystemPageElementBase {
-  static get is() {
+  static get is(): string {
     return 'system-page';
   }
 
-  static get template() {
+  static get template(): HTMLTemplateElement {
     return getTemplate();
   }
 
-  static get properties() {
+  static get properties(): PolymerElementProperties {
     return {
       saveSessionLogEnabled_: {
         type: Boolean,
@@ -82,45 +82,21 @@ export class SystemPageElement extends SystemPageElementBase {
         value: loadTimeData.getBoolean('isLoggedIn'),
       },
 
-      bannerMessage: {
-        type: String,
-        value: '',
-      },
-
-      scrollingClass_: {
-        type: String,
-        value: '',
-      },
-
-      scrollTimerId_: {
-        type: Number,
-        value: -1,
-      },
-
       isActive: {
         type: Boolean,
         value: true,
-      },
-
-      isNetworkingEnabled: {
-        type: Boolean,
-        value: loadTimeData.getBoolean('isNetworkingEnabled'),
       },
 
     };
   }
 
   testSuiteStatus: TestSuiteStatus;
-  bannerMessage: string;
   isActive: boolean;
-  isNetworkingEnabled: boolean;
   protected systemInfoReceived_: boolean;
   protected saveSessionLogEnabled_: boolean;
   private showBatteryStatusCard_: boolean;
   private toastText_: string;
   private isLoggedIn_: boolean;
-  private scrollingClass_: string;
-  private scrollTimerId_: number;
   private systemDataProvider_: SystemDataProviderInterface =
       getSystemDataProvider();
   private browserProxy_: DiagnosticsBrowserProxyImpl =
@@ -130,11 +106,6 @@ export class SystemPageElement extends SystemPageElementBase {
     super();
     this.fetchSystemInfo_();
     this.browserProxy_.initialize();
-
-    // Only use inner banner behavior if system page is in stand-alone mode.
-    if (!this.isNetworkingEnabled) {
-      this.addCautionBannerEventListeners_();
-    }
   }
 
   private fetchSystemInfo_(): void {
@@ -176,35 +147,6 @@ export class SystemPageElement extends SystemPageElementBase {
         });
   }
 
-  private addCautionBannerEventListeners_(): void {
-    window.addEventListener('show-caution-banner', (e) => {
-      const event = e as ShowCautionBannerEvent;
-      assert(event.detail.message);
-      this.bannerMessage = event.detail.message;
-    });
-
-    window.addEventListener('dismiss-caution-banner', () => {
-      this.bannerMessage = '';
-    });
-
-    window.addEventListener('scroll', () => {
-      if (!this.bannerMessage) {
-        return;
-      }
-
-      // Reset timer since we've received another 'scroll' event.
-      if (this.scrollTimerId_ !== -1) {
-        this.scrollingClass_ = 'elevation-2';
-        clearTimeout(this.scrollTimerId_);
-      }
-
-      // Remove box shadow from banner since the user has stopped scrolling
-      // for at least 300ms.
-      this.scrollTimerId_ =
-          window.setTimeout(() => this.scrollingClass_ = '', 300);
-    });
-  }
-
   /**
    * 'navigation-view-panel' is responsible for calling this function when
    * the active page changes.
@@ -224,11 +166,6 @@ export class SystemPageElement extends SystemPageElementBase {
       // to avoid duplicate code in all navigatable pages.
       this.browserProxy_.recordNavigation('system');
     }
-  }
-
-  protected getCardContainerClass_(): string {
-    const cardContainer = 'diagnostics-cards-container';
-    return `${cardContainer}${this.isNetworkingEnabled ? '-nav' : ''}`;
   }
 }
 

@@ -92,7 +92,6 @@ public class StatusBarColorController
     private boolean mIsInOverviewMode;
     private boolean mIsIncognito;
     private boolean mIsOmniboxFocused;
-    private boolean mToolbarAnimationInProgress;
 
     private @ColorInt int mScrimColor = ScrimProperties.INVALID_COLOR;
     private float mStatusBarScrimFraction;
@@ -260,9 +259,8 @@ public class StatusBarColorController
 
     // TopToolbarCoordinator.UrlExpansionObserver implementation.
     @Override
-    public void onUrlExpansionProgressChanged(float fraction, boolean changeInProgress) {
+    public void onUrlExpansionProgressChanged(float fraction) {
         mToolbarUrlExpansionPercentage = fraction;
-        mToolbarAnimationInProgress = changeInProgress;
         if (mShouldUpdateStatusBarColorForNTP) updateStatusBarColor();
     }
 
@@ -374,8 +372,7 @@ public class StatusBarColorController
         // The theme should be restored when Omnibox focus clears.
         if (mIsOmniboxFocused) {
             // If the flag is enabled, we will use the toolbar color.
-            if (OmniboxFeatures.shouldMatchToolbarAndStatusBarColor() && mToolbarAnimationInProgress
-                    && mToolbarColorChanged) {
+            if (OmniboxFeatures.shouldMatchToolbarAndStatusBarColor() && mToolbarColorChanged) {
                 return mToolbarColor;
             }
             return calculateDefaultStatusBarColor();
@@ -399,8 +396,7 @@ public class StatusBarColorController
 
         // Return status bar color to match the toolbar.
         // If the flag is enabled, we will use the toolbar color.
-        if (OmniboxFeatures.shouldMatchToolbarAndStatusBarColor() && mToolbarAnimationInProgress
-                && mToolbarColorChanged) {
+        if (OmniboxFeatures.shouldMatchToolbarAndStatusBarColor() && mToolbarColorChanged) {
             return mToolbarColor;
         }
         return mTopUiThemeColor.getThemeColorOrFallback(

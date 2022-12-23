@@ -4,12 +4,7 @@
 
 package org.chromium.chrome.features.start_surface;
 
-import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
-import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
-
 import android.view.View;
-import android.view.ViewGroup.LayoutParams;
-import android.widget.FrameLayout;
 
 import androidx.test.filters.MediumTest;
 
@@ -31,15 +26,13 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
 import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 
 /** Tests for {@link StartSurfaceCoordinator}. */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 @Features.EnableFeatures(ChromeFeatureList.START_SURFACE_ANDROID)
-@Features.DisableFeatures({ChromeFeatureList.WEB_FEED, ChromeFeatureList.FEED_INTERACTIVE_REFRESH,
-        ChromeFeatureList.SHOPPING_LIST, ChromeFeatureList.TAB_SELECTION_EDITOR_V2})
+@Features.DisableFeatures({ChromeFeatureList.WEB_FEED, ChromeFeatureList.SHOPPING_LIST,
+        ChromeFeatureList.TAB_SELECTION_EDITOR_V2})
 public class StartSurfaceCoordinatorUnitTest {
     private static final long MILLISECONDS_PER_MINUTE = TimeUtils.SECONDS_PER_MINUTE * 1000;
     private static final String START_SURFACE_TIME_SPENT = "StartSurface.TimeSpent";
@@ -282,7 +275,6 @@ public class StartSurfaceCoordinatorUnitTest {
 
     @Test
     @MediumTest
-    @EnableFeatures({ChromeFeatureList.FEED_INTERACTIVE_REFRESH})
     public void testFeedSwipeLayoutVisibility() {
         assert mCoordinator.getStartSurfaceState() == StartSurfaceState.NOT_SHOWN;
         Assert.assertEquals(
@@ -307,33 +299,6 @@ public class StartSurfaceCoordinatorUnitTest {
         mCoordinator.onHide();
         Assert.assertEquals(
                 View.GONE, mCoordinator.getFeedSwipeRefreshLayoutForTesting().getVisibility());
-    }
-
-    @Test
-    @DisableFeatures(ChromeFeatureList.INSTANT_START)
-    public void testSurfaceBodyHeightWhenPlaceholderIsNotShown() {
-        mCoordinator.setStartSurfaceState(StartSurfaceState.SHOWING_HOMEPAGE);
-        mCoordinator.showOverview(false);
-
-        Assert.assertFalse(mCoordinator.getMediatorForTesting().hasFeedPlaceholderShown());
-
-        FrameLayout layout =
-                (FrameLayout) mCoordinator.getPrimaryTasksSurface().getBodyViewContainer();
-        LayoutParams params = layout.getLayoutParams();
-        Assert.assertEquals(WRAP_CONTENT, params.height);
-    }
-
-    @Test
-    public void testSurfaceBodyHeightWhenPlaceholderIsShown() {
-        mCoordinator.setStartSurfaceState(StartSurfaceState.SHOWING_HOMEPAGE);
-        mCoordinator.showOverview(false);
-
-        Assert.assertTrue(mCoordinator.getMediatorForTesting().hasFeedPlaceholderShown());
-
-        FrameLayout layout =
-                (FrameLayout) mCoordinator.getPrimaryTasksSurface().getBodyViewContainer();
-        LayoutParams params = layout.getLayoutParams();
-        Assert.assertEquals(MATCH_PARENT, params.height);
     }
 
     /**

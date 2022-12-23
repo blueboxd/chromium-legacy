@@ -4619,6 +4619,27 @@ TEST_F(AuthenticatorImplTest, CancellingAuthenticatorDoesNotTerminateRequest) {
   }
 }
 
+TEST_F(AuthenticatorImplTest, PRFWithoutSupport) {
+  // This tests that the PRF extension doesn't trigger any DCHECKs or crashes
+  // when used with an authenticator doesn't doesn't support hmac-secret.
+  NavigateAndCommit(GURL(kTestOrigin1));
+
+  auto prf_value = blink::mojom::PRFValues::New();
+  const std::vector<uint8_t> salt1(32, 1);
+  prf_value->first = salt1;
+  std::vector<blink::mojom::PRFValuesPtr> prf_inputs;
+  prf_inputs.emplace_back(std::move(prf_value));
+
+  PublicKeyCredentialRequestOptionsPtr options =
+      GetTestPublicKeyCredentialRequestOptions();
+  options->prf = true;
+  options->prf_inputs = std::move(prf_inputs);
+
+  GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
+
+  EXPECT_EQ(result.status, AuthenticatorStatus::NOT_ALLOWED_ERROR);
+}
+
 class AuthenticatorDevicePublicKeyTest : public AuthenticatorImplTest {
   void SetUp() override {
     AuthenticatorImplTest::SetUp();
@@ -8673,38 +8694,7 @@ TEST_P(AuthenticatorCableV2Test, QRBasedWithNoPairing) {
               /*observer=*/nullptr),
           network_context_.get(), root_secret_, "Test Authenticator",
           zero_qr_secret_, peer_identity_x962_,
-          /*contact_id=*/absl::nullopt,
-          /*use_new_crypter_construction=*/false);
-
-  EXPECT_EQ(AuthenticatorMakeCredential().status, AuthenticatorStatus::SUCCESS);
-  EXPECT_EQ(pairings_.size(), 0u);
-}
-
-TEST_P(AuthenticatorCableV2Test, QRBasedNewCrypterConstruction) {
-  // The new Crypter construction should be transparently supported by the
-  // client code.
-  auto discovery = std::make_unique<device::cablev2::Discovery>(
-      device::CableRequestType::kGetAssertion, network_context_.get(),
-      qr_generator_key_, std::move(ble_advert_events_),
-      /*pairings=*/std::vector<std::unique_ptr<device::cablev2::Pairing>>(),
-      /*contact_device_stream=*/nullptr,
-      /*extension_contents=*/std::vector<device::CableDiscoveryData>(),
-      GetPairingCallback(), GetInvalidatedPairingCallback());
-
-  AuthenticatorEnvironmentImpl::GetInstance()
-      ->ReplaceDefaultDiscoveryFactoryForTesting(
-          std::make_unique<DiscoveryFactory>(std::move(discovery)));
-
-  std::unique_ptr<device::cablev2::authenticator::Transaction> transaction =
-      device::cablev2::authenticator::TransactFromQRCode(
-          protocol_revision(),
-          device::cablev2::authenticator::NewMockPlatform(
-              std::move(ble_advert_callback_), &virtual_device_,
-              /*observer=*/nullptr),
-          network_context_.get(), root_secret_, "Test Authenticator",
-          zero_qr_secret_, peer_identity_x962_,
-          /*contact_id=*/absl::nullopt,
-          /*use_new_crypter_construction=*/true);
+          /*contact_id=*/absl::nullopt);
 
   EXPECT_EQ(AuthenticatorMakeCredential().status, AuthenticatorStatus::SUCCESS);
   EXPECT_EQ(pairings_.size(), 0u);
@@ -8732,8 +8722,7 @@ TEST_P(AuthenticatorCableV2Test, PairingBased) {
               std::move(ble_advert_callback_), &virtual_device_,
               /*observer=*/nullptr),
           network_context_.get(), root_secret_, "Test Authenticator",
-          zero_qr_secret_, peer_identity_x962_, contact_id,
-          /*use_new_crypter_construction=*/false);
+          zero_qr_secret_, peer_identity_x962_, contact_id);
 
   EXPECT_EQ(AuthenticatorMakeCredential().status, AuthenticatorStatus::SUCCESS);
   EXPECT_EQ(pairings_.size(), 1u);
@@ -8919,8 +8908,7 @@ TEST_P(AuthenticatorCableV2Test, ServerLink) {
               /*observer=*/nullptr),
           network_context_.get(), root_secret_, "Test Authenticator",
           server_link.secret, server_link.peer_identity,
-          /*contact_id=*/absl::nullopt,
-          /*use_new_crypter_construction=*/false);
+          /*contact_id=*/absl::nullopt);
 
   EXPECT_EQ(AuthenticatorMakeCredential().status, AuthenticatorStatus::SUCCESS);
   EXPECT_EQ(pairings_.size(), 0u);
@@ -8997,8 +8985,7 @@ class AuthenticatorCableV2AuthenticatorTest
             std::move(ble_advert_callback_), &virtual_device_, this),
         network_context_.get(), root_secret_, "Test Authenticator",
         zero_qr_secret_, peer_identity_x962_,
-        /*contact_id=*/absl::nullopt,
-        /*use_new_crypter_construction=*/false);
+        /*contact_id=*/absl::nullopt);
   }
 
  protected:
@@ -9183,8 +9170,9 @@ TEST_F(AuthenticatorImplWithRequestProxyTest, MakeCredentialOriginAndRpIds) {
                  std::string(test_case.origin));
 
     NavigateAndCommit(GURL(test_case.origin));
+    BrowserContext* context = main_rfh()->GetBrowserContext();
     ASSERT_TRUE(test_client_.GetWebAuthenticationDelegate()
-                    ->MaybeGetRequestProxy(main_rfh()->GetBrowserContext())
+                    ->MaybeGetRequestProxy(context)
                     ->IsActive());
 
     PublicKeyCredentialCreationOptionsPtr options =
@@ -9224,8 +9212,9 @@ TEST_F(AuthenticatorImplWithRequestProxyTest, AppId) {
     SCOPED_TRACE(std::string(test_case.origin) + " " +
                  std::string(test_case.claimed_authority));
 
+    BrowserContext* context = main_rfh()->GetBrowserContext();
     ASSERT_TRUE(test_client_.GetWebAuthenticationDelegate()
-                    ->MaybeGetRequestProxy(main_rfh()->GetBrowserContext())
+                    ->MaybeGetRequestProxy(context)
                     ->IsActive());
 
     EXPECT_EQ(TryAuthenticationWithAppId(test_case.origin,
@@ -9253,8 +9242,9 @@ TEST_F(AuthenticatorImplWithRequestProxyTest, AppId) {
       continue;
     }
 
+    BrowserContext* context = main_rfh()->GetBrowserContext();
     ASSERT_TRUE(test_client_.GetWebAuthenticationDelegate()
-                    ->MaybeGetRequestProxy(main_rfh()->GetBrowserContext())
+                    ->MaybeGetRequestProxy(context)
                     ->IsActive());
 
     AuthenticatorStatus test_status = TryAuthenticationWithAppId(
@@ -9355,8 +9345,9 @@ TEST_F(AuthenticatorImplWithRequestProxyTest, GetAssertionOriginAndRpIds) {
                  std::string(test_case.origin));
 
     NavigateAndCommit(GURL(test_case.origin));
+    BrowserContext* context = main_rfh()->GetBrowserContext();
     ASSERT_TRUE(test_client_.GetWebAuthenticationDelegate()
-                    ->MaybeGetRequestProxy(main_rfh()->GetBrowserContext())
+                    ->MaybeGetRequestProxy(context)
                     ->IsActive());
 
     PublicKeyCredentialRequestOptionsPtr options =

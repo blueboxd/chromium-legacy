@@ -30,11 +30,9 @@ class PaintPreviewTracker;
 namespace cc {
 class SkottieWrapper;
 class PaintFlags;
-class PaintOpBuffer;
+class PaintRecord;
 
 enum class UsePaintCache { kDisabled = 0, kEnabled };
-
-using PaintRecord = PaintOpBuffer;
 
 // PaintCanvas is the cc/paint wrapper of SkCanvas.  It has a more restricted
 // interface than SkCanvas (trimmed back to only what Chrome uses).  Its reason
@@ -84,10 +82,6 @@ class CC_PAINT_EXPORT PaintCanvas {
   virtual void scale(SkScalar sx, SkScalar sy) = 0;
   void scale(SkScalar s) { scale(s, s); }
   virtual void rotate(SkScalar degrees) = 0;
-  // TODO(aaronhk): crbug.com/1153330 deprecate these in favor of the SkM44
-  // versions.
-  virtual void concat(const SkMatrix& matrix) = 0;
-  virtual void setMatrix(const SkMatrix& matrix) = 0;
   virtual void concat(const SkM44& matrix) = 0;
   virtual void setMatrix(const SkM44& matrix) = 0;
 
@@ -209,10 +203,9 @@ class CC_PAINT_EXPORT PaintCanvas {
 
   // Unlike SkCanvas::drawPicture, this only plays back the PaintRecord and does
   // not add an additional clip.  This is closer to SkPicture::playback.
-  virtual void drawPicture(sk_sp<const PaintRecord> record) = 0;
+  virtual void drawPicture(PaintRecord record) = 0;
 
   virtual bool isClipEmpty() const = 0;
-  virtual SkMatrix getTotalMatrix() const = 0;
   virtual SkM44 getLocalToDevice() const = 0;
 
   virtual bool NeedsFlush() const = 0;

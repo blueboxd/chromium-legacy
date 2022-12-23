@@ -33,10 +33,11 @@
 
 namespace {
 
-content::WebUIDataSource* CreatePasswordsUIHTMLSource(Profile* profile,
-                                                      content::WebUI* web_ui) {
-  content::WebUIDataSource* source = content::WebUIDataSource::Create(
-      password_manager::kChromeUIPasswordManagerHost);
+content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
+    Profile* profile,
+    content::WebUI* web_ui) {
+  content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
+      profile, password_manager::kChromeUIPasswordManagerHost);
 
   webui::SetupWebUIDataSource(
       source,
@@ -80,6 +81,15 @@ content::WebUIDataSource* CreatePasswordsUIHTMLSource(Profile* profile,
       {"exportPasswordsDescription",
        IDS_PASSWORD_MANAGER_UI_EXPORT_BANNER_DESCRIPTION},
       {"exportPasswordsDialogBody", IDS_PASSWORD_MANAGER_UI_EXPORT_DIALOG_BODY},
+      {"exportPasswordsTryAgain", IDS_PASSWORD_MANAGER_UI_EXPORT_TRY_AGAIN},
+      {"exportPasswordsFailTitle",
+       IDS_PASSWORD_MANAGER_UI_EXPORTING_FAILURE_TITLE},
+      {"exportPasswordsFailTips",
+       IDS_PASSWORD_MANAGER_UI_EXPORTING_FAILURE_TIPS},
+      {"exportPasswordsFailTipsEnoughSpace",
+       IDS_PASSWORD_MANAGER_UI_EXPORTING_FAILURE_TIP_ENOUGH_SPACE},
+      {"exportPasswordsFailTipsAnotherFolder",
+       IDS_PASSWORD_MANAGER_UI_EXPORTING_FAILURE_TIP_ANOTHER_FOLDER},
       {"federationLabel", IDS_PASSWORD_MANAGER_UI_FEDERATION_LABEL},
       {"hidePassword", IDS_PASSWORD_MANAGER_UI_HIDE_PASSWORD},
       {"importPasswords", IDS_PASSWORD_MANAGER_UI_IMPORT_BANNER_TITLE},
@@ -157,10 +167,9 @@ PasswordManagerUI::PasswordManagerUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
   // Set up the chrome://password-manager/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  auto* source = CreatePasswordsUIHTMLSource(profile, web_ui);
+  auto* source = CreateAndAddPasswordsUIHTMLSource(profile, web_ui);
   AddPluralStrings(web_ui);
   ManagedUIHandler::Initialize(web_ui, source);
-  content::WebUIDataSource::Add(profile, source);
   content::URLDataSource::Add(profile,
                               std::make_unique<SanitizedImageSource>(profile));
 }

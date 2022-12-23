@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import './emoji_button.js';
 import './emoji_variants.js';
 
 import {assertInstanceof} from 'chrome://resources/js/assert_ts.js';
@@ -10,7 +9,7 @@ import {PaperTooltipElement} from 'chrome://resources/polymer/v3_0/paper-tooltip
 import {beforeNextRender, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './emoji_group.html.js';
-import {createCustomEvent, EMOJI_BUTTON_CLICK, EMOJI_CLEAR_RECENTS_CLICK, EMOJI_VARIANTS_SHOWN, EmojiClearRecentClickEvent} from './events.js';
+import {createCustomEvent, EMOJI_BUTTON_CLICK, EMOJI_CLEAR_RECENTS_CLICK, EMOJI_VARIANTS_SHOWN, EmojiButtonClickEvent, EmojiClearRecentClickEvent} from './events.js';
 import {CategoryEnum, EmojiVariants} from './types.js';
 
 // Note - these names are used directly in CSS.
@@ -23,6 +22,7 @@ const DEFAULT_CATEGORY_LAYOUTS = {
   [CategoryEnum.EMOJI]: EmojiGroupLayoutType.GRID_LAYOUT,
   [CategoryEnum.EMOTICON]: EmojiGroupLayoutType.FLEX_LAYOUT,
   [CategoryEnum.SYMBOL]: EmojiGroupLayoutType.GRID_LAYOUT,
+  [CategoryEnum.GIF]: EmojiGroupLayoutType.FLEX_LAYOUT,
 };
 
 export interface EmojiGroupComponent {
@@ -297,6 +297,7 @@ declare global {
   }
   interface HTMLElementEventMap {
     [EMOJI_CLEAR_RECENTS_CLICK]: EmojiClearRecentClickEvent;
+    [EMOJI_BUTTON_CLICK]: EmojiButtonClickEvent;
   }
 }
 

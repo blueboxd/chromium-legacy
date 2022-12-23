@@ -20,6 +20,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "chrome/updater/constants.h"
 #include "chrome/updater/policy/manager.h"
@@ -173,26 +174,22 @@ base::FilePath GetLogDestinationDir() {
   return var ? base::FilePath::FromUTF8Unsafe(var) : base::FilePath();
 }
 
-void InitLoggingForUnitTest() {
-  base::FilePath file_exe;
-  if (!base::PathService::Get(base::FILE_EXE, &file_exe)) {
-    return;
-  }
-  const absl::optional<base::FilePath> log_file_path =
-      [](const base::FilePath& file_exe) {
-        const base::FilePath dest_dir = GetLogDestinationDir();
-        return dest_dir.empty() ? absl::nullopt
-                                : absl::make_optional(dest_dir.Append(
-                                      file_exe.BaseName().ReplaceExtension(
-                                          FILE_PATH_LITERAL("log"))));
-      }(file_exe);
+void InitLoggingForUnitTest(const base::FilePath& log_base_path) {
+  const absl::optional<base::FilePath> log_file_path = [&log_base_path]() {
+    const base::FilePath dest_dir = GetLogDestinationDir();
+    return dest_dir.empty()
+               ? absl::nullopt
+               : absl::make_optional(dest_dir.Append(log_base_path));
+  }();
   if (log_file_path) {
     logging::LoggingSettings settings;
     settings.log_file_path = (*log_file_path).value().c_str();
     settings.logging_dest = logging::LOG_TO_ALL;
     logging::InitLogging(settings);
-    VLOG(0) << "Log initialized for " << file_exe.value() << " -> "
-            << settings.log_file_path;
+    base::FilePath file_exe;
+    const bool succeeded = base::PathService::Get(base::FILE_EXE, &file_exe);
+    VLOG_IF(0, succeeded) << "Log initialized for " << file_exe.value()
+                          << " -> " << settings.log_file_path;
   }
   logging::SetLogItems(/*enable_process_id=*/true,
                        /*enable_thread_id=*/true,
@@ -303,8 +300,9 @@ base::FilePath StartProcmonLogging() {
 
   const std::wstring& cmdline = base::StrCat(
       {kProcmonPath, L" /AcceptEula /LoadConfig ",
-       QuoteForCommandLineToArgvW(pmc_path.value()), L" /BackingFile ",
-       QuoteForCommandLineToArgvW(pml_file.value()),
+       base::CommandLine::QuoteForCommandLineToArgvW(pmc_path.value()),
+       L" /BackingFile ",
+       base::CommandLine::QuoteForCommandLineToArgvW(pml_file.value()),
        L" /Quiet /externalcapture"});
   base::LaunchOptions options;
   options.start_hidden = true;
@@ -316,6 +314,12 @@ base::FilePath StartProcmonLogging() {
     return {};
   }
 
+  // Gives time for the procmon process to start logging. Without a sleep,
+  // `procmon` is unable to fully initialize the logging, and subsequently when
+  // `procmon /Terminate` is called to terminate the logging `procmon`, it
+  // causes the PML log file to corrupt.
+  base::PlatformThread::Sleep(base::Seconds(3));
+
   return pml_file;
 }
 
@@ -326,12 +330,7 @@ void StopProcmonLogging(const base::FilePath& pml_file) {
   }
 
   for (const std::wstring& cmdline :
-       {base::StrCat({kProcmonPath, L" /Terminate"}),
-        base::StrCat({kProcmonPath, L" /AcceptEula /OpenLog ",
-                      QuoteForCommandLineToArgvW(pml_file.value()),
-                      L" /SaveAs ",
-                      QuoteForCommandLineToArgvW(
-                          pml_file.ReplaceExtension(L".CSV").value())})}) {
+       {base::StrCat({kProcmonPath, L" /Terminate"})}) {
     base::LaunchOptions options;
     options.start_hidden = true;
     options.wait = true;

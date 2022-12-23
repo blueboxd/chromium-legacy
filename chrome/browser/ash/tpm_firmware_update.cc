@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ash/tpm_firmware_update.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -62,27 +63,24 @@ const char kSettingsKeyAllowPreserveDeviceState[] =
     "allow-user-initiated-preserve-device-state";
 const char kSettingsKeyAutoUpdateMode[] = "auto-update-mode";
 
-std::unique_ptr<base::DictionaryValue> DecodeSettingsProto(
+base::Value DecodeSettingsProto(
     const enterprise_management::TPMFirmwareUpdateSettingsProto& settings) {
-  std::unique_ptr<base::DictionaryValue> result =
-      std::make_unique<base::DictionaryValue>();
+  base::Value::Dict result;
 
   if (settings.has_allow_user_initiated_powerwash()) {
-    result->SetKey(kSettingsKeyAllowPowerwash,
-                   base::Value(settings.allow_user_initiated_powerwash()));
+    result.Set(kSettingsKeyAllowPowerwash,
+               settings.allow_user_initiated_powerwash());
   }
   if (settings.has_allow_user_initiated_preserve_device_state()) {
-    result->SetKey(
-        kSettingsKeyAllowPreserveDeviceState,
-        base::Value(settings.allow_user_initiated_preserve_device_state()));
+    result.Set(kSettingsKeyAllowPreserveDeviceState,
+               settings.allow_user_initiated_preserve_device_state());
   }
 
   if (settings.has_auto_update_mode()) {
-    result->SetKey(kSettingsKeyAutoUpdateMode,
-                   base::Value(settings.auto_update_mode()));
+    result.Set(kSettingsKeyAutoUpdateMode, settings.auto_update_mode());
   }
 
-  return result;
+  return base::Value(std::move(result));
 }
 
 // AvailabilityChecker tracks TPM firmware update availability information

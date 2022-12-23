@@ -37,6 +37,7 @@
 <translation id="1175572348579024023">捲動</translation>
 <translation id="1178581264944972037">暫停</translation>
 <translation id="1181037720776840403">移除</translation>
+<translation id="1182225749592316782">這將允許具有攝影機和麥克風權限的所有應用程式和網站存取</translation>
 <translation id="1183863904939664422">對這項建議不感興趣</translation>
 <translation id="118437560755358292">基於安全考量，請輸入密碼或 PIN 碼</translation>
 <translation id="118532027333893379">輕觸任一處即可擷取全螢幕畫面</translation>
@@ -120,6 +121,7 @@
 <translation id="15373452373711364">大型滑鼠游標</translation>
 <translation id="1546492247443594934">桌面 2</translation>
 <translation id="1546930421365146760">請與系統管理員聯絡，要求對方在 Google 管理控制台中設定這部裝置</translation>
+<translation id="1550406609415860283">有可用的裝置</translation>
 <translation id="1550523713251050646">按一下即可查看更多選項</translation>
 <translation id="1555130319947370107">藍色</translation>
 <translation id="1589090746204042747">存取你在這個工作階段內的所有活動</translation>
@@ -127,6 +129,7 @@
 <translation id="1611993646327628135">開啟</translation>
 <translation id="1620510694547887537">攝影機</translation>
 <translation id="1632985212731562677">你可以依序點選 [設定] &gt; [無障礙設定] 來停用切換控制功能。</translation>
+<translation id="163517899691012366">「零打擾」模式開啟時，系統會忽略通知</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> 部裝置</translation>
 <translation id="1639239467298939599">載入中</translation>
 <translation id="1654477262762802994">啟動語音查詢</translation>
@@ -173,7 +176,6 @@
         <ph name="LOCALE" /></translation>
 <translation id="1823873187264960516">乙太網路：<ph name="ADDRESS" /></translation>
 <translation id="1830308660060964064">已取消固定「<ph name="ITEM_TITLE" />」</translation>
-<translation id="1836215606488044471">小幫手 (載入中…)</translation>
 <translation id="1838895407229022812">夜燈模式已關閉。</translation>
 <translation id="1854180393107901205">停止投放</translation>
 <translation id="1862380676329487333">更新並登出</translation>
@@ -261,7 +263,6 @@
 <translation id="2359808026110333948">繼續</translation>
 <translation id="2367186422933365202">無法登入 Chromebook</translation>
 <translation id="2369165858548251131">「你好」的英文</translation>
-<translation id="2375445874393996153">系統已不再支援透過 Google 助理搜尋螢幕上的顯示內容。</translation>
 <translation id="2390318262976603432">語言代碼設定</translation>
 <translation id="240006516586367791">媒體控制項</translation>
 <translation id="2402411679569069051">如要解鎖 Chromebook，請使用指紋或解鎖手機</translation>
@@ -375,6 +376,7 @@
 <translation id="3047761520276763270">試著說出：</translation>
 <translation id="3051189971848907985">正在重新命名設定檔，請稍後片刻。</translation>
 <translation id="3055162170959710888">你今天的裝置使用時間：<ph name="USED_TIME" /></translation>
+<translation id="3062298103034426069">不支援</translation>
 <translation id="3068711042108640621">在左側顯示檔案櫃</translation>
 <translation id="3077734595579995578">Shift</translation>
 <translation id="3081696990447829002">展開選單</translation>
@@ -409,6 +411,7 @@
 <translation id="3249513730522716925">「<ph name="WINDOW_TITLE" />」視窗已從桌面 <ph name="ACTIVE_DESK" /> 移動到桌面 <ph name="TARGET_DESK" /></translation>
 <translation id="3252573918265662711">設定</translation>
 <translation id="3255483164551725916">你會做些什麼？</translation>
+<translation id="3260969790895726815">語音內容會在本機進行處理，語音輸入可離線運作，但部分語音指令無法使用。</translation>
 <translation id="3269597722229482060">按一下滑鼠右鍵</translation>
 <translation id="3289544412142055976">目前不支援 Linux 應用程式</translation>
 <translation id="3289674678944039601">正在透過變壓器充電</translation>
@@ -456,9 +459,12 @@
 <translation id="3513798432020909783">這個帳戶是由 <ph name="MANAGER_EMAIL" /> 管理</translation>
 <translation id="352245152354538528">{0,plural, =1{請在 1 分鐘內更新裝置}other{請在 # 分鐘內更新裝置}}</translation>
 <translation id="353086728817903341">已連線至 <ph name="NUM_DEVICES" /> 部裝置</translation>
+<translation id="3533126039236445965">檔案櫃中的應用程式</translation>
 <translation id="3542066395059568317">系統會顯示建議項目，以便你繼續使用上次開啟的內容。只要在建議項目上按一下滑鼠右鍵即可移除。</translation>
 <translation id="3552189655002856821">Wi-Fi 已關閉</translation>
 <translation id="3554637740840164787">已固定「<ph name="ITEM_TITLE" />」</translation>
+<translation id="3558768885091059911">要開啟攝影機和麥克風存取權嗎？</translation>
+<translation id="3560174576767922131">錄影</translation>
 <translation id="3563775809269155755">啟用無線基地台</translation>
 <translation id="3566240529365775567">剛才開啟過</translation>
 <translation id="3571734092741541777">設定</translation>
@@ -602,7 +608,6 @@
 <translation id="4324840740119394760">這將允許「<ph name="APP_NAME" />」和具有攝影機權限的所有應用程式和網站存取攝影機</translation>
 <translation id="4333628967105022692">有多位使用者登入時不支援 Lacros 瀏覽器。</translation>
 <translation id="4338109981321384717">放大鏡</translation>
-<translation id="4351433414020964307">正在載入小幫手…</translation>
 <translation id="4371348193907997655">投放設定</translation>
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />，訊號強度為 <ph name="SIGNAL_STRENGTH" />%</translation>
 <translation id="4378551569595875038">連線中…</translation>
@@ -650,6 +655,7 @@
 <translation id="4577274620589681794">時間到 · <ph name="LABEL" /></translation>
 <translation id="4577990005084629481">顯示預覽</translation>
 <translation id="4578906031062871102">已開啟設定選單</translation>
+<translation id="458210817642223147">錄製 GIF</translation>
 <translation id="4585337515783392668">停止透過不明接收器投放</translation>
 <translation id="4596144739579517758">深色主題已關閉</translation>
 <translation id="4611292653554630842">登入</translation>
@@ -729,6 +735,7 @@
         以及<ph name="NUM_OTHER_NOTIFICATION" /></translation>
 <translation id="4987738733603015246">桌面 16</translation>
 <translation id="5003993274120026347">下一句</translation>
+<translation id="5004607513195820459">這是受管理的網路</translation>
 <translation id="5016558321564993266">切換標記。<ph name="STATE_TEXT" /></translation>
 <translation id="5029356738310729434">裝置的麥克風存取權已開啟</translation>
 <translation id="5030687792513154421">使用時間結束</translation>
@@ -788,9 +795,11 @@
 <translation id="5331975486040154427">USB-C 裝置 (左後方連接埠)</translation>
 <translation id="533282197239610265">顯示投放裝置</translation>
 <translation id="5344128444027639014"><ph name="BATTERY_PERCENTAGE" />% (右側)</translation>
+<translation id="5351427059191534258">要關閉攝影機存取權嗎？</translation>
 <translation id="5352250171825660495">深色主題已開啟</translation>
 <translation id="5356963482258194581">在深色和淺色主題之間切換。在桌面上按一下滑鼠右鍵，並選取桌布和樣式。</translation>
 <translation id="536019650977002321">管理員不允許擷取音訊，詳情請洽管理員。</translation>
+<translation id="5361524080961918551">已下載部分<ph name="LANGUAGE" />語音檔</translation>
 <translation id="5363163447017455357"><ph name="DELIMITER" /> 前往這個分頁</translation>
 <translation id="5377367976106153749">要允許存取攝影機嗎？</translation>
 <translation id="5379115545237091094">嘗試次數過多</translation>
@@ -863,6 +872,7 @@
 <translation id="5763928712329149804">Shelf Party 已關閉。</translation>
 <translation id="576453121877257266">夜燈模式已開啟。</translation>
 <translation id="5769373120130404283">隱私保護畫面</translation>
+<translation id="5773950591113557721">這將允許「<ph name="APP_NAME" />」與具有攝影機和麥克風權限的所有應用程式和網站存取</translation>
 <translation id="5777841717266010279">停止共用螢幕？</translation>
 <translation id="5779721926447984944">固定的檔案</translation>
 <translation id="5788127256798019331">Play 檔案</translation>
@@ -900,6 +910,7 @@
 <translation id="5980301590375426705">結束訪客工作階段</translation>
 <translation id="598407983968395253">使用範本</translation>
 <translation id="598882571027504733">如要更新，請連接鍵盤並重新啟動 Chromebook。</translation>
+<translation id="6002179289567220515">你已使用實體切換按鈕關閉 1 部攝影機。你也可以關閉所有攝影機的存取權。</translation>
 <translation id="6012623610530968780">第 <ph name="SELECTED_PAGE" /> 頁 (共 <ph name="TOTAL_PAGE_NUM" /> 頁)</translation>
 <translation id="6018164090099858612">退出鏡像模式</translation>
 <translation id="602001110135236999">向左捲動</translation>
@@ -940,9 +951,11 @@
 <translation id="619279033188484792">透過 <ph name="DEVICE_TYPE" /> 查看手機上最近的相片、媒體和通知</translation>
 <translation id="619335566042889110">立即充飽電</translation>
 <translation id="6193431488227440296">開發版</translation>
+<translation id="6200515304866777730">應用程式不支援這項功能</translation>
 <translation id="6210042900243040400">連線到 <ph name="EMAIL" /> 先前儲存的「<ph name="NAME" />」</translation>
 <translation id="6220928844947387476">你現在可以同時錄製鏡頭畫面和螢幕畫面</translation>
 <translation id="622484624075952240">向下鍵</translation>
+<translation id="623116199192908855">透過 Chromebook 投放畫面</translation>
 <translation id="6231419273573514727">周邊裝置效能可能受到限制</translation>
 <translation id="6232891689835436217">「<ph name="APP_NAME" />」正在使用你的攝影機和麥克風</translation>
 <translation id="6237231532760393653">1X</translation>
@@ -984,8 +997,10 @@
 <translation id="6491071886865974820"><ph name="MANAGER" /> 要求你在期限內更新 <ph name="DEVICE_TYPE" /></translation>
 <translation id="649452524636452238">智慧型卡片 PIN 碼</translation>
 <translation id="6495400115277918834">已開啟子母畫面，按下 Alt+Shift+V 可聚焦</translation>
+<translation id="6497418457565568043">零打擾模式已開啟</translation>
 <translation id="6500896621837555595">更新</translation>
 <translation id="6501401484702599040">正在將畫面投放到「<ph name="RECEIVER_NAME" />」</translation>
+<translation id="6508923215158854599">確認 Chromebook 和 Chromecast 裝置連線到相同 Wi-Fi 網路。</translation>
 <translation id="6515727200518652613">攝影機連線中斷，正在嘗試重新連接。</translation>
 <translation id="6520517963145875092">選取要擷圖的視窗</translation>
 <translation id="652139407789908527">進行這項更新時，螢幕顯示空白畫面的時間可能會比平時更長 (最多一分鐘)。請勿在更新期間按下電源按鈕。</translation>
@@ -1044,6 +1059,7 @@
 <translation id="6787595647772650851">還原上一個工作階段</translation>
 <translation id="6790428901817661496">播放</translation>
 <translation id="6801878137098616817">最近編輯過</translation>
+<translation id="6802687695197837794">這將允許「<ph name="APP1_NAME" />」、「<ph name="APP2_NAME" />」與具有攝影機和麥克風權限的所有應用程式和網站存取</translation>
 <translation id="6803622936009808957">找不到系統支援的解析度，因此無法顯示鏡像。已改為進入延伸桌面。</translation>
 <translation id="6812232930908427253">視窗或分頁過多，無法儲存桌面。</translation>
 <translation id="6818242057446442178">移至上一個字詞</translation>
@@ -1066,6 +1082,7 @@
 <translation id="6901883536534621389">試試手勢瀏覽功能</translation>
 <translation id="6919251195245069855">無法辨識你的智慧型卡片，請再試一次。</translation>
 <translation id="6931576957638141829">儲存至</translation>
+<translation id="6942518653766415536">錄製內容格式選單</translation>
 <translation id="6945221475159498467">選取</translation>
 <translation id="6960565108681981554">未啟用。請與你的電信業者聯絡。</translation>
 <translation id="6961121602502368900">工作資料夾不支援將手機設為靜音</translation>
@@ -1075,6 +1092,7 @@
 <translation id="6965382102122355670">確定</translation>
 <translation id="6972754398087986839">開始使用</translation>
 <translation id="6979158407327259162">Google 雲端硬碟</translation>
+<translation id="6981291220124935078">開啟存取權</translation>
 <translation id="6981982820502123353">無障礙設定</translation>
 <translation id="698231206551913481">將這位使用者移除後，與這位使用者相關聯的所有檔案和本機資料都會遭到永久刪除。</translation>
 <translation id="7005239792648594238">開啟應用程式即可開始</translation>
@@ -1215,7 +1233,6 @@
 <translation id="7768784765476638775">隨選朗讀</translation>
 <translation id="7780094051999721182">捷徑</translation>
 <translation id="7780159184141939021">旋轉螢幕</translation>
-<translation id="7796353162336583443">輕觸檔案櫃的觸控筆圖示即可寫筆記、擷取螢幕畫面，以及使用 Google 助理、雷射筆和放大鏡。</translation>
 <translation id="7796735576426975947">已隱藏新通知</translation>
 <translation id="7798302898096527229">按下搜尋鍵或 Shift 鍵即可取消。</translation>
 <translation id="7807067443225230855">搜尋與 Google 助理</translation>

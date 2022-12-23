@@ -41,6 +41,12 @@ syncer::MetadataChangeList* ReadingListModelImpl::
   return storage_token_->GetSyncMetadataChangeList();
 }
 
+ReadingListModelStorage::ScopedBatchUpdate*
+ReadingListModelImpl::ScopedReadingListBatchUpdateImpl::GetStorageBatch() {
+  DCHECK(storage_token_);
+  return storage_token_.get();
+}
+
 void ReadingListModelImpl::ScopedReadingListBatchUpdateImpl::
     ReadingListModelLoaded(const ReadingListModel* model) {}
 
@@ -134,8 +140,10 @@ void ReadingListModelImpl::MarkAllSeen() {
   if (unseen_entry_count_ == 0) {
     return;
   }
-  std::unique_ptr<ReadingListModelImpl::ScopedReadingListBatchUpdate>
-      model_batch_updates = BeginBatchUpdates();
+
+  std::unique_ptr<ScopedReadingListBatchUpdateImpl> batch =
+      BeginBatchUpdatesWithSyncMetadata();
+
   for (auto& iterator : entries_) {
     ReadingListEntry& entry = iterator.second;
     if (entry.HasBeenSeen()) {
@@ -148,10 +156,7 @@ void ReadingListModelImpl::MarkAllSeen() {
     entry.SetRead(false, clock_->Now());
     UpdateEntryStateCountersOnEntryInsertion(entry);
 
-    // TODO(crbug.com/1386158): Reuse same batch.
-    std::unique_ptr<ReadingListModelStorage::ScopedBatchUpdate> batch =
-        storage_layer_->EnsureBatchCreated();
-    batch->SaveEntry(entry);
+    batch->GetStorageBatch()->SaveEntry(entry);
     sync_bridge_.DidAddOrUpdateEntry(entry, batch->GetSyncMetadataChangeList());
 
     for (ReadingListModelObserver& observer : observers_) {
@@ -538,6 +543,10 @@ std::unique_ptr<ReadingListModelImpl> ReadingListModelImpl::BuildNewForTest(
       std::move(storage_layer), clock, std::move(change_processor)));
 }
 
+ReadingListSyncBridge* ReadingListModelImpl::GetSyncBridgeForTest() {
+  return &sync_bridge_;
+}
+
 void ReadingListModelImpl::StoreLoaded(
     ReadingListModelStorage::LoadResultOrError result_or_error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -582,8 +591,17 @@ void ReadingListModelImpl::EndBatchUpdates() {
   }
 }
 
-ReadingListSyncBridge* ReadingListModelImpl::GetModelTypeSyncBridge() {
-  return &sync_bridge_;
+base::WeakPtr<syncer::ModelTypeControllerDelegate>
+ReadingListModelImpl::GetSyncControllerDelegate() {
+  return sync_bridge_.change_processor()->GetControllerDelegate();
+}
+
+base::WeakPtr<syncer::ModelTypeControllerDelegate>
+ReadingListModelImpl::GetSyncControllerDelegateForTransportMode() {
+  // ReadingListModelImpl doesn't directly implement account storage. Upper
+  // layers are responsible for maintaining two instances of
+  // ReadingListModelImpl and exposing one of them as account storage.
+  return nullptr;
 }
 
 ReadingListModelStorage* ReadingListModelImpl::StorageLayer() {

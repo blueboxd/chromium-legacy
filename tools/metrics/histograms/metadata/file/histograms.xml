@@ -197,7 +197,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.DirectoryScan" units="ms"
-    expires_after="2023-04-16">
+    expires_after="2023-06-18">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -227,7 +227,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Downloads.DirectoryPercentageOfDiskUsage"
-    units="%" expires_after="2023-04-16">
+    units="%" expires_after="2023-06-18">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -238,7 +238,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Downloads.DirectorySizeMiB" units="MiB"
-    expires_after="2023-04-17">
+    expires_after="2023-06-18">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -249,7 +249,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.DownloadsCount" units="units"
-    expires_after="2023-04-16">
+    expires_after="2023-06-18">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -479,7 +479,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Location.OnEntrySelected.TopLevel"
-    enum="FileManagerRootType" expires_after="2023-04-15">
+    enum="FileManagerRootType" expires_after="2023-06-18">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -623,7 +623,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.OfficeFiles.UseOutsideDrive"
-    enum="OfficeFilesUseOutsideDriveHook" expires_after="2023-04-16">
+    enum="OfficeFilesUseOutsideDriveHook" expires_after="2023-06-18">
   <owner>cassycc@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -634,7 +634,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.OpenFiles.RootType" enum="FileManagerRootType"
-    expires_after="2023-04-15">
+    expires_after="2023-06-18">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -681,7 +681,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Recent.FilterByType"
-    enum="FileManagerRecentFilterType" expires_after="2023-04-16">
+    enum="FileManagerRecentFilterType" expires_after="2023-06-18">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -940,7 +940,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.VolumeType" enum="FileManagerVolumeType"
-    expires_after="2023-04-15">
+    expires_after="2023-06-18">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -991,26 +991,6 @@ chromium-metrics-reviews@google.com.
   <summary>The result of FileSystemDirectoryDatabase repair.</summary>
 </histogram>
 
-<histogram name="FileSystem.OpenFileSystem" enum="OpenFileSystemResult"
-    expires_after="M77">
-  <owner>tzik@chromium.org</owner>
-  <summary>
-    The success or the cause of failure for each call to OpenFileSystem().
-  </summary>
-</histogram>
-
-<histogram name="FileSystem.OpenFileSystemDetail" enum="FileSystemErrors"
-    expires_after="M77">
-  <owner>tzik@chromium.org</owner>
-  <summary>The result of opening a filesystem.</summary>
-</histogram>
-
-<histogram name="FileSystem.OpenFileSystemDetailNonthrottled"
-    enum="FileSystemErrors" expires_after="M77">
-  <owner>tzik@chromium.org</owner>
-  <summary>The result of opening a non-throttled filesystem.</summary>
-</histogram>
-
 <histogram name="FileSystem.OriginDatabaseInit"
     enum="FileSystemDatabaseInitResult" expires_after="never">
 <!-- expires-never: core storage metric; consumed in separate dashboard (go/chrome-storage-dashboard) -->
@@ -1018,28 +998,6 @@ chromium-metrics-reviews@google.com.
   <owner>dmurph@chromium.org</owner>
   <owner>pwnall@chromium.org</owner>
   <summary>The result of FileSystemOriginDatabase initialization.</summary>
-</histogram>
-
-<histogram name="FileSystem.PersistentOriginsCount" units="units"
-    expires_after="2018-08-30">
-  <owner>tzik@chromium.org</owner>
-  <summary>
-    Number of origins that have persistent filesystem. Measured when the Quota
-    system queries the filesystem subsystem about its entire usage, which
-    usually happens when one of the storage subsystem methods is called for the
-    first time.
-  </summary>
-</histogram>
-
-<histogram name="FileSystem.TemporaryOriginsCount" units="units"
-    expires_after="2018-08-30">
-  <owner>tzik@chromium.org</owner>
-  <summary>
-    Number of origins that have temporary filesystem. Measured when the Quota
-    system queries the filesystem subsystem about its entire usage, which
-    usually happens when one of the storage subsystem methods is called for the
-    first time.
-  </summary>
 </histogram>
 
 <histogram name="Unzipper.DetectEncoding.Result" enum="ContentEncoding"

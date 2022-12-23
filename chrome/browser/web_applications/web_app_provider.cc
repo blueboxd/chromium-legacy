@@ -151,21 +151,9 @@ const WebAppRegistrar& WebAppProvider::registrar_unsafe() const {
   return *registrar_;
 }
 
-WebAppRegistrar& WebAppProvider::registrar() {
-  return registrar_unsafe();
-}
-
-const WebAppRegistrar& WebAppProvider::registrar() const {
-  return registrar_unsafe();
-}
-
 WebAppSyncBridge& WebAppProvider::sync_bridge_unsafe() {
   CheckIsConnected();
   return *sync_bridge_;
-}
-
-WebAppSyncBridge& WebAppProvider::sync_bridge() {
-  return sync_bridge_unsafe();
 }
 
 WebAppInstallManager& WebAppProvider::install_manager() {
@@ -332,8 +320,7 @@ void WebAppProvider::ConnectSubsystems() {
       os_integration_manager_.get(), sync_bridge_.get(),
       command_scheduler_.get());
   externally_managed_app_manager_->SetSubsystems(
-      registrar_.get(), ui_manager_.get(), install_finalizer_.get(),
-      command_scheduler_.get(), sync_bridge_.get());
+      ui_manager_.get(), install_finalizer_.get(), command_scheduler_.get());
   preinstalled_web_app_manager_->SetSubsystems(
       registrar_.get(), ui_manager_.get(),
       externally_managed_app_manager_.get());

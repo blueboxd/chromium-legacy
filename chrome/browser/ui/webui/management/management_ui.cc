@@ -45,9 +45,9 @@
 
 namespace {
 
-content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
-  content::WebUIDataSource* source =
-      content::WebUIDataSource::Create(chrome::kChromeUIManagementHost);
+content::WebUIDataSource* CreateAndAddManagementUIHtmlSource(Profile* profile) {
+  content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
+      profile, chrome::kChromeUIManagementHost);
 
   source->AddString("pageSubtitle",
                     ManagementUI::GetManagementPageSubtitle(profile));
@@ -91,6 +91,8 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
     {kManagementOnFileTransferEvent, IDS_MANAGEMENT_FILE_TRANSFER_EVENT},
     {kManagementOnFileTransferVisibleData,
      IDS_MANAGEMENT_FILE_TRANSFER_VISIBLE_DATA},
+    {kManagementScreenCaptureEvent, IDS_MANAGEMENT_SCREEN_CAPTURE_EVENT},
+    {kManagementScreenCaptureData, IDS_MANAGEMENT_SCREEN_CAPTURE_DATA},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
     {"browserReporting", IDS_MANAGEMENT_BROWSER_REPORTING},
     {"browserReportingExplanation",
@@ -232,9 +234,8 @@ std::u16string ManagementUI::GetManagementPageSubtitle(Profile* profile) {
 
 ManagementUI::ManagementUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   content::WebUIDataSource* source =
-      CreateManagementUIHtmlSource(Profile::FromWebUI(web_ui));
+      CreateAndAddManagementUIHtmlSource(Profile::FromWebUI(web_ui));
   ManagementUIHandler::Initialize(web_ui, source);
-  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
 }
 
 ManagementUI::~ManagementUI() {}

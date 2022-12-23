@@ -9,6 +9,7 @@ import '../css/shortcut_customization_shared.css.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 
+import {PolymerElementProperties} from 'chrome://resources/polymer/v3_0/polymer/interfaces.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './accelerator_row.html.js';
@@ -36,11 +37,11 @@ declare global {
  * TODO(jimmyxgong): Implement opening a dialog when clicked.
  */
 export class AcceleratorRowElement extends PolymerElement {
-  static get is() {
+  static get is(): string {
     return 'accelerator-row';
   }
 
-  static get properties() {
+  static get properties(): PolymerElementProperties {
     return {
       description: {
         type: String,
@@ -49,7 +50,7 @@ export class AcceleratorRowElement extends PolymerElement {
 
       acceleratorInfos: {
         type: Array,
-        value: () => {},
+        value: () => [],
       },
 
       acceleratorText: {
@@ -59,10 +60,9 @@ export class AcceleratorRowElement extends PolymerElement {
 
       layoutStyle: {
         type: Object,
-        value: () => {},
       },
 
-      isLocked_: {
+      isLocked: {
         type: Boolean,
         value: false,
       },
@@ -75,7 +75,7 @@ export class AcceleratorRowElement extends PolymerElement {
       source: {
         type: Number,
         value: 0,
-        observer: 'onSourceChanged_',
+        observer: AcceleratorRowElement.prototype.onSourceChanged,
       },
     };
   }
@@ -87,23 +87,23 @@ export class AcceleratorRowElement extends PolymerElement {
   layoutStyle: LayoutStyle;
   action: number;
   source: AcceleratorSource;
-  private isLocked_: boolean;
-  private shortcutInterfaceProvider_: ShortcutProviderInterface =
+  private isLocked: boolean;
+  private shortcutInterfaceProvider: ShortcutProviderInterface =
       getShortcutProvider();
 
-  override disconnectedCallback() {
+  override disconnectedCallback(): void {
     super.disconnectedCallback();
-    if (!this.isLocked_) {
-      this.removeEventListener('click', () => this.showDialog_());
+    if (!this.isLocked) {
+      this.removeEventListener('click', () => this.showDialog());
     }
   }
 
-  protected onSourceChanged_() {
-    this.shortcutInterfaceProvider_.isMutable(this.source)
+  protected onSourceChanged(): void {
+    this.shortcutInterfaceProvider.isMutable(this.source)
         .then(({isMutable}) => {
-          this.isLocked_ = !isMutable;
-          if (!this.isLocked_) {
-            this.addEventListener('click', () => this.showDialog_());
+          this.isLocked = !isMutable;
+          if (!this.isLocked) {
+            this.addEventListener('click', () => this.showDialog());
           }
         });
   }
@@ -116,15 +116,15 @@ export class AcceleratorRowElement extends PolymerElement {
     return this.layoutStyle === LayoutStyle.kText;
   }
 
-  private shouldShowLockIcon_(): boolean {
+  private shouldShowLockIcon(): boolean {
     if (isCustomizationDisabled()) {
       return false;
     }
 
-    return this.isLocked_;
+    return this.isLocked;
   }
 
-  private showDialog_() {
+  private showDialog(): void {
     if (isCustomizationDisabled()) {
       return;
     }
@@ -144,7 +144,7 @@ export class AcceleratorRowElement extends PolymerElement {
         ));
   }
 
-  static get template() {
+  static get template(): HTMLTemplateElement {
     return getTemplate();
   }
 }

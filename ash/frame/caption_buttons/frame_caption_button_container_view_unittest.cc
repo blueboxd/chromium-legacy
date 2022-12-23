@@ -330,7 +330,7 @@ TEST_F(FrameCaptionButtonContainerViewTest, ResizeButtonRestoreBehavior) {
   EXPECT_TRUE(window_state->IsNormalStateType());
 
   // Snap the window.
-  const WindowSnapWMEvent snap_event(WM_EVENT_SNAP_PRIMARY);
+  const WMEvent snap_event(WM_EVENT_SNAP_PRIMARY);
   window_state->OnWMEvent(&snap_event);
   // Check the window is now snapped.
   EXPECT_TRUE(window_state->IsSnapped());
@@ -342,61 +342,27 @@ TEST_F(FrameCaptionButtonContainerViewTest, ResizeButtonRestoreBehavior) {
   EXPECT_TRUE(window_state->IsSnapped());
 }
 
-// Test float button requires kFloatWindow feature to be enabled during setup.
-class WindowFloatButtonTest : public FrameCaptionButtonContainerViewTest {
+// Test float button requires `kFloatWindow` feature to be enabled during setup.
+class FrameCaptionButtonContainerViewWithFloatTest
+    : public FrameCaptionButtonContainerViewTest {
  public:
-  WindowFloatButtonTest()
+  FrameCaptionButtonContainerViewWithFloatTest()
       : scoped_feature_list_(chromeos::wm::features::kFloatWindow) {}
-  WindowFloatButtonTest(const WindowFloatButtonTest&) = delete;
-  WindowFloatButtonTest& operator=(const WindowFloatButtonTest&) = delete;
-  ~WindowFloatButtonTest() override = default;
-
-  void ClickFloatButton(FrameCaptionButtonContainerView::TestApi* test_api) {
-    ui::test::EventGenerator* generator = GetEventGenerator();
-    auto* float_button = test_api->float_button();
-    generator->MoveMouseTo(float_button->GetBoundsInScreen().CenterPoint());
-    generator->ClickLeftButton();
-  }
+  FrameCaptionButtonContainerViewWithFloatTest(
+      const FrameCaptionButtonContainerViewWithFloatTest&) = delete;
+  FrameCaptionButtonContainerViewWithFloatTest& operator=(
+      const FrameCaptionButtonContainerViewWithFloatTest&) = delete;
+  ~FrameCaptionButtonContainerViewWithFloatTest() override = default;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-TEST_F(WindowFloatButtonTest, TestFloatButtonBehavior) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kAshDeveloperShortcuts);
-
-  auto* widget = CreateTestWidget(MAXIMIZE_ALLOWED, MINIMIZE_ALLOWED,
-                                  CLOSE_BUTTON_VISIBLE);
-  auto* window = widget->GetNativeWindow();
-  window->SetProperty(aura::client::kAppType,
-                      static_cast<int>(ash::AppType::BROWSER));
-  widget->Show();
-
-  FrameCaptionButtonContainerView container(widget);
-  InitContainer(&container);
-  widget->GetContentsView()->AddChildView(&container);
-  views::test::RunScheduledLayout(&container);
-  FrameCaptionButtonContainerView::TestApi testApi(&container);
-
-  ClickFloatButton(&testApi);
-  auto* window_state = WindowState::Get(window);
-  // Check if window is floated.
-  EXPECT_TRUE(window_state->IsFloated());
-  EXPECT_EQ(window->GetProperty(chromeos::kWindowStateTypeKey),
-            chromeos::WindowStateType::kFloated);
-
-  ClickFloatButton(&testApi);
-  // Check if window is unfloated.
-  EXPECT_FALSE(window_state->IsFloated());
-  EXPECT_EQ(window->GetProperty(chromeos::kWindowStateTypeKey),
-            chromeos::WindowStateType::kNormal);
-}
-
-TEST_F(WindowFloatButtonTest, TabletFloatButtonVisibility) {
+TEST_F(FrameCaptionButtonContainerViewWithFloatTest,
+       TabletSizeButtonVisibility) {
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
 
-  // Create a window in tablet mode. It should be maximized and the float button
+  // Create a window in tablet mode. It should be maximized and the size button
   // should be hidden.
   auto window = CreateAppWindow();
   auto* window_state = WindowState::Get(window.get());
@@ -408,13 +374,13 @@ TEST_F(WindowFloatButtonTest, TabletFloatButtonVisibility) {
       frame->GetHeaderView()->caption_button_container();
   FrameCaptionButtonContainerView::TestApi test_api(container);
 
-  auto* float_button = test_api.float_button();
-  EXPECT_FALSE(float_button->GetVisible());
+  auto* size_button = test_api.size_button();
+  EXPECT_FALSE(size_button->GetVisible());
 
-  // Float the window. Test that the float button is visible.
+  // Float the window. Test that the size button is visible.
   PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
   EXPECT_TRUE(window_state->IsFloated());
-  EXPECT_TRUE(float_button->GetVisible());
+  EXPECT_TRUE(size_button->GetVisible());
 }
 
 }  // namespace ash

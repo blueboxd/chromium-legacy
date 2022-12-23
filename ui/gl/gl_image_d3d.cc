@@ -20,7 +20,6 @@ namespace gl {
 GLImageD3D::GLImageD3D(const gfx::Size& size,
                        unsigned internal_format,
                        unsigned data_type,
-                       const gfx::ColorSpace& color_space,
                        Microsoft::WRL::ComPtr<ID3D11Texture2D> texture,
                        size_t array_slice,
                        size_t plane_index,
@@ -33,7 +32,6 @@ GLImageD3D::GLImageD3D(const gfx::Size& size,
       array_slice_(array_slice),
       plane_index_(plane_index),
       swap_chain_(std::move(swap_chain)) {
-  GLImage::SetColorSpace(color_space);
   DCHECK(texture_);
 }
 
@@ -71,10 +69,6 @@ GLImage::Type GLImageD3D::GetType() const {
   return Type::D3D;
 }
 
-GLImage::BindOrCopy GLImageD3D::ShouldBindOrCopy() {
-  return GLImage::BIND;
-}
-
 void* GLImageD3D::GetEGLImage() const {
   return egl_image_;
 }
@@ -95,10 +89,6 @@ bool GLImageD3D::BindTexImage(unsigned target) {
   DCHECK_NE(egl_image_, EGL_NO_IMAGE_KHR);
   glEGLImageTargetTexture2DOES(target, egl_image_);
   return glGetError() == static_cast<GLenum>(GL_NO_ERROR);
-}
-
-bool GLImageD3D::CopyTexImage(unsigned target) {
-  return false;
 }
 
 bool GLImageD3D::CopyTexSubImage(unsigned target,

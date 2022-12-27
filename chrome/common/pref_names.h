@@ -367,7 +367,8 @@ extern const char kKerberosAddAccountsAllowed[];
 extern const char kKerberosAccounts[];
 extern const char kKerberosActivePrincipalName[];
 extern const char kKerberosDomainAutocomplete[];
-extern const char kKerberosDefaultConfiguration[];
+extern const char kKerberosUseCustomPrefilledConfig[];
+extern const char kKerberosCustomPrefilledConfig[];
 extern const char kAppReinstallRecommendationEnabled[];
 extern const char kStartupBrowserWindowLaunchSuppressed[];
 extern const char kLoginExtensionApiDataForNextLoginAttempt[];
@@ -1286,6 +1287,7 @@ extern const char kSCTAuditingHashdanceReportCount[];
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 extern const char kConsumerAutoUpdateToggle[];
 extern const char kHindiInscriptLayoutEnabled[];
+extern const char kDeviceHindiInscriptLayoutEnabled[];
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)

@@ -296,6 +296,11 @@ const char kEnableFullscreenAPIName[] = "Enable Fullscreen API";
 const char kEnableFullscreenAPIDescription[] =
     "Enable the Fullscreen API for web content (iOS 16.0+).";
 
+const char kEnableNewBookmarksImplementationName[] =
+    "Enable New Bookmarks Implementation";
+const char kEnableNewBookmarksImplementationDescription[] =
+    "Enable the new bookmarks implementation with coordinators";
+
 const char kPasswordsGroupingName[] =
     "Enable password grouping for the Password Manager";
 const char kPasswordsGroupingDescription[] =
@@ -586,11 +591,6 @@ const char kOmniboxFocusTriggersSRPZeroSuggestDescription[] =
     "Enables on-focus suggestions on the Search Results page. Requires "
     "on-focus suggestions for the contextual web to be enabled. Will only work "
     "if user is signed-in and syncing.";
-
-const char kOmniboxPasteButtonName[] = "Omnibox paste to search button";
-const char kOmniboxPasteButtonDescription[] =
-    "Add a paste button when showing clipboard suggestions in the omnibox. iOS "
-    "16 and above.";
 
 const char kOmniboxLocalHistoryZeroSuggestBeyondNTPName[] =
     "Allow local history zero-prefix suggestions beyond NTP";

@@ -265,6 +265,10 @@ extern const char kEnableFREDefaultBrowserPromoScreenDescription[];
 extern const char kEnableFullscreenAPIName[];
 extern const char kEnableFullscreenAPIDescription[];
 
+// Title and description for the new bookmarks implementation.
+extern const char kEnableNewBookmarksImplementationName[];
+extern const char kEnableNewBookmarksImplementationDescription[];
+
 // Title and description for the flag to enable password grouping for the
 // Password Manager.
 extern const char kPasswordsGroupingName[];
@@ -527,11 +531,6 @@ extern const char kOmniboxFocusTriggersContextualWebZeroSuggestDescription[];
 // suggestions on search results page.
 extern const char kOmniboxFocusTriggersSRPZeroSuggestName[];
 extern const char kOmniboxFocusTriggersSRPZeroSuggestDescription[];
-
-// Title and description for the flag to enable paste button on clipboard
-// suggestion.
-extern const char kOmniboxPasteButtonName[];
-extern const char kOmniboxPasteButtonDescription[];
 
 // Title and description for local history zero-prefix suggestions beyond NTP.
 extern const char kOmniboxLocalHistoryZeroSuggestBeyondNTPName[];

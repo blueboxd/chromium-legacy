@@ -1147,10 +1147,16 @@ const char kKerberosActivePrincipalName[] = "kerberos.active_principal_name";
 // username field of "Add a ticket" UI window.
 // Tied to KerberosDomainAutocomplete policy.
 const char kKerberosDomainAutocomplete[] = "kerberos.domain_autocomplete";
+// Used by KerberosAccountsHandler to decide if the custom default configuration
+// should be prefilled.
+// Tied to KerberosUseCustomPrefilledConfig policy.
+const char kKerberosUseCustomPrefilledConfig[] =
+    "kerberos.use_custom_prefilled_config";
 // Used by KerberosAccountsHandler to prefill kerberos krb5 config for
 // manually creating new tickets.
-// Tied to KerberosDefaultConfiguration policy.
-const char kKerberosDefaultConfiguration[] = "kerberos.default_configuration";
+// Tied to KerberosCustomPrefilledConfig policy.
+const char kKerberosCustomPrefilledConfig[] =
+    "kerberos.custom_prefilled_config";
 
 // A boolean pref for enabling/disabling App reinstall recommendations in Zero
 // State Launcher by policy.
@@ -3641,9 +3647,15 @@ const char kSCTAuditingHashdanceReportCount[] =
 const char kConsumerAutoUpdateToggle[] = "settings.consumer_auto_update_toggle";
 
 // A boolean pref that controls whether or not Hindi Inscript keyboard layout
-// is available. Set with the corresponding enterprise policy.
+// is available.
+// This is set by a user policy, but the user policy does not work to
+// control the availability of the Hindi Inscript layout.
+// TODO(jungshik): Deprecate it.
 const char kHindiInscriptLayoutEnabled[] =
     "settings.input.hindi_inscript_layout_enabled";
+// This is set by a device policy and does actually work.
+const char kDeviceHindiInscriptLayoutEnabled[] =
+    "settings.input.device_hindi_inscript_layout_enabled";
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)

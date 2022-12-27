@@ -131,7 +131,11 @@ export class AppListElement extends PolymerElement {
   }
 
   private onCreateShortcutItemClick_() {
-    this.$.menu.close();
+    if (this.selectedActionMenuModel_?.appInfo.id) {
+      BrowserProxy.getInstance().handler.createAppShortcut(
+          this.selectedActionMenuModel_?.appInfo.id);
+    }
+    this.closeMenu_();
   }
 
   private onUninstallItemClick_() {
@@ -143,7 +147,11 @@ export class AppListElement extends PolymerElement {
   }
 
   private onAppSettingsItemClick_() {
-    this.$.menu.close();
+    if (this.selectedActionMenuModel_?.appInfo.id) {
+      BrowserProxy.getInstance().handler.showAppSettings(
+          this.selectedActionMenuModel_?.appInfo.id);
+    }
+    this.closeMenu_();
   }
 
   private onOpenMenu_(event: OpenMenuEvent) {

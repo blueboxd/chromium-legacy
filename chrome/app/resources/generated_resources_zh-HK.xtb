@@ -105,6 +105,7 @@
 <translation id="1087965115100412394">不允許網站連接 MIDI 裝置</translation>
 <translation id="1088654056000736875">Chrome 正在移除電腦中的有害軟件…</translation>
 <translation id="1088659085457112967">進入閱讀器模式</translation>
+<translation id="1089407731410758060">變更主題</translation>
 <translation id="1090126737595388931">沒有執行中的背景應用程式</translation>
 <translation id="1090541560108055381">在進行配對前，請先確認兩部裝置所顯示的代碼相同</translation>
 <translation id="1091767800771861448">按下 ESCAPE 鍵可略過 (只限非官方版本)。</translation>
@@ -654,6 +655,7 @@
 <translation id="1595492813686795610">正在升級 Linux</translation>
 <translation id="1596286373007273895">可用</translation>
 <translation id="1596709061955594992">藍牙已關閉。如要查看可用的裝置，請開啟藍牙。</translation>
+<translation id="1596780725094407793">- 包括子網域</translation>
 <translation id="1598233202702788831">您的管理員已停用更新功能。</translation>
 <translation id="1600857548979126453">存取網頁偵錯工具後端</translation>
 <translation id="1601560923496285236">套用</translation>
@@ -932,6 +934,7 @@
 <translation id="18260074040409954">您可在任何裝置上使用已儲存的密碼。密碼會儲存至 <ph name="EMAIL" /> 的 <ph name="GOOGLE_PASSWORD_MANAGER" />。</translation>
 <translation id="1826192255355608658">同步處理 Chrome 瀏覽器的書籤、密碼和記錄等資料</translation>
 <translation id="1826516787628120939">檢查中</translation>
+<translation id="1827504459960247692">熱點名稱</translation>
 <translation id="1828378091493947763">此裝置不支援此外掛程式</translation>
 <translation id="1828879788654007962">{COUNT,plural, =0{開啟所有書籤(&amp;O)}=1{開啟書籤(&amp;O)}other{開啟全部 {COUNT} 個書籤(&amp;O)}}</translation>
 <translation id="1828901632669367785">使用系統對話方塊進行列印…</translation>
@@ -1243,6 +1246,7 @@
 <translation id="2101225219012730419">版本：</translation>
 <translation id="2102396546234652240">不允許網站使用麥克風</translation>
 <translation id="2102495993840063010">Android 應用程式</translation>
+<translation id="2104166991923847969">自動關閉熱點</translation>
 <translation id="2105809836724866556">「<ph name="MODULE_TITLE" />」已隱藏</translation>
 <translation id="2108349519800154983">{COUNT,plural, =1{電話號碼}other{# 個電話號碼}}</translation>
 <translation id="211144231511833662">清除類型</translation>
@@ -1826,6 +1830,7 @@
 <translation id="2616366145935564096">讀取及變更您在 <ph name="WEBSITE_1" /> 網站上的資料</translation>
 <translation id="2618797463720777311">設定「咫尺共享」</translation>
 <translation id="2620215283731032047">無法安全下載「<ph name="FILE_NAME" />」。</translation>
+<translation id="2620245777360407679">裝置目前已連線至熱點</translation>
 <translation id="2620436844016719705">系統</translation>
 <translation id="262154978979441594">訓練「Google 助理」語音模型</translation>
 <translation id="26224892172169984">不允許任何網站處理通訊協定</translation>
@@ -2891,6 +2896,7 @@
 <translation id="3617891479562106823">無法自訂背景，請稍候再試。</translation>
 <translation id="3619115746895587757">泡沫咖啡</translation>
 <translation id="3620136223548713675">地理位置</translation>
+<translation id="362023940451053340">更新 Google 帳戶 (<ph name="ACCOUNT" />) 的密碼</translation>
 <translation id="3621807901162200696">協助改善 Chrome OS 的功能和效能</translation>
 <translation id="362266093274784978">{COUNT,plural, =1{1 個應用程式}other{# 個應用程式}}</translation>
 <translation id="362333465072914957">正在等待 CA 發出憑證</translation>
@@ -3532,7 +3538,6 @@
 <translation id="4205157409548006256">設定 Linux 時發生錯誤。</translation>
 <translation id="4206144641569145248">外星人</translation>
 <translation id="4206323443866416204">意見反映報告</translation>
-<translation id="4207522141889799150">編輯 <ph name="SITE" /> 的網站權限</translation>
 <translation id="4207932031282227921">要求咗權限，㩒 F6 掣就可以回覆</translation>
 <translation id="4208390505124702064">搜尋 <ph name="SITE_NAME" /></translation>
 <translation id="4209092469652827314">大</translation>
@@ -3972,7 +3977,6 @@
 <translation id="4613271546271159013">擴充功能已變更開啟新分頁時所顯示的頁面。</translation>
 <translation id="4615586811063744755">未選取 Cookie</translation>
 <translation id="461661862154729886">電源</translation>
-<translation id="461676224702246336">按一下此網站時</translation>
 <translation id="4617001782309103936">太短</translation>
 <translation id="4617019240346358451">重新載入頁面以使用「<ph name="EXTENSION_NAME" />」</translation>
 <translation id="4617270414136722281">擴充程式選項</translation>
@@ -5628,6 +5632,7 @@
 <translation id="6169967265765719844">您可以在 <ph name="LINK_BEGIN" />Steam 應用程式設定<ph name="LINK_END" />中，管理透過 Steam 安裝的遊戲和應用程式權限。</translation>
 <translation id="6170470584681422115">三文治</translation>
 <translation id="6170498031581934115">無法啟用 ADB 偵錯。請前往「設定」，然後再試一次。</translation>
+<translation id="6171779718418683144">每次造訪時都詢問</translation>
 <translation id="617213288191670920">沒有新增任何語言</translation>
 <translation id="6173623053897475761">重新輸入 PIN</translation>
 <translation id="6175314957787328458">Microsoft 網域 GUID</translation>
@@ -6756,6 +6761,7 @@
 <translation id="7235737137505019098">安全密鑰的空間不足，無法建立帳戶。</translation>
 <translation id="7235873936132740888">網站可在您點擊特定類型的連結時處理特殊工作，例如在電子郵件用戶端建立新郵件，或在線上日曆中新增活動</translation>
 <translation id="7238609589076576185">插入咗重音符號。</translation>
+<translation id="7238665222668706269">Google 密碼管理工具 <ph name="SEPARATOR" /> <ph name="ACCOUNT" /></translation>
 <translation id="7239108166256782787"><ph name="DEVICE_NAME" /> 已取消傳送</translation>
 <translation id="7240339475467890413">要連線至新熱點嗎？</translation>
 <translation id="7241389281993241388">請登入 <ph name="TOKEN_NAME" /> 以匯入用戶端憑證。</translation>
@@ -7146,6 +7152,7 @@
 <translation id="7614260613810441905">網站必須先詢問您，才能編輯裝置上的檔案或資料夾 (建議使用)</translation>
 <translation id="761530003705945209">備份至「Google 雲端硬碟」。您可隨時輕鬆還原資料或轉用其他裝置。備份包含應用程式資料。您的備份會上載至 Google，並透過您的 Google 帳戶密碼加密。</translation>
 <translation id="7615365294369022248">新增帳戶時發生錯誤</translation>
+<translation id="7615807797520072741">重設為傳統版 Chrome</translation>
 <translation id="7616214729753637086">正在註冊裝置…</translation>
 <translation id="7617263010641145920">開啟「Play 商店」</translation>
 <translation id="7617648809369507487">使用低擾式通知</translation>
@@ -7497,6 +7504,7 @@
 <translation id="7920363873148656176"><ph name="ORIGIN" /> 可查看「<ph name="FILENAME" />」</translation>
 <translation id="7920482456679570420">新增您想拼字檢查略過的字詞</translation>
 <translation id="7921347341284348270">您無法在此受管帳戶上查看手機的通知。請改用其他帳戶重試。<ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
+<translation id="7922606348470480702">1 項擴充功能</translation>
 <translation id="7922935920104868876">顯示喺無痕模式入面封鎖第三方 Cookie 嘅詳情</translation>
 <translation id="7923564237306226146">Linux 升級已完成</translation>
 <translation id="7924358170328001543">轉送連接埠時發生錯誤</translation>
@@ -7884,6 +7892,7 @@
 <translation id="8263744495942430914"><ph name="FULLSCREEN_ORIGIN" /> 已停用滑鼠游標。</translation>
 <translation id="8264024885325823677">此設定由管理員管理。</translation>
 <translation id="8264718194193514834">「<ph name="EXTENSION_NAME" />」啟用了全螢幕。</translation>
+<translation id="8265018477030547118">僅儲存在這部裝置上</translation>
 <translation id="826511437356419340">進入咗視窗概覽模式。掃一下就可以瀏覽。如果你用鍵盤，㩒一下 Tab 鍵就可以瀏覽。</translation>
 <translation id="8265671588726449108">{COUNT,plural, =1{您的無痕式視窗將不會在重新啟動後開啟}other{您的 {COUNT} 個無痕式視窗將不會在重新啟動後開啟}}</translation>
 <translation id="8266947622852630193">所有輸入方法</translation>
@@ -8291,6 +8300,7 @@
 <translation id="8655295600908251630">版本</translation>
 <translation id="8655972064210167941">系統無法驗證您的密碼，導致登入失敗。請與您的管理員聯絡或再試一次。</translation>
 <translation id="8657393004602556571">您要捨棄這則意見嗎？</translation>
+<translation id="8657762806752649049">儲存到 Google 帳戶 (<ph name="ACCOUNT" />)</translation>
 <translation id="8661290697478713397">在無痕式視窗中開啟連結(&amp;G)</translation>
 <translation id="8662671328352114214">加入 <ph name="TYPE" /> 網絡</translation>
 <translation id="8662733268723715832">操作需時比預期長，您可以選擇略過或繼續等待。</translation>
@@ -8453,6 +8463,7 @@
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{將分頁移至其他視窗}other{將分頁移至其他視窗}}</translation>
 <translation id="8805140816472474147">如要開始同步處理，請確認同步處理設定。</translation>
 <translation id="8806680466228877631">㩒一下 <ph name="SHORTCUT" /> 鍵就可以重新開唔小心閂咗嘅分頁</translation>
+<translation id="8807588541160250261">沒有任何裝置連線時</translation>
 <translation id="8807632654848257479">穩定</translation>
 <translation id="8808478386290700967">網上商店</translation>
 <translation id="8808686172382650546">Cat</translation>

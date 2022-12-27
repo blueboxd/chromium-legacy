@@ -2688,6 +2688,11 @@
     "expiry_milestone": 115
   },
   {
+    "name": "enable-new-bookmarks-implementation",
+    "owners": [ "jlebel", "chrome-signin-team" ],
+    "expiry_milestone": 130
+  },
+  {
     "name": "enable-new-download-api",
     "owners": [ "sdefresne", "bling-flags@google.com" ],
     "expiry_milestone": 130
@@ -5029,7 +5034,7 @@
   {
     "name": "omnibox-keyboard-paste-button",
     "owners": ["christianxu", "stkhapugin", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 110
+    "expiry_milestone": 115
   },
   {
     "name": "omnibox-local-history-zero-suggest-beyond-ntp",
@@ -5115,11 +5120,6 @@
     "name": "omnibox-on-focus-suggestions-srp",
     "owners": [ "ender", "stkhapugin", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 120
-  },
-  {
-    "name": "omnibox-paste-button",
-    "owners": [ "christianxu", "stkhapugin", "bling-flags@google.com" ],
-    "expiry_milestone": 108
   },
   {
     "name": "omnibox-remove-excessive-recycled-view-clear-calls",

@@ -18,6 +18,7 @@
 #include "base/types/pass_key.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
@@ -164,15 +165,32 @@ void WebAppSyncBridge::CommitUpdate(
   DCHECK(is_in_update_);
   is_in_update_ = false;
 
-  if (update == nullptr || update->update_data().IsEmpty()) {
+  if (update == nullptr) {
     std::move(callback).Run(/*success*/ true);
     return;
   }
 
-  if (!disable_checks_for_testing_)
-    CheckRegistryUpdateData(update->update_data());
-
   std::unique_ptr<RegistryUpdateData> update_data = update->TakeUpdateData();
+
+  // Remove all unchanged apps.
+  RegistryUpdateData::Apps changed_apps_to_update;
+  for (std::unique_ptr<WebApp>& app_to_update : update_data->apps_to_update) {
+    const AppId& app_id = app_to_update->app_id();
+    if (*app_to_update != *registrar().GetAppById(app_id)) {
+      changed_apps_to_update.push_back(std::move(app_to_update));
+    }
+  }
+  update_data->apps_to_update = std::move(changed_apps_to_update);
+
+  if (update_data->IsEmpty()) {
+    std::move(callback).Run(/*success*/ true);
+    return;
+  }
+
+  if (!disable_checks_for_testing_) {
+    CheckRegistryUpdateData(*update_data);
+  }
+
   std::unique_ptr<syncer::MetadataChangeList> metadata_change_list =
       CreateMetadataChangeList();
 
@@ -192,19 +210,20 @@ void WebAppSyncBridge::Init(base::OnceClosure callback) {
                                          std::move(callback)));
 }
 
-void WebAppSyncBridge::SetAppUserDisplayMode(const AppId& app_id,
-                                             UserDisplayMode user_display_mode,
-                                             bool is_user_action) {
+void WebAppSyncBridge::SetAppUserDisplayMode(
+    const AppId& app_id,
+    mojom::UserDisplayMode user_display_mode,
+    bool is_user_action) {
   if (is_user_action) {
     switch (user_display_mode) {
-      case UserDisplayMode::kStandalone:
+      case mojom::UserDisplayMode::kStandalone:
         base::RecordAction(
             base::UserMetricsAction("WebApp.SetWindowMode.Window"));
         break;
-      case UserDisplayMode::kBrowser:
+      case mojom::UserDisplayMode::kBrowser:
         base::RecordAction(base::UserMetricsAction("WebApp.SetWindowMode.Tab"));
         break;
-      case UserDisplayMode::kTabbed:
+      case mojom::UserDisplayMode::kTabbed:
         base::RecordAction(
             base::UserMetricsAction("WebApp.SetWindowMode.Tabbed"));
         break;

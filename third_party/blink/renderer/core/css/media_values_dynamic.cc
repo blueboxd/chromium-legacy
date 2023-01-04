@@ -73,13 +73,31 @@ float MediaValuesDynamic::ChFontSize(float zoom) const {
   return CalculateChSize(frame_);
 }
 
+float MediaValuesDynamic::RchFontSize(float zoom) const {
+  DCHECK_EQ(1.0f, zoom);
+  // For media queries rch and ch units are both based on the initial font.
+  return CalculateChSize(frame_);
+}
+
 float MediaValuesDynamic::IcFontSize(float zoom) const {
   DCHECK_EQ(1.0f, zoom);
   return CalculateIcSize(frame_);
 }
 
+float MediaValuesDynamic::RicFontSize(float zoom) const {
+  DCHECK_EQ(1.0f, zoom);
+  // For media queries ric and ic units are both based on the initial font.
+  return CalculateIcSize(frame_);
+}
+
 float MediaValuesDynamic::LineHeight(float zoom) const {
   DCHECK_EQ(1.0f, zoom);
+  return CalculateLineHeight(frame_);
+}
+
+float MediaValuesDynamic::RootLineHeight(float zoom) const {
+  DCHECK_EQ(1.0f, zoom);
+  // For media queries rlh and lh units are both based on the initial font.
   return CalculateLineHeight(frame_);
 }
 

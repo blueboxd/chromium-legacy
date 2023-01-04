@@ -334,22 +334,18 @@ ActivityUserData::ActivityUserData()
     : ActivityUserData(nullptr, 0, static_cast<ProcessId>(-1)) {}
 
 ActivityUserData::ActivityUserData(void* memory, size_t size, ProcessId pid)
-    : memory_(reinterpret_cast<char*>(memory)),
-      available_(bits::AlignDown(size, kMemoryAlignment)),
-      header_(reinterpret_cast<MemoryHeader*>(memory)),
-      orig_data_id(0),
-      orig_process_id(0),
-      orig_create_stamp(0) {
-  // It's possible that no user data is being stored.
-  if (!memory_)
+    : memory_(reinterpret_cast<char*>(memory),
+              bits::AlignDown(size, kMemoryAlignment)) {
+  // It's possible that no user data is being stored, not even a header.
+  if (memory_.size() < sizeof(MemoryHeader)) {
     return;
+  }
 
-  static_assert(0 == sizeof(MemoryHeader) % kMemoryAlignment, "invalid header");
-  DCHECK_LT(sizeof(MemoryHeader), available_);
+  header_ = reinterpret_cast<MemoryHeader*>(memory_.data());
+  memory_ = memory_.subspan(sizeof(MemoryHeader));
+
   if (header_->owner.data_id.load(std::memory_order_acquire) == 0)
     header_->owner.Release_Initialize(pid);
-  memory_ += sizeof(MemoryHeader);
-  available_ -= sizeof(MemoryHeader);
 
   // Make a copy of identifying information for later comparison.
   *const_cast<uint32_t*>(&orig_data_id) =
@@ -384,12 +380,12 @@ bool ActivityUserData::CreateSnapshot(Snapshot* output_snapshot) const {
       case RAW_VALUE:
       case STRING_VALUE:
         value.long_value_ = std::string(
-            reinterpret_cast<char*>(entry.second.memory.get()), size);
+            reinterpret_cast<char*>(entry.second.memory.data()), size);
         break;
       case RAW_VALUE_REFERENCE:
       case STRING_VALUE_REFERENCE: {
         ReferenceRecord* ref =
-            reinterpret_cast<ReferenceRecord*>(entry.second.memory.get());
+            reinterpret_cast<ReferenceRecord*>(entry.second.memory.data());
         value.ref_value_ = StringPiece(
             reinterpret_cast<char*>(static_cast<uintptr_t>(ref->address)),
             static_cast<size_t>(ref->size));
@@ -397,13 +393,13 @@ bool ActivityUserData::CreateSnapshot(Snapshot* output_snapshot) const {
       case BOOL_VALUE:
       case CHAR_VALUE:
         value.short_value_ = static_cast<uint64_t>(
-            reinterpret_cast<std::atomic<char>*>(entry.second.memory.get())
+            reinterpret_cast<std::atomic<char>*>(entry.second.memory.data())
                 ->load(std::memory_order_relaxed));
         break;
       case SIGNED_VALUE:
       case UNSIGNED_VALUE:
         value.short_value_ =
-            reinterpret_cast<std::atomic<uint64_t>*>(entry.second.memory.get())
+            reinterpret_cast<std::atomic<uint64_t>*>(entry.second.memory.data())
                 ->load(std::memory_order_relaxed);
         break;
       case END_OF_VALUES:  // Included for completeness purposes.
@@ -418,7 +414,7 @@ bool ActivityUserData::CreateSnapshot(Snapshot* output_snapshot) const {
   // been reused for another purpose. Entries added since the first import
   // will be ignored here but will be returned if another snapshot is created.
   ImportExistingData();
-  if (!memory_) {
+  if (!header_) {
     output_snapshot->clear();
     return false;
   }
@@ -455,8 +451,9 @@ void* ActivityUserData::Set(StringPiece name,
   DCHECK_LT(name.length(), kMaxUserDataNameLength);
 
   // It's possible that no user data is being stored.
-  if (!memory_)
+  if (!header_) {
     return nullptr;
+  }
 
   ValueInfo* info;
   auto existing = values_.find(name);
@@ -477,13 +474,14 @@ void* ActivityUserData::Set(StringPiece name,
     // The "base size" is the size of the header and (padded) string key. Stop
     // now if there's not room enough for even this.
     size_t base_size = sizeof(FieldHeader) + name_extent;
-    if (base_size > available_)
+    if (base_size > memory_.size()) {
       return nullptr;
+    }
 
     // The "full size" is the size for storing the entire value.  This must fit
     // into a uint16_t.
     size_t full_size =
-        std::min({base_size + value_extent, available_,
+        std::min({base_size + value_extent, memory_.size(),
                   bits::AlignDown(size_t{std::numeric_limits<uint16_t>::max()},
                                   kMemoryAlignment)});
 
@@ -506,9 +504,11 @@ void* ActivityUserData::Set(StringPiece name,
     }
 
     // Allocate a chunk of memory.
-    FieldHeader* header = reinterpret_cast<FieldHeader*>(memory_.get());
-    memory_ += full_size;
-    available_ -= full_size;
+    const base::span<char> chunk = memory_.first(full_size);
+    memory_ = memory_.subspan(full_size);
+
+    FieldHeader* header = reinterpret_cast<FieldHeader*>(chunk.data());
+    const base::span<char> name_value_span = chunk.subspan(sizeof(FieldHeader));
 
     // Datafill the header and name records. Memory must be zeroed. The |type|
     // is written last, atomically, to release all the other values.
@@ -516,21 +516,21 @@ void* ActivityUserData::Set(StringPiece name,
     DCHECK_EQ(0, header->value_size.load(std::memory_order_relaxed));
     header->name_size = static_cast<uint8_t>(name_size);
     header->record_size = static_cast<uint16_t>(full_size);
-    char* name_memory = reinterpret_cast<char*>(header) + sizeof(FieldHeader);
-    void* value_memory =
-        reinterpret_cast<char*>(header) + sizeof(FieldHeader) + name_extent;
-    memcpy(name_memory, name.data(), name_size);
+
+    const base::span<char> name_span = name_value_span.first(name_extent);
+    const base::span<char> value_span = name_value_span.subspan(name_extent);
+    memcpy(name_span.data(), name.data(), name_size);
     header->type.store(type, std::memory_order_release);
 
     // Create an entry in |values_| so that this field can be found and changed
     // later on without having to allocate new entries.
-    StringPiece persistent_name(name_memory, name_size);
+    StringPiece persistent_name(name_span.data(), name_size);
     auto inserted =
         values_.insert(std::make_pair(persistent_name, ValueInfo()));
     DCHECK(inserted.second);  // True if inserted, false if existed.
     info = &inserted.first->second;
     info->name = persistent_name;
-    info->memory = value_memory;
+    info->memory = value_span;
     info->size_ptr = &header->value_size;
     info->extent = full_size - sizeof(FieldHeader) - name_extent;
     info->type = type;
@@ -542,14 +542,14 @@ void* ActivityUserData::Set(StringPiece name,
   DCHECK_EQ(type, info->type);
   size = std::min(size, info->extent);
   info->size_ptr->store(0, std::memory_order_seq_cst);
-  memcpy(info->memory, memory, size);
+  memcpy(info->memory.data(), memory, size);
   // This cast is safe because `size` <= info->extent < `full_size`, and
   // `full_size` fits in a uint16_t.
   info->size_ptr->store(static_cast<uint16_t>(size), std::memory_order_release);
 
   // The address of the stored value is returned so it can be re-used by the
   // caller, so long as it's done in an atomic way.
-  return info->memory;
+  return info->memory.data();
 }
 
 void ActivityUserData::SetReference(StringPiece name,
@@ -564,17 +564,19 @@ void ActivityUserData::SetReference(StringPiece name,
 
 void ActivityUserData::ImportExistingData() const {
   // It's possible that no user data is being stored.
-  if (!memory_)
+  if (!header_) {
     return;
+  }
 
-  while (available_ > sizeof(FieldHeader)) {
-    FieldHeader* header = reinterpret_cast<FieldHeader*>(memory_.get());
+  while (memory_.size() > sizeof(FieldHeader)) {
+    FieldHeader* header = reinterpret_cast<FieldHeader*>(memory_.data());
     ValueType type =
         static_cast<ValueType>(header->type.load(std::memory_order_acquire));
     if (type == END_OF_VALUES)
       return;
-    if (header->record_size > available_)
+    if (header->record_size > memory_.size()) {
       return;
+    }
 
     size_t value_offset = bits::AlignUp(sizeof(FieldHeader) + header->name_size,
                                         kMemoryAlignment);
@@ -585,25 +587,27 @@ void ActivityUserData::ImportExistingData() const {
     if (value_offset + header->value_size > header->record_size)
       return;
 
+    auto name_span = memory_.subspan(sizeof(FieldHeader), header->name_size);
+
     ValueInfo info;
-    info.name = StringPiece(memory_ + sizeof(FieldHeader), header->name_size);
+    info.name = StringPiece(name_span.data(), name_span.size());
     info.type = type;
-    info.memory = memory_ + value_offset;
+    info.memory = memory_.subspan(value_offset);
     info.size_ptr = &header->value_size;
     info.extent = header->record_size - value_offset;
 
     StringPiece key(info.name);
     values_.insert(std::make_pair(key, std::move(info)));
 
-    memory_ += header->record_size;
-    available_ -= header->record_size;
+    memory_ = memory_.subspan(header->record_size);
   }
 
   // Check if memory has been completely reused.
   if (header_->owner.data_id.load(std::memory_order_acquire) != orig_data_id ||
       static_cast<ProcessId>(header_->owner.process_id) != orig_process_id ||
       header_->owner.create_stamp != orig_create_stamp) {
-    memory_ = nullptr;
+    memory_ = base::span<char>();
+    header_ = nullptr;
     values_.clear();
   }
 }

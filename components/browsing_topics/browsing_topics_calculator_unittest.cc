@@ -73,7 +73,7 @@ class BrowsingTopicsCalculatorTest : public testing::Test {
         std::make_unique<privacy_sandbox::PrivacySandboxSettings>(
             std::move(privacy_sandbox_delegate),
             host_content_settings_map_.get(), cookie_settings_, &prefs_);
-    privacy_sandbox_settings_->SetPrivacySandboxEnabled(true);
+    privacy_sandbox_settings_->SetAllPrivacySandboxAllowedForTesting();
 
     topics_site_data_manager_ =
         std::make_unique<content::TesterBrowsingTopicsSiteDataManager>(
@@ -210,7 +210,7 @@ class BrowsingTopicsCalculatorTest : public testing::Test {
 TEST_F(BrowsingTopicsCalculatorTest, PermissionDenied) {
   base::HistogramTester histograms;
 
-  privacy_sandbox_settings_->SetPrivacySandboxEnabled(false);
+  privacy_sandbox_settings_->SetTopicsBlockedForTesting();
 
   EpochTopics result = CalculateTopics();
   EXPECT_TRUE(result.empty());
@@ -481,7 +481,7 @@ TEST_F(BrowsingTopicsCalculatorTest, TopTopicsPartiallyPadded) {
 
 TEST_F(BrowsingTopicsCalculatorTest, CalculationResultUkm_FailedCalculation) {
   ukm::TestAutoSetUkmRecorder ukm_recorder;
-  privacy_sandbox_settings_->SetPrivacySandboxEnabled(false);
+  privacy_sandbox_settings_->SetTopicsBlockedForTesting();
 
   CalculateTopics();
 

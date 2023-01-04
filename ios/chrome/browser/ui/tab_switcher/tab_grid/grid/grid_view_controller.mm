@@ -25,7 +25,6 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_collection_drag_drop_handler.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_cell.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_constants.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_context_menu_provider.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_empty_view.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_header.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_image_data_source.h"
@@ -37,6 +36,7 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/suggested_actions/suggested_actions_delegate.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/suggested_actions/suggested_actions_grid_cell.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/suggested_actions/suggested_actions_view_controller.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_context_menu/tab_context_menu_provider.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/transitions/grid_transition_layout.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_item.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
@@ -717,8 +717,8 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     scenario = MenuScenarioHistogram::kTabGridEntry;
   }
 
-  return [self.menuProvider contextMenuConfigurationForGridCell:cell
-                                                   menuScenario:scenario];
+  return [self.menuProvider contextMenuConfigurationForTabCell:cell
+                                                  menuScenario:scenario];
 }
 
 - (UICollectionViewTransitionLayout*)
@@ -777,6 +777,14 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
                                : DragDropTabs::kDragEndAtSameIndex;
   base::UmaHistogramEnumeration(kUmaDragDropTabs, dragEvent);
 
+  // Used to let the Taptic Engine return to its idle state.
+  // To preserve power, the Taptic Engine remains in a prepared state for only a
+  // short period of time (on the order of seconds). If for some reason the
+  // interactive move / reordering session is not completely finished, the
+  // unfinished `UIFeedbackGenerator` may result in a crash.
+  [self.collectionView endInteractiveMovement];
+
+  [self.dragDropHandler dragSessionDidEnd];
   [self.delegate gridViewControllerDragSessionDidEnd:self];
 }
 
@@ -1082,7 +1090,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 }
 
 - (void)insertItem:(TabSwitcherItem*)item
-           atIndex:(ItemListIndex)index
+           atIndex:(NSUInteger)index
     selectedItemID:(NSString*)selectedItemID {
   if (_mode == TabGridModeSearch) {
     // Prevent inserting items while viewing search results.
@@ -1093,7 +1101,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   // (using DCHECK rather than DCHECK_EQ to avoid a checked_cast on NSNotFound).
   DCHECK([self indexOfItemWithID:item.identifier] == NSNotFound);
   auto modelUpdates = ^{
-    [self.items insertObject:item atIndex:index.value];
+    [self.items insertObject:item atIndex:index];
     self.selectedItemID = selectedItemID;
     self.lastInsertedItemID = item.identifier;
     [self.delegate gridViewController:self didChangeItemCount:self.items.count];
@@ -1101,8 +1109,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   };
   auto collectionViewUpdates = ^{
     [self removeEmptyStateAnimated:YES];
-    [self.collectionView
-        insertItemsAtIndexPaths:@[ CreateIndexPath(index.value) ]];
+    [self.collectionView insertItemsAtIndexPaths:@[ CreateIndexPath(index) ]];
   };
   NSString* previouslySelectedItemID = self.selectedItemID;
   auto completion = ^(BOOL finished) {
@@ -1204,7 +1211,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     [self configureCell:cell withItem:item];
 }
 
-- (void)moveItemWithID:(NSString*)itemID toIndex:(ItemListIndex)toIndex {
+- (void)moveItemWithID:(NSString*)itemID toIndex:(NSUInteger)toIndex {
   if (_mode == TabGridModeSearch) {
     // Prevent moving items while viewing search results.
     return;
@@ -1212,22 +1219,22 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
   NSUInteger fromIndex = [self indexOfItemWithID:itemID];
   // If this move would be a no-op, early return and avoid spurious UI updates.
-  if (fromIndex == toIndex.value) {
+  if (fromIndex == toIndex) {
     return;
   }
   auto modelUpdates = ^{
     TabSwitcherItem* item = self.items[fromIndex];
     [self.items removeObjectAtIndex:fromIndex];
-    [self.items insertObject:item atIndex:toIndex.value];
+    [self.items insertObject:item atIndex:toIndex];
   };
   auto collectionViewUpdates = ^{
     [self.collectionView moveItemAtIndexPath:CreateIndexPath(fromIndex)
-                                 toIndexPath:CreateIndexPath(toIndex.value)];
+                                 toIndexPath:CreateIndexPath(toIndex)];
   };
   auto completion = ^(BOOL finished) {
     // Bring back selected halo only for the moved cell, which lost it during
     // the move (drag & drop).
-    if (self.selectedIndex != toIndex.value) {
+    if (self.selectedIndex != toIndex) {
       return;
     }
     // Force reload of the selected cell now to avoid extra delay for the

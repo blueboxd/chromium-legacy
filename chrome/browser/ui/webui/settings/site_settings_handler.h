@@ -71,7 +71,7 @@ class SiteSettingsHandler
                         size_t start,
                         size_t count) override;
   void TreeNodeChanged(ui::TreeModel* model, ui::TreeModelNode* node) override;
-  void TreeModelEndBatch(CookiesTreeModel* model) override;
+  void TreeModelEndBatchDeprecated(CookiesTreeModel* model) override;
 
   // content_settings::Observer:
   void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
@@ -165,6 +165,9 @@ class SiteSettingsHandler
   FRIEND_TEST_ALL_PREFIXES(
       SiteSettingsHandlerTest,
       SendNotificationPermissionReviewList_FeatureDisabled);
+  FRIEND_TEST_ALL_PREFIXES(
+      SiteSettingsHandlerInfobarTest,
+      SettingPermissionsDoesNotTriggerInfobarOnDifferentProfile);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, HandleGetExtensionName);
 #endif

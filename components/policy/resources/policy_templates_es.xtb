@@ -514,11 +514,6 @@ Si inhabilitas esta política, se inhabilitará el desplazamiento de una página
       </translation>
 <translation id="1484190167468437592">Inhabilitar el audio en mono</translation>
 <translation id="1486021504508098388">Enviar información sobre la retroiluminación</translation>
-<translation id="1486469502848499602">Cambia la configuración sugerida de <ph name="KRB5_CONFIG" /> para los nuevos tickets creados manualmente.
-
-      Si se establece esta política, su valor se aplicará como la configuración sugerida y se mostrará en la sección Configuración avanzada del cuadro de diálogo de autenticación.
-
-      Si no se establece esta política, se aplicará la configuración recomendada de <ph name="PRODUCT_OS_NAME" />. Ten en cuenta que también se mostrará en la sección Configuración avanzada del cuadro de diálogo de autenticación.</translation>
 <translation id="1487722536912664411">Permitir que los usuarios usen <ph name="PRODUCT_NAME" /></translation>
 <translation id="1487916040416013623">Si se define esta política, especificará qué servidores deberían tener permiso para la autenticación integrada. La autenticación integrada solo se activará cuando <ph name="PRODUCT_NAME" /> reciba una solicitud de autenticación de un proxy o un servidor que esté incluido en la lista de permitidos.
 
@@ -873,6 +868,7 @@ Esta política no tendrá efecto si la opción de conservar los datos de navegac
 
       Si se inhabilita esta política o no se le asigna ningún valor, el host de asistencia remota se ejecutará en el contexto del usuario, y los usuarios remotos no podrán interactuar con las ventanas que requieren permisos de administrador en el ordenador.</translation>
 <translation id="1837165432382702436">Altura de la página en micrómetros</translation>
+<translation id="1838910874018595451">Configuración rellenada previamente de los tickets de Kerberos</translation>
 <translation id="1843117931376765605">Frecuencia con la que se actualiza la política de usuario</translation>
 <translation id="1844620919405873871">Configura las políticas relacionadas con el desbloqueo rápido.</translation>
 <translation id="1844972978764975668">Permitir que consultas ocasionales a un servidor de Google obtengan una marca de tiempo precisa</translation>
@@ -892,6 +888,7 @@ Esta política no tendrá efecto si la opción de conservar los datos de navegac
       Si no se le asigna un valor a la política, se aplicará <ph name="DEFAULT_WEB_HID_GUARD_SETTING_POLICY_NAME" /> si se ha definido previamente. Si no, se aplicará la configuración personal del usuario.
 
       Las URLs de esta política no deben entrar en conflicto con las de la política <ph name="WEB_HID_BLOCKED_FOR_URLS_POLICY_NAME" />. En caso de conflicto, esta política prevalece sobre <ph name="WEB_HID_BLOCKED_FOR_URLS_POLICY_NAME" />.</translation>
+<translation id="1858775210076906272">Configuración rellenada previamente de Kerberos</translation>
 <translation id="1861206724856734193">Configura una lista de reglas de prevención de filtración de datos.</translation>
 <translation id="1862267110714201519">Inhabilitar la función de ventana fantasma</translation>
 <translation id="1865417998205858223">Permisos clave</translation>
@@ -999,6 +996,7 @@ Esta política no tendrá efecto si la opción de conservar los datos de navegac
 
       Si esta política se habilita junto a <ph name="DOWNLOAD_RESTRICTIONS_POLICY_NAME" /> y DownloadRestrictions se configura para bloquear tipos de archivo peligrosos, los bloqueos de descargas indicados en DownloadRestrictions tienen preferencia. Por ejemplo, si esta política se configura para habilitar las descargas de archivos "exe" en "sitioweb1.com" y DownloadRestrictions se configura para bloquear descargas maliciosas y tipos de archivo peligrosos, las descargas de archivos "exe" se bloquearán en todos los dominios. Si DownloadRestrictions no se configura para bloquear tipos de archivo peligrosos, los tipos de archivo indicados en esta política no mostrarán advertencias de descarga de tipos de archivo en los dominios especificados. Consulta más información sobre DownloadRestrictions (https://chromeenterprise.google/policies/?policy=DownloadRestrictions).</translation>
 <translation id="1954612656043024615">Habilitar la función de portapapeles compartido</translation>
+<translation id="1960059835237529462">Permite que se muestre a los usuarios la promoción de valoraciones del App Store de <ph name="IOS_NAME" /></translation>
 <translation id="1960416154405676350">Habilitar la búsqueda por sección de <ph name="GOOGLE_LENS_PRODUCT_NAME" />.</translation>
 <translation id="1961091374249454164">Esta política solo se aplica a las sesiones de invitado gestionadas.
       Si se le asigna un valor a esta política, se especificará una lista de IDs de extensiones que quedarán exentas del proceso de borrado de la sesiones de invitado gestionadas y restringidas (consulta <ph name="DEVICE_RESTRICTED_MANAGED_GUEST_SESSION_ENABLED_POLICY_NAME" />).
@@ -1274,6 +1272,7 @@ Para definir esta política, se debe inhabilitar la política <ph name="PRIVACY_
 <translation id="2204753382813641270">Controlar opción para ocultar archivos automáticamente</translation>
 <translation id="2208976000652006649">Parámetros para URL de búsqueda que utiliza POST</translation>
 <translation id="2213059592185933570">Habilitar la creación de perfiles de roaming</translation>
+<translation id="2213342458177721585">Habilitar el diseño InScript para hindi a nivel de dispositivo.</translation>
 <translation id="2215238871726750562">Si se asigna el valor "Verdadero" a esta política, impedirá que se abra la ventana del navegador al comienzo de la sesión.
 
       Si se le asigna el valor "Falso" o no se le asigna ninguno, permitirá que se abra la ventana.
@@ -1740,6 +1739,7 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
 <translation id="2664682171745499686">Eliminar las advertencias de dominio similares en dominios</translation>
 <translation id="2665422249821137126">Habilitar el cursor grande en la pantalla de inicio de sesión</translation>
 <translation id="2667894101494585925">Habilitar la obtención de la guía de optimización</translation>
+<translation id="2669157090883237118">No cambiar la configuración recomendada de <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="2672012807430078509">Controla la habilitación de NTLM como protocolo de autenticación para activaciones SMB.</translation>
 <translation id="2673363037046384711">El usuario final puede habilitar o inhabilitar el modo Alta eficiencia.</translation>
 <translation id="2678503605767349615">Certificados de cliente de todo el dispositivo obligatorios</translation>
@@ -2313,6 +2313,8 @@ Esta política es temporal y se eliminará más adelante.</translation>
 
       Para que esta política tenga efecto, es necesario realizar una configuración adicional. Visita https://support.google.com/chrome/a?p=chrome_enterprise_connector_policies_setting para consultar más información.</translation>
 <translation id="3159375329008977062">El usuario tiene permiso para exportar e importar contenedores Crostini a través de la UI</translation>
+<translation id="3163167792874598128">Si esta política se habilita o no se define, la promoción de valoraciones del App Store se podrá mostrar al usuario (como máximo, una vez al año).
+Si esta política se inhabilita, la promoción de valoraciones del App Store no se mostrará al usuario.</translation>
 <translation id="3164531087779621747">Imprimir en modo PostScript</translation>
 <translation id="3165468162820163252">Esta política controla si la parte WebUI de la pantalla de inicio de sesión se cargará siempre al iniciar o solo antes de que se muestre. Esta política se aplica a la pantalla de inicio de sesión.
 
@@ -2589,6 +2591,7 @@ Si la política no se establece, se usará el nuevo comportamiento, tal como suc
       Para consultar una lista con las variables que se pueden utilizar, visita https://support.google.com/chrome/a?p=Supported_directory_variables.
 
       Si no se establece esta política, se utilizará la ruta de perfil predeterminada y el usuario podrá anularla mediante la instrucción de línea de comandos "--user-data-dir".</translation>
+<translation id="3380801667330555918">Cambiar la configuración rellenada previamente de los tickets de Kerberos</translation>
 <translation id="338149029069528354">No borrar los datos de usuario locales</translation>
 <translation id="3381968327636295719">Utilizar el navegador del host de forma predeterminada</translation>
 <translation id="3387211681524224831">Si la política se habilita, no se almacenará el historial de navegación y se inhabilitará la sincronización de pestañas. Los usuarios no pueden cambiar esta opción.
@@ -2624,6 +2627,11 @@ Si la política no se establece, se usará el nuevo comportamiento, tal como suc
 <translation id="3412937883532015092">Si a esta política se le asigna un número como valor, <ph name="PRODUCT_NAME" /> mostrará un mensaje durante ese número de milisegundos y después abrirá un navegador alternativo.
 
       Si no se le asigna ningún valor o el valor es 0 (cero), al ir a una URL designada se abrirá inmediatamente en un navegador alternativo.</translation>
+<translation id="3413763534078822244">Esta política está obsoleta. Usa <ph name="USER_BOREALIS_ALLOWED_NAME" /> en su lugar.
+
+      Controla la disponibilidad de <ph name="BOREALIS_NAME" /> en este dispositivo.
+
+      Si se asigna el valor false a esta política, <ph name="BOREALIS_NAME" /> no estará disponible para ningún usuario del dispositivo. Si se asigna el valor true a esta política o no se define, <ph name="BOREALIS_NAME" /> estará disponible únicamente si ninguna otra política o ajuste lo inhabilita.</translation>
 <translation id="3415954062311826850">Esta política no se admite en ARC.</translation>
 <translation id="34160070798637152">Controla la configuración de red de todo el dispositivo.</translation>
 <translation id="3417130629744653218">Permite a los sitios web consultar los métodos de pago disponibles.</translation>
@@ -3602,6 +3610,7 @@ Si se define esta política, <ph name="PRODUCT_OS_NAME" /> solo permitirá que l
       Para obtener información detallada sobre los patrones de <ph name="URL_LABEL" /> válidos, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns. <ph name="WILDCARD_VALUE" /> no es un valor aceptado para esta política.</translation>
 <translation id="4389073105055031853">Permitir que los usuarios gestionen todos los certificados</translation>
 <translation id="4389091865841123886">Permite configurar la confirmación remota con el mecanismo de TPM.</translation>
+<translation id="4389113579547582722">Permitir que se muestre la promoción de valoraciones del App Store</translation>
 <translation id="4394840953265135019">URL del objeto comprimido que se va a descargar. Los objetos se pueden comprimir con los formatos gzip, bzip2, lzma o zstd, que se detectarán automáticamente tras la descarga. Los objetos no se pueden descomprimir, ya que esta opción no se puede detectar automáticamente.</translation>
 <translation id="439661169333921592">Inhabilitar el resaltado del foco del teclado en la pantalla de inicio de sesión</translation>
 <translation id="4397045637922200204">Desactivar recuperación de cuenta</translation>
@@ -3978,6 +3987,11 @@ Para obtener información detallada sobre los patrones válidos de <ph name="URL
           Si no se le asigna ningún valor, el audio en mono se inhabilitará al inicio, pero el usuario podrá habilitarlo en cualquier momento.</translation>
 <translation id="4768446404233019970">Habilitar los paquetes de cifrado 3DES en TLS</translation>
 <translation id="4770334626033858263">Configuración que se utiliza para generar y verificar códigos de acceso parental.</translation>
+<translation id="4773997835955617342">Cambia la configuración sugerida de <ph name="KRB5_CONFIG" /> para los nuevos tickets creados manualmente.
+
+      Si se habilita esta política, el valor de la política KerberosCustomPrefillConfig se aplicará como configuración sugerida y se mostrará en la sección Configuración avanzada del cuadro de diálogo de autenticación de Kerberos.
+
+      Si se inhabilita esta política o no se define, se aplicará la configuración recomendada de <ph name="PRODUCT_OS_NAME" />. Ten en cuenta que también se mostrará en la sección Configuración avanzada del cuadro de diálogo de autenticación de Kerberos.</translation>
 <translation id="4774030790286815890">Si se habilita esta opción, los usuarios podrán usar la función Mi teléfono, que les permite interactuar con su teléfono desde un dispositivo ChromeOS.
 
       Si se inhabilita esta opción, los usuarios no podrán usar Mi teléfono.
@@ -4006,9 +4020,9 @@ Para obtener información detallada sobre los patrones válidos de <ph name="URL
 Si se le asigna el valor <ph name="LACROS_SELECTION_USER_CHOICE_VALUE" /> a esta política, el usuario podrá decidir qué versión del navegador <ph name="LACROS_NAME" /> se cargará: el binario desde la partición <ph name="LACROS_ROOTFS_NAME" /> o <ph name="LACROS_STATEFUL_NAME" />.
 Si el usuario no ha definido ninguna preferencia, se elegirá el binario con la versión más reciente.
 
-Si se asigna el valor <ph name="LACROS_SELECTION_ROOTFS_VALUE" /> a esta política, siempre se debe cargar el binario <ph name="LACROS_ROOTFS_NAME" /> del navegador <ph name="LACROS_NAME" />.
+Si se asigna el valor <ph name="LACROS_SELECTION_ROOTFS_VALUE" /> a esta política, siempre se carga el binario <ph name="LACROS_ROOTFS_NAME" /> del navegador <ph name="LACROS_NAME" />.
 
-Si se asigna el valor <ph name="LACROS_SELECTION_STATEFUL_VALUE" /> a esta política, siempre se debe cargar el binario <ph name="LACROS_STATEFUL_NAME" /> del navegador <ph name="LACROS_NAME" />.
+Si se asigna el valor <ph name="LACROS_SELECTION_STATEFUL_VALUE" /> a esta política, siempre se carga el binario <ph name="LACROS_STATEFUL_NAME" /> del navegador <ph name="LACROS_NAME" />.
 Usar este valor puede provocar un comportamiento inesperado si la versión del navegador <ph name="LACROS_STATEFUL_NAME" /> es anterior a la versión de <ph name="PRODUCT_OS_NAME" />.
 Este caso no es compatible y no se garantiza que funcione correctamente.
 
@@ -6123,6 +6137,8 @@ Esta política se eliminará de <ph name="PRODUCT_NAME" /> en el futuro.</transl
 
       Especifica las opciones que se deben aplicar a <ph name="PRODUCT_NAME" /> cuando se inicia. Las opciones especificadas solo se aplican en la pantalla de inicio de sesión. Las opciones establecidas a través de esta política no se propagan a las sesiones del usuario.</translation>
 <translation id="6857240169209507953">Impedir que <ph name="BOREALIS_NAME" /> se ejecute en un dispositivo</translation>
+<translation id="6857372417233723544">Si se define esta política, se habilitará el diseño InScript para hindi en <ph name="PRODUCT_OS_NAME" />.
+Si se asigna el valor false a esta política o no se define, este diseño no estará disponible. Es necesario reiniciar el dispositivo para que esta política tenga efecto.</translation>
 <translation id="685769593149966548">Aplicar el modo restringido estricto en YouTube</translation>
 <translation id="686079137349561371">Microsoft Windows 7 o versiones posteriores</translation>
 <translation id="68818134518270542">Si se establece esta política, se especificarán las aplicaciones que pueden activar los usuarios para tomar notas en la pantalla de bloqueo de <ph name="PRODUCT_OS_NAME" />.
@@ -6174,7 +6190,6 @@ Si se inhabilita esta política o no se define, se aplicará el comportamiento p
       Si se le asigna el valor false, <ph name="PRODUCT_NAME" /> y <ph name="LACROS_NAME" /> no permitirán que se inicien perfiles para invitados.
 
       Nota: Si esta política no se configura o no se le asigna el valor true, pero a <ph name="LACROS_SECONDARY_PROFILES_ALLOWED_POLICY_NAME" /> se le asigna el valor false, <ph name="LACROS_NAME" /> no permitirá que se inicien perfiles para invitados.</translation>
-<translation id="6920640961852058581">Cambia la configuración predeterminada de los tickets de Kerberos</translation>
 <translation id="692096803256767290">Restaurar la versión de destino del SO</translation>
 <translation id="6921544339867564740">Permitir que los dispositivos utilicen máquinas virtuales en ChromeOS</translation>
 <translation id="6922884955650325312">Bloquear el complemento <ph name="FLASH_PLUGIN_NAME" /></translation>
@@ -7057,6 +7072,7 @@ Para definir esta política, se debe inhabilitar la política <ph name="PRIVACY_
 
           Si no se le asigna ningún valor, las combinaciones de teclas para las funciones de accesibilidad estarán habilitadas de forma predeterminada en la pantalla de inicio de sesión.</translation>
 <translation id="7777535871204167559">Usar los dispositivos de almacenamiento externo como dispositivos de solo lectura</translation>
+<translation id="7781452670568828399">Cambiar la configuración recomendada de <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7784062550705119230">Si se utiliza <ph name="PRINTERS_ALLOWLIST" /> para la política <ph name="DEVICE_PRINTERS_ACCESS_MODE_POLICY_NAME" />, al establecer la política <ph name="DEVICE_PRINTERS_ALLOWLIST_POLICY_NAME" />, esta especifica qué impresoras pueden utilizar los usuarios. Solo las impresoras cuyos ID coincidan con los valores incluidos en la política estarán disponibles para los usuarios. Los ID deben coincidir con los campos <ph name="ID_FIELD" /> o <ph name="GUID_FIELD" /> del archivo definido en la política <ph name="DEVICE_PRINTERS_POLICY_NAME" />.</translation>
 <translation id="7788511847830146438">Por perfil</translation>
 <translation id="7788632499792081231">Si se establece esta política, te permitirá definir una lista de patrones de URL para especificar los sitios que podrán usar el permiso de portapapeles de sitios. Esto no incluye todas las operaciones de portapapeles que se realicen en orígenes que coincidan con esos patrones. Por ejemplo, los usuarios seguirán pudiendo pegar mediante combinaciones de teclas, ya que esta acción está fuera del ámbito del permiso de portapapeles de sitios.
@@ -8532,6 +8548,7 @@ Si la política no se establece, se usará el nuevo comportamiento, tal como suc
 
       Esta política es una medida temporal y se eliminará en futuras versiones de <ph name="PRODUCT_NAME" />. Cuando se elimine, <ph name="PRODUCT_NAME" /> podrá consultar tipos de DNS adicionales en cualquier momento.</translation>
 <translation id="9167719789236691545">Inhabilitar Drive en la aplicación Archivos de <ph name="PRODUCT_OS_NAME" /></translation>
+<translation id="9172911925443428317">No permitir que se muestre la promoción de valoraciones del App Store</translation>
 <translation id="9180108183162961002">Permitir que se inicie sesión en el navegador con el modo Invitado</translation>
 <translation id="9185963199234034321">Habilitar el contraste alto en la pantalla de inicio de sesión y permitir que el usuario lo inhabilite temporalmente</translation>
 <translation id="9187743794267626640">Inhabilitar la activación del almacenamiento externo</translation>

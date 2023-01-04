@@ -256,6 +256,10 @@ crbug.com/949249 [ linux passthrough angle-opengl ] conformance2/extensions/ovr_
 # New validation was not implemented on the validating command decoder.
 crbug.com/angleproject/6358 [ no-passthrough ] conformance/programs/program-test.html [ Failure ]
 
+# TODO(crbug.com/1382796) uncomment Pixel 4 expectation when this one is removed
+crbug.com/1404705 conformance/context/context-release-upon-reload.html [ RetryOnFailure ]
+crbug.com/1404705 conformance/context/context-release-with-workers.html [ RetryOnFailure ]
+
 ####################
 # Win failures     #
 ####################
@@ -433,7 +437,6 @@ crbug.com/795052 [ mac nvidia-0xfe9 ] conformance2/uniforms/draw-with-uniform-bl
 crbug.com/1037650 [ mac nvidia-0xfe9 ] conformance2/textures/canvas_sub_rectangle/* [ RetryOnFailure ]
 
 crbug.com/1338004 [ mac nvidia-0xfe9 passthrough ] deqp/functional/gles3/multisample/fbo_4_samples.html [ RetryOnFailure ]
-crbug.com/1338004 [ mac nvidia-0xfe9 passthrough ] deqp/functional/gles3/multisample/fbo_max_samples.html [ RetryOnFailure ]
 
 # Mac AMD Retina
 # AMD Radeon HD 8870M (1002:6821)
@@ -543,6 +546,11 @@ crbug.com/982292 [ mac nvidia angle-opengl passthrough ] deqp/functional/gles3/f
 crbug.com/982292 [ mac nvidia angle-opengl passthrough ] deqp/functional/gles3/framebufferblit/conversion_31.html [ Failure ]
 crbug.com/982292 [ mac nvidia angle-opengl passthrough ] deqp/functional/gles3/instancedrendering.html [ Failure ]
 
+# Mac ASAN
+crbug.com/1403824 [ mac asan passthrough ] deqp/functional/gles3/vertexarrays/multiple_attributes.stride.html [ RetryOnFailure ]
+crbug.com/1403824 [ mac asan passthrough ] deqp/functional/gles3/vertexarrays/single_attribute.first.html [ RetryOnFailure ]
+crbug.com/1403824 [ mac asan passthrough ] deqp/functional/gles3/vertexarrays/single_attribute.usage.stream_copy.html [ RetryOnFailure ]
+crbug.com/1403830 [ mac asan passthrough ] deqp/data/gles3/shaders/declarations.html [ RetryOnFailure ]
 
 ####################
 # Linux failures   #
@@ -558,7 +566,6 @@ crbug.com/1081978 [ linux intel angle-opengl passthrough ] conformance2/textures
 # Linux NVIDIA
 crbug.com/angleproject/5783 [ linux nvidia angle-opengl passthrough ] conformance2/textures/misc/immutable-tex-render-feedback.html [ Failure ]
 crbug.com/1115314 [ linux nvidia-0x2184 angle-opengl passthrough ] deqp/functional/gles3/fbocompleteness.html [ Failure ]
-crbug.com/1372694 [ linux nvidia-0x2184 angle-opengl passthrough ] conformance2/samplers/sampler-drawing-test.html [ RetryOnFailure ]
 
 # Linux AMD RX 5500 XT
 crbug.com/1147232 [ linux amd-0x7340 angle-opengl passthrough ] conformance/textures/misc/texture-size-limit.html [ Failure ]
@@ -619,7 +626,8 @@ crbug.com/angleproject/3686 [ android angle-opengles ] deqp/functional/gles3/mul
 crbug.com/angleproject/3686 [ android angle-opengles ] deqp/functional/gles3/multisample/fbo_max_samples.html [ Failure ]
 # finder:group-start crbug.com/1382796 failures happen in many tests, so can be classified as stale for one specific test
 crbug.com/1382796 [ android android-pixel-4 angle-opengles passthrough ] conformance/canvas/rapid-resizing.html [ RetryOnFailure ]
-crbug.com/1382796 [ android android-pixel-4 angle-opengles passthrough ] conformance/context/context-release-with-workers.html [ RetryOnFailure ]
+# TODO(crbug.com/1404705) uncomment when the expectation for all platforms is removed
+# crbug.com/1382796 [ android android-pixel-4 angle-opengles passthrough ] conformance/context/context-release-with-workers.html [ RetryOnFailure ]
 crbug.com/1382796 [ android android-pixel-4 angle-opengles passthrough ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 crbug.com/1382796 [ android android-pixel-4 angle-opengles passthrough ] conformance2/sync/sync-webgl-specific.html [ RetryOnFailure ]
 crbug.com/1382796 [ android android-pixel-4 angle-opengles passthrough ] deqp/data/gles3/shaders/declarations.html [ RetryOnFailure ]

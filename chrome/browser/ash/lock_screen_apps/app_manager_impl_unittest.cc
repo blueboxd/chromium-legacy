@@ -320,15 +320,15 @@ class LockScreenAppManagerImplTest
 
     base::Value::Dict background =
         DictionaryBuilder()
-            .Set("scripts", ListBuilder().Append("background.js").BuildList())
-            .BuildDict();
+            .Set("scripts", ListBuilder().Append("background.js").Build())
+            .Build();
     base::Value::List action_handlers =
         ListBuilder()
             .Append(DictionaryBuilder()
                         .Set("action", "new_note")
                         .Set("enabled_on_lock_screen", supports_lock_screen)
-                        .BuildDict())
-            .BuildList();
+                        .Build())
+            .Build();
 
     DictionaryBuilder manifest_builder;
     manifest_builder.Set("name", "Note taking app")
@@ -336,8 +336,8 @@ class LockScreenAppManagerImplTest
         .Set("manifest_version", 2)
         .Set("app", DictionaryBuilder()
                         .Set("background", std::move(background))
-                        .BuildDict())
-        .Set("permissions", ListBuilder().Append("lockScreen").BuildList())
+                        .Build())
+        .Set("permissions", ListBuilder().Append("lockScreen").Build())
         .Set("action_handlers", std::move(action_handlers));
 
     base::FilePath extension_path =
@@ -345,7 +345,7 @@ class LockScreenAppManagerImplTest
 
     scoped_refptr<const extensions::Extension> extension =
         extensions::ExtensionBuilder()
-            .SetManifest(manifest_builder.BuildDict())
+            .SetManifest(manifest_builder.Build())
             .SetID(id)
             .SetPath(extension_path)
             .SetLocation(GetAppLocation(appType))

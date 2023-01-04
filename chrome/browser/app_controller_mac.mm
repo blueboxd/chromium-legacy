@@ -173,6 +173,11 @@ Browser* ActivateBrowser(Profile* profile) {
       profile->IsGuestSession()
           ? profile->GetPrimaryOTRProfile(/*create_if_needed=*/true)
           : profile);
+
+  if (browser) {
+    browser = browser->GetBrowserForOpeningWebUi();
+  }
+
   if (browser)
     browser->window()->Activate();
   return browser;
@@ -1354,7 +1359,7 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
       }
       [[fallthrough]];  // To create new window.
     case IDC_NEW_WINDOW:
-      CreateBrowser(profile);
+      CreateBrowser(profile->GetOriginalProfile());
       break;
     case IDC_FOCUS_LOCATION:
       chrome::ExecuteCommand(ActivateOrCreateBrowser(profile),

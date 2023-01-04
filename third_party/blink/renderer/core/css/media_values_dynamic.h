@@ -60,8 +60,11 @@ class CORE_EXPORT MediaValuesDynamic : public MediaValues {
   float ExFontSize(float zoom) const override;
   float RexFontSize(float zoom) const override;
   float ChFontSize(float zoom) const override;
+  float RchFontSize(float zoom) const override;
   float IcFontSize(float zoom) const override;
+  float RicFontSize(float zoom) const override;
   float LineHeight(float zoom) const override;
+  float RootLineHeight(float zoom) const override;
   double ViewportWidth() const override;
   double ViewportHeight() const override;
   double SmallViewportWidth() const override;

@@ -2690,73 +2690,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="LoadingPredictor.PreconnectLearningRedirectStatus"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="LocalNetReqsLocalhostResources" separator=".">
-  <suffix base="true" name="Localhost.DbRequests"
-      label="Requests made to localhost on a database server port."/>
-  <suffix base="true" name="Localhost.DevRequests"
-      label="Requests made to localhost on a development server port."/>
-  <suffix base="true" name="Localhost.OtherRequests"
-      label="Requests made to localhost on any port not otherwise monitored
-             by the other local network request metrics."/>
-  <suffix base="true" name="Localhost.PrinterRequests"
-      label="Requests made to localhost on a printer server port."/>
-  <suffix base="true" name="Localhost.WebRequests"
-      label="Requests made to localhost on a web server port."/>
-  <affected-histogram name="LocalNetworkRequests.PrivatePage"/>
-  <affected-histogram name="LocalNetworkRequests.PublicPage"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="LocalNetReqsPrivatePage" separator=".">
-  <suffix base="true" name="DifferentSubnetRequests"
-      label="Requests made to local resources on a different subnet."/>
-  <suffix base="true" name="PublicRequests"
-      label="Requests made to public resources."/>
-  <suffix base="true" name="SameSubnetRequests"
-      label="Requests made to local resources on the same reserved IP space
-             as the page."/>
-  <affected-histogram name="LocalNetworkRequests.PrivatePage"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="LocalNetReqsPublicPage" separator=".">
-  <suffix base="true" name="PrivateRequests"
-      label="Requests made to private resources."/>
-  <suffix base="true" name="RouterRequests"
-      label="Requests made to resources likely to be routers."/>
-  <affected-histogram name="LocalNetworkRequests.PublicPage"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="LocalNetReqsStatuses" separator=".">
-  <suffix name="Failed" label="Failed requests."/>
-  <suffix name="Successful" label="Successful requests."/>
-  <affected-histogram
-      name="LocalNetworkRequests.PrivatePage.DifferentSubnetRequests"/>
-  <affected-histogram
-      name="LocalNetworkRequests.PrivatePage.Localhost.DbRequests"/>
-  <affected-histogram
-      name="LocalNetworkRequests.PrivatePage.Localhost.DevRequests"/>
-  <affected-histogram
-      name="LocalNetworkRequests.PrivatePage.Localhost.OtherRequests"/>
-  <affected-histogram
-      name="LocalNetworkRequests.PrivatePage.Localhost.PrinterRequests"/>
-  <affected-histogram
-      name="LocalNetworkRequests.PrivatePage.Localhost.WebRequests"/>
-  <affected-histogram name="LocalNetworkRequests.PrivatePage.PublicRequests"/>
-  <affected-histogram
-      name="LocalNetworkRequests.PrivatePage.SameSubnetRequests"/>
-  <affected-histogram
-      name="LocalNetworkRequests.PublicPage.Localhost.DbRequests"/>
-  <affected-histogram
-      name="LocalNetworkRequests.PublicPage.Localhost.DevRequests"/>
-  <affected-histogram
-      name="LocalNetworkRequests.PublicPage.Localhost.OtherRequests"/>
-  <affected-histogram
-      name="LocalNetworkRequests.PublicPage.Localhost.PrinterRequests"/>
-  <affected-histogram
-      name="LocalNetworkRequests.PublicPage.Localhost.WebRequests"/>
-  <affected-histogram name="LocalNetworkRequests.PublicPage.PrivateRequests"/>
-  <affected-histogram name="LocalNetworkRequests.PublicPage.RouterRequests"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="LocationAttachedStatus" separator=".">
   <suffix name="LocationAttached"
       label="This histogram is for when the location was successfully
@@ -3631,10 +3564,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram
       name="PageLoad.Clients.DocWrite.Block.ParseTiming.ParseBlockedOnScriptLoad"/>
   <affected-histogram
-      name="PageLoad.Clients.DocWrite.Block.ParseTiming.ParseBlockedOnScriptLoadFromDocumentWrite"/>
-  <affected-histogram
-      name="PageLoad.Clients.DocWrite.Block.ParseTiming.ParseDuration"/>
-  <affected-histogram
       name="PageLoad.Clients.MultiTabLoading.DocumentTiming.NavigationToDOMContentLoadedEventFired"/>
   <affected-histogram
       name="PageLoad.Clients.MultiTabLoading.DocumentTiming.NavigationToLoadEventFired"/>
@@ -3654,9 +3583,6 @@ chromium-metrics-reviews@google.com.
       name="PageLoad.PaintTiming.ParseStartToFirstContentfulPaint"/>
   <affected-histogram name="PageLoad.ParseTiming.NavigationToParseStart"/>
   <affected-histogram name="PageLoad.ParseTiming.ParseBlockedOnScriptLoad"/>
-  <affected-histogram
-      name="PageLoad.ParseTiming.ParseBlockedOnScriptLoadFromDocumentWrite"/>
-  <affected-histogram name="PageLoad.ParseTiming.ParseDuration"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="PageLoadMetricsAfterPaint" separator=".">
@@ -3709,7 +3635,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="PageLoad.PaintTiming.NavigationToFirstPaint"/>
   <affected-histogram name="PageLoad.ParseTiming.NavigationToParseStart"/>
   <affected-histogram name="PageLoad.ParseTiming.ParseBlockedOnScriptLoad"/>
-  <affected-histogram name="PageLoad.ParseTiming.ParseDuration"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="PageLoadMetricsClientsDocWrite" separator="."
@@ -3727,9 +3652,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram
       name="PageLoad.ParseTiming.ParseBlockedOnScriptExecutionFromDocumentWrite"/>
   <affected-histogram name="PageLoad.ParseTiming.ParseBlockedOnScriptLoad"/>
-  <affected-histogram
-      name="PageLoad.ParseTiming.ParseBlockedOnScriptLoadFromDocumentWrite"/>
-  <affected-histogram name="PageLoad.ParseTiming.ParseDuration"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="PageLoadMetricsClientsFromGoogleSearch" separator="."
@@ -3756,7 +3678,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram
       name="PageLoad.PaintTiming.ParseStartToFirstContentfulPaint"/>
   <affected-histogram name="PageLoad.ParseTiming.NavigationToParseStart"/>
-  <affected-histogram name="PageLoad.ParseTiming.ParseDuration"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="PageLoadMetricsClientsLoadingPredictor2"
@@ -3821,7 +3742,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram
       name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint"/>
   <affected-histogram name="PageLoad.ParseTiming.ParseBlockedOnScriptLoad"/>
-  <affected-histogram name="PageLoad.ParseTiming.ParseDuration"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="PageLoadMetricsClientsProtocol" separator="."
@@ -3858,7 +3778,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram
       name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint"/>
   <affected-histogram name="PageLoad.ParseTiming.ParseBlockedOnScriptLoad"/>
-  <affected-histogram name="PageLoad.ParseTiming.ParseDuration"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="PageLoadMetricsClientsScheme" separator="."
@@ -6511,7 +6430,6 @@ chromium-metrics-reviews@google.com.
       label="The session is restricted to the period that browser is
              displaying WebVR contents."/>
   <affected-histogram name="VRSessionTime"/>
-  <affected-histogram name="VRSessionVideoTime"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="WebAppContainerEngagementType" separator=".">

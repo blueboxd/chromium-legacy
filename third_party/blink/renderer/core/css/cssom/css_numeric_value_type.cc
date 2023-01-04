@@ -61,9 +61,12 @@ CSSNumericValueType::BaseType UnitTypeToBaseType(
     case UnitType::kContainerMax:
     case UnitType::kRems:
     case UnitType::kRexs:
+    case UnitType::kRchs:
+    case UnitType::kRics:
     case UnitType::kChs:
     case UnitType::kIcs:
     case UnitType::kLhs:
+    case UnitType::kRlhs:
       return BaseType::kLength;
     case UnitType::kMilliseconds:
     case UnitType::kSeconds:

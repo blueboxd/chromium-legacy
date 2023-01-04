@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {ActionSource} from 'chrome://read-later.top-chrome/bookmarks/bookmarks.mojom-webui.js';
-import {BookmarksApiProxy} from 'chrome://read-later.top-chrome/bookmarks/bookmarks_api_proxy.js';
+import {ActionSource} from 'chrome://bookmarks-side-panel.top-chrome/bookmarks.mojom-webui.js';
+import {BookmarksApiProxy} from 'chrome://bookmarks-side-panel.top-chrome/bookmarks_api_proxy.js';
 import {ClickModifiers} from 'chrome://resources/mojo/ui/base/mojom/window_open_disposition.mojom-webui.js';
 import {FakeChromeEvent} from 'chrome://webui-test/fake_chrome_event.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
@@ -76,16 +76,17 @@ export class TestBookmarksApiProxy extends TestBrowserProxy implements
     this.folders_ = folders;
   }
 
-  contextMenuOpenBookmarkInNewTab(id: string, source: ActionSource) {
-    this.methodCalled('contextMenuOpenBookmarkInNewTab', id, source);
+  contextMenuOpenBookmarkInNewTab(ids: string[], source: ActionSource) {
+    this.methodCalled('contextMenuOpenBookmarkInNewTab', ids, source);
   }
 
-  contextMenuOpenBookmarkInNewWindow(id: string, source: ActionSource) {
-    this.methodCalled('contextMenuOpenBookmarkInNewWindow', id, source);
+  contextMenuOpenBookmarkInNewWindow(ids: string[], source: ActionSource) {
+    this.methodCalled('contextMenuOpenBookmarkInNewWindow', ids, source);
   }
 
-  contextMenuOpenBookmarkInIncognitoWindow(id: string, source: ActionSource) {
-    this.methodCalled('contextMenuOpenBookmarkInIncognitoWindow', id, source);
+  contextMenuOpenBookmarkInIncognitoWindow(
+      ids: string[], source: ActionSource) {
+    this.methodCalled('contextMenuOpenBookmarkInIncognitoWindow', ids, source);
   }
 
   contextMenuDelete(id: string, source: ActionSource) {

@@ -81,7 +81,7 @@ class UpdateProtocolHandlerApprovalCommandTest
         std::make_unique<WebAppInstallInfo>();
     info->start_url = GURL(kTestAppUrl);
     info->title = kAppName;
-    info->user_display_mode = web_app::UserDisplayMode::kStandalone;
+    info->user_display_mode = web_app::mojom::UserDisplayMode::kStandalone;
     info->protocol_handlers = protocol_handlers;
     base::test::TestFuture<const AppId&, webapps::InstallResultCode> result;
     // InstallFromInfoWithParams is used instead of InstallFromInfo, because
@@ -122,7 +122,7 @@ class UpdateProtocolHandlerApprovalCommandTest
   }
 
   bool EnableOsIntegrationSubManager() {
-    return GetParam() == OsIntegrationSubManagersState::kEnabled;
+    return GetParam() == OsIntegrationSubManagersState::kSaveStateToDB;
   }
 
  private:
@@ -503,7 +503,7 @@ IN_PROC_BROWSER_TEST_P(UpdateProtocolHandlerApprovalCommandTest,
 INSTANTIATE_TEST_SUITE_P(
     All,
     UpdateProtocolHandlerApprovalCommandTest,
-    ::testing::Values(OsIntegrationSubManagersState::kEnabled,
+    ::testing::Values(OsIntegrationSubManagersState::kSaveStateToDB,
                       OsIntegrationSubManagersState::kDisabled),
     test::GetOsIntegrationSubManagersTestName);
 

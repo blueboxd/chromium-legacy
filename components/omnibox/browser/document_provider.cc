@@ -194,11 +194,12 @@ std::vector<const std::string*> ExtractResultList(
     return {};
 
   const auto& list = values->GetList();
-  std::vector<const std::string*> extracted(list.size());
-  std::transform(list.begin(), list.end(), extracted.begin(),
-                 [field_path](const auto& value) {
-                   return value.FindStringKey(field_path);
-                 });
+  std::vector<const std::string*> extracted;
+  for (const auto& value : list) {
+    auto* string = value.FindStringKey(field_path);
+    if (string)
+      extracted.push_back(string);
+  }
   return extracted;
 }
 
@@ -1012,7 +1013,8 @@ ACMatches DocumentProvider::ParseDocumentSearchResults(
       // |matches_cache_|.
       match.stripped_destination_url = AutocompleteMatch::GURLToStrippedGURL(
           GURL(*original_url), input_, client_->GetTemplateURLService(),
-          std::u16string(), /*keep_search_intent_params=*/false);
+          std::u16string(), /*keep_search_intent_params=*/false,
+          /*normalize_search_terms=*/false);
     }
 
     match.contents =
@@ -1031,7 +1033,7 @@ ACMatches DocumentProvider::ParseDocumentSearchResults(
       }
       auto owners = ExtractResultList(&result, "metadata.owner.personNames",
                                       "displayName");
-      const std::string owner = !owners.empty() && owners[0] ? *owners[0] : "";
+      const std::string owner = !owners.empty() ? *owners[0] : "";
       if (!owner.empty())
         match.RecordAdditionalInfo("document owner", owner);
       match.description = GetMatchDescription(update_time, mimetype, owner);

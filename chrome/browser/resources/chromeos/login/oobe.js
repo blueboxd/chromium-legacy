@@ -5,13 +5,18 @@
 // clang-format off
 import {assert} from 'chrome://resources/ash/common/assert.js';
 import {$} from 'chrome://resources/ash/common/util.js';
+
 import {Oobe} from './cr_ui.js';
-import * as OobeDebugger from './debug/debug.m.js';
+import * as OobeDebugger from './debug/debug.js';
 import {invokePolymerMethod} from './display_manager.js';
 import {loadTimeData} from './i18n_setup.js';
-import 'chrome://oobe/test_api/test_api.m.js';
+
+import 'chrome://oobe/test_api/test_api.js';
+
 import {commonScreensList, loginScreensList, oobeScreensList} from 'chrome://oobe/screens.js';
+
 import {MultiTapDetector} from './multi_tap_detector.js';
+
 import './components/common_styles/oobe_flex_layout_styles.css.js';
 // clang-format on
 
@@ -57,6 +62,7 @@ function prepareGlobalValues(globalValue) {
   // JavaScript directly into the renderer.
   window.$ = $;
 
+  // Expose MultiTapDetector class on window for tests to set static methods.
   window.MultiTapDetector = MultiTapDetector;
 
   // TODO(crbug.com/1229130) - Remove the necessity for these global objects.

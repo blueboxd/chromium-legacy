@@ -31,12 +31,6 @@ BASE_FEATURE(kSyncAndroidLimitNTPPromoImpressions,
 BASE_FEATURE(kSyncAndroidPromosWithAlternativeTitle,
              "SyncAndroidPromosWithAlternativeTitle",
              base::FEATURE_ENABLED_BY_DEFAULT);
-BASE_FEATURE(kSyncAndroidPromosWithIllustration,
-             "SyncAndroidPromosWithIllustration",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-BASE_FEATURE(kSyncAndroidPromosWithSingleButton,
-             "SyncAndroidPromosWithSingleButton",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kSyncAndroidPromosWithTitle,
              "SyncAndroidPromosWithTitle",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -143,5 +137,9 @@ BASE_FEATURE(kSyncIgnoreAccountWithoutRefreshToken,
 BASE_FEATURE(kSyncDoNotPropagateBrowserShutdownToDataTypes,
              "SyncDoNotPropagateBrowserShutdownToDataTypes",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSyncAllowClearingMetadataWhenDataTypeIsStopped,
+             "SyncAllowClearingMetadataWhenDataTypeIsStopped",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace syncer

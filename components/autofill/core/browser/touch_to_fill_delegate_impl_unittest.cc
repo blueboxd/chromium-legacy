@@ -123,6 +123,8 @@ class TouchToFillDelegateImplUnitTest : public testing::Test {
     auto touch_to_fill_delegate = std::make_unique<TouchToFillDelegateImpl>(
         browser_autofill_manager_.get());
     touch_to_fill_delegate_ = touch_to_fill_delegate.get();
+    base::WeakPtr<TouchToFillDelegateImpl> touch_to_fill_delegate_weak =
+        touch_to_fill_delegate->GetWeakPtr();
     browser_autofill_manager_->SetTouchToFillDelegateImplForTest(
         std::move(touch_to_fill_delegate));
 
@@ -137,6 +139,16 @@ class TouchToFillDelegateImplUnitTest : public testing::Test {
     ON_CALL(*autofill_driver_, CanShowAutofillUi).WillByDefault(Return(true));
     ON_CALL(autofill_client_, ShowTouchToFillCreditCard)
         .WillByDefault(Return(true));
+    // Calling HideTouchToFillCreditCard in production code leads to that
+    // OnDismissed gets triggered (HideTouchToFillCreditCard calls view->Hide()
+    // on java side, which in its turn triggers onDismissed). Here we mock this
+    // call.
+    ON_CALL(autofill_client_, HideTouchToFillCreditCard)
+        .WillByDefault([delegate = touch_to_fill_delegate_weak]() -> void {
+          if (delegate) {
+            delegate->OnDismissed();
+          }
+        });
   }
 
   void TryToShowTouchToFill(bool expected_success) {
@@ -279,7 +291,7 @@ TEST_F(TouchToFillDelegateImplUnitTest,
 }
 
 TEST_F(TouchToFillDelegateImplUnitTest,
-       TryToShowTouchToFillFailsIfCardIsExpired) {
+       TryToShowTouchToFillFailsIfTheOnlyCardIsExpired) {
   ASSERT_FALSE(touch_to_fill_delegate_->IsShowingTouchToFill());
   autofill_client_.GetPersonalDataManager()->ClearCreditCards();
   autofill_client_.GetPersonalDataManager()->AddCreditCard(
@@ -321,6 +333,35 @@ TEST_F(TouchToFillDelegateImplUnitTest, TryToShowTouchToFillFailsIfShowFails) {
   TryToShowTouchToFill(/*expected_success=*/false);
 }
 
+TEST_F(TouchToFillDelegateImplUnitTest,
+       TryToShowTouchToFillSucceedsIfAtLestOneCardIsValid) {
+  autofill_client_.GetPersonalDataManager()->ClearCreditCards();
+  CreditCard credit_card = autofill::test::GetCreditCard();
+  CreditCard expired_card = test::GetExpiredCreditCard();
+  autofill_client_.GetPersonalDataManager()->AddCreditCard(credit_card);
+  autofill_client_.GetPersonalDataManager()->AddCreditCard(expired_card);
+  ASSERT_FALSE(touch_to_fill_delegate_->IsShowingTouchToFill());
+  EXPECT_CALL(autofill_client_, ShowTouchToFillCreditCard)
+      .WillOnce(Return(true));
+
+  TryToShowTouchToFill(/*expected_success=*/true);
+}
+
+TEST_F(TouchToFillDelegateImplUnitTest, TryToShowTouchToFillShowsExpiredCards) {
+  autofill_client_.GetPersonalDataManager()->ClearCreditCards();
+  CreditCard credit_card = autofill::test::GetCreditCard();
+  CreditCard expired_card = test::GetExpiredCreditCard();
+  autofill_client_.GetPersonalDataManager()->AddCreditCard(credit_card);
+  autofill_client_.GetPersonalDataManager()->AddCreditCard(expired_card);
+  std::vector<autofill::CreditCard*> credit_cards =
+      autofill_client_.GetPersonalDataManager()->GetCreditCardsToSuggest(false);
+  ASSERT_FALSE(touch_to_fill_delegate_->IsShowingTouchToFill());
+  EXPECT_CALL(autofill_client_,
+              ShowTouchToFillCreditCard(_, ElementsAreArray(credit_cards)));
+
+  TryToShowTouchToFill(/*expected_success=*/true);
+}
+
 TEST_F(TouchToFillDelegateImplUnitTest, HideTouchToFillDoesNothingIfNotShown) {
   ASSERT_FALSE(touch_to_fill_delegate_->IsShowingTouchToFill());
 
@@ -359,6 +400,14 @@ TEST_F(TouchToFillDelegateImplUnitTest, SafelyHideTouchToFillInDtor) {
   TryToShowTouchToFill(/*expected_success=*/true);
 
   browser_autofill_manager_.reset();
+}
+
+TEST_F(TouchToFillDelegateImplUnitTest,
+       OnDismissSetsTouchToFillToNotShowingState) {
+  TryToShowTouchToFill(/*expected_success=*/true);
+  touch_to_fill_delegate_->OnDismissed();
+
+  EXPECT_EQ(touch_to_fill_delegate_->IsShowingTouchToFill(), false);
 }
 
 TEST_F(TouchToFillDelegateImplUnitTest, PassTheCreditCardsToTheClient) {

@@ -403,7 +403,7 @@ class BrowserView : public BrowserWindow,
 
   // Enable or disable the window controls overlay and notify the browser frame
   // view of the update.
-  void ToggleWindowControlsOverlayEnabled();
+  void ToggleWindowControlsOverlayEnabled(base::OnceClosure done);
 
   bool borderless_mode_enabled_for_testing() const {
     return borderless_mode_enabled_;

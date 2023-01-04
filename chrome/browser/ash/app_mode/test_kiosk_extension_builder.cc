@@ -47,8 +47,8 @@ scoped_refptr<const extensions::Extension> TestKioskExtensionBuilder::Build()
   base::Value background = base::Value(
       DictionaryBuilder()
           .Set("scripts",
-               base::Value(ListBuilder().Append("background.js").BuildList()))
-          .BuildDict());
+               base::Value(ListBuilder().Append("background.js").Build()))
+          .Build());
 
   switch (type_) {
     case extensions::Manifest::TYPE_PLATFORM_APP:
@@ -79,10 +79,10 @@ scoped_refptr<const extensions::Extension> TestKioskExtensionBuilder::Build()
             "enabled_on_launch", secondary_extension.enabled_on_launch.value());
       }
       secondary_extension_list_builder.Append(
-          secondary_extension_builder.BuildDict());
+          secondary_extension_builder.Build());
     }
     manifest_builder.Set("kiosk_secondary_apps",
-                         secondary_extension_list_builder.BuildList());
+                         secondary_extension_list_builder.Build());
   }
 
   return ExtensionBuilder()

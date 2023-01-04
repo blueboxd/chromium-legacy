@@ -70,7 +70,9 @@ class CORE_EXPORT CSSToLengthConversionData : public CSSLengthResolver {
     float Ex(float zoom) const;
     float Rex(float zoom) const;
     float Ch(float zoom) const;
+    float Rch(float zoom) const;
     float Ic(float zoom) const;
+    float Ric(float zoom) const;
 
    private:
     float em_ = 0;
@@ -90,18 +92,34 @@ class CORE_EXPORT CSSToLengthConversionData : public CSSLengthResolver {
     LineHeightSize() = default;
     LineHeightSize(const Length& line_height, const Font* font, float font_zoom)
         : line_height_(line_height), font_(font), font_zoom_(font_zoom) {}
-    explicit LineHeightSize(const ComputedStyle&);
+    LineHeightSize(const Length& line_height,
+                   const Length& root_line_height,
+                   const Font* font,
+                   const Font* root_font,
+                   float font_zoom,
+                   float root_font_zoom)
+        : line_height_(line_height),
+          root_line_height_(root_line_height),
+          font_(font),
+          root_font_(root_font),
+          font_zoom_(font_zoom),
+          root_font_zoom_(root_font_zoom) {}
+    LineHeightSize(const ComputedStyle& style, const ComputedStyle* root_style);
 
     float Lh(float zoom) const;
+    float Rlh(float zoom) const;
 
    private:
     Length line_height_;
+    Length root_line_height_;
     // Note that this Font may be different from the instance held
     // by FontSizes (for the same CSSToLengthConversionData object).
     const Font* font_ = nullptr;
+    const Font* root_font_ = nullptr;
     // Like ex/ch/ic, lh is also based on font-metrics and is pre-zoomed by
     // a factor of `font_zoom_`.
     float font_zoom_ = 1;
+    float root_font_zoom_ = 1;
   };
 
   class CORE_EXPORT ViewportSize {
@@ -193,10 +211,11 @@ class CORE_EXPORT CSSToLengthConversionData : public CSSLengthResolver {
   enum class Flag : Flags {
     // em
     kEm = 1u << 0,
-    // rem, rex
+    // rem
     kRootFontRelative = 1u << 1,
     // ex, ch, ic, lh
     kGlyphRelative = 1u << 2,
+    // rex, rch, ric have both kRootFontRelative and kGlyphRelative
     // lh
     kLineHeightRelative = 1u << 3,
     // sv*, lv*, v*
@@ -228,8 +247,11 @@ class CORE_EXPORT CSSToLengthConversionData : public CSSLengthResolver {
   float ExFontSize(float zoom) const override;
   float RexFontSize(float zoom) const override;
   float ChFontSize(float zoom) const override;
+  float RchFontSize(float zoom) const override;
   float IcFontSize(float zoom) const override;
+  float RicFontSize(float zoom) const override;
   float LineHeight(float zoom) const override;
+  float RootLineHeight(float zoom) const override;
   double ViewportWidth() const override;
   double ViewportHeight() const override;
   double SmallViewportWidth() const override;

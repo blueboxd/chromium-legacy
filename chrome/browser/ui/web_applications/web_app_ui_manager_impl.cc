@@ -27,8 +27,10 @@
 #include "chrome/browser/ui/web_applications/web_app_metrics.h"
 #include "chrome/browser/ui/webui/web_app_internals/web_app_internals_source.h"
 #include "chrome/browser/web_applications/extensions/web_app_extension_shortcut.h"
+#include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
-#include "chrome/browser/web_applications/user_display_mode.h"
+#include "chrome/browser/web_applications/os_integration/os_integration_sub_manager.h"
+#include "chrome/browser/web_applications/os_integration/web_app_shortcut.h"
 #include "chrome/browser/web_applications/web_app_callback_app_identity.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
@@ -118,22 +120,22 @@ void UninstallWebAppWithDialogFromStartupSwitch(const AppId& app_id,
 
 #endif  // BUILDFLAG(IS_WIN)
 
-UserDisplayMode GetExtensionUserDisplayMode(
+mojom::UserDisplayMode GetExtensionUserDisplayMode(
     Profile* profile,
     const extensions::Extension* extension) {
   // Platform apps always open in an app window and their user preference is
   // meaningless.
   if (extension->is_platform_app())
-    return UserDisplayMode::kStandalone;
+    return mojom::UserDisplayMode::kStandalone;
 
   switch (extensions::GetLaunchContainer(
       extensions::ExtensionPrefs::Get(profile), extension)) {
     case apps::LaunchContainer::kLaunchContainerWindow:
     case apps::LaunchContainer::kLaunchContainerPanelDeprecated:
-      return UserDisplayMode::kStandalone;
+      return mojom::UserDisplayMode::kStandalone;
     case apps::LaunchContainer::kLaunchContainerTab:
     case apps::LaunchContainer::kLaunchContainerNone:
-      return UserDisplayMode::kBrowser;
+      return mojom::UserDisplayMode::kBrowser;
   }
 }
 
@@ -350,11 +352,18 @@ void WebAppUiManagerImpl::InstallOsHooksForReplacementApp(
   options.add_to_desktop = locations.on_desktop;
   options.add_to_quick_launch_bar = locations.in_quick_launch_bar;
   options.os_hooks[OsHookType::kRunOnOsLogin] = locations.in_startup;
+  options.reason = SHORTCUT_CREATION_AUTOMATED;
   // TODO(crbug.com/1401125): Remove InstallOsHooks() once OS integration
   // sub managers have been implemented.
   os_integration_manager_->InstallOsHooks(app_id, base::DoNothing(), nullptr,
                                           options);
-  os_integration_manager_->Synchronize(app_id, base::DoNothing());
+
+  SynchronizeOsOptions synchronize_options;
+  synchronize_options.add_shortcut_to_desktop = options.add_to_desktop;
+  synchronize_options.add_to_quick_launch_bar = options.add_to_quick_launch_bar;
+  synchronize_options.reason = options.reason;
+  os_integration_manager_->Synchronize(app_id, base::DoNothing(),
+                                       synchronize_options);
 }
 
 bool WebAppUiManagerImpl::CanAddAppToQuickLaunchBar() const {

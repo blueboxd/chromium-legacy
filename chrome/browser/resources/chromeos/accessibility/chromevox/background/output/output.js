@@ -11,9 +11,8 @@ import {constants} from '../../../common/constants.js';
 import {Cursor, CURSOR_NODE_INDEX} from '../../../common/cursors/cursor.js';
 import {CursorRange} from '../../../common/cursors/range.js';
 import {LocalStorage} from '../../../common/local_storage.js';
-import {AutomationTreeWalker} from '../../../common/tree_walker.js';
-import {Earcon} from '../../common/abstract_earcons.js';
 import {NavBraille} from '../../common/braille/nav_braille.js';
+import {EarconId} from '../../common/earcon_id.js';
 import {EventSourceType} from '../../common/event_source_type.js';
 import {LocaleOutputHelper} from '../../common/locale_output_helper.js';
 import {LogType} from '../../common/log_types.js';
@@ -672,89 +671,6 @@ export class Output {
   }
 
   /** @override */
-  formatTextContent_(data, token, options) {
-    const buff = data.outputBuffer;
-    const node = data.node;
-    const formatLog = data.outputFormatLogger;
-
-    if (node.name && token === 'nameOrTextContent') {
-      formatLog.writeToken(token);
-      this.format_({
-        node,
-        outputFormat: '$name',
-        outputBuffer: buff,
-        outputFormatLogger: formatLog,
-      });
-      return;
-    }
-
-    if (!node.firstChild) {
-      return;
-    }
-
-    const root = node;
-    const walker = new AutomationTreeWalker(node, Dir.FORWARD, {
-      visit: AutomationPredicate.leafOrStaticText,
-      leaf: n => {
-        // The root might be a leaf itself, but we still want to descend
-        // into it.
-        return n !== root && AutomationPredicate.leafOrStaticText(n);
-      },
-      root: r => r === root,
-    });
-    const outputStrings = [];
-    while (walker.next().node) {
-      if (walker.node.name) {
-        outputStrings.push(walker.node.name.trim());
-      }
-    }
-    const finalOutput = outputStrings.join(' ');
-    this.append_(buff, finalOutput, options);
-    formatLog.writeTokenWithValue(token, finalOutput);
-  }
-
-  /** @override */
-  formatAsFieldAccessor_(data, token, options) {
-    const buff = data.outputBuffer;
-    const node = data.node;
-    const formatLog = data.outputFormatLogger;
-
-    options.annotation.push(token);
-    let value = node[token];
-    if (typeof value === 'number') {
-      value = String(value);
-    }
-    this.append_(buff, value, options);
-    formatLog.writeTokenWithValue(token, value);
-  }
-
-  /** @override */
-  formatAsStateValue_(data, token, options) {
-    const buff = data.outputBuffer;
-    const node = data.node;
-    const formatLog = data.outputFormatLogger;
-
-    options.annotation.push('state');
-    const stateInfo = outputTypes.OUTPUT_STATE_INFO[token];
-    let resolvedInfo = {};
-    resolvedInfo = node.state[/** @type {StateType} */ (token)] ? stateInfo.on :
-                                                                  stateInfo.off;
-    if (!resolvedInfo) {
-      return;
-    }
-    if (this.formatOptions_.speech && resolvedInfo.earcon) {
-      options.annotation.push(
-          new outputTypes.OutputEarconAction(resolvedInfo.earcon),
-          node.location || undefined);
-    }
-    const msgId = this.formatOptions_.braille ? resolvedInfo.msgId + '_brl' :
-                                                resolvedInfo.msgId;
-    const msg = Msgs.getMsg(msgId);
-    this.append_(buff, msg, options);
-    formatLog.writeTokenWithValue(token, msg);
-  }
-
-  /** @override */
   formatPhoneticReading_(data) {
     const buff = data.outputBuffer;
     const node = data.node;
@@ -854,7 +770,7 @@ export class Output {
       }
 
       options.annotation.push(new outputTypes.OutputEarconAction(
-          Earcon[tree.firstChild.value], node.location || undefined));
+          EarconId[tree.firstChild.value], node.location || undefined));
       this.append_(buff, '', options);
       formatLog.writeTokenWithValue(token, tree.firstChild.value);
     }
@@ -1204,17 +1120,7 @@ export class Output {
         continue;
       }
 
-      const parentRole = roleInfo.inherits;
-      if (formatNode.role && eventBlock[formatNode.role] &&
-          eventBlock[formatNode.role][formatName]) {
-        rule.role = formatNode.role;
-      } else if (
-          parentRole && eventBlock[parentRole] &&
-          eventBlock[parentRole][formatName]) {
-        rule.role = parentRole;
-      } else {
-        rule.role = CustomRole.DEFAULT;
-      }
+      rule.populateRole(formatNode.role, roleInfo.inherits, formatName);
 
       if (eventBlock[rule.role][formatName]) {
         rule.navigation = formatName;
@@ -1865,6 +1771,11 @@ export class Output {
   /** @override */
   get formatAsBraille() {
     return this.formatOptions_.braille;
+  }
+
+  /** @override */
+  get formatAsSpeech() {
+    return this.formatOptions_.speech;
   }
 }
 

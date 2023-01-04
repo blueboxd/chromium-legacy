@@ -58,7 +58,7 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
   void Seek(base::TimeDelta time);
   bool IsSeekWaitingForData() const;
 
-  // Add buffers to this stream.  Buffers are stored in SourceBufferStreams,
+  // Add buffers to this stream. Buffers are stored in SourceBufferStreams,
   // which handle ordering and overlap resolution.
   // Returns true if buffers were successfully added.
   bool Append(const StreamParser::BufferQueue& buffers);
@@ -89,6 +89,10 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
 
   // Returns the range of buffered data in this stream, capped at |duration|.
   Ranges<base::TimeDelta> GetBufferedRanges(base::TimeDelta duration) const;
+
+  // Returns the lowest PTS of the buffered data.
+  // Returns base::TimeDelta() if the stream has no buffered data.
+  base::TimeDelta GetLowestPresentationTimestamp() const;
 
   // Returns the highest PTS of the buffered data.
   // Returns base::TimeDelta() if the stream has no buffered data.
@@ -224,8 +228,6 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   std::string GetDisplayName() const override;
   DemuxerType GetDemuxerType() const override;
 
-  // |enable_text| Process inband text tracks in the normal way when true,
-  //   otherwise ignore them.
   void Initialize(DemuxerHost* host, PipelineStatusCallback init_cb) override;
   void Stop() override;
   void Seek(base::TimeDelta time, PipelineStatusCallback cb) override;
@@ -283,6 +285,10 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // Gets the currently buffered ranges for the specified ID.
   Ranges<base::TimeDelta> GetBufferedRanges(const std::string& id) const;
 
+  // Gets the lowest buffered PTS for the specified |id|. If there is nothing
+  // buffered, returns base::TimeDelta().
+  base::TimeDelta GetLowestPresentationTimestamp(const std::string& id) const;
+
   // Gets the highest buffered PTS for the specified |id|. If there is nothing
   // buffered, returns base::TimeDelta().
   base::TimeDelta GetHighestPresentationTimestamp(const std::string& id) const;
@@ -333,7 +339,7 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // Appends webcodecs encoded chunks (already converted by caller into a
   // BufferQueue of StreamParserBuffers) to the source buffer associated with
   // |id|, with same semantic for other parameters and return value as
-  // AppendData().
+  // RunSegmentParserLoop().
   [[nodiscard]] bool AppendChunks(
       const std::string& id,
       std::unique_ptr<StreamParser::BufferQueue> buffer_queue,

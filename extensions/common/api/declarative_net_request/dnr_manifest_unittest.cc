@@ -150,8 +150,8 @@ TEST_F(DNRManifestTest, InvalidRulesFileFormat) {
   manifest.Set(dnr_api::ManifestKeys::kDeclarativeNetRequest,
                DictionaryBuilder()
                    .Set(dnr_api::DNRInfo::kRuleResources,
-                        (ListBuilder().Append(kRulesetFile)).BuildList())
-                   .BuildDict());
+                        (ListBuilder().Append(kRulesetFile)).Build())
+                   .Build());
 
   WriteManifestAndRuleset(manifest, {});
 

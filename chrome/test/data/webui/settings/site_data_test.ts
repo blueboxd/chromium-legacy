@@ -8,6 +8,7 @@ import {ContentSetting, ContentSettingsTypes, SettingsSiteDataElement, SiteSetti
 import {CrSettingsPrefs, SettingsPrefsElement} from 'chrome://settings/settings.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {isChildVisible} from 'chrome://webui-test/test_util.js';
+import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
 import {TestSiteSettingsPrefsBrowserProxy} from './test_site_settings_prefs_browser_proxy.js';
 import {createContentSettingTypeToValuePair, createRawSiteException, createSiteSettingsPrefs} from './test_util.js';
@@ -34,6 +35,7 @@ suite('SiteDataTest', function() {
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
     page = document.createElement('settings-site-data');
     page.prefs = settingsPrefs.prefs!;
+    page.set('prefs.' + PREF_NAME + '.value', ContentSetting.ALLOW);
     document.body.appendChild(page);
     flush();
   });
@@ -42,19 +44,77 @@ suite('SiteDataTest', function() {
     page.remove();
   });
 
-  test('DefaultSettingChangesUpdatePref', function() {
+  function getDefaultBlockDialog() {
+    return page.shadowRoot!.querySelector('#defaultBlockDialog');
+  }
+
+  test('DefaultSettingAllowUpdatesPref', async function() {
+    // Start from a different state than 'allow'.
+    page.$.defaultSessionOnly.click();
+    assertEquals(
+        page.getPref(PREF_NAME + '.value'), ContentSetting.SESSION_ONLY);
+
+    page.$.defaultAllow.click();
+    assertEquals(page.getPref(PREF_NAME + '.value'), ContentSetting.ALLOW);
+  });
+
+  test('DefaultSettingSessionOnlyUpdatesPref', async function() {
     // Default is 'allow'.
     assertEquals(page.getPref(PREF_NAME + '.value'), ContentSetting.ALLOW);
 
     page.$.defaultSessionOnly.click();
     assertEquals(
         page.getPref(PREF_NAME + '.value'), ContentSetting.SESSION_ONLY);
+  });
+
+  test('DefaultSettingBlockUpdatesPref', async function() {
+    // Default is 'allow'.
+    assertEquals(page.getPref(PREF_NAME + '.value'), ContentSetting.ALLOW);
 
     page.$.defaultBlock.click();
-    assertEquals(page.getPref(PREF_NAME + '.value'), ContentSetting.BLOCK);
+    flush();
+    // Changing to block requires confirmation in the dialog to take effect.
+    assertTrue(!!getDefaultBlockDialog());
+    page.shadowRoot!.querySelector<HTMLElement>(
+                        '#defaultBlockDialogConfirm')!.click();
+    await flushTasks();
 
-    page.$.defaultAllow.click();
+    assertFalse(!!getDefaultBlockDialog());
+    assertEquals(page.getPref(PREF_NAME + '.value'), ContentSetting.BLOCK);
+  });
+
+  test('BlockSiteDataFromAllowDontConfirmDialog', async function() {
+    // Default is 'allow'.
     assertEquals(page.getPref(PREF_NAME + '.value'), ContentSetting.ALLOW);
+
+    page.$.defaultBlock.click();
+    flush();
+    assertTrue(!!getDefaultBlockDialog());
+    page.shadowRoot!.querySelector<HTMLElement>(
+                        '#defaultBlockDialogCancel')!.click();
+    await flushTasks();
+
+    assertFalse(!!getDefaultBlockDialog());
+    assertEquals(page.getPref(PREF_NAME + '.value'), ContentSetting.ALLOW);
+    assertEquals(page.$.defaultGroup.selected, ContentSetting.ALLOW);
+  });
+
+  test('BlockSiteDataFromSessionOnlyDontConfirmDialog', async function() {
+    page.$.defaultSessionOnly.click();
+    assertEquals(
+        page.getPref(PREF_NAME + '.value'), ContentSetting.SESSION_ONLY);
+
+    page.$.defaultBlock.click();
+    flush();
+    assertTrue(!!getDefaultBlockDialog());
+    page.shadowRoot!.querySelector<HTMLElement>(
+                        '#defaultBlockDialogCancel')!.click();
+    await flushTasks();
+
+    assertFalse(!!getDefaultBlockDialog());
+    assertEquals(
+        page.getPref(PREF_NAME + '.value'), ContentSetting.SESSION_ONLY);
+    assertEquals(page.$.defaultGroup.selected, ContentSetting.SESSION_ONLY);
   });
 
   test('PrefChangesUpdateDefaultSetting', function() {
@@ -102,6 +162,11 @@ suite('SiteDataTest', function() {
   });
 
   test('ExceptionsSearch', async function() {
+    while (siteSettingsBrowserProxy.getCallCount('getExceptionList') < 3) {
+      await flushTasks();
+    }
+    siteSettingsBrowserProxy.resetResolver('getExceptionList');
+
     const exceptionPrefs = createSiteSettingsPrefs([], [
       createContentSettingTypeToValuePair(
           ContentSettingsTypes.COOKIES,
@@ -121,7 +186,9 @@ suite('SiteDataTest', function() {
     ]);
     page.searchTerm = 'foo';
     siteSettingsBrowserProxy.setPrefs(exceptionPrefs);
-    await siteSettingsBrowserProxy.whenCalled('getExceptionList');
+    while (siteSettingsBrowserProxy.getCallCount('getExceptionList') < 3) {
+      await flushTasks();
+    }
     flush();
 
     const exceptionLists = page.shadowRoot!.querySelectorAll('site-list');

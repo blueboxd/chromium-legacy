@@ -41,7 +41,7 @@ base::Value::Dict MakeExtensionManifest(
                                    .Set("name", "Extension")
                                    .Set("version", "1.0")
                                    .Set("manifest_version", 2)
-                                   .BuildDict();
+                                   .Build();
   manifest.Merge(manifest_extra.Clone());
   return manifest;
 }
@@ -56,10 +56,10 @@ base::Value::Dict MakePackagedAppManifest() {
                            extensions::DictionaryBuilder()
                                .Set("scripts", extensions::ListBuilder()
                                                    .Append("background.js")
-                                                   .BuildList())
-                               .BuildDict())
-                      .BuildDict())
-      .BuildDict();
+                                                   .Build())
+                               .Build())
+                      .Build())
+      .Build();
 }
 
 }  // namespace

@@ -6,7 +6,7 @@ import type {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action
 import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import 'chrome://resources/polymer/v3_0/paper-ripple/paper-ripple.js';
 
-import {mouseEnterMaybeShowTooltip} from '../common/js/dom_utils.js';
+import {addCSSPrefixSelector, mouseEnterMaybeShowTooltip} from '../common/js/dom_utils.js';
 import {str} from '../common/js/util.js';
 
 import {customElement, property, query, state, css, html, XfBase, PropertyValues} from './xf_base.js';
@@ -80,7 +80,7 @@ export class XfBreadcrumb extends XfBase {
         @mouseenter=${this.onButtonMouseEntered_}
         @keydown=${
         (event: KeyboardEvent) => this.onButtonKeydown_(index, event)}
-      >${window.unescape(label || '')}</button>
+      >${window.unescape(label || '')}<paper-ripple></paper-ripple></button>
       ${caret}
     `;
   }
@@ -95,7 +95,7 @@ export class XfBreadcrumb extends XfBase {
         aria-label=${str('LOCATION_BREADCRUMB_ELIDER_BUTTON_LABEL')}
         @click=${this.onEliderButtonClicked_}
         @keydown=${this.onEliderButtonKeydown_}
-      ><span elider></span></button>
+      ><span elider></span><paper-ripple></paper-ripple></button>
       <span caret></span>
       <cr-action-menu id="elider-menu">
         ${
@@ -226,8 +226,17 @@ export class XfBreadcrumb extends XfBase {
     }
 
     // Show drop-down below the elider button.
-    const top =
-        this.$eliderButton_!.offsetTop + this.$eliderButton_!.offsetHeight + 8;
+    let offsetElement: Element|null = this.$eliderButton_!;
+    let top = this.$eliderButton_!.offsetHeight;
+    // We need to go upwards to add all offsetTop all offset parents because
+    // each level can have its own offsetTop.
+    while (offsetElement instanceof HTMLElement) {
+      top += offsetElement.offsetTop;
+      offsetElement = offsetElement.offsetParent;
+    }
+    // The gap between the elider button bottom and the dropdown menu top.
+    const gap = 8;
+    top += gap;
     this.$actionMenu_!.showAt(this.$eliderButton_!, {top: top});
 
     // Style drop-down and horizontal position.
@@ -256,7 +265,178 @@ export class XfBreadcrumb extends XfBase {
 }
 
 function getCSS() {
-  return css`
+  const legacyStyle = css`
+    :host([hidden]),
+    [hidden] {
+      display: none !important;
+    }
+
+    :host-context(html.col-resize) > * {
+      cursor: unset !important;
+    }
+
+    :host {
+      align-items: center;
+      display: flex;
+      font-family: 'Roboto Medium';
+      font-size: 14px;
+      outline: none;
+      overflow: hidden;
+      user-select: none;
+      white-space: nowrap;
+    }
+
+    /* No paper ripple for path button in Legacy. */
+    button paper-ripple {
+      display: none;
+    }
+
+    #elider-menu button paper-ripple {
+      display: block;
+    }
+
+    span[caret] {
+      -webkit-mask-image: url(/foreground/images/files/ui/arrow_right.svg);
+      -webkit-mask-position: center;
+      -webkit-mask-repeat: no-repeat;
+      background-color: var(--cros-icon-color-secondary);
+      display: inline-flex;
+      height: 20px;
+      min-width: 20px;
+      padding: 8px 0;
+      width: 20px;
+    }
+
+    :host-context(html[dir='rtl']) span[caret] {
+      transform: scaleX(-1);
+    }
+
+    button {
+      /* don't use browser's background-color. */
+      background-color: unset;
+      border: none;
+      color: var(--cros-text-color-primary);
+      cursor: pointer;
+      display: inline-block;
+      position: relative;
+
+      /* don't use browser's button font. */
+      font: inherit;
+      margin: 0;
+
+      /* elide wide text */
+      max-width: 200px;
+      /* text rendering debounce: fix a minimum width. */
+      min-width: calc(12px + 1em);
+      outline: none;
+      overflow: hidden;
+
+      /* text rendering debounce: center. */
+      text-align: center;
+      text-overflow: ellipsis;
+    }
+
+    button[disabled] {
+      cursor: default;
+      font-weight: 500;
+      margin-inline-end: 4px;
+      pointer-events: none;
+    }
+
+    span[elider] {
+      --tap-target-shift: -6px;
+      -webkit-mask-image: url(/foreground/images/files/ui/menu_ng.svg);
+      -webkit-mask-position: center;
+      -webkit-mask-repeat: no-repeat;
+      background-color: var(--cros-icon-color-primary);
+      height: 48px;
+      margin-inline-start: var(--tap-target-shift);
+      margin-top: var(--tap-target-shift);
+      min-width: 48px;
+      position: relative;
+      transform: rotate(90deg);
+      width: 48px;
+    }
+
+    button[elider] {
+      border-radius: 50%;
+      display: inline-flex;
+      height: 36px;
+      margin: 2px 0;
+      min-width: 36px;
+      padding: 0;
+      width: 36px;
+    }
+
+    :host > button:not([elider]) {
+      border-radius: 4px;
+      height: 32px;
+      margin: 0 2px;
+      padding: 0 8px;
+    }
+
+    button:not(:active):hover {
+      background-color: var(--cros-ripple-color);
+    }
+
+    :host-context(.pointer-active) button:not(:active):hover {
+      background-color: unset;
+      cursor: default;
+    }
+
+    button.dropdown-item > paper-ripple {
+      --paper-ripple-opacity: 100%;
+      color: var(--cros-ripple-color);
+    }
+
+    :host > button:focus-visible {
+      outline: 2px solid var(--cros-icon-color-prominent);
+    }
+
+    :host > button:active {
+      background-color: var(--cros-icon-button-pressed-color);
+    }
+
+    :host-context(.pointer-active) button.dropdown-item:active {
+      background-color: var(--cros-menu-item-background-hover);
+    }
+
+    button[elider][aria-expanded="true"] {
+      background-color: var(--cros-icon-button-pressed-color);
+    }
+
+
+    #elider-menu button {
+      color: var(--cros-menu-label-color);
+      display: block;
+      font-family: 'Roboto';
+      font-size: 13px;
+      height: 32px;
+      margin: 0;
+      max-width: min(288px, 40vw);
+      min-width: 192px;  /* menu width */
+      padding: 0 16px;
+      position: relative;
+      text-align: start;
+    }
+
+    :host-context(.focus-outline-visible) #elider-menu button:focus {
+      background-color: var(--cros-menu-item-background-hover);
+    }
+
+    /** Reset the hover color when using keyboard to navigate the menu items. */
+    :host-context(.focus-outline-visible) #elider-menu button:hover {
+      background-color: unset;
+    }
+
+    cr-action-menu {
+      --cr-menu-background-color: var(--cros-bg-color-elevation-2);
+      --cr-menu-background-sheen: none;
+      --cr-menu-shadow: var(--cros-elevation-2-shadow);
+    }
+  `;
+
+  const refresh23Style = css`
     :host([hidden]),
     [hidden] {
       display: none !important;
@@ -281,11 +461,10 @@ function getCSS() {
       -webkit-mask-image: url(/foreground/images/files/ui/arrow_right.svg);
       -webkit-mask-position: center;
       -webkit-mask-repeat: no-repeat;
-      background-color: var(--cros-icon-color-secondary);
+      background-color: var(--cros-sys-secondary);
       display: inline-flex;
       height: 20px;
       min-width: 20px;
-      padding: 8px 0;
       width: 20px;
     }
 
@@ -296,15 +475,14 @@ function getCSS() {
     button {
       /* don't use browser's background-color. */
       background-color: unset;
-      border: 2px solid transparent;
-      border-radius: 4px;
-      color: var(--cros-text-color-primary);
+      border: none;
+      color: var(--cros-sys-secondary);
       cursor: pointer;
       display: inline-block;
+      position: relative;
 
       /* don't use browser's button font. */
       font: inherit;
-      height: 32px;
       margin: 0;
 
       /* elide wide text */
@@ -313,7 +491,6 @@ function getCSS() {
       min-width: calc(12px + 1em);
       outline: none;
       overflow: hidden;
-      padding: 0 8px;
 
       /* text rendering debounce: center. */
       text-align: center;
@@ -321,18 +498,18 @@ function getCSS() {
     }
 
     button[disabled] {
-      color: var(--cros-text-color-primary);
       cursor: default;
       font-weight: 500;
       margin-inline-end: 4px;
+      pointer-events: none;
     }
 
     span[elider] {
-      --tap-target-shift: -7px;
+      --tap-target-shift: -6px;
       -webkit-mask-image: url(/foreground/images/files/ui/menu_ng.svg);
       -webkit-mask-position: center;
       -webkit-mask-repeat: no-repeat;
-      background-color: var(--cros-icon-color-primary);
+      background-color: var(--cros-sys-secondary);
       height: 48px;
       margin-inline-start: var(--tap-target-shift);
       margin-top: var(--tap-target-shift);
@@ -344,7 +521,6 @@ function getCSS() {
 
     button[elider] {
       border-radius: 50%;
-      box-sizing: border-box;
       display: inline-flex;
       height: 36px;
       min-width: 36px;
@@ -352,67 +528,79 @@ function getCSS() {
       width: 36px;
     }
 
-    button.dropdown-item {
-      position: relative;
+    :host > button:not([elider]) {
+      border-radius: 18px;
+      height: 36px;
+      margin: 6px 2px;
+      padding: 0 12px;
     }
 
-    :host-context(:root.pointer-active) button.dropdown-item:active {
-      background-color: var(--cros-menu-item-background-hover);
+    button[disabled] {
+      color: var(--cros-sys-on_surface);
     }
 
-    button.dropdown-item > paper-ripple {
-      --paper-ripple-opacity: 100%;
-      color: var(--cros-menu-item-background-hover);
+    button:not(:active):hover {
+      background-color: var(--cros-sys-hover_on_subtle);
     }
 
-    button:not([disabled]):not(:active):hover {
-      background-color: var(--cros-ripple-color);
-    }
-
-    :host-context(:root.pointer-active) button:not(:active):hover {
+    :host-context(.pointer-active) button:not(:active):hover {
       background-color: unset;
       cursor: default;
     }
 
-    :host-context(:root.focus-outline-visible) > button:focus {
-      background-color: unset;
-      border: 2px solid var(--cros-icon-color-prominent);
+    paper-ripple {
+      --paper-ripple-opacity: 100%;
+      color: var(--cros-sys-ripple_neutral_on_subtle);
     }
 
-    :host-context(.breadcrumb-elider-expanded) button[elider] {
-      background: var(--cros-icon-button-pressed-color);
+    :host > button:focus-visible {
+      outline: 2px solid var(--cros-sys-focus_ring);
     }
 
     button:active {
-      background: var(--cros-icon-button-pressed-color);
+      background-color: var(--cros-sys-hover_on_subtle);
+    }
+
+    button[elider][aria-expanded="true"] {
+      background-color: var(--cros-sys-pressed_on_subtle);
     }
 
     #elider-menu button {
-      border: unset;
-      color: var(--cros-menu-label-color);
+      color: var(--cros-sys-on_surface);
       display: block;
       font-family: 'Roboto';
       font-size: 13px;
+      height: 36px;
       max-width: min(288px, 40vw);
       min-width: 192px;  /* menu width */
       padding: 0 16px;
+      position: relative;
       text-align: start;
     }
 
-    :host-context(:root.focus-outline-visible) #elider-menu button:hover {
+    :host-context(.focus-outline-visible) #elider-menu button:focus {
+      outline: 2px solid var(--cros-sys-focus_ring);
+      outline-offset: -2px;
+    }
+
+    /** Reset the hover color when using keyboard to navigate the menu items. */
+    :host-context(.focus-outline-visible) #elider-menu button:hover {
       background-color: unset;
     }
 
-    :host-context(:root.focus-outline-visible) #elider-menu button:focus {
-      background-color: var(--cros-menu-item-background-hover);
-    }
-
     cr-action-menu {
-      --cr-menu-background-color: var(--cros-bg-color-elevation-2);
+      --cr-menu-background-color: var(--cros-sys-app_base_elevated);
       --cr-menu-background-sheen: none;
+      /* TODO(wenbojie): use elevation variable when it's ready.
+      --cros-sys-elevation3 */
       --cr-menu-shadow: var(--cros-elevation-2-shadow);
     }
   `;
+
+  return [
+    addCSSPrefixSelector(legacyStyle, '[theme="legacy"]'),
+    addCSSPrefixSelector(refresh23Style, '[theme="refresh23"]'),
+  ];
 }
 
 /**

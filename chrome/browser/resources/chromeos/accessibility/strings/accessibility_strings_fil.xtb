@@ -696,7 +696,7 @@
 <translation id="5632083598315326067">Simbolo ng graphics</translation>
 <translation id="5648939288050772726">Congratulations! Matagumpay mong natutunan ang mga kinakailangan sa paggamit ng ChromeVox. Tandaang mabubuksan mo ang menu ng command sa ChromeVox anumang oras sa pamamagitan ng pagpindot sa Paghahanap+Tuldok. Para matuto pa tungkol sa ChromeVox at ChromeOS, bisitahin ang mga sumusunod na artikulo.
     Kung tapos ka na sa tutorial, gamitin ang ChromeVox para mag-navigate papunta sa button na Isara at i-click ito.</translation>
-<translation id="5653397561111110475">Gamitin ang mga feature sa pagiging naa-access ng touch screen ng Chromebook</translation>
+<translation id="5653397561111110475">Gamitin ang mga feature sa accessibility ng touch screen ng Chromebook</translation>
 <translation id="5655682562155942719">Mga Command sa Paglaktaw</translation>
 <translation id="56637627897541303">Lugar ng text</translation>
 <translation id="5669637233317991674">Pindutin ang Search + Pakanang Arrow, o Search + Pakaliwang Arrow para mag-navigate sa araling ito</translation>
@@ -1096,7 +1096,7 @@
 <translation id="8503360654911991865">Bawasan ang granularity ng navigation</translation>
 <translation id="8520472399088452386">Spin button</translation>
 <translation id="8534394844575788431">Pag-format</translation>
-<translation id="8542271685829952264">Upang i-explore ang lahat ng command at shortcut sa ChromeVox, pindutin ang Search + Period, pagkatapos ay gamitin ang mga Arrow key upang i-navigate ang mga menu, at ang Enter upang mag-activate ng command. Bumalik dito sa pamamagitan ng pagpindot sa Search+o pagktapos ay sa t.</translation>
+<translation id="8542271685829952264">Para i-explore ang lahat ng command at shortcut sa ChromeVox, pindutin ang Search + Period, pagkatapos ay gamitin ang mga Arrow key para i-navigate ang mga menu, at ang Enter para mag-activate ng command. Bumalik dito sa pamamagitan ng pagpindot sa Search+o at pagkatapos ay sa t.</translation>
 <translation id="8548973727659841685">Character</translation>
 <translation id="8561322612995434619">may pop up</translation>
 <translation id="8571096049907249734">multsel</translation>

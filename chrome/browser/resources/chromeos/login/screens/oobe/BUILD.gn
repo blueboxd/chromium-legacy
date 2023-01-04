@@ -5,8 +5,6 @@
 import("//chrome/test/base/js2gtest.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/polymer/html_to_js.gni")
-import("//tools/polymer/polymer.gni")
-import("../../oobe_auto_imports.gni")
 
 js_type_check("closure_compile") {
   is_polymer3 = true
@@ -93,10 +91,10 @@ js_library("enable_debugging") {
 js_library("enterprise_enrollment") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/oobe/enterprise_enrollment.js" ]
   deps = [
-    "../../../keyboard:keyboard_utils.m",
     "../../components:display_manager_types",
     "../../components:gaia_dialog",
-    "../../components:keyboard_utils_for_injection.m",
+    "../../components:keyboard_utils",
+    "../../components:keyboard_utils_oobe",
     "../../components/behaviors:login_screen_behavior",
     "../../components/behaviors:multi_step_behavior",
     "../../components/buttons:oobe_back_button",

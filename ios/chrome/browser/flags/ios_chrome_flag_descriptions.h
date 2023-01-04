@@ -256,11 +256,6 @@ extern const char kEnableDiscoverFeedDiscoFeedEndpointDescription[];
 extern const char kEnableFeedAblationName[];
 extern const char kEnableFeedAblationDescription[];
 
-// Title and description for the flag to test the FRE default browser promo
-// experiment.
-extern const char kEnableFREDefaultBrowserPromoScreenName[];
-extern const char kEnableFREDefaultBrowserPromoScreenDescription[];
-
 // Title and description for the flag to enable the Fullscreen API.
 extern const char kEnableFullscreenAPIName[];
 extern const char kEnableFullscreenAPIDescription[];
@@ -330,10 +325,6 @@ extern const char kForceStartupSigninPromoDescription[];
 // Title and description for the flag to show signed-out avatar on NTP.
 extern const char kIdentityStatusConsistencyName[];
 extern const char kIdentityStatusConsistencyDescription[];
-
-// Title and description for the flag to enable sign-in with a Unicorn account.
-extern const char kEnableUnicornAccountSupportName[];
-extern const char kEnableUnicornAccountSupportDescription[];
 
 // Title and description for the flag to enable displaying fullscreen promos via
 // the Fullscreen Promos Manager.
@@ -470,10 +461,6 @@ extern const char kNewOverflowMenuAlternateIPHDescription[];
 // TODO(crbug.com/1262536): Remove this when fixed.
 extern const char kNTPViewHierarchyRepairName[];
 extern const char kNTPViewHierarchyRepairDescription[];
-
-// Title and description for dynamic spacing in Omnibox Carousel.
-extern const char kOmniboxCarouselDynamicSpacingName[];
-extern const char kOmniboxCarouselDynamicSpacingDescription[];
 
 // Title and description for fuzzy URL suggestions feature.
 extern const char kOmniboxFuzzyUrlSuggestionsName[];

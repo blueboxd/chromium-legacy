@@ -263,8 +263,14 @@ INSTANTIATE_TEST_SUITE_P(All,
                          PredictionManagerBrowserTest,
                          /*use_install_wide_model_store=*/testing::Bool());
 
+// Flaky on ASAN bots and linux-chromeos-dbg, see https://crbug.com/1403389/.
+#if (BUILDFLAG(IS_CHROMEOS) && !defined(NDEBUG)) || defined(ADDRESS_SANITIZER)
+#define MAYBE_ComponentUpdatesPrefDisabled DISABLED_ComponentUpdatesPrefDisabled
+#else
+#define MAYBE_ComponentUpdatesPrefDisabled ComponentUpdatesPrefDisabled
+#endif
 IN_PROC_BROWSER_TEST_P(PredictionManagerBrowserTest,
-                       ComponentUpdatesPrefDisabled) {
+                       MAYBE_ComponentUpdatesPrefDisabled) {
   ModelFileObserver model_file_observer;
   SetResponseType(PredictionModelsFetcherRemoteResponseType::kUnsuccessful);
   g_browser_process->local_state()->SetBoolean(
@@ -284,8 +290,17 @@ IN_PROC_BROWSER_TEST_P(PredictionManagerBrowserTest,
       0);
 }
 
+// Flaky on linux-chromeos-dbg bot. http://crbug.com/1402697
+#if BUILDFLAG(IS_CHROMEOS) && !defined(NDEBUG)
+#define MAYBE_ModelsAndFeaturesStoreInitialized \
+  DISABLED_ModelsAndFeaturesStoreInitialized
+#else
+#define MAYBE_ModelsAndFeaturesStoreInitialized \
+  ModelsAndFeaturesStoreInitialized
+#endif
+
 IN_PROC_BROWSER_TEST_P(PredictionManagerBrowserTest,
-                       ModelsAndFeaturesStoreInitialized) {
+                       MAYBE_ModelsAndFeaturesStoreInitialized) {
   ModelFileObserver model_file_observer;
   SetResponseType(
       PredictionModelsFetcherRemoteResponseType::kSuccessfulWithValidModelFile);
@@ -310,8 +325,9 @@ IN_PROC_BROWSER_TEST_P(PredictionManagerBrowserTest,
       kSuccessfulModelVersion, 1);
 }
 
-// Flaky on linux-chromeos-chrome bot. http://crbug.com/1402697
-#if BUILDFLAG(IS_CHROMEOS) && !defined(NDEBUG)
+// TODO(crbug.com/1402697): Flaky on linux-chromeos-chrome bot.
+// TODO(crbug.com/1402228): Also flaky on ASAN bots.
+#if (BUILDFLAG(IS_CHROMEOS) && !defined(NDEBUG)) || defined(ADDRESS_SANITIZER)
 #define MAYBE_PredictionModelFetchFailed DISABLED_PredictionModelFetchFailed
 #else
 #define MAYBE_PredictionModelFetchFailed PredictionModelFetchFailed

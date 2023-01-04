@@ -12,7 +12,7 @@ import '//resources/polymer/v3_0/iron-icon/iron-icon.js';
 import '../../components/notification_card.js';
 import '../../components/security_token_pin.js';
 import '../../components/gaia_dialog.js';
-import '../../components/oobe_icons.m.js';
+import '../../components/oobe_icons.html.js';
 import '../../components/buttons/oobe_back_button.js';
 import '../../components/buttons/oobe_next_button.js';
 import '../../components/common_styles/oobe_common_styles.css.js';
@@ -611,7 +611,7 @@ class GaiaSigninElement extends GaiaSigninElementBase {
     this.authenticatorParams_ = params;
 
     this.loadAuthenticator_(params.doSamlRedirect);
-    this.userActed('gaiaLoaded');
+    chrome.send('authExtensionLoaded');
   }
 
   /**
@@ -765,7 +765,7 @@ class GaiaSigninElement extends GaiaSigninElementBase {
    * @private
    */
   samlApiUsed_(isThirdPartyIdP) {
-    this.userActed(['usingSAMLAPI', isThirdPartyIdP]);
+    chrome.send('usingSAMLAPI', [isThirdPartyIdP]);
   }
 
   /**
@@ -789,8 +789,7 @@ class GaiaSigninElement extends GaiaSigninElementBase {
       this.email_ = credentials.email;
       chrome.send('launchSAMLPublicSession', [credentials.email]);
     } else {
-      this.userActed([
-        'completeAuthentication',
+      chrome.send('completeAuthentication', [
         credentials.gaiaId,
         credentials.email,
         credentials.password,
@@ -839,7 +838,7 @@ class GaiaSigninElement extends GaiaSigninElementBase {
    * @private
    */
   onIdentifierEnteredMessage_(e) {
-    this.userActed(['identifierEntered', e.detail.accountIdentifier]);
+    chrome.send('identifierEntered', [e.detail.accountIdentifier]);
   }
 
   /**

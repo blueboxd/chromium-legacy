@@ -53,6 +53,7 @@
 #include "content/browser/broadcast_channel/broadcast_channel_provider.h"
 #include "content/browser/broadcast_channel/broadcast_channel_service.h"
 #include "content/browser/browser_main_loop.h"
+#include "content/browser/browsing_topics/browsing_topics_url_loader_service.h"
 #include "content/browser/can_commit_status.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/code_cache/generated_code_cache_context.h"
@@ -1455,7 +1456,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(
       delegate_(delegate),
       site_instance_(static_cast<SiteInstanceImpl*>(site_instance)),
       agent_scheduling_group_(
-          site_instance_->GetOrCreateAgentSchedulingGroup()),
+          site_instance_->GetOrCreateAgentSchedulingGroup().GetSafeRef()),
       frame_tree_(frame_tree),
       frame_tree_node_(frame_tree_node),
       owner_(frame_tree_node),
@@ -2884,6 +2885,8 @@ void RenderFrameHostImpl::InitializePolicyContainerHost(
     return;
   }
 
+  CHECK(owner_);
+
   // The initial empty document inherits its policy container from its creator.
   // The creator is either its parent for subframes and embedded frames, or its
   // opener for new windows.
@@ -2919,12 +2922,12 @@ void RenderFrameHostImpl::InitializePolicyContainerHost(
             network::mojom::WebSandboxFlags::kNone,
             /*is_credentialless=*/false,
             /*can_navigate_top_without_user_gesture=*/true)));
-  } else if (frame_tree_node_->opener()) {
+  } else if (owner_->GetOpener()) {
     // During a `window.open(...)` without `noopener`, a new popup is created
     // and always starts from the initial empty document. The opener has
     // synchronous access toward its openee. So they must both share the same
     // policies.
-    SetPolicyContainerHost(frame_tree_node_->opener()
+    SetPolicyContainerHost(owner_->GetOpener()
                                ->current_frame_host()
                                ->policy_container_host()
                                ->Clone());
@@ -5732,6 +5735,11 @@ void RenderFrameHostImpl::UpdateSubresourceLoaderFactories() {
       isolated_worlds_requiring_separate_url_loader_factory_.empty()) {
     return;
   }
+
+  // TODO(https://crbug.com/1382971): Remove the crash key logging after the
+  // ad-hoc bug investigation is no longer needed.
+  SCOPED_CRASH_KEY_STRING256("rfhi-uslf", "frame->ToDebugString",
+                             ToDebugString());
 
   // The `subresource_loader_factories_config` of the new factories might need
   // to depend on the pending (rather than the last committed) navigation,
@@ -8587,6 +8595,14 @@ void RenderFrameHostImpl::StartPendingDeletionOnSubtree(
     // frame detach if the kStopCancellingNavigationsOnCommitAndNewNavigation
     // flag is enabled, or for all pending deletion cases otherwise.
     ResetAllNavigationsInSubtreeForFrameDetach();
+  } else {
+    CHECK(
+        pending_deletion_reason == PendingDeletionReason::kSwappedOut ||
+        base::FeatureList::IsEnabled(kAvoidUnnecessaryNavigationCancellations));
+    // The pending deletion state is caused by swapping out the RFH. Reset only
+    // the navigations that are owned by or will be using the swapped out RFH,
+    // and also reset all navigations happening in the descendant frames.
+    ResetNavigationsUsingSwappedOutRFHAndAllNavigationsInSubtree();
   }
 
   for (std::unique_ptr<FrameTreeNode>& child_frame : children_) {
@@ -8667,6 +8683,34 @@ void RenderFrameHostImpl::PendingDeletionCheckCompletedOnSubtree() {
 
   if (self) {
     check_deletion_for_bug_1276535_ = false;
+  }
+}
+
+void RenderFrameHostImpl::
+    ResetNavigationsUsingSwappedOutRFHAndAllNavigationsInSubtree() {
+  // Only delete the navigation owned by the swapped out RFH or those that
+  // intend to use the current RFH.
+  ResetOwnedNavigationRequests(
+      NavigationDiscardReason::kRenderFrameHostDestruction);
+  if (frame_tree_node_->navigation_request() &&
+      frame_tree_node_->navigation_request()->state() >=
+          NavigationRequest::WILL_PROCESS_RESPONSE &&
+      frame_tree_node_->navigation_request()->GetRenderFrameHost() == this) {
+    // It's possible for a RenderFrameHost to already have been picked for a
+    // navigation but the NavigationRequest's ownership hasn't been moved to the
+    // RenderFrameHost yet, if the navigation is deferred by a
+    // NavigationThrottle or CommitDeferringCondition. We need to reset the
+    // NavigationRequest to prevent it from trying to commit in the pending
+    // deletion RFH.
+    frame_tree_node_->ResetNavigationRequest(
+        NavigationDiscardReason::kRenderFrameHostDestruction);
+  }
+
+  // For the child frames, we should delete all ongoing navigations instead of
+  // just the one using the current RFH, because the child frames will be
+  // deleted when this RFH gets unloaded.
+  for (auto& child : children_) {
+    child->current_frame_host()->ResetAllNavigationsInSubtreeForFrameDetach();
   }
 }
 
@@ -9146,6 +9190,41 @@ void RenderFrameHostImpl::CommitNavigation(
           EnsurePrefetchedSignedExchangeCache());
     }
 
+    // Set up the topics loader factory. It is used to proxy the topics
+    // subresource request via the browser process. The topics loader factory
+    // does not depend on the prefetch loader factory (or vice versa), as they
+    // are intended for disjoint request types (i.e.
+    // fetch(<url>, {browsingTopics: true}) v.s. <link rel="prefetch">).
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> topics_loader_factory;
+    if (base::FeatureList::IsEnabled(blink::features::kBrowsingTopics)) {
+      std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
+          factory_bundle_for_topics;
+
+      if (subresource_loader_factories) {
+        // Clone the factory bundle for topics.
+        auto bundle = base::MakeRefCounted<blink::URLLoaderFactoryBundle>(
+            std::move(subresource_loader_factories));
+        subresource_loader_factories = CloneFactoryBundle(bundle);
+        factory_bundle_for_topics = CloneFactoryBundle(bundle);
+      }
+
+      if (factory_bundle_for_topics) {
+        // Also set-up URLLoaderFactory for topics using the same loader
+        // factories.
+        auto* storage_partition = GetStoragePartition();
+
+        base::WeakPtr<BrowsingTopicsURLLoaderService::BindContext>
+            bind_context =
+                storage_partition->GetBrowsingTopicsURLLoaderService()
+                    ->GetFactory(
+                        topics_loader_factory.InitWithNewPipeAndPassReceiver(),
+                        std::move(factory_bundle_for_topics));
+
+        navigation_request->set_topics_url_loader_service_bind_context(
+            bind_context);
+      }
+    }
+
     mojom::NavigationClient* navigation_client =
         navigation_request->GetCommitNavigationClient();
 
@@ -9208,7 +9287,8 @@ void RenderFrameHostImpl::CommitNavigation(
         std::move(subresource_loader_factories),
         std::move(subresource_overrides), std::move(controller),
         std::move(container_info), std::move(prefetch_loader_factory),
-        manifest_policy, std::move(policy_container), *document_token,
+        std::move(topics_loader_factory), manifest_policy,
+        std::move(policy_container), *document_token,
         devtools_navigation_token);
     navigation_request->frame_tree_node()
         ->navigator()
@@ -12089,6 +12169,7 @@ void RenderFrameHostImpl::SendCommitNavigation(
     blink::mojom::ServiceWorkerContainerInfoForClientPtr container_info,
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         prefetch_loader_factory,
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> topics_loader_factory,
     const absl::optional<blink::ParsedPermissionsPolicy>& permissions_policy,
     blink::mojom::PolicyContainerPtr policy_container,
     const blink::DocumentToken& document_token,
@@ -12165,8 +12246,8 @@ void RenderFrameHostImpl::SendCommitNavigation(
       std::move(url_loader_client_endpoints),
       std::move(subresource_loader_factories), std::move(subresource_overrides),
       std::move(controller), std::move(container_info),
-      std::move(prefetch_loader_factory), document_token,
-      devtools_navigation_token, permissions_policy,
+      std::move(prefetch_loader_factory), std::move(topics_loader_factory),
+      document_token, devtools_navigation_token, permissions_policy,
       std::move(policy_container), std::move(code_cache_host),
       std::move(cookie_manager_info), std::move(storage_info),
       BuildCommitNavigationCallback(navigation_request));
@@ -13312,7 +13393,11 @@ void RenderFrameHostImpl::
     // If the origin doesn't match, we would do a DumpWithoutCrashing above.
     // So, don't do a DumpWithoutCrashing unless there's another param that
     // doesn't match.
+    // Note: This is temporarily disabled on Android as there has been a recent
+    // spike of reports on Android WebView.
+#if !BUILDFLAG(IS_ANDROID)
     base::debug::DumpWithoutCrashing();
+#endif  // !BUILDFLAG(IS_ANDROID)
   }
 }
 
@@ -14113,10 +14198,10 @@ void RenderFrameHostImpl::AssertBrowserContextShutdownHasntStarted() {
   if (LIKELY(!GetBrowserContext()->ShutdownStarted()))
     return;
 
-  SCOPED_CRASH_KEY_STRING256("shutdown", "frame->ToDebugString",
-                             ToDebugString());
+  std::string debug_string = ToDebugString();
+  SCOPED_CRASH_KEY_STRING256("shutdown", "frame->ToDebugString", debug_string);
   NOTREACHED() << "BrowserContext->ShutdownStarted() without first closing all "
-                  "WebContents";
+               << "WebContents; debug_string = " << debug_string;
   base::debug::DumpWithoutCrashing();
 }
 

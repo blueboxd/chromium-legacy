@@ -47,6 +47,9 @@ class SkTextBlob;
 
 namespace cc {
 
+class PaintOpWriter;
+class PaintOpReader;
+
 class CC_PAINT_EXPORT ThreadsafePath : public SkPath {
  public:
   explicit ThreadsafePath(const SkPath& path) : SkPath(path) {
@@ -58,14 +61,10 @@ class CC_PAINT_EXPORT ThreadsafePath : public SkPath {
 // See PaintOp::Serialize/Deserialize for comments.  Derived Serialize types
 // don't write the 4 byte type/skip header because they don't know how much
 // data they will need to write.  PaintOp::Serialize itself must update it.
-#define HAS_SERIALIZATION_FUNCTIONS()                                        \
-  static size_t Serialize(                                                   \
-      const PaintOp* op, void* memory, size_t size,                          \
-      const SerializeOptions& options, const PaintFlags* flags_to_serialize, \
-      const SkM44& current_ctm, const SkM44& original_ctm);                  \
-  static PaintOp* Deserialize(const volatile void* input, size_t input_size, \
-                              void* output, size_t output_size,              \
-                              const DeserializeOptions& options)
+#define HAS_SERIALIZATION_FUNCTIONS()                                         \
+  void Serialize(PaintOpWriter& writer, const PaintFlags* flags_to_serialize, \
+                 const SkM44& current_ctm, const SkM44& original_ctm) const;  \
+  static PaintOp* Deserialize(PaintOpReader& reader, void* output)
 
 enum class PaintOpType : uint8_t {
   Annotate,
@@ -135,7 +134,7 @@ class CC_PAINT_EXPORT PaintOp {
     kLastType = kMailbox
   };
 
-  // Subclasses should provide a static Serialize() method called from here.
+  // Subclasses should provide a Serialize() method called from here.
   // If the op can be serialized to |memory| in no more than |size| bytes,
   // then return the number of bytes written.  If it won't fit, return 0.
   // If |flags_to_serialize| is non-null, it overrides any flags within the op.
@@ -775,7 +774,8 @@ class CC_PAINT_EXPORT DrawSkottieOp final : public PaintOp {
                      SkCanvas* canvas,
                      const PlaybackParams& params);
   bool IsValid() const {
-    return !!skottie && !dst.isEmpty() && t >= 0 && t <= 1.f;
+    return skottie && skottie->is_valid() && !dst.isEmpty() && t >= 0 &&
+           t <= 1.f;
   }
   static bool AreEqual(const PaintOp* left, const PaintOp* right);
   bool HasDiscardableImages() const;

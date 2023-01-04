@@ -14,6 +14,9 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.verify;
 
 import static org.chromium.chrome.browser.autofill.AutofillTestHelper.createCreditCard;
+import static org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillCreditCardMediator.TOUCH_TO_FILL_INDEX_SELECTED;
+import static org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillCreditCardMediator.TOUCH_TO_FILL_NUMBER_OF_CARDS_SHOWN;
+import static org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillCreditCardMediator.TOUCH_TO_FILL_OUTCOME_HISTOGRAM;
 import static org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillCreditCardProperties.CreditCardProperties.CARD_NAME;
 import static org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillCreditCardProperties.CreditCardProperties.CARD_NUMBER;
 import static org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillCreditCardProperties.CreditCardProperties.ON_CLICK_ACTION;
@@ -40,13 +43,16 @@ import org.mockito.junit.MockitoRule;
 import org.mockito.quality.Strictness;
 import org.robolectric.Robolectric;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Batch;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
+import org.chromium.chrome.browser.touch_to_fill.payments.TouchToFillCreditCardMediator.TouchToFillCreditCardOutcome;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.autofill.AutofillFeatures;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.StateChangeReason;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -105,6 +111,9 @@ public class TouchToFillCreditCardControllerRobolectricTest {
     public void testShowCreditCardsWithOneEntry() throws TimeoutException {
         mCoordinator.showSheet(new CreditCard[] {VISA}, false);
 
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        TOUCH_TO_FILL_NUMBER_OF_CARDS_SHOWN, 1));
         ModelList itemList = mTouchToFillCreditCardModel.get(SHEET_ITEMS);
         assertThat(getModelsOfType(itemList, CREDIT_CARD).size(), is(1));
 
@@ -121,6 +130,9 @@ public class TouchToFillCreditCardControllerRobolectricTest {
     public void testShowCreditCardsWithTwoEntries() throws TimeoutException {
         mCoordinator.showSheet(new CreditCard[] {VISA, MASTER_CARD}, false);
 
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        TOUCH_TO_FILL_NUMBER_OF_CARDS_SHOWN, 2));
         ModelList itemList = mTouchToFillCreditCardModel.get(SHEET_ITEMS);
         assertThat(getModelsOfType(itemList, CREDIT_CARD).size(), is(2));
 
@@ -141,6 +153,9 @@ public class TouchToFillCreditCardControllerRobolectricTest {
         mCoordinator.showSheet(new CreditCard[] {VISA, MASTER_CARD}, true);
         mTouchToFillCreditCardModel.get(SCAN_CREDIT_CARD_CALLBACK).run();
         verify(mDelegateMock).scanCreditCard();
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(TOUCH_TO_FILL_OUTCOME_HISTOGRAM,
+                        TouchToFillCreditCardOutcome.SCAN_NEW_CARD));
     }
 
     @Test
@@ -148,6 +163,9 @@ public class TouchToFillCreditCardControllerRobolectricTest {
         mCoordinator.showSheet(new CreditCard[] {VISA, MASTER_CARD}, true);
         mTouchToFillCreditCardModel.get(SHOW_CREDIT_CARD_SETTINGS_CALLBACK).run();
         verify(mDelegateMock).showCreditCardSettings();
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(TOUCH_TO_FILL_OUTCOME_HISTOGRAM,
+                        TouchToFillCreditCardOutcome.MANAGE_PAYMENTS));
     }
 
     @Test
@@ -164,6 +182,11 @@ public class TouchToFillCreditCardControllerRobolectricTest {
 
         cardModel.get().get(ON_CLICK_ACTION).run();
         verify(mDelegateMock).suggestionSelected(VISA.getGUID());
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        TOUCH_TO_FILL_OUTCOME_HISTOGRAM, TouchToFillCreditCardOutcome.CREDIT_CARD));
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(TOUCH_TO_FILL_INDEX_SELECTED, 0));
     }
 
     @Test
@@ -180,6 +203,16 @@ public class TouchToFillCreditCardControllerRobolectricTest {
 
         ModelList itemList = mTouchToFillCreditCardModel.get(SHEET_ITEMS);
         assertEquals(getModelsOfType(itemList, FILL_BUTTON).size(), 0);
+    }
+
+    @Test
+    public void testDismissWithNoAction() {
+        mCoordinator.showSheet(new CreditCard[] {VISA, MASTER_CARD}, true);
+
+        mTouchToFillCreditCardModel.get(DISMISS_HANDLER).onResult(StateChangeReason.SWIPE);
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        TOUCH_TO_FILL_OUTCOME_HISTOGRAM, TouchToFillCreditCardOutcome.DISMISS));
     }
 
     private static List<PropertyModel> getModelsOfType(ModelList items, int type) {

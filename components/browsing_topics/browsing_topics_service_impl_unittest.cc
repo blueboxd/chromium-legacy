@@ -201,7 +201,7 @@ class BrowsingTopicsServiceImplTest
         std::make_unique<privacy_sandbox::PrivacySandboxSettings>(
             std::move(privacy_sandbox_delegate),
             host_content_settings_map_.get(), cookie_settings_, &prefs_);
-    privacy_sandbox_settings_->SetPrivacySandboxEnabled(true);
+    privacy_sandbox_settings_->SetAllPrivacySandboxAllowedForTesting();
 
     history_service_ = std::make_unique<history::HistoryService>();
     history_service_->Init(
@@ -835,7 +835,7 @@ TEST_F(BrowsingTopicsServiceImplTest,
 
   task_environment()->RunUntilIdle();
 
-  privacy_sandbox_settings_->SetPrivacySandboxEnabled(false);
+  privacy_sandbox_settings_->SetTopicsBlockedForTesting();
 
   NavigateToPage(GURL("https://www.foo.com"));
 
@@ -1377,7 +1377,7 @@ TEST_F(
 
   NavigateToPage(GURL("https://www.foo.com"));
 
-  privacy_sandbox_settings_->SetPrivacySandboxEnabled(false);
+  privacy_sandbox_settings_->SetTopicsBlockedForTesting();
 
   std::vector<blink::mojom::EpochTopicPtr> result;
   EXPECT_FALSE(browsing_topics_service_->HandleTopicsWebApi(

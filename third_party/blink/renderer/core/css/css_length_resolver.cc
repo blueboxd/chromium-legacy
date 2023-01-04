@@ -276,11 +276,20 @@ double CSSLengthResolver::ZoomedComputedPixels(
     case CSSPrimitiveValue::UnitType::kChs:
       return value * ChFontSize(Zoom());
 
+    case CSSPrimitiveValue::UnitType::kRchs:
+      return value * RchFontSize(Zoom());
+
     case CSSPrimitiveValue::UnitType::kIcs:
       return value * IcFontSize(Zoom());
 
+    case CSSPrimitiveValue::UnitType::kRics:
+      return value * RicFontSize(Zoom());
+
     case CSSPrimitiveValue::UnitType::kLhs:
       return value * LineHeight(Zoom());
+
+    case CSSPrimitiveValue::UnitType::kRlhs:
+      return value * RootLineHeight(Zoom());
 
     default:
       NOTREACHED();

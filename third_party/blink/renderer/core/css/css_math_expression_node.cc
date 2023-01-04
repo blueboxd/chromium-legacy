@@ -73,6 +73,9 @@ static CalculationCategory UnitCategory(CSSPrimitiveValue::UnitType type) {
     case CSSPrimitiveValue::UnitType::kViewportMax:
       return kCalcLength;
     case CSSPrimitiveValue::UnitType::kRexs:
+    case CSSPrimitiveValue::UnitType::kRchs:
+    case CSSPrimitiveValue::UnitType::kRics:
+    case CSSPrimitiveValue::UnitType::kRlhs:
       return RuntimeEnabledFeatures::CSSNewRootFontUnitsEnabled() ? kCalcLength
                                                                   : kCalcOther;
     case CSSPrimitiveValue::UnitType::kViewportInlineSize:
@@ -135,8 +138,11 @@ static bool HasDoubleValue(CSSPrimitiveValue::UnitType type) {
     case CSSPrimitiveValue::UnitType::kChs:
     case CSSPrimitiveValue::UnitType::kIcs:
     case CSSPrimitiveValue::UnitType::kLhs:
+    case CSSPrimitiveValue::UnitType::kRlhs:
     case CSSPrimitiveValue::UnitType::kRems:
     case CSSPrimitiveValue::UnitType::kRexs:
+    case CSSPrimitiveValue::UnitType::kRchs:
+    case CSSPrimitiveValue::UnitType::kRics:
     case CSSPrimitiveValue::UnitType::kPixels:
     case CSSPrimitiveValue::UnitType::kCentimeters:
     case CSSPrimitiveValue::UnitType::kMillimeters:

@@ -184,7 +184,7 @@ void NetworkListViewControllerImpl::GetNetworkStateList() {
 void NetworkListViewControllerImpl::OnGetNetworkStateList(
     std::vector<NetworkStatePropertiesPtr> networks) {
   // Indicates the current position a view will be added to in
-  // NetworkDetailedNetworkView scroll list.
+  // `NetworkDetailedNetworkView` scroll list.
   size_t index = 0;
 
   // Store current views in `previous_network_views`, views which have
@@ -197,13 +197,34 @@ void NetworkListViewControllerImpl::OnGetNetworkStateList(
 
   UpdateNetworkTypeExistence(networks);
 
-  // Show a warning that the connection might be monitored if connected to a VPN
-  // or if the default network has a proxy installed.
-  index = ShowConnectionWarningIfNetworkMonitored(index);
+  if (features::IsQsRevampEnabled()) {
+    network_detailed_network_view()->ReorderFirstListView(index++);
 
-  // Show Ethernet section first.
-  index = CreateItemViewsIfMissingAndReorder(NetworkType::kEthernet, index,
-                                             networks, &previous_network_views);
+    // If `QsRevamp` is enabled, the warning message entry and the ethernet
+    // entry are placed in the `network_detailed_network_view()`'s
+    // `first_list_view_`. Here this index is used to indicate the current
+    // position a entry will be added to or reordered in the `first_list_view_`.
+    size_t first_list_item_index = 0;
+
+    // Show a warning that the connection might be monitored if connected to a
+    // VPN or if the default network has a proxy installed.
+    first_list_item_index =
+        ShowConnectionWarningIfNetworkMonitored(first_list_item_index);
+
+    // Show Ethernet section first.
+    first_list_item_index = CreateItemViewsIfMissingAndReorder(
+        NetworkType::kEthernet, first_list_item_index, networks,
+        &previous_network_views);
+
+  } else {
+    // Show a warning that the connection might be monitored if connected to a
+    // VPN or if the default network has a proxy installed.
+    index = ShowConnectionWarningIfNetworkMonitored(index);
+
+    // Show Ethernet section first.
+    index = CreateItemViewsIfMissingAndReorder(
+        NetworkType::kEthernet, index, networks, &previous_network_views);
+  }
 
   if (ShouldMobileDataSectionBeShown()) {
     // Add separator if mobile section is not the first view child, else
@@ -392,7 +413,8 @@ size_t NetworkListViewControllerImpl::ShowConnectionWarningIfNetworkMonitored(
         ->GetNetworkList(NetworkType::kAll)
         ->ReorderChildView(connection_warning_, index++);
   } else if (connected_vpn_guid_.empty() && !using_proxy) {
-    RemoveAndResetViewIfExists(&connection_warning_);
+    HideConnectionWarning();
+    network_detailed_network_view()->MaybeRemoveFirstListView();
   }
 
   return index;
@@ -430,6 +452,13 @@ void NetworkListViewControllerImpl::MaybeShowConnectionWarningManagedIcon(
 void NetworkListViewControllerImpl::OnGetManagedPropertiesResult(
     const std::string& guid,
     ManagedPropertiesPtr properties) {
+  // Bail out early if no connection warning is being shown.
+  // This could happen if the connection warning is hidden while the async
+  // GetManagedProperties step is in progress.
+  if (!connection_warning_) {
+    return;
+  }
+
   // Check if the proxy is managed.
   const NetworkStateProperties* default_network = model()->default_network();
   if (default_network && default_network->guid == guid) {
@@ -873,6 +902,13 @@ void NetworkListViewControllerImpl::ShowConnectionWarning(
   connection_warning_ = network_detailed_network_view()
                             ->GetNetworkList(NetworkType::kAll)
                             ->AddChildView(std::move(connection_warning));
+}
+
+void NetworkListViewControllerImpl::HideConnectionWarning() {
+  // If `connection_warning_icon_` existed, it must be cleared first because
+  // `connection_warning_` owns it.
+  RemoveAndResetViewIfExists(&connection_warning_icon_);
+  RemoveAndResetViewIfExists(&connection_warning_);
 }
 
 void NetworkListViewControllerImpl::UpdateScanningBarAndTimer() {

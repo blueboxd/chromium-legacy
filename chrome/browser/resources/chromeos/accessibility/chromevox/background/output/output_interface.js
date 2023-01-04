@@ -51,20 +51,6 @@ export class OutputInterface {
   /**
    * @param {!outputTypes.OutputFormattingData} data
    * @param {string} token
-   * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
-   */
-  formatAsFieldAccessor_(data, token, options) {}
-
-  /**
-   * @param {!outputTypes.OutputFormattingData} data
-   * @param {string} token
-   * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
-   */
-  formatAsStateValue_(data, token, options) {}
-
-  /**
-   * @param {!outputTypes.OutputFormattingData} data
-   * @param {string} token
    * @param {!OutputFormatTree} tree
    * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
    */
@@ -92,13 +78,6 @@ export class OutputInterface {
    * @param {!outputTypes.OutputFormattingData} data
    */
   formatPrecedingBullet_(data) {}
-
-  /**
-   * @param {!outputTypes.OutputFormattingData} data
-   * @param {string} token
-   * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
-   */
-  formatTextContent_(data, token, options) {}
 
   /**
    * @param {!AutomationNode} node
@@ -132,4 +111,7 @@ export class OutputInterface {
 
   /** @return {boolean} */
   get formatAsBraille() {}
+
+  /** @return {boolean} */
+  get formatAsSpeech() {}
 }

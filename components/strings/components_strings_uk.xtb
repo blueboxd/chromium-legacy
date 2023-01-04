@@ -808,7 +808,6 @@
 <translation id="299990983510665749">Хетчбеки</translation>
 <translation id="3002501248619246229">Перевірте лоток введення медіа</translation>
 <translation id="3005723025932146533">Показати збережену копію</translation>
-<translation id="3008447029300691911">Введіть код CVC картки <ph name="CREDIT_CARD" />. Щойно ви підтвердите дані картки, цей сайт отримає доступ до них.</translation>
 <translation id="3013291976881901233">Пристрої MIDI</translation>
 <translation id="301521992641321250">Блокується автоматично</translation>
 <translation id="3016780570757425217">Бачити ваше місцезнаходження</translation>
@@ -1166,6 +1165,7 @@
 <translation id="3927932062596804919">Відмовити</translation>
 <translation id="393316646445601645">Інтернет і телекомунікація</translation>
 <translation id="3939773374150895049">Використовувати веб-автентифікацію замість коду CVC?</translation>
+<translation id="3943857333388298514">Вставити</translation>
 <translation id="3946209740501886391">Завжди запитувати на цьому сайті</translation>
 <translation id="3947595700203588284">Може просити дозвіл підключатися до пристроїв MIDI</translation>
 <translation id="3949571496842715403">Цей сервер не зміг довести, що він – домен <ph name="DOMAIN" />. У його сертифікаті безпеки не вказано альтернативні імена. Імовірні причини: неправильна конфігурація або хтось намагається перехопити ваше з’єднання.</translation>
@@ -2313,6 +2313,7 @@
 <translation id="6890531741535756070">Ви вибрали підтвердження за допомогою <ph name="DEVICE_LABEL" /> на веб-сайтах, які використовують <ph name="PROVIDER_ORIGIN" />. У цього постачальника могла зберегтись інформація про ваш спосіб оплати, але ви можете надіслати <ph name="BEGIN_LINK" />запит на її видалення<ph name="END_LINK" />.</translation>
 <translation id="6891596781022320156">Правило не підтримується.</translation>
 <translation id="6895330447102777224">Дані картки підтверджено</translation>
+<translation id="6896758677409633944">Копіювати</translation>
 <translation id="6897140037006041989">Агент користувача</translation>
 <translation id="6898699227549475383">Організація (О)</translation>
 <translation id="6899000063526916106">Введіть <ph name="NUMBER_OF_DIGITS" />-значний код</translation>
@@ -2458,7 +2459,6 @@
 <translation id="7243771829620208687">RA0</translation>
 <translation id="7244465398154211886">{NUM_MATCHES,plural, =1{# збіг}one{# збіг}few{# збіги}many{# збігів}other{# збігу}}</translation>
 <translation id="724691107663265825">Сайт містить зловмисне програмне забезпечення</translation>
-<translation id="724975217298816891">Введіть термін дії та код CVC картки <ph name="CREDIT_CARD" />, щоб оновити її дані. Щойно ви підтвердите дані картки, цей сайт отримає доступ до них.</translation>
 <translation id="7251437084390964440">Конфігурація мережі не відповідає стандарту ONC. Вона може імпортуватися частково.
 Додаткові відомості:
 <ph name="DEBUG_INFO" /></translation>
@@ -2587,7 +2587,6 @@
 <translation id="7534987659046836932">Конверт C7</translation>
 <translation id="7535087603100972091">Яскравість</translation>
 <translation id="7537536606612762813">Обов’язкове</translation>
-<translation id="7542403920425041731">Щойно ви підтвердите, цей сайт отримає доступ до даних вашої картки.</translation>
 <translation id="7542995811387359312">Автоматичне заповнення кредитної картки вимкнено, оскільки ця форма не використовує безпечне з'єднання.</translation>
 <translation id="7543525346216957623">Попросіть когось із батьків</translation>
 <translation id="7546409722674205727">Запуск додатка <ph name="APP_NAME" /></translation>
@@ -2680,6 +2679,7 @@
 <translation id="7716375162095500223">Ще не завантажено або проігноровано</translation>
 <translation id="7716424297397655342">Не вдається завантажити цей сайт із кешу</translation>
 <translation id="7723047071702270851">Відредагуйте картку</translation>
+<translation id="7724603315864178912">Вирізати</translation>
 <translation id="7734285854693414638">Швидко створюйте нові форми в Google Формах</translation>
 <translation id="773466115871691567">Завжди перекладати сторінки такою мовою: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7736959720849233795">Копіювати адресу посилання</translation>

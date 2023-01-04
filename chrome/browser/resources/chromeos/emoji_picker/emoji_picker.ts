@@ -23,7 +23,7 @@ import {EmojiSearch} from './emoji_search.js';
 import * as events from './events.js';
 import {CATEGORY_METADATA, CATEGORY_TABS, EMOJI_GROUP_TABS, GIF_CATEGORY_METADATA, gifCategoryTabs, SUBCATEGORY_TABS, TABS_CATEGORY_START_INDEX} from './metadata_extension.js';
 import {RecentlyUsedStore} from './store.js';
-import {CategoryEnum, EmojiGroupData, EmojiGroupElement, EmojiVariants, SubcategoryData} from './types.js';
+import {CategoryEnum, EmojiGroupData, EmojiGroupElement, EmojiVariants, GifSubcategoryData, SubcategoryData} from './types.js';
 
 export class EmojiPicker extends PolymerElement {
   static get is() {
@@ -119,6 +119,9 @@ export class EmojiPicker extends PolymerElement {
         events.EMOJI_CLEAR_RECENTS_CLICK,
         (ev: events.EmojiClearRecentClickEvent) => this.clearRecentEmoji(ev));
     // variant popup related handlers
+    this.addEventListener(
+        events.EMOJI_VARIANTS_SHOWN,
+        (ev: events.EmojiVariantsShownEvent) => this.onShowEmojiVariants(ev));
     this.addEventListener('click', () => this.hideDialogs());
     this.addEventListener(
         events.CATEGORY_BUTTON_CLICK,
@@ -223,7 +226,7 @@ export class EmojiPicker extends PolymerElement {
         await Promise
             .all(
                 [
-                  this.fetchOrderingData(firstResult.url),
+                  this.fetchOrderingData<EmojiGroupData>(firstResult.url),
                   this.apiProxy.getFeatureList().then(
                       (response: {featureList: number[]}) =>
                           this.setActiveFeatures(response.featureList)),
@@ -238,21 +241,6 @@ export class EmojiPicker extends PolymerElement {
       '--emoji-size': constants.EMOJI_ICON_SIZE_PX,
       '--emoji-spacing': constants.EMOJI_SPACING_PX,
     });
-
-    if (this.gifSupport) {
-      // TODO (b/263062502): Get data from API instead.
-      const gifCategoriesData = ['excited', 'happy'];
-
-      const gifCategoriesTabs = gifCategoriesData.map(
-          (categoryData: string) => ({name: categoryData}));
-
-      const categoryTabs = {
-        ...CATEGORY_TABS,
-        gif: gifCategoriesTabs,
-      };
-
-      this.allCategoryTabs = gifCategoryTabs(categoryTabs);
-    }
 
     // Update UI and relevant features based on the initial data.
     this.updateCategoryData(
@@ -308,7 +296,7 @@ export class EmojiPicker extends PolymerElement {
     this.gifSupport = featureList.includes(Feature.EMOJI_PICKER_GIF_SUPPORT);
   }
 
-  fetchOrderingData(url: string): Promise<EmojiGroupData> {
+  fetchOrderingData<T>(url: string): Promise<T> {
     return new Promise((resolve) => {
       const xhr = new XMLHttpRequest();
       xhr.onloadend = () => resolve(JSON.parse(xhr.responseText));
@@ -869,6 +857,66 @@ export class EmojiPicker extends PolymerElement {
                             this.categoriesHistory[category]!.data.preference;
   }
 
+  onShowEmojiVariants(ev: events.EmojiVariantsShownEvent) {
+    // Hide the currently shown emoji variants if the new one belongs
+    // to a different emoji group.
+    if (this.activeVariant && ev.detail.owner !== this.activeVariant) {
+      this.hideEmojiVariants();
+    }
+
+    this.activeVariant = ev.detail.owner as EmojiGroupComponent;
+
+    // Updates the UI if a variant is shown.
+    if (ev.detail.variants) {
+      const message = this.getMessage();
+      if (message) {
+        message.textContent = ev.detail.baseEmoji + ' variants shown.';
+      }
+      this.positionEmojiVariants(ev.detail.variants);
+    }
+  }
+
+  positionEmojiVariants(variants: HTMLElement) {
+    // TODO(crbug.com/1174311): currently positions horizontally within page.
+    // ideal UI would be overflowing the bounds of the page.
+    // also need to account for vertical positioning.
+
+    // compute width required for the variant popup as: SIZE * columns + 10.
+    // SIZE is emoji width in pixels. number of columns is determined by width
+    // of variantRows, then one column each for the base emoji and skin tone
+    // indicators if present. 10 pixels are added for padding and the shadow.
+
+    // Reset any existing left margin before calculating a new position.
+    variants.style.marginLeft = '0';
+
+    // get size of emoji picker
+    const pickerRect = this.getBoundingClientRect();
+
+    // determine how much overflows the right edge of the window.
+    const rect = variants.getBoundingClientRect();
+    const overflowWidth = rect.x + rect.width - pickerRect.width;
+    // shift left by overflowWidth rounded up to next multiple of EMOJI_SIZE.
+    const shift = constants.EMOJI_ICON_SIZE *
+        Math.ceil(overflowWidth / constants.EMOJI_ICON_SIZE);
+    // negative value means we are already within bounds, so no shift needed.
+    variants.style.marginLeft = `-${Math.max(shift, 0)}px`;
+    // Now, examine vertical scrolling and scroll if needed. Not quire sure why
+    // we need listcontainer.offsetTop, but it makes things work.
+    const groups = this.$['groups'] as HTMLElement | null;
+    const scrollTop = groups?.scrollTop ?? 0;
+    const variantTop = variants?.offsetTop ?? 0;
+    const variantBottom = variantTop + variants.offsetHeight;
+    const listTop =
+        (this.$['list-container'] as HTMLElement | null)?.offsetTop ?? 0;
+    if (variantBottom > scrollTop + (groups?.offsetHeight ?? 0) + listTop) {
+      groups?.scrollTo({
+        top: variantBottom - (groups?.offsetHeight ?? 0) - listTop,
+        left: 0,
+        behavior: 'smooth',
+      });
+    }
+  }
+
   /**
    * Triggers when category property changes
    */
@@ -886,7 +934,27 @@ export class EmojiPicker extends PolymerElement {
     });
   }
 
-  onCategoryButtonClick(newCategory: CategoryEnum) {
+  async onCategoryButtonClick(newCategory: CategoryEnum) {
+    // Only run this once when the user first clicks the GIF section in the
+    // emoji picker, to do this check whether the gif categories have been
+    // inserted into allCategoryTabs
+    if (newCategory === CategoryEnum.GIF &&
+        this.allCategoryTabs.every(
+            (subCategoryData) =>
+                subCategoryData.category !== CategoryEnum.GIF)) {
+      const dataUrl = EmojiPicker.configs().dataUrls.gif[0];
+      // Fetch the mock json data for categories in tests instead of the
+      // real tenor API
+      const categories: GifSubcategoryData[] = dataUrl ?
+          (await this.fetchOrderingData<GifSubcategoryData[]>(dataUrl)) :
+          (await this.apiProxy.getCategories()).categories;
+      const categoryTabs = {
+        ...CATEGORY_TABS,
+        gif: categories,
+      };
+      this.allCategoryTabs = gifCategoryTabs(categoryTabs);
+    }
+
     this.set('category', newCategory);
     this.set('pagination', 1);
     if (this.getSearchContainer()?.searchNotEmpty()) {

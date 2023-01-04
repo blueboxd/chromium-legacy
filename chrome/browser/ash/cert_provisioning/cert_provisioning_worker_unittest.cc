@@ -1727,9 +1727,9 @@ TEST_F(CertProvisioningWorkerTest, SerializationSuccess) {
 
     worker = CertProvisioningWorkerFactory::Get()->Deserialize(
         kCertScope, GetProfile(), &testing_pref_service_,
-        *pref_val.FindKeyOfType(kCertProfileId, base::Value::Type::DICTIONARY),
-        &cloud_policy_client_, MakeInvalidator(&mock_invalidator),
-        GetStateChangeCallback(), GetResultCallback());
+        *pref_val.GetDict().FindDict(kCertProfileId), &cloud_policy_client_,
+        MakeInvalidator(&mock_invalidator), GetStateChangeCallback(),
+        GetResultCallback());
   }
 
   // Retry start csr request, receive response, try sign challenge.
@@ -1813,9 +1813,9 @@ TEST_F(CertProvisioningWorkerTest, SerializationSuccess) {
 
     worker = CertProvisioningWorkerFactory::Get()->Deserialize(
         kCertScope, GetProfile(), &testing_pref_service_,
-        *pref_val.FindKeyOfType(kCertProfileId, base::Value::Type::DICTIONARY),
-        &cloud_policy_client_, std::move(mock_invalidator_obj),
-        GetStateChangeCallback(), GetResultCallback());
+        *pref_val.GetDict().FindDict(kCertProfileId), &cloud_policy_client_,
+        std::move(mock_invalidator_obj), GetStateChangeCallback(),
+        GetResultCallback());
   }
 
   // Retry download cert request, receive response, try import certificate.
@@ -1933,7 +1933,7 @@ TEST_F(CertProvisioningWorkerTest, InformationalGetters) {
     EXPECT_EQ(worker.GetPreviousState(),
               CertProvisioningWorkerState::kInitState);
     EXPECT_EQ(worker.GetCertProfile(), cert_profile);
-    EXPECT_EQ(worker.GetPublicKey(), GetPublicKey());
+    EXPECT_EQ(worker.GetPublicKey(), GetPublicKeyBin());
   }
 
   {
@@ -1954,7 +1954,7 @@ TEST_F(CertProvisioningWorkerTest, InformationalGetters) {
     EXPECT_EQ(worker.GetPreviousState(),
               CertProvisioningWorkerState::kKeypairGenerated);
     EXPECT_EQ(worker.GetCertProfile(), cert_profile);
-    EXPECT_EQ(worker.GetPublicKey(), GetPublicKey());
+    EXPECT_EQ(worker.GetPublicKey(), GetPublicKeyBin());
   }
 }
 

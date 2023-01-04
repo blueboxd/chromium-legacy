@@ -122,6 +122,16 @@ size_t LocalSharedObjectsContainer::GetHostCount() const {
   return hosts.size();
 }
 
+std::set<std::string> LocalSharedObjectsContainer::GetHosts() const {
+  auto origins = GetObjectCountPerOriginMap();
+  std::set<std::string> hosts;
+  for (auto host : origins) {
+    hosts.insert(host.first.host());
+  }
+
+  return hosts;
+}
+
 std::map<url::Origin, int>
 LocalSharedObjectsContainer::GetObjectCountPerOriginMap() const {
   std::map<url::Origin, int> origins;
@@ -152,8 +162,10 @@ LocalSharedObjectsContainer::GetObjectCountPerOriginMap() const {
   for (const auto& info : shared_workers()->GetSharedWorkerInfo())
     origins[info.storage_key.origin()]++;
 
-  for (const auto& origin : cache_storages()->GetOrigins())
-    origins[origin]++;
+  for (const auto& storage_key : cache_storages()->GetStorageKeys()) {
+    // TODO(https://crbug.com/1199077): Use the real StorageKey once migrated.
+    origins[storage_key.origin()]++;
+  }
 
   for (const auto& origin : file_systems()->GetOrigins())
     origins[origin]++;

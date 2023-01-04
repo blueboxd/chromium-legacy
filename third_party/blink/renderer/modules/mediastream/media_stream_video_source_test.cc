@@ -100,10 +100,11 @@ class MediaStreamVideoSourceTest : public testing::Test {
                        absl::optional<bool>(), false, 0.0);
   }
 
-  WebMediaStreamTrack CreateTrackAndStartSource(int width,
-                                                int height,
-                                                double frame_rate,
-                                                bool detect_rotation = false) {
+  WebMediaStreamTrack CreateTrackAndStartSource(
+      int width,
+      int height,
+      absl::optional<double> frame_rate,
+      bool detect_rotation = false) {
     WebMediaStreamTrack track = CreateTrack(
         "123", VideoTrackAdapterSettings(gfx::Size(width, height), frame_rate),
         absl::optional<bool>(), false, 0.0);
@@ -154,6 +155,13 @@ class MediaStreamVideoSourceTest : public testing::Test {
     sink.DisconnectFromTrack();
   }
 
+  void DeliverVideoFrame(int width, int height, base::TimeDelta timestamp) {
+    scoped_refptr<media::VideoFrame> frame =
+        media::VideoFrame::CreateBlackFrame(gfx::Size(width, height));
+    frame->set_timestamp(timestamp);
+    mock_source()->DeliverVideoFrame(frame);
+  }
+
   void DeliverVideoFrameAndWaitForRenderer(int width,
                                            int height,
                                            MockMediaStreamVideoSink* sink) {
@@ -164,6 +172,22 @@ class MediaStreamVideoSourceTest : public testing::Test {
     });
     scoped_refptr<media::VideoFrame> frame =
         media::VideoFrame::CreateBlackFrame(gfx::Size(width, height));
+    mock_source()->DeliverVideoFrame(frame);
+    run_loop.Run();
+  }
+
+  void DeliverVideoFrameAndWaitForRenderer(int width,
+                                           int height,
+                                           base::TimeDelta timestamp,
+                                           MockMediaStreamVideoSink* sink) {
+    base::RunLoop run_loop;
+    base::OnceClosure quit_closure = run_loop.QuitClosure();
+    EXPECT_CALL(*sink, OnVideoFrame).WillOnce([&](base::TimeTicks) {
+      std::move(quit_closure).Run();
+    });
+    scoped_refptr<media::VideoFrame> frame =
+        media::VideoFrame::CreateBlackFrame(gfx::Size(width, height));
+    frame->set_timestamp(timestamp);
     mock_source()->DeliverVideoFrame(frame);
     run_loop.Run();
   }
@@ -318,7 +342,8 @@ TEST_F(MediaStreamVideoSourceTest, SourceChangeFrameSize) {
   // Expect the source to start capture with the supported resolution.
   // Disable frame-rate adjustment in spec-compliant mode to ensure no frames
   // are dropped.
-  WebMediaStreamTrack track = CreateTrackAndStartSource(800, 700, 0.0);
+  WebMediaStreamTrack track =
+      CreateTrackAndStartSource(800, 700, absl::nullopt);
 
   MockMediaStreamVideoSink sink;
   sink.ConnectToTrack(track);
@@ -352,7 +377,8 @@ TEST_F(MediaStreamVideoSourceTest, RotatedSourceDetectionDisabled) {
   // Expect the source to start capture with the supported resolution.
   // Disable frame-rate adjustment in spec-compliant mode to ensure no frames
   // are dropped.
-  WebMediaStreamTrack track = CreateTrackAndStartSource(1280, 720, 0.0, true);
+  WebMediaStreamTrack track =
+      CreateTrackAndStartSource(1280, 720, absl::nullopt, true);
 
   MockMediaStreamVideoSink sink;
   sink.ConnectToTrack(track);
@@ -380,7 +406,8 @@ TEST_F(MediaStreamVideoSourceTest, RotatedSourceDetectionEnabled) {
   // Expect the source to start capture with the supported resolution.
   // Disable frame-rate adjustment in spec-compliant mode to ensure no frames
   // are dropped.
-  WebMediaStreamTrack track = CreateTrackAndStartSource(1280, 720, 0.0, true);
+  WebMediaStreamTrack track =
+      CreateTrackAndStartSource(1280, 720, absl::nullopt, true);
 
   MockMediaStreamVideoSink sink;
   sink.ConnectToTrack(track);
@@ -443,7 +470,36 @@ TEST_F(MediaStreamVideoSourceTest, MutedSource) {
   sink.DisconnectFromTrack();
 }
 
-TEST_F(MediaStreamVideoSourceTest, NotifyFrameDropped) {
+// This test ensures that the filter used by the VideoTrackAdapter to estimate
+// the frame rate is initialized correctly and does not drop any frames from
+// start but forwards all as intended.
+TEST_F(MediaStreamVideoSourceTest,
+       SendAtMaxRateAndExpectAllFramesToBeDelivered) {
+  constexpr int kMaxFps = 10;
+  WebMediaStreamTrack track = CreateTrackAndStartSource(640, 480, kMaxFps);
+  MockMediaStreamVideoSink sink;
+  sink.ConnectToTrack(track);
+
+  // Drive five frames through at approximately the specified max frame rate
+  // and expect all frames to be delivered.
+  DeliverVideoFrameAndWaitForRenderer(100, 100, base::Milliseconds(100 + 10),
+                                      &sink);
+  DeliverVideoFrameAndWaitForRenderer(100, 100, base::Milliseconds(200 - 10),
+                                      &sink);
+  DeliverVideoFrameAndWaitForRenderer(100, 100, base::Milliseconds(300 + 5),
+                                      &sink);
+  DeliverVideoFrameAndWaitForRenderer(100, 100, base::Milliseconds(400 - 5),
+                                      &sink);
+  DeliverVideoFrameAndWaitForRenderer(100, 100, base::Milliseconds(500 + 20),
+                                      &sink);
+  EXPECT_EQ(5, sink.number_of_frames());
+
+  sink.DisconnectFromTrack();
+}
+
+// This test verifies that a too high input frame rate triggers an
+// OnNotifyFrameDropped() notification on the sink.
+TEST_F(MediaStreamVideoSourceTest, NotifyFrameDroppedWhenStartAtTooHighRate) {
   constexpr int kMaxFps = 10;
   WebMediaStreamTrack track = CreateTrackAndStartSource(640, 480, kMaxFps);
   MockMediaStreamVideoSink sink;
@@ -452,21 +508,19 @@ TEST_F(MediaStreamVideoSourceTest, NotifyFrameDropped) {
   native_track->SetSinkNotifyFrameDroppedCallback(
       &sink, sink.GetNotifyFrameDroppedCB());
 
-  // Drive two frames through whose timestamps are spaced too close for the max
-  // frame rate. The last one should be dropped and cause a notification.
+  // Drive two frames through whose timestamps are spaced way too close for
+  // the max frame rate. The EMA filter inside the VideoTrackAdapter starts at
+  // `kMaxFps` and will quickly measure a too high frame rate since the input
+  // rate is ten times the max rate. The second frame should be dropped and
+  // cause a notification.
   base::RunLoop run_loop;
   base::OnceClosure quit_closure = run_loop.QuitClosure();
   EXPECT_CALL(sink, OnNotifyFrameDropped).WillOnce([&] {
     std::move(quit_closure).Run();
   });
-  scoped_refptr<media::VideoFrame> frame1 =
-      media::VideoFrame::CreateBlackFrame(gfx::Size(100, 100));
-  frame1->set_timestamp(base::Milliseconds(10));
-  mock_source()->DeliverVideoFrame(frame1);
-  scoped_refptr<media::VideoFrame> frame2 =
-      media::VideoFrame::CreateBlackFrame(gfx::Size(100, 100));
-  frame2->set_timestamp(base::Milliseconds(20));
-  mock_source()->DeliverVideoFrame(frame2);
+
+  DeliverVideoFrame(100, 100, base::Milliseconds(10));
+  DeliverVideoFrame(100, 100, base::Milliseconds(20));
   run_loop.Run();
   sink.DisconnectFromTrack();
 }

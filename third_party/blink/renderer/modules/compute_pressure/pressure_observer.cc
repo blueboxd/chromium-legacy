@@ -6,6 +6,7 @@
 
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_pressure_observer_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_pressure_record.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_pressure_source.h"
@@ -50,6 +51,13 @@ PressureObserver* PressureObserver::Create(V8PressureUpdateCallback* callback,
 }
 
 // static
+size_t PressureObserver::ToSourceIndex(V8PressureSource::Enum source) {
+  size_t index = static_cast<size_t>(source);
+  DCHECK_LT(index, V8PressureSource::kEnumSize);
+  return index;
+}
+
+// static
 Vector<V8PressureSource> PressureObserver::supportedSources() {
   return Vector<V8PressureSource>(
       {V8PressureSource(V8PressureSource::Enum::kCpu)});
@@ -75,12 +83,17 @@ ScriptPromise PressureObserver::observe(ScriptState* script_state,
     return ScriptPromise();
   }
 
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
+      script_state, exception_state.GetContext());
+  pending_resolvers_[ToSourceIndex(source.AsEnum())].insert(resolver);
+
   if (!manager_) {
     LocalDOMWindow* window = To<LocalDOMWindow>(execution_context);
     manager_ = PressureObserverManager::From(*window);
   }
+  manager_->AddObserver(source.AsEnum(), this);
 
-  return manager_->AddObserver(source, this, script_state, exception_state);
+  return resolver->Promise();
 }
 
 void PressureObserver::unobserve(V8PressureSource source) {
@@ -89,8 +102,11 @@ void PressureObserver::unobserve(V8PressureSource source) {
     return;
 
   // https://wicg.github.io/compute-pressure/#the-unobserve-method
-  manager_->RemoveObserver(source, this);
-  last_record_map_[static_cast<size_t>(source.AsEnum())].Clear();
+  manager_->RemoveObserver(source.AsEnum(), this);
+  last_record_map_[ToSourceIndex(source.AsEnum())].Clear();
+  // Reject all pending promises for `source`.
+  RejectPendingResolvers(source.AsEnum(), DOMExceptionCode::kNotSupportedError,
+                         "Called unobserve method.");
   switch (source.AsEnum()) {
     case V8PressureSource::Enum::kCpu:
       records_.clear();
@@ -107,6 +123,12 @@ void PressureObserver::disconnect() {
   manager_->RemoveObserverFromAllSources(this);
   for (auto& last_record : last_record_map_)
     last_record.Clear();
+  // Reject all pending promises.
+  for (const auto& source : supportedSources()) {
+    RejectPendingResolvers(source.AsEnum(),
+                           DOMExceptionCode::kNotSupportedError,
+                           "Called disconnect method.");
+  }
   records_.clear();
 }
 
@@ -115,6 +137,9 @@ void PressureObserver::Trace(blink::Visitor* visitor) const {
   visitor->Trace(observer_callback_);
   for (const auto& last_record : last_record_map_)
     visitor->Trace(last_record);
+  for (const auto& pending_resolver_set : pending_resolvers_) {
+    visitor->Trace(pending_resolver_set);
+  }
   visitor->Trace(records_);
   ScriptWrappable::Trace(visitor);
 }
@@ -133,7 +158,7 @@ void PressureObserver::OnUpdate(ExecutionContext* execution_context,
   auto* record =
       MakeGarbageCollected<PressureRecord>(source, state, factors, timestamp);
 
-  last_record_map_[static_cast<size_t>(source)] = record;
+  last_record_map_[ToSourceIndex(source)] = record;
 
   // This should happen infrequently since `records_` is supposed
   // to be emptied at every callback invoking or takeRecords().
@@ -151,6 +176,24 @@ void PressureObserver::OnUpdate(ExecutionContext* execution_context,
       WTF::BindOnce(&PressureObserver::ReportToCallback,
                     WrapWeakPersistent(this),
                     WrapWeakPersistent(execution_context)));
+}
+
+void PressureObserver::OnBindingSucceeded(V8PressureSource::Enum source) {
+  ResolvePendingResolvers(source);
+}
+
+void PressureObserver::OnBindingFailed(V8PressureSource::Enum source,
+                                       DOMExceptionCode exception_code) {
+  RejectPendingResolvers(source, exception_code,
+                         "Not available on this platform.");
+}
+
+void PressureObserver::OnConnectionError() {
+  for (const auto& source : supportedSources()) {
+    RejectPendingResolvers(source.AsEnum(),
+                           DOMExceptionCode::kNotSupportedError,
+                           "Connection error.");
+  }
 }
 
 void PressureObserver::ReportToCallback(ExecutionContext* execution_context) {
@@ -178,7 +221,7 @@ HeapVector<Member<PressureRecord>> PressureObserver::takeRecords() {
 bool PressureObserver::PassesRateTest(
     V8PressureSource::Enum source,
     const DOMHighResTimeStamp& timestamp) const {
-  const auto& last_record = last_record_map_[static_cast<size_t>(source)];
+  const auto& last_record = last_record_map_[ToSourceIndex(source)];
 
   if (!last_record)
     return true;
@@ -193,13 +236,43 @@ bool PressureObserver::HasChangeInData(
     V8PressureSource::Enum source,
     V8PressureState::Enum state,
     const Vector<V8PressureFactor>& factors) const {
-  const auto& last_record = last_record_map_[static_cast<size_t>(source)];
+  const auto& last_record = last_record_map_[ToSourceIndex(source)];
 
   if (!last_record)
     return true;
 
   return last_record->state() != state ||
          !base::ranges::equal(last_record->factors(), factors);
+}
+
+void PressureObserver::ResolvePendingResolvers(V8PressureSource::Enum source) {
+  for (const auto& resolver : pending_resolvers_[ToSourceIndex(source)]) {
+    ScriptState* const script_state = resolver->GetScriptState();
+    // Check if callback's resolver is still valid.
+    if (!IsInParallelAlgorithmRunnable(resolver->GetExecutionContext(),
+                                       script_state)) {
+      continue;
+    }
+    resolver->Resolve();
+  }
+  pending_resolvers_[ToSourceIndex(source)].clear();
+}
+
+void PressureObserver::RejectPendingResolvers(V8PressureSource::Enum source,
+                                              DOMExceptionCode exception_code,
+                                              const String& message) {
+  for (const auto& resolver : pending_resolvers_[ToSourceIndex(source)]) {
+    ScriptState* const script_state = resolver->GetScriptState();
+    // Check if callback's resolver is still valid.
+    if (!IsInParallelAlgorithmRunnable(resolver->GetExecutionContext(),
+                                       script_state)) {
+      continue;
+    }
+    // Enter into resolver's context to support creating DOMException.
+    ScriptState::Scope script_state_scope(resolver->GetScriptState());
+    resolver->RejectWithDOMException(exception_code, message);
+  }
+  pending_resolvers_[ToSourceIndex(source)].clear();
 }
 
 }  // namespace blink

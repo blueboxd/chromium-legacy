@@ -25,6 +25,14 @@ BASE_FEATURE(kLauncherFuzzyMatchForOmnibox,
              "LauncherFuzzyMatchForOmnibox",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kLauncherImageSearch,
+             "LauncherImageSearch",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kLauncherSystemInfoAnswerCards,
+             "LauncherSystemInfoAnswerCards",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 bool IsLauncherGameSearchEnabled() {
   return base::FeatureList::IsEnabled(kLauncherGameSearch) ||
          chromeos::features::IsCloudGamingDeviceEnabled();
@@ -40,6 +48,14 @@ bool IsLauncherQueryFederatedAnalyticsPHHEnabled() {
 
 bool isLauncherFuzzyMatchForOmniboxEnabled() {
   return base::FeatureList::IsEnabled(kLauncherFuzzyMatchForOmnibox);
+}
+
+bool IsLauncherImageSearchEnabled() {
+  return base::FeatureList::IsEnabled(kLauncherImageSearch);
+}
+
+bool isLauncherSystemInfoAnswerCardsEnabled() {
+  return base::FeatureList::IsEnabled(kLauncherSystemInfoAnswerCards);
 }
 
 }  // namespace search_features

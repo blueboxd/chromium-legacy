@@ -66,6 +66,7 @@ suite('CrSettingsCookiesPageTest', function() {
   test('ElementVisibility', async function() {
     // TODO(): Remove assertFalse checks after the feature is launched.
     await flushTasks();
+    assertTrue(isChildVisible(page, '#explanationText'));
     assertTrue(isChildVisible(page, '#exceptionHeader'));
     assertTrue(isChildVisible(page, '#allowExceptionsList'));
     assertFalse(isChildVisible(page, '#sessionOnlyExceptionsList'));
@@ -109,6 +110,9 @@ suite('CrSettingsCookiesPageTest', function() {
   });
 
   test('ExceptionsSearch', async function() {
+    await siteSettingsBrowserProxy.whenCalled('getExceptionList');
+    siteSettingsBrowserProxy.resetResolver('getExceptionList');
+
     const exceptionPrefs = createSiteSettingsPrefs([], [
       createContentSettingTypeToValuePair(
           ContentSettingsTypes.COOKIES,
@@ -310,7 +314,7 @@ suite('CrSettingsCookiesPageTest_FirstPartySetsUIEnabled', function() {
 });
 
 // TODO(crbug.com/1378703): Remove after crbug/1378703 launched.
-suite('PrivacySandboxSettings4Disabled', function() {
+suite('CrSettingsCookiesPageTest_PrivacySandboxSettings4Disabled', function() {
   let siteSettingsBrowserProxy: TestSiteSettingsPrefsBrowserProxy;
   let testMetricsBrowserProxy: TestMetricsBrowserProxy;
   let page: SettingsCookiesPageElement;
@@ -369,6 +373,7 @@ suite('PrivacySandboxSettings4Disabled', function() {
 
   test('ElementVisibility', async function() {
     await flushTasks();
+    assertFalse(isChildVisible(page, '#explanationText'));
     assertTrue(isChildVisible(page, '#exceptionHeader'));
     assertTrue(isChildVisible(page, '#clearOnExit'));
     assertTrue(isChildVisible(page, '#doNotTrack'));
@@ -424,6 +429,11 @@ suite('PrivacySandboxSettings4Disabled', function() {
   });
 
   test('CookieSettingExceptions_Search', async function() {
+    while (siteSettingsBrowserProxy.getCallCount('getExceptionList') < 3) {
+      await flushTasks();
+    }
+    siteSettingsBrowserProxy.resetResolver('getExceptionList');
+
     const exceptionPrefs = createSiteSettingsPrefs([], [
       createContentSettingTypeToValuePair(
           ContentSettingsTypes.COOKIES,
@@ -443,7 +453,9 @@ suite('PrivacySandboxSettings4Disabled', function() {
     ]);
     page.searchTerm = 'foo';
     siteSettingsBrowserProxy.setPrefs(exceptionPrefs);
-    await siteSettingsBrowserProxy.whenCalled('getExceptionList');
+    while (siteSettingsBrowserProxy.getCallCount('getExceptionList') < 3) {
+      await flushTasks();
+    }
     flush();
 
     const exceptionLists = page.shadowRoot!.querySelectorAll('site-list');

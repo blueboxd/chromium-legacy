@@ -60,6 +60,10 @@ extern const char kPdfUseSkiaRendererDescription[];
 extern const char kAccountIdMigrationName[];
 extern const char kAccountIdMigrationDescription[];
 
+extern const char kAddEduAccountFromAccountSettingsForSupervisedUsersName[];
+extern const char
+    kAddEduAccountFromAccountSettingsForSupervisedUsersDescription[];
+
 extern const char kAlignWakeUpsName[];
 extern const char kAlignWakeUpsDescription[];
 
@@ -74,6 +78,12 @@ extern const char kAriaElementReflectionDescription[];
 
 extern const char kAttributionReportingDebugModeName[];
 extern const char kAttributionReportingDebugModeDescription[];
+
+extern const char kAppDeduplicationServiceFondueName[];
+extern const char kAppDeduplicationServiceFondueDescription[];
+
+extern const char kBlockInsecureDownloadsName[];
+extern const char kBlockInsecureDownloadsDescription[];
 
 extern const char kBrokerFileOperationsOnDiskCacheInNetworkServiceName[];
 extern const char kBrokerFileOperationsOnDiskCacheInNetworkServiceDescription[];
@@ -194,11 +204,6 @@ extern const char kAutofillAlwaysReturnCloudTokenizedCardDescription[];
 
 extern const char kAutofillAutoTriggerManualFallbackForCardsName[];
 extern const char kAutofillAutoTriggerManualFallbackForCardsDescription[];
-
-extern const char
-    kAutofillEnableGetDetailsForEnrollParsingInUploadCardResponseName[];
-extern const char
-    kAutofillEnableGetDetailsForEnrollParsingInUploadCardResponseDescription[];
 
 extern const char kAutofillEnableFIDOProgressDialogName[];
 extern const char kAutofillEnableFIDOProgressDialogDescription[];
@@ -821,9 +826,6 @@ extern const char kFedCmUserInfoDescription[];
 extern const char kFedCmWithoutThirdPartyCookiesName[];
 extern const char kFedCmWithoutThirdPartyCookiesDescription[];
 
-extern const char kFileHandlingAPIName[];
-extern const char kFileHandlingAPIDescription[];
-
 extern const char kFileHandlingIconsName[];
 extern const char kFileHandlingIconsDescription[];
 
@@ -1365,14 +1367,14 @@ extern const char kEnableOmniboxSearchPrefetchDescription[];
 extern const char kEnableOmniboxClientSearchPrefetchName[];
 extern const char kEnableOmniboxClientSearchPrefetchDescription[];
 
-extern const char kPrivacyGuide2Name[];
-extern const char kPrivacyGuide2Description[];
-
 extern const char kPrivacyGuideAndroidName[];
 extern const char kPrivacyGuideAndroidDescription[];
 
 extern const char kPrivacySandboxAdsAPIsOverrideName[];
 extern const char kPrivacySandboxAdsAPIsOverrideDescription[];
+
+extern const char kPrivacySandboxSettings4Name[];
+extern const char kPrivacySandboxSettings4Description[];
 
 extern const char kPrivateAggregationDeveloperModeName[];
 extern const char kPrivateAggregationDeveloperModeDescription[];
@@ -1708,10 +1710,6 @@ extern const char kTurnOffStreamingMediaCachingOnBatteryDescription[];
 extern const char kTurnOffStreamingMediaCachingAlwaysName[];
 extern const char kTurnOffStreamingMediaCachingAlwaysDescription[];
 
-extern const char kUnifiedSidePanelFlagId[];
-extern const char kUnifiedSidePanelName[];
-extern const char kUnifiedSidePanelDescription[];
-
 extern const char kUnifiedPasswordManagerAndroidName[];
 extern const char kUnifiedPasswordManagerAndroidDescription[];
 
@@ -1808,17 +1806,14 @@ extern const char kWebGpuDeveloperFeaturesDescription[];
 extern const char kWebPaymentsExperimentalFeaturesName[];
 extern const char kWebPaymentsExperimentalFeaturesDescription[];
 
-extern const char kWebPaymentAPICSPName[];
-extern const char kWebPaymentAPICSPDescription[];
+extern const char kIgnoreCSPInWebPaymentAPIName[];
+extern const char kIgnoreCSPInWebPaymentAPIDescription[];
 
 extern const char kClearIdentityInCanMakePaymentEventName[];
 extern const char kClearIdentityInCanMakePaymentEventDescription[];
 
 extern const char kAppStoreBillingDebugName[];
 extern const char kAppStoreBillingDebugDescription[];
-
-extern const char kWebAuthnConditionalUIName[];
-extern const char kWebAuthnConditionalUIDescription[];
 
 extern const char kWebAuthnNewDesktopUIName[];
 extern const char kWebAuthnNewDesktopUIDescription[];
@@ -1949,9 +1944,6 @@ extern const char kAndroidMediaPickerSupportDescription[];
 
 extern const char kAndroidSurfaceControlName[];
 extern const char kAndroidSurfaceControlDescription[];
-
-extern const char kAssistantIntentPageUrlName[];
-extern const char kAssistantIntentPageUrlDescription[];
 
 extern const char kAssistantIntentTranslateInfoName[];
 extern const char kAssistantIntentTranslateInfoDescription[];
@@ -2149,9 +2141,6 @@ extern const char kPageInfoStoreInfoDescription[];
 
 extern const char kPersistShareHubOnAppSwitchName[];
 extern const char kPersistShareHubOnAppSwitchDescription[];
-
-extern const char kPhotoPickerVideoSupportName[];
-extern const char kPhotoPickerVideoSupportDescription[];
 
 extern const char kQueryTilesName[];
 extern const char kQueryTilesDescription[];
@@ -2695,6 +2684,9 @@ extern const char kArcEnableVirtioBlkForDataDesc[];
 extern const char kAshEnableUnifiedDesktopName[];
 extern const char kAshEnableUnifiedDesktopDescription[];
 
+extern const char kAudioFlexibleLoopbackName[];
+extern const char kAudioFlexibleLoopbackDescription[];
+
 extern const char kAudioHFPMicSRName[];
 extern const char kAudioHFPMicSRDescription[];
 
@@ -2754,6 +2746,9 @@ extern const char kCalendarModelDebugModeDescription[];
 
 extern const char kDefaultLinkCapturingInBrowserName[];
 extern const char kDefaultLinkCapturingInBrowserDescription[];
+
+extern const char kCaptureModeDemoToolsName[];
+extern const char kCaptureModeDemoToolsDescription[];
 
 extern const char kDesks16Name[];
 extern const char kDesks16Description[];
@@ -3453,6 +3448,9 @@ extern const char kLauncherKeywordExtractionScoringDescription[];
 
 extern const char kLauncherFuzzyMatchForOmniboxName[];
 extern const char kLauncherFuzzyMatchForOmniboxDescription[];
+
+extern const char kLauncherSystemInfoAnswerCardsName[];
+extern const char kLauncherSystemInfoAnswerCardsDescription[];
 
 extern const char kMacAddressRandomizationName[];
 extern const char kMacAddressRandomizationDescription[];

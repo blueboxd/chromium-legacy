@@ -75,13 +75,14 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
+#include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
-#include "chrome/browser/web_applications/user_display_mode.h"
+#include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
-#include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
+#include "chrome/browser/web_applications/web_app_install_params.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_constants.h"
@@ -2036,7 +2037,8 @@ web_app::AppId InstallPWAWithName(Profile* profile,
   auto web_app_info = std::make_unique<WebAppInstallInfo>();
   web_app_info->start_url = start_url;
   web_app_info->scope = start_url.GetWithoutFilename();
-  web_app_info->user_display_mode = web_app::UserDisplayMode::kStandalone;
+  web_app_info->user_display_mode =
+      web_app::mojom::UserDisplayMode::kStandalone;
   web_app_info->title = base::UTF8ToUTF16(app_name);
   return web_app::test::InstallWebApp(profile, std::move(web_app_info));
 }
@@ -2265,7 +2267,8 @@ web_app::AppId InstallPWA(Profile* profile, const GURL& start_url) {
   auto web_app_info = std::make_unique<WebAppInstallInfo>();
   web_app_info->start_url = start_url;
   web_app_info->scope = start_url.GetWithoutFilename();
-  web_app_info->user_display_mode = web_app::UserDisplayMode::kStandalone;
+  web_app_info->user_display_mode =
+      web_app::mojom::UserDisplayMode::kStandalone;
   web_app_info->title = u"A Web App";
   return web_app::test::InstallWebApp(profile, std::move(web_app_info));
 }
@@ -2481,33 +2484,26 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserWithWebAppTest,
   // the PRE test.
   WebAppProvider* const provider =
       WebAppProvider::GetForTest(browser()->profile());
-  web_app::WebAppInstallFinalizer& web_app_finalizer =
-      provider->install_finalizer();
-
-  web_app::WebAppInstallFinalizer::FinalizeOptions options(
-      webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON);
 
   // Install web app set to open as a tab.
   {
-    base::RunLoop run_loop;
-    WebAppInstallInfo info;
-    info.start_url = GURL(kStartUrl);
-    info.title = kAppName;
-    info.user_display_mode = web_app::UserDisplayMode::kStandalone;
-    web_app_finalizer.FinalizeInstall(
-        info, options,
-        base::BindLambdaForTesting([&](const web_app::AppId& app_id,
-                                       webapps::InstallResultCode code,
-                                       web_app::OsHooksErrors os_hooks_errors) {
-          EXPECT_EQ(app_id, kAppId);
-          EXPECT_EQ(code, webapps::InstallResultCode::kSuccessNewInstall);
-          EXPECT_TRUE(os_hooks_errors.none());
-          run_loop.Quit();
-        }));
-    run_loop.Run();
+    std::unique_ptr<WebAppInstallInfo> info =
+        std::make_unique<WebAppInstallInfo>();
+    info->start_url = GURL(kStartUrl);
+    info->title = kAppName;
+    info->user_display_mode = web_app::mojom::UserDisplayMode::kStandalone;
+    base::test::TestFuture<const web_app::AppId&, webapps::InstallResultCode>
+        result;
+    provider->scheduler().InstallFromInfoWithParams(
+        std::move(info), /*overwrite_existing_manifest_fields=*/true,
+        webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON,
+        result.GetCallback(), web_app::WebAppInstallParams());
 
+    EXPECT_EQ(result.Get<web_app::AppId>(), kAppId);
+    EXPECT_EQ(result.Get<webapps::InstallResultCode>(),
+              webapps::InstallResultCode::kSuccessNewInstall);
     EXPECT_EQ(provider->registrar_unsafe().GetAppUserDisplayMode(kAppId),
-              web_app::UserDisplayMode::kStandalone);
+              web_app::mojom::UserDisplayMode::kStandalone);
   }
 }
 
@@ -2777,7 +2773,7 @@ class StartupBrowserWebAppProtocolHandlingTest : public InProcessBrowserTest {
         std::make_unique<WebAppInstallInfo>();
     info->start_url = GURL(kStartUrl);
     info->title = kAppName;
-    info->user_display_mode = web_app::UserDisplayMode::kStandalone;
+    info->user_display_mode = web_app::mojom::UserDisplayMode::kStandalone;
     info->protocol_handlers = protocol_handlers;
     info->file_handlers = file_handlers;
     web_app::AppId app_id =

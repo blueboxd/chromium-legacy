@@ -25,20 +25,19 @@
 #import "ios/chrome/browser/ui/menu/action_factory.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller_ui_delegate.h"
-#import "ios/chrome/browser/ui/tab_switcher/pinned_tabs/features.h"
-#import "ios/chrome/browser/ui/tab_switcher/pinned_tabs/pinned_tabs_collection_consumer.h"
-#import "ios/chrome/browser/ui/tab_switcher/pinned_tabs/pinned_tabs_commands.h"
-#import "ios/chrome/browser/ui/tab_switcher/pinned_tabs/pinned_tabs_constants.h"
-#import "ios/chrome/browser/ui/tab_switcher/pinned_tabs/pinned_tabs_view_controller.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_collection_consumer.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_collection_drag_drop_handler.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/disabled_tab_view_controller.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_commands.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_constants.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_context_menu_provider.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_image_data_source.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_view_controller.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/features.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/pinned_tabs_commands.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/pinned_tabs_constants.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/pinned_tabs_view_controller.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/suggested_actions/suggested_actions_delegate.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_context_menu/tab_context_menu_provider.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_bottom_toolbar.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_constants.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_empty_state_view.h"
@@ -612,7 +611,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   _priceCardDataSource = priceCardDataSource;
 }
 
-- (id<PinnedTabsCollectionConsumer>)pinnedTabsConsumer {
+- (id<TabCollectionConsumer>)pinnedTabsConsumer {
   return self.pinnedTabsViewController;
 }
 
@@ -666,17 +665,19 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
       self.incognitoThumbStripHandler;
 }
 
-- (void)setRegularTabsContextMenuProvider:
-    (id<GridContextMenuProvider>)provider {
+- (void)setRegularTabsContextMenuProvider:(id<TabContextMenuProvider>)provider {
   if (_regularTabsContextMenuProvider == provider)
     return;
   _regularTabsContextMenuProvider = provider;
 
   self.regularTabsViewController.menuProvider = provider;
+  if (IsPinnedTabsEnabled()) {
+    self.pinnedTabsViewController.menuProvider = provider;
+  }
 }
 
 - (void)setIncognitoTabsContextMenuProvider:
-    (id<GridContextMenuProvider>)provider {
+    (id<TabContextMenuProvider>)provider {
   if (_incognitoTabsContextMenuProvider == provider)
     return;
   _incognitoTabsContextMenuProvider = provider;
@@ -2338,11 +2339,10 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 - (void)gridViewController:(GridViewController*)gridViewController
          didMoveItemWithID:(NSString*)itemID
                    toIndex:(NSUInteger)destinationIndex {
-  ItemListIndex itemListIndex = ItemListIndex{destinationIndex};
   if (gridViewController == self.regularTabsViewController) {
-    [self.regularTabsDelegate moveItemWithID:itemID toIndex:itemListIndex];
+    [self.regularTabsDelegate moveItemWithID:itemID toIndex:destinationIndex];
   } else if (gridViewController == self.incognitoTabsViewController) {
-    [self.incognitoTabsDelegate moveItemWithID:itemID toIndex:itemListIndex];
+    [self.incognitoTabsDelegate moveItemWithID:itemID toIndex:destinationIndex];
   }
 }
 

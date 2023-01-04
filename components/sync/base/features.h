@@ -51,8 +51,6 @@ inline constexpr base::FeatureParam<int> kSyncAndroidNTPPromoMaxImpressions{
     &kSyncAndroidLimitNTPPromoImpressions, "SyncAndroidNTPPromoMaxImpressions",
     5};
 BASE_DECLARE_FEATURE(kSyncAndroidPromosWithAlternativeTitle);
-BASE_DECLARE_FEATURE(kSyncAndroidPromosWithIllustration);
-BASE_DECLARE_FEATURE(kSyncAndroidPromosWithSingleButton);
 BASE_DECLARE_FEATURE(kSyncAndroidPromosWithTitle);
 #endif  // BUILDFLAG(IS_ANDROID)
 
@@ -166,6 +164,9 @@ BASE_DECLARE_FEATURE(kSyncIgnoreAccountWithoutRefreshToken);
 // which implies that DataTypeManager (and hence individual datatypes) won't be
 // notified about browser shutdown.
 BASE_DECLARE_FEATURE(kSyncDoNotPropagateBrowserShutdownToDataTypes);
+
+// Enables codepath to allow clearing metadata when the data type is stopped.
+BASE_DECLARE_FEATURE(kSyncAllowClearingMetadataWhenDataTypeIsStopped);
 
 }  // namespace syncer
 

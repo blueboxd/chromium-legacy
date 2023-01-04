@@ -82,7 +82,7 @@ namespace blink {
 using std::max;
 
 class AppliedTextDecoration;
-struct BorderEdge;
+class BorderEdge;
 class ContentData;
 class CounterDirectives;
 class CSSAnimationData;
@@ -861,6 +861,11 @@ class ComputedStyle : public ComputedStyleBase,
   // font-stretch
   FontSelectionValue GetFontStretch() const {
     return GetFontDescription().Stretch();
+  }
+
+  // font-style
+  FontSelectionValue GetFontStyle() const {
+    return GetFontDescription().Style();
   }
 
   // Child is aligned to the parent by matching the parent’s dominant baseline

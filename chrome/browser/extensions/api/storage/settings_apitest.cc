@@ -715,20 +715,20 @@ IN_PROC_BROWSER_TEST_P(ExtensionSettingsManagedStorageApiTest, ManagedStorage) {
                                   .Append("one")
                                   .Append("two")
                                   .Append("three")
-                                  .BuildList())
+                                  .Build())
           .Set("dict-policy",
                extensions::DictionaryBuilder()
                    .Set("list", extensions::ListBuilder()
                                     .Append(extensions::DictionaryBuilder()
                                                 .Set("one", 1)
                                                 .Set("two", 2)
-                                                .BuildDict())
+                                                .Build())
                                     .Append(extensions::DictionaryBuilder()
                                                 .Set("three", 3)
-                                                .BuildDict())
-                                    .BuildList())
-                   .BuildDict())
-          .BuildDict();
+                                                .Build())
+                                    .Build())
+                   .Build())
+          .Build();
   SetPolicies(policy);
   // Now run the extension.
   ASSERT_TRUE(RunExtensionTest("settings/managed_storage")) << message_;
@@ -747,7 +747,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionSettingsManagedStorageApiTest,
                                  .Set("constant-policy", "aaa")
                                  .Set("changes-policy", "bbb")
                                  .Set("deleted-policy", "ccc")
-                                 .BuildDict();
+                                 .Build();
   SetPolicies(policy);
 
   ExtensionTestMessageListener ready_listener("ready");
@@ -767,7 +767,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionSettingsManagedStorageApiTest,
                .Set("constant-policy", "aaa")
                .Set("changes-policy", "ddd")
                .Set("new-policy", "eee")
-               .BuildDict();
+               .Build();
   SetPolicies(policy);
   EXPECT_TRUE(events_result_catcher_.GetNextResult())
       << events_result_catcher_.message();

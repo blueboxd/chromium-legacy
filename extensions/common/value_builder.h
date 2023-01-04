@@ -52,9 +52,6 @@ class DictionaryBuilder {
 
   ~DictionaryBuilder();
 
-  // Deprecated: Use Build instead.
-  base::Value::Dict BuildDict() { return Build(); }
-
   base::Value::Dict Build() {
     base::Value::Dict result = std::move(dict_);
     dict_ = base::Value::Dict();
@@ -94,9 +91,6 @@ class ListBuilder {
   ListBuilder& operator=(const ListBuilder&) = delete;
 
   ~ListBuilder();
-
-  // DEPRECATED: Use Build instead.
-  base::Value::List BuildList() { return Build(); }
 
   base::Value::List Build() {
     base::Value::List result = std::move(list_);

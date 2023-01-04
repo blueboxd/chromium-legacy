@@ -44,10 +44,10 @@ TEST_F(FileBrowserHandlerManifestTest, GetHandlersRequiresPermission) {
                            .Set("file_filters", extensions::ListBuilder()
                                                     .Append("filesystem:*.txt")
                                                     .Append("filesystem:*.html")
-                                                    .BuildList())
-                           .BuildDict())
-               .BuildList());
-  base::Value::Dict bad_manifest_value(bad_manifest_builder.BuildDict());
+                                                    .Build())
+                           .Build())
+               .Build());
+  base::Value::Dict bad_manifest_value(bad_manifest_builder.Build());
 
   // Create a good manifest by extending the bad one with the missing
   // permission.
@@ -110,7 +110,7 @@ TEST_F(FileBrowserHandlerManifestTest, ValidFileBrowserHandler) {
                   .Set("manifest_version", 2)
                   .Set("permissions", extensions::ListBuilder()
                                           .Append("fileBrowserHandler")
-                                          .BuildList())
+                                          .Build())
                   .Set("file_browser_handlers",
                        ListBuilder()
                            .Append(DictionaryBuilder()
@@ -120,10 +120,10 @@ TEST_F(FileBrowserHandlerManifestTest, ValidFileBrowserHandler) {
                                        .Set("file_filters",
                                             ListBuilder()
                                                 .Append("filesystem:*.txt")
-                                                .BuildList())
-                                       .BuildDict())
-                           .BuildList())
-                  .BuildDict())
+                                                .Build())
+                                       .Build())
+                           .Build())
+                  .Build())
           .Build();
 
   ASSERT_TRUE(extension.get());
@@ -161,7 +161,7 @@ TEST_F(FileBrowserHandlerManifestTest, ValidFileBrowserHandlerMIMETypes) {
                   .Set("manifest_version", 2)
                   .Set("permissions", extensions::ListBuilder()
                                           .Append("fileBrowserHandler")
-                                          .BuildList())
+                                          .Build())
                   .Set("file_browser_handlers",
                        ListBuilder()
                            .Append(DictionaryBuilder()
@@ -171,10 +171,10 @@ TEST_F(FileBrowserHandlerManifestTest, ValidFileBrowserHandlerMIMETypes) {
                                        .Set("file_filters",
                                             ListBuilder()
                                                 .Append("filesystem:*.txt")
-                                                .BuildList())
-                                       .BuildDict())
-                           .BuildList())
-                  .BuildDict())
+                                                .Build())
+                                       .Build())
+                           .Build())
+                  .Build())
           .Build();
 
   ASSERT_TRUE(extension.get());
@@ -204,23 +204,23 @@ TEST_F(FileBrowserHandlerManifestTest, ValidFileBrowserHandlerWithCreate) {
                   .Set("manifest_version", 2)
                   .Set("permissions", extensions::ListBuilder()
                                           .Append("fileBrowserHandler")
-                                          .BuildList())
+                                          .Build())
                   .Set("file_browser_handlers",
                        ListBuilder()
-                           .Append(DictionaryBuilder()
-                                       .Set("id", "ID")
-                                       .Set("default_title", "Default title")
-                                       .Set("default_icon", "icon.png")
-                                       .Set("file_filters",
-                                            ListBuilder()
-                                                .Append("filesystem:*.txt")
-                                                .BuildList())
-                                       .Set("file_access", ListBuilder()
-                                                               .Append("create")
-                                                               .BuildList())
-                                       .BuildDict())
-                           .BuildList())
-                  .BuildDict())
+                           .Append(
+                               DictionaryBuilder()
+                                   .Set("id", "ID")
+                                   .Set("default_title", "Default title")
+                                   .Set("default_icon", "icon.png")
+                                   .Set("file_filters",
+                                        ListBuilder()
+                                            .Append("filesystem:*.txt")
+                                            .Build())
+                                   .Set("file_access",
+                                        ListBuilder().Append("create").Build())
+                                   .Build())
+                           .Build())
+                  .Build())
           .Build();
 
   ASSERT_TRUE(extension.get());

@@ -298,7 +298,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.DiskCache.InitResult" units="units"
-    expires_after="2023-04-23">
+    expires_after="2023-06-25">
   <owner>bashi@chromium.org</owner>
   <owner>nhiroki@chromium.org</owner>
   <summary>
@@ -665,7 +665,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="ServiceWorker.LoadTiming.Subresource.ForwardServiceWorkerToWorkerReady"
-    units="ms" expires_after="2023-04-23">
+    units="ms" expires_after="2023-06-25">
   <owner>bashi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
@@ -680,7 +680,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="ServiceWorker.LoadTiming.Subresource.ResponseReceivedToCompleted2"
-    units="ms" expires_after="2023-04-23">
+    units="ms" expires_after="2023-06-25">
   <owner>bashi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
@@ -1100,7 +1100,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.StartWorker.Status"
-    enum="ServiceWorkerStatusCode" expires_after="2023-04-30">
+    enum="ServiceWorkerStatusCode" expires_after="2023-07-02">
   <owner>wanderview@chromium.org</owner>
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
@@ -1126,7 +1126,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.StartWorker.Time" units="ms"
-    expires_after="2023-04-30">
+    expires_after="2023-07-02">
   <owner>wanderview@chromium.org</owner>
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
@@ -1293,15 +1293,6 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
-<histogram name="ServiceWorkerCache.Cache.AllWritesResponseType"
-    enum="FetchResponseType" expires_after="M77">
-  <owner>jkarlin@chromium.org</owner>
-  <summary>
-    Records the response type to be added in the Cache by all operations that
-    write to the cache.
-  </summary>
-</histogram>
-
 <histogram name="ServiceWorkerCache.Cache.Browser.Match.Initialized" units="ms"
     expires_after="2023-05-26">
   <owner>ayui@chromium.org</owner>
@@ -1455,14 +1446,6 @@ chromium-metrics-reviews@google.com.
     Records where the generic kErrorStorage value is triggered within the
     cache_storage code. This histogram was temporarily disabled from late
     10/2021 to early 12/2021.
-  </summary>
-</histogram>
-
-<histogram name="ServiceWorkerCache.InitBackendResult"
-    enum="CacheStorageErrorType" expires_after="M81">
-  <owner>jkarlin@chromium.org</owner>
-  <summary>
-    The result of opening the backend in the ServiceWorker Cache API.
   </summary>
 </histogram>
 

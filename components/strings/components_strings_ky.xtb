@@ -808,7 +808,6 @@
 <translation id="299990983510665749">Хэтчбектер</translation>
 <translation id="3002501248619246229">Киргизүү түпкүчүнүн медиасын текшерүү</translation>
 <translation id="3005723025932146533">Сакталган көчүрмөнү көрсөтүү</translation>
-<translation id="3008447029300691911"><ph name="CREDIT_CARD" /> карточкаңыздын CVC кодун киргизиңиз. Текшерилгенден кийин карточкаңыздын маалыматы бул сайтта көрүнөт.</translation>
 <translation id="3013291976881901233">MIDI түзмөктөрү</translation>
 <translation id="301521992641321250">Автоматтык түрдө бөгөттөлдү</translation>
 <translation id="3016780570757425217">Жайгашкан жериңизди билүү</translation>
@@ -1165,6 +1164,7 @@
 <translation id="3927932062596804919">Четке кагуу</translation>
 <translation id="393316646445601645">Интернет жана телекоммуникация</translation>
 <translation id="3939773374150895049">CVC'нин ордуна WebAuthn колдонулсунбу?</translation>
+<translation id="3943857333388298514">Чаптоо</translation>
 <translation id="3946209740501886391">Бул сайтта ар дайым суралсын</translation>
 <translation id="3947595700203588284">MIDI түзмөктөрүнө туташууга уруксат сурай алат</translation>
 <translation id="3949571496842715403">Бул сервер <ph name="DOMAIN" /> домени экендигин далилдей алган жок. Анын коопсуздук тастыктамасында альтернативдүү аталыштар көрсөтүлгөн эмес. Сервер туура эмес жөндөлгөн окшойт же кимдир-бирөө маалыматыңызды ортодон кармап калганга аракет кылып жатат.</translation>
@@ -2312,6 +2312,7 @@
 <translation id="6890531741535756070"><ph name="PROVIDER_ORIGIN" /> вебсайттарында <ph name="DEVICE_LABEL" /> аркылуу ырастоону тандадыңыз. Бул провайдер төлөм ыкмаңызды сактап койгон болушу мүмкүн. Аны <ph name="BEGIN_LINK" />өчүрүүнү сурана<ph name="END_LINK" /> аласыз.</translation>
 <translation id="6891596781022320156">Саясат деңгээли колдоого алынбайт.</translation>
 <translation id="6895330447102777224">Карточкаңыз текшерилди</translation>
+<translation id="6896758677409633944">Көчүрүү</translation>
 <translation id="6897140037006041989">Колдонуучунун агенти</translation>
 <translation id="6898699227549475383">Уюм (У)</translation>
 <translation id="6899000063526916106"><ph name="NUMBER_OF_DIGITS" /> орундуу кодду киргизиңиз</translation>
@@ -2356,7 +2357,7 @@
 <translation id="6978236010531171013">Баары бир бөлүшүү</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Үнсүз (демейки)</translation>
-<translation id="6989763994942163495">Өркүндөтүлгөн жөндөөлөрдү көрсөтүү…</translation>
+<translation id="6989763994942163495">Өркүндөтүлгөн параметрлерди көрсөтүү…</translation>
 <translation id="6992499368826755835">Автоунаа өнөр жайы</translation>
 <translation id="6996312675313362352"><ph name="ORIGINAL_LANGUAGE" /> тилин ар дайым которуу</translation>
 <translation id="6999969238895751684">Көңүл ачуу индустриясы</translation>
@@ -2457,7 +2458,6 @@
 <translation id="7243771829620208687">RA0</translation>
 <translation id="7244465398154211886">{NUM_MATCHES,plural, =1{# дал келди}other{# дал келди}}</translation>
 <translation id="724691107663265825">Алдыдагы сайтта кесепеттүү программа камтылган</translation>
-<translation id="724975217298816891">Карточкаңыздын маалыматын жаңыртуу үчүн <ph name="CREDIT_CARD" /> мөөнөтү аяктоочу күндү жана CVC кодун киргизиңиз. Текшерилгенден кийин карточкаңыздын маалыматы бул сайтка жөнөтүлөт.</translation>
 <translation id="7251437084390964440">Тармак конфигурациясы ONC стандартына туура келбейт. Конфигурациянын айрым бөлүктөрү импорттолбой калышы мүмкүн.
 Кошумча маалымат:
 <ph name="DEBUG_INFO" /></translation>
@@ -2586,7 +2586,6 @@
 <translation id="7534987659046836932">Конверт C7</translation>
 <translation id="7535087603100972091">Маани</translation>
 <translation id="7537536606612762813">Милдеттүү</translation>
-<translation id="7542403920425041731">Текшерилгенден кийин карточкаңыздын маалыматы бул сайтка жөнөтүлөт.</translation>
 <translation id="7542995811387359312">Бул форманын туташуусу кооптуу болгондуктан, насыя картасын автоматтык түрдө толтуруу мүмкүнчүлүгү өчүрүлдү.</translation>
 <translation id="7543525346216957623">Ата-энеңизден сураңыз</translation>
 <translation id="7546409722674205727"><ph name="APP_NAME" /> ачылууда</translation>
@@ -2642,7 +2641,7 @@
 <translation id="7648992873808071793">Ушул түзмөккө файлдарды сактайт</translation>
 <translation id="7653957176542370971">Төлөм иштетүүчү барак жабылды</translation>
 <translation id="7654909834015434372">Аннотацияны түзөтүүдө бул документ өзүнүн түпнуска айлануусуна кайтып келет</translation>
-<translation id="765676359832457558">Өркүндөтүлгөн жөндөөлөрдү жашыруу…</translation>
+<translation id="765676359832457558">Өркүндөтүлгөн параметрлерди жашыруу…</translation>
 <translation id="7658239707568436148">Жокко чыгаруу</translation>
 <translation id="7659327900411729175">Конверт Каку 8</translation>
 <translation id="7659878911471462949">Көздөрүнөн жаш чыккыча күлгөн жүз</translation>
@@ -2679,6 +2678,7 @@
 <translation id="7716375162095500223">Жүктөлүп бериле элек же этибарга алынган жок</translation>
 <translation id="7716424297397655342">Бул сайтты кештен жүктөө мүмкүн эмес</translation>
 <translation id="7723047071702270851">Карточканы түзөтүү</translation>
+<translation id="7724603315864178912">Кесүү</translation>
 <translation id="7734285854693414638">Google Формаларда жаңы форманы тез түзүү</translation>
 <translation id="773466115871691567"><ph name="SOURCE_LANGUAGE" /> тилиндеги барактар дайыма которулсун</translation>
 <translation id="7736959720849233795">Шилтеменин дарегин көчүрүү</translation>

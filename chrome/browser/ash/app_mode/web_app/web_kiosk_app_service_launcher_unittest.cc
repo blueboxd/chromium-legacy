@@ -19,15 +19,16 @@
 #include "chrome/browser/apps/app_service/app_service_test.h"
 #include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_data.h"
 #include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_manager.h"
+#include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_manager.h"
 #include "chrome/browser/web_applications/external_install_options.h"
 #include "chrome/browser/web_applications/externally_managed_app_manager.h"
+#include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/test/fake_externally_managed_app_manager.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
-#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
@@ -44,6 +45,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 using ::base::test::TestFuture;
 using ::testing::_;
@@ -179,7 +181,7 @@ class WebKioskAppServiceLauncherTest : public BrowserWithTestWindowTest {
                    web_app::ExternallyManagedAppManager::InstallResult>
             install_result;
         web_app::ExternalInstallOptions install_options(
-            GURL(kAppInstallUrl), web_app::UserDisplayMode::kStandalone,
+            GURL(kAppInstallUrl), web_app::mojom::UserDisplayMode::kStandalone,
             web_app::ExternalInstallSource::kKiosk);
 
         externally_managed_app_manager().Install(install_options,
@@ -312,6 +314,19 @@ TEST_F(WebKioskAppServiceLauncherTest, NormalFlowNotInstalled) {
       webapps::InstallResultCode::kSuccessNewInstall, 1);
 }
 
+TEST_F(WebKioskAppServiceLauncherTest,
+       KioskOriginShouldGetUnlimitedStorageGrantedDuringInstallFlow) {
+  SetupAppData(/*installed=*/false);
+  EXEC_AND_WAIT_FOR_CALL(launcher()->Initialize(), *delegate(),
+                         InitializeNetwork());
+  EXEC_AND_WAIT_FOR_CALL(launcher()->ContinueWithNetworkReady(), *delegate(),
+                         OnAppPrepared());
+  EXEC_AND_WAIT_FOR_CALL(launcher()->LaunchApp(), *delegate(), OnAppLaunched());
+
+  EXPECT_TRUE(profile()->GetExtensionSpecialStoragePolicy()->IsStorageUnlimited(
+      GURL(kAppInstallUrl)));
+}
+
 TEST_F(WebKioskAppServiceLauncherTest, NormalFlowAlreadyInstalled) {
   base::HistogramTester histogram;
 
@@ -328,6 +343,17 @@ TEST_F(WebKioskAppServiceLauncherTest, NormalFlowAlreadyInstalled) {
                              1);
   histogram.ExpectTotalCount(
       WebKioskAppServiceLauncher::kWebAppInstallResultUMA, 0);
+}
+
+TEST_F(WebKioskAppServiceLauncherTest,
+       KioskOriginShouldGetUnlimitedStorageGrantedIfAppAlreadyInstalled) {
+  SetupAppData(/*installed=*/true);
+  EXEC_AND_WAIT_FOR_CALL(launcher()->Initialize(), *delegate(),
+                         OnAppPrepared());
+  EXEC_AND_WAIT_FOR_CALL(launcher()->LaunchApp(), *delegate(), OnAppLaunched());
+
+  EXPECT_TRUE(profile()->GetExtensionSpecialStoragePolicy()->IsStorageUnlimited(
+      GURL(kAppInstallUrl)));
 }
 
 TEST_F(WebKioskAppServiceLauncherTest, FailedToInstall) {

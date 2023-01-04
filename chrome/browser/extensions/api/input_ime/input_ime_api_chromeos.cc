@@ -53,15 +53,13 @@ namespace SetAssistiveWindowProperties =
 namespace SetAssistiveWindowButtonHighlighted =
     extensions::api::input_ime::SetAssistiveWindowButtonHighlighted;
 namespace ClearComposition = extensions::api::input_ime::ClearComposition;
-namespace OnCompositionBoundsChanged =
-    extensions::api::input_method_private::OnCompositionBoundsChanged;
 namespace OnScreenProjectionChanged =
     extensions::api::input_method_private::OnScreenProjectionChanged;
 namespace FinishComposingText =
     extensions::api::input_method_private::FinishComposingText;
 
+using ::ash::TextInputMethod;
 using ::ash::input_method::InputMethodEngine;
-using ::ui::TextInputMethod;
 
 const char kErrorEngineNotAvailable[] = "The engine is not available.";
 const char kErrorSetMenuItemsFail[] = "Could not create menu items.";
@@ -214,12 +212,11 @@ std::string GetKeyFromEvent(const ui::KeyEvent& event) {
 
 // TODO(b/247441188): Change the input extension JS API to use
 // PersonalizationMode instead of a bool.
-bool ConvertPersonalizationMode(
-    const ui::TextInputMethod::InputContext& context) {
+bool ConvertPersonalizationMode(const TextInputMethod::InputContext& context) {
   switch (context.personalization_mode) {
-    case ui::PersonalizationMode::kEnabled:
+    case ash::PersonalizationMode::kEnabled:
       return true;
-    case ui::PersonalizationMode::kDisabled:
+    case ash::PersonalizationMode::kDisabled:
       return false;
   }
 }
@@ -373,7 +370,7 @@ class ImeObserverChromeOS
 
     keyboard_event.key = GetKeyFromEvent(event);
     keyboard_event.code = event.code() == ui::DomCode::NONE
-                              ? ui::KeyboardCodeToDomKeycode(event.key_code())
+                              ? ash::KeyboardCodeToDomKeycode(event.key_code())
                               : event.GetCodeString();
     keyboard_event.alt_key = event.IsAltDown();
     keyboard_event.altgr_key = event.IsAltGrDown();
@@ -409,37 +406,6 @@ class ImeObserverChromeOS
     DispatchEventToExtension(extensions::events::INPUT_IME_ON_DEACTIVATED,
                              input_ime::OnDeactivated::kEventName,
                              std::move(args));
-  }
-
-  void OnCompositionBoundsChanged(
-      const std::vector<gfx::Rect>& bounds) override {
-    if (bounds.empty() || extension_id_.empty() ||
-        !HasListener(OnCompositionBoundsChanged::kEventName)) {
-      return;
-    }
-
-    // Note: this is a private API event.
-    base::Value::List bounds_list;
-    bounds_list.reserve(bounds.size());
-    for (const auto& bound : bounds) {
-      base::Value::Dict bounds_value;
-      bounds_value.Set("x", bound.x());
-      bounds_value.Set("y", bound.y());
-      bounds_value.Set("w", bound.width());
-      bounds_value.Set("h", bound.height());
-      bounds_list.Append(std::move(bounds_value));
-    }
-
-    base::Value::List args;
-
-    // The old extension code uses the first parameter to get the bounds of the
-    // first composition character, so for backward compatibility, add it here.
-    args.Append(bounds_list[0].Clone());
-    args.Append(std::move(bounds_list));
-
-    DispatchEventToExtension(
-        extensions::events::INPUT_METHOD_PRIVATE_ON_COMPOSITION_BOUNDS_CHANGED,
-        OnCompositionBoundsChanged::kEventName, std::move(args));
   }
 
   void OnCaretBoundsChanged(const gfx::Rect& caret_bounds) override {
@@ -713,7 +679,7 @@ class ImeObserverChromeOS
   }
 
   std::string ConvertInputContextFocusReason(
-      ui::TextInputMethod::InputContext input_context) {
+      TextInputMethod::InputContext input_context) {
     switch (input_context.focus_reason) {
       case ui::TextInputClient::FOCUS_REASON_NONE:
         return "";
@@ -728,23 +694,23 @@ class ImeObserverChromeOS
     }
   }
 
-  bool ConvertInputContextAutoCorrect(ui::AutocorrectionMode mode) {
+  bool ConvertInputContextAutoCorrect(ash::AutocorrectionMode mode) {
     return GetKeyboardConfig().auto_correct &&
-           mode != ui::AutocorrectionMode::kDisabled;
+           mode != ash::AutocorrectionMode::kDisabled;
   }
 
-  bool ConvertInputContextAutoComplete(ui::AutocompletionMode mode) {
+  bool ConvertInputContextAutoComplete(ash::AutocompletionMode mode) {
     return GetKeyboardConfig().auto_complete &&
-           mode != ui::AutocompletionMode::kDisabled;
+           mode != ash::AutocompletionMode::kDisabled;
   }
 
   input_method_private::AutoCapitalizeType
-  ConvertInputContextAutoCapitalizePrivate(ui::AutocapitalizationMode mode) {
+  ConvertInputContextAutoCapitalizePrivate(ash::AutocapitalizationMode mode) {
     if (!GetKeyboardConfig().auto_capitalize)
       return input_method_private::AUTO_CAPITALIZE_TYPE_OFF;
 
     switch (mode) {
-      case ui::AutocapitalizationMode::kUnspecified:
+      case ash::AutocapitalizationMode::kUnspecified:
         // Autocapitalize flag may be missing for native text fields,
         // crbug/1002713. As a safe default, use
         // input_method_private::AUTO_CAPITALIZE_TYPE_OFF
@@ -755,24 +721,24 @@ class ImeObserverChromeOS
         // API specifies a non-falsy AutoCapitalizeType enum for
         // InputContext.autoCapitalize.
         return input_method_private::AUTO_CAPITALIZE_TYPE_OFF;
-      case ui::AutocapitalizationMode::kNone:
+      case ash::AutocapitalizationMode::kNone:
         return input_method_private::AUTO_CAPITALIZE_TYPE_OFF;
-      case ui::AutocapitalizationMode::kCharacters:
+      case ash::AutocapitalizationMode::kCharacters:
         return input_method_private::AUTO_CAPITALIZE_TYPE_CHARACTERS;
-      case ui::AutocapitalizationMode::kWords:
+      case ash::AutocapitalizationMode::kWords:
         return input_method_private::AUTO_CAPITALIZE_TYPE_WORDS;
-      case ui::AutocapitalizationMode::kSentences:
+      case ash::AutocapitalizationMode::kSentences:
         return input_method_private::AUTO_CAPITALIZE_TYPE_SENTENCES;
     }
   }
 
-  bool ConvertInputContextSpellCheck(ui::SpellcheckMode mode) {
+  bool ConvertInputContextSpellCheck(ash::SpellcheckMode mode) {
     return GetKeyboardConfig().spell_check &&
-           mode != ui::SpellcheckMode::kDisabled;
+           mode != ash::SpellcheckMode::kDisabled;
   }
 
   std::string ConvertInputContextMode(
-      ui::TextInputMethod::InputContext input_context) {
+      TextInputMethod::InputContext input_context) {
     std::string input_mode_type = "none";  // default to nothing
     switch (input_context.mode) {
       case ui::TEXT_INPUT_MODE_SEARCH:
@@ -807,7 +773,7 @@ class ImeObserverChromeOS
   }
 
   std::string ConvertInputContextType(
-      ui::TextInputMethod::InputContext input_context) {
+      TextInputMethod::InputContext input_context) {
     std::string input_context_type = "text";
     switch (input_context.type) {
       case ui::TEXT_INPUT_TYPE_SEARCH:
@@ -839,7 +805,7 @@ class ImeObserverChromeOS
   }
 
   input_ime::AutoCapitalizeType ConvertInputContextAutoCapitalizePublic(
-      ui::AutocapitalizationMode mode) {
+      ash::AutocapitalizationMode mode) {
     // NOTE: ui::TEXT_INPUT_FLAG_AUTOCAPITALIZE_NONE corresponds to Blink's
     // "none" that's a synonym for "off", while
     // input_ime::AUTO_CAPITALIZE_TYPE_NONE auto-generated via API specs means
@@ -848,15 +814,15 @@ class ImeObserverChromeOS
     // bug here; either this impl or the API needs fixing. However, as a public
     // API, the behaviour is left intact for now.
     switch (mode) {
-      case ui::AutocapitalizationMode::kNone:
+      case ash::AutocapitalizationMode::kNone:
         return input_ime::AUTO_CAPITALIZE_TYPE_NONE;
-      case ui::AutocapitalizationMode::kCharacters:
+      case ash::AutocapitalizationMode::kCharacters:
         return input_ime::AUTO_CAPITALIZE_TYPE_CHARACTERS;
-      case ui::AutocapitalizationMode::kWords:
+      case ash::AutocapitalizationMode::kWords:
         return input_ime::AUTO_CAPITALIZE_TYPE_WORDS;
-      case ui::AutocapitalizationMode::kSentences:
+      case ash::AutocapitalizationMode::kSentences:
         return input_ime::AUTO_CAPITALIZE_TYPE_SENTENCES;
-      case ui::AutocapitalizationMode::kUnspecified:
+      case ash::AutocapitalizationMode::kUnspecified:
         // The default value is "sentences".
         return input_ime::AUTO_CAPITALIZE_TYPE_SENTENCES;
     }

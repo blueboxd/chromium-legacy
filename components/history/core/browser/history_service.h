@@ -605,6 +605,12 @@ class HistoryService : public KeyedService {
       const std::vector<ClusterVisit>& visits,
       base::CancelableTaskTracker* tracker);
 
+  // Updates the triggerability attributes for `clusters`.
+  base::CancelableTaskTracker::TaskId UpdateClusterTriggerability(
+      const std::vector<history::Cluster>& clusters,
+      base::OnceClosure callback,
+      base::CancelableTaskTracker* tracker);
+
   // Get the most recent `Cluster`s within the constraints. The most recent
   // visit of a cluster represents the cluster's time. `max_clusters` is a hard
   // cap. `max_visits_soft_cap` is a soft cap; `GetMostRecentClusters()` will
@@ -615,6 +621,7 @@ class HistoryService : public KeyedService {
       size_t max_clusters,
       size_t max_visits_soft_cap,
       base::OnceCallback<void(std::vector<Cluster>)> callback,
+      bool include_keywords_and_duplicates,
       base::CancelableTaskTracker* tracker);
 
   // Observers -----------------------------------------------------------------

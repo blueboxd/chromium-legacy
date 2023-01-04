@@ -57,7 +57,7 @@ BASE_FEATURE(kListenForInvalidationsInLocalSync,
              "ListenForInvalidationsInLocalSync",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// The initial state of sync, for the Sync.InitialState histogram. Even if
+// The initial state of sync, for the Sync.InitialState2 histogram. Even if
 // this value is CAN_START, sync startup might fail for reasons that we may
 // want to consider logging in the future, such as a passphrase needed for
 // decryption, or the version of Chrome being too old. This enum is used to
@@ -92,7 +92,6 @@ void RecordSyncInitialState(SyncService::DisableReasonSet disable_reasons,
   } else if (!first_setup_complete) {
     sync_state = NEEDS_CONFIRMATION;
   }
-  base::UmaHistogramEnumeration("Sync.InitialState", sync_state);
   if (is_regular_profile_for_uma) {
     base::UmaHistogramEnumeration("Sync.InitialState2", sync_state);
   }
@@ -493,6 +492,14 @@ void SyncServiceImpl::ResetEngine(ShutdownReason shutdown_reason,
     if (shutdown_reason == ShutdownReason::DISABLE_SYNC_AND_CLEAR_DATA) {
       sync_client_->GetSyncApiComponentFactory()->ClearAllTransportData();
     }
+    // If enabled, call controller's Stop() to inform them to clear the
+    // metadata.
+    if (base::FeatureList::IsEnabled(
+            kSyncAllowClearingMetadataWhenDataTypeIsStopped)) {
+      for (auto& [type, controller] : data_type_controllers_) {
+        controller->Stop(shutdown_reason, base::DoNothing());
+      }
+    }
     return;
   }
 
@@ -864,14 +871,14 @@ void SyncServiceImpl::OnActionableError(const SyncProtocolError& error) {
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
         // On mobile, fully sign out the user.
         account_mutator->ClearPrimaryAccount(
-            signin_metrics::SERVER_FORCED_DISABLE,
+            signin_metrics::ProfileSignout::kServerForcedDisable,
             signin_metrics::SignoutDelete::kIgnoreMetric);
 #else
         // Note: On some platforms, revoking the sync consent will also clear
         // the primary account as transitioning from ConsentLevel::kSync to
         // ConsentLevel::kSignin is not supported.
         account_mutator->RevokeSyncConsent(
-            signin_metrics::SERVER_FORCED_DISABLE,
+            signin_metrics::ProfileSignout::kServerForcedDisable,
             signin_metrics::SignoutDelete::kIgnoreMetric);
 #endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
       }

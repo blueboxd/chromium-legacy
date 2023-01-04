@@ -38,7 +38,6 @@
 #include "mojo/public/cpp/bindings/struct_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-forward.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 #include "url/gurl.h"
@@ -81,15 +80,13 @@ class WebAppInstallFinalizerUnitTest
       public ::testing::WithParamInterface<OsIntegrationSubManagersState> {
  public:
   WebAppInstallFinalizerUnitTest() {
-    if (GetParam() == OsIntegrationSubManagersState::kEnabled) {
+    if (GetParam() == OsIntegrationSubManagersState::kSaveStateToDB) {
       scoped_feature_list_.InitWithFeaturesAndParameters(
-          {{blink::features::kFileHandlingAPI, {}},
-           {features::kOsIntegrationSubManagers, {{"stage", "write_config"}}}},
+          {{features::kOsIntegrationSubManagers, {{"stage", "write_config"}}}},
           /*disabled_features=*/{});
     } else {
       scoped_feature_list_.InitWithFeatures(
-          {blink::features::kFileHandlingAPI},
-          {features::kOsIntegrationSubManagers});
+          {}, {features::kOsIntegrationSubManagers});
     }
   }
   WebAppInstallFinalizerUnitTest(const WebAppInstallFinalizerUnitTest&) =
@@ -460,7 +457,7 @@ TEST_P(WebAppInstallFinalizerUnitTest, IsolationDataSetInWebAppDB) {
 INSTANTIATE_TEST_SUITE_P(
     All,
     WebAppInstallFinalizerUnitTest,
-    ::testing::Values(OsIntegrationSubManagersState::kEnabled,
+    ::testing::Values(OsIntegrationSubManagersState::kSaveStateToDB,
                       OsIntegrationSubManagersState::kDisabled),
     test::GetOsIntegrationSubManagersTestName);
 

@@ -143,7 +143,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.ChangeDirectory.RootType"
-    enum="FileManagerRootType" expires_after="2023-04-30">
+    enum="FileManagerRootType" expires_after="2023-07-02">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -261,6 +261,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="FileBrowser.DriveDuplicateFinder.LongComputeHash" units="ms"
     expires_after="M108">
+  <obsolete>
+    Became obsolete on 2022-08-18 as this feature is no longer in existence.
+  </obsolete>
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -361,7 +364,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Glitch" enum="FileManagerGlitch"
-    expires_after="2023-04-30">
+    expires_after="2023-07-02">
   <owner>majewski@chromium.org</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -376,7 +379,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="FileBrowser.HoldingSpace.TimeFromFirstWelcomeBannerShowToFirstPin"
-    units="ms" expires_after="2023-04-16">
+    units="ms" expires_after="2023-06-25">
   <owner>dmblack@google.com</owner>
   <owner>tbarzic@chromium.org</owner>
   <summary>
@@ -389,6 +392,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="FileBrowser.ImportController.DeviceYanked" enum="Boolean"
     expires_after="M108">
+  <obsolete>
+    Became obsolete on 2022-08-18 as this feature is no longer in existence.
+  </obsolete>
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -399,6 +405,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="FileBrowser.ImportController.ImportCancelled"
     enum="BooleanCanceled" expires_after="M108">
+  <obsolete>
+    Became obsolete on 2022-08-18 as this feature is no longer in existence.
+  </obsolete>
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -491,6 +500,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="FileBrowser.MediaImport.Cancelled" enum="BooleanCanceled"
     expires_after="M108">
+  <obsolete>
+    Became obsolete on 2022-08-18 as this feature is no longer in existence.
+  </obsolete>
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -514,6 +526,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="FileBrowser.MediaImport.ErrorCount" units="count"
     expires_after="M108">
+  <obsolete>
+    Became obsolete on 2022-08-18 as this feature is no longer in existence.
+  </obsolete>
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -523,6 +538,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="FileBrowser.MediaImport.ImportCount" units="count"
     expires_after="M108">
+  <obsolete>
+    Became obsolete on 2022-08-18 as this feature is no longer in existence.
+  </obsolete>
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -533,6 +551,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="FileBrowser.MediaImport.ImportMB" units="MBytes"
     expires_after="M108">
+  <obsolete>
+    Became obsolete on 2022-08-18 as this feature is no longer in existence.
+  </obsolete>
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -543,6 +564,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="FileBrowser.MediaImport.Started" enum="BooleanAttempted"
     expires_after="M108">
+  <obsolete>
+    Became obsolete on 2022-08-18 as this feature is no longer in existence.
+  </obsolete>
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -561,7 +585,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Notification.Show"
-    enum="FileManagerNotificationType" expires_after="2023-04-30">
+    enum="FileManagerNotificationType" expires_after="2023-07-02">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -690,7 +714,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Recent.LoadArcMedia" units="ms"
-    expires_after="2023-04-30">
+    expires_after="2023-07-02">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -700,7 +724,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Recent.LoadCrostini" units="ms"
-    expires_after="2023-04-30">
+    expires_after="2023-07-02">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -720,7 +744,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Recent.LoadDrive" units="ms"
-    expires_after="2023-04-30">
+    expires_after="2023-07-02">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -730,7 +754,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Recent.LoadTotal" units="ms"
-    expires_after="2023-04-30">
+    expires_after="2023-07-02">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -772,7 +796,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.ToggleFileListType" enum="FileManagerListType"
-    expires_after="2023-04-30">
+    expires_after="2023-07-02">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -950,7 +974,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.ZipMountTime.{RootType}" units="ms"
-    expires_after="M112">
+    expires_after="2024-01-01">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>

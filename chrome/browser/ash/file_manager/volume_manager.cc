@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "ash/components/arc/arc_features.h"
+#include "ash/components/arc/arc_util.h"
 #include "ash/constants/ash_features.h"
 #include "base/base64url.h"
 #include "base/bind.h"
@@ -96,8 +97,9 @@ bool RegisterDownloadsMountPoint(Profile* profile, const base::FilePath& path) {
 
 // Registers a mount point for Android files to ExternalMountPoints.
 bool RegisterAndroidFilesMountPoint() {
-  if (base::FeatureList::IsEnabled(arc::kEnableVirtioBlkForData))
+  if (arc::IsArcVmEnabled()) {
     return false;
+  }
   storage::ExternalMountPoints* const mount_points =
       storage::ExternalMountPoints::GetSystemInstance();
   return mount_points->RegisterFileSystem(
@@ -723,8 +725,6 @@ void VolumeManager::Initialize() {
     return;
   }
 
-  fusebox_mounter_.Mount(disk_mount_manager_);
-
   const base::FilePath localVolume =
       file_manager::util::GetMyFilesFolderForProfile(profile_);
   const bool success = RegisterDownloadsMountPoint(profile_, localVolume);
@@ -812,7 +812,6 @@ void VolumeManager::Shutdown() {
 
   weak_ptr_factory_.InvalidateWeakPtrs();
 
-  fusebox_mounter_.Unmount(disk_mount_manager_);
   snapshot_manager_.reset();
   pref_change_registrar_.RemoveAll();
   disk_mount_manager_->RemoveObserver(this);
@@ -1320,6 +1319,11 @@ void VolumeManager::OnProvidedFileSystemMount(
   if (error != base::File::FILE_OK)
     return;
 
+  // Get the FuseBoxDaemon instance.
+  if (!fusebox_daemon_) {
+    fusebox_daemon_ = file_manager::FuseBoxDaemon::GetInstance();
+  }
+
   // Get the FileSystemURL of the FSP storage device.
   const std::string fsid =
       file_system_info.mount_path().BaseName().AsUTF8Unsafe();
@@ -1331,7 +1335,7 @@ void VolumeManager::OnProvidedFileSystemMount(
 
   // Attach the FSP storage device to the fusebox daemon.
   const std::string subdir = FuseBoxSubdirFSP(file_system_info);
-  fusebox_mounter_.AttachStorage(subdir, url, !file_system_info.writable());
+  fusebox_daemon_->AttachStorage(subdir, url, !file_system_info.writable());
 
   // Create a Volume for the fusebox FSP storage device.
   const base::FilePath mount_path =
@@ -1347,6 +1351,7 @@ void VolumeManager::OnProvidedFileSystemMount(
     bool result = mount_points->RegisterFileSystem(
         fusebox_fsid, storage::kFileSystemTypeFuseBox,
         storage::FileSystemMountOption(), fusebox_volume->mount_path());
+    LOG_IF(ERROR, !result) << "invalid FuseBox FSP mount path";
     DCHECK(result);
   }
 
@@ -1394,11 +1399,14 @@ void VolumeManager::OnProvidedFileSystemUnmount(
 
   // Remove the fusebox FSP storage device from chrome::storage.
   auto* mount_points = storage::ExternalMountPoints::GetSystemInstance();
-  mount_points->RevokeFileSystem(base::StrCat(
-      {util::kFuseBoxMountNamePrefix, util::kFuseBoxSubdirPrefixFSP, fsid}));
+  const std::string fusebox_fsid = base::StrCat(
+      {util::kFuseBoxMountNamePrefix, util::kFuseBoxSubdirPrefixFSP, fsid});
+  mount_points->RevokeFileSystem(fusebox_fsid);
 
   // Detach the fusebox FSP storage device from the fusebox daemon.
-  fusebox_mounter_.DetachStorage(subdir);
+  if (fusebox_daemon_) {
+    fusebox_daemon_->DetachStorage(subdir);
+  }
 }
 
 void VolumeManager::OnExternalStorageDisabledChangedUnmountCallback(
@@ -1439,17 +1447,19 @@ void VolumeManager::OnArcPlayStoreEnabledChanged(bool enabled) {
     DoMountEvent(Volume::CreateForMediaView(arc::kVideosRootDocumentId));
     DoMountEvent(Volume::CreateForMediaView(arc::kAudioRootDocumentId));
     DoMountEvent(Volume::CreateForMediaView(arc::kDocumentsRootDocumentId));
-    if (!base::FeatureList::IsEnabled(arc::kEnableVirtioBlkForData))
+    if (!arc::IsArcVmEnabled()) {
       DoMountEvent(Volume::CreateForAndroidFiles(
           base::FilePath(util::kAndroidFilesPath)));
+    }
   } else {
     DoUnmountEvent(*Volume::CreateForMediaView(arc::kImagesRootDocumentId));
     DoUnmountEvent(*Volume::CreateForMediaView(arc::kVideosRootDocumentId));
     DoUnmountEvent(*Volume::CreateForMediaView(arc::kAudioRootDocumentId));
     DoUnmountEvent(*Volume::CreateForMediaView(arc::kDocumentsRootDocumentId));
-    if (!base::FeatureList::IsEnabled(arc::kEnableVirtioBlkForData))
+    if (!arc::IsArcVmEnabled()) {
       DoUnmountEvent(*Volume::CreateForAndroidFiles(
           base::FilePath(util::kAndroidFilesPath)));
+    }
   }
 
   documents_provider_root_manager_->SetEnabled(enabled);
@@ -1545,10 +1555,11 @@ void VolumeManager::DoAttachMtpStorage(
 
   // Register the MTP storage device with chrome::storage.
   auto* mount_points = storage::ExternalMountPoints::GetSystemInstance();
-  if (!profile_->IsIncognitoProfile()) {
+  if (!FindExternalMountPoint(fsid)) {
     bool result = mount_points->RegisterFileSystem(
         fsid, storage::kFileSystemTypeDeviceMediaAsFileStorage,
         storage::FileSystemMountOption(), path);
+    LOG_IF(ERROR, !result) << "invalid MTP mount path";
     DCHECK(result);
   }
 
@@ -1563,6 +1574,11 @@ void VolumeManager::DoAttachMtpStorage(
   std::unique_ptr<Volume> volume = Volume::CreateForMTP(path, label, read_only);
   DoMountEvent(std::move(volume));
 
+  // Get the FuseBoxDaemon instance.
+  if (!fusebox_daemon_) {
+    fusebox_daemon_ = file_manager::FuseBoxDaemon::GetInstance();
+  }
+
   // Get the FileSystemURL of the MTP storage device.
   auto mtp_file_system_url = mount_points->CreateExternalFileSystemURL(
       blink::StorageKey(util::GetFilesAppOrigin()), fsid, {});
@@ -1571,7 +1587,7 @@ void VolumeManager::DoAttachMtpStorage(
 
   // Attach the MTP storage device to the fusebox daemon.
   std::string subdir = FuseBoxSubdirMTP(info.device_id());
-  fusebox_mounter_.AttachStorage(subdir, url, read_only);
+  fusebox_daemon_->AttachStorage(subdir, url, read_only);
 
   // Create a Volume for the fusebox MTP storage device.
   const base::FilePath mount_path =
@@ -1580,11 +1596,13 @@ void VolumeManager::DoAttachMtpStorage(
       Volume::CreateForFuseBoxMTP(mount_path, label, read_only);
 
   // Register the fusebox MTP storage device with chrome::storage.
-  if (!profile_->IsIncognitoProfile()) {
+  const std::string fusebox_fsid =
+      base::StrCat({util::kFuseBoxMountNamePrefix, subdir});
+  if (!FindExternalMountPoint(fusebox_fsid)) {
     bool result = mount_points->RegisterFileSystem(
-        base::StrCat({util::kFuseBoxMountNamePrefix, subdir}),
-        storage::kFileSystemTypeFuseBox, storage::FileSystemMountOption(),
-        fusebox_volume->mount_path());
+        fusebox_fsid, storage::kFileSystemTypeFuseBox,
+        storage::FileSystemMountOption(), fusebox_volume->mount_path());
+    LOG_IF(ERROR, !result) << "invalid FuseBox MTP mount path";
     DCHECK(result);
   }
 
@@ -1632,11 +1650,14 @@ void VolumeManager::OnRemovableStorageDetached(
 
   // Remove the fusebox MTP storage device from chrome::storage.
   std::string subdir = FuseBoxSubdirMTP(info.device_id());
-  mount_points->RevokeFileSystem(
-      base::StrCat({util::kFuseBoxMountNamePrefix, subdir}));
+  const std::string fusebox_fsid =
+      base::StrCat({util::kFuseBoxMountNamePrefix, subdir});
+  mount_points->RevokeFileSystem(fusebox_fsid);
 
   // Detach the fusebox MTP storage device from the fusebox daemon.
-  fusebox_mounter_.DetachStorage(subdir);
+  if (fusebox_daemon_) {
+    fusebox_daemon_->DetachStorage(subdir);
+  }
 }
 
 void VolumeManager::OnDocumentsProviderRootAdded(
@@ -1654,6 +1675,11 @@ void VolumeManager::OnDocumentsProviderRootAdded(
       authority, root_id, document_id, title, summary, icon_url, read_only,
       /*optional_fusebox_subdir=*/std::string()));
 
+  // Get the FuseBoxDaemon instance.
+  if (!fusebox_daemon_) {
+    fusebox_daemon_ = file_manager::FuseBoxDaemon::GetInstance();
+  }
+
   // Get the FileSystemURL of the ADP storage device.
   auto* mount_points = storage::ExternalMountPoints::GetSystemInstance();
   auto adp_file_system_url = mount_points->CreateExternalFileSystemURL(
@@ -1665,7 +1691,7 @@ void VolumeManager::OnDocumentsProviderRootAdded(
 
   // Attach the ADP storage device to the fusebox daemon.
   std::string subdir = FuseBoxSubdirADP(authority, root_id);
-  fusebox_mounter_.AttachStorage(subdir, url, read_only);
+  fusebox_daemon_->AttachStorage(subdir, url, read_only);
 
   // Create a Volume for the fusebox ADP storage device.
   std::unique_ptr<Volume> fusebox_volume =
@@ -1673,11 +1699,13 @@ void VolumeManager::OnDocumentsProviderRootAdded(
                                          summary, icon_url, read_only, subdir);
 
   // Register the fusebox ADP storage device with chrome::storage.
-  if (!profile_->IsIncognitoProfile()) {
+  const std::string fusebox_fsid =
+      base::StrCat({util::kFuseBoxMountNamePrefix, subdir});
+  if (!FindExternalMountPoint(fusebox_fsid)) {
     bool result = mount_points->RegisterFileSystem(
-        base::StrCat({util::kFuseBoxMountNamePrefix, subdir}),
-        storage::kFileSystemTypeFuseBox, storage::FileSystemMountOption(),
-        fusebox_volume->mount_path());
+        fusebox_fsid, storage::kFileSystemTypeFuseBox,
+        storage::FileSystemMountOption(), fusebox_volume->mount_path());
+    LOG_IF(ERROR, !result) << "invalid FuseBox ADP mount path";
     DCHECK(result);
   }
 
@@ -1706,11 +1734,14 @@ void VolumeManager::OnDocumentsProviderRootRemoved(
   // Remove the fusebox ADP storage device from chrome::storage.
   std::string subdir = FuseBoxSubdirADP(authority, root_id);
   auto* mount_points = storage::ExternalMountPoints::GetSystemInstance();
-  mount_points->RevokeFileSystem(
-      base::StrCat({util::kFuseBoxMountNamePrefix, subdir}));
+  const std::string fusebox_fsid =
+      base::StrCat({util::kFuseBoxMountNamePrefix, subdir});
+  mount_points->RevokeFileSystem(fusebox_fsid);
 
   // Detach the fusebox ADP storage device from the fusebox daemon.
-  fusebox_mounter_.DetachStorage(subdir);
+  if (fusebox_daemon_) {
+    fusebox_daemon_->DetachStorage(subdir);
+  }
 }
 
 void VolumeManager::AddSmbFsVolume(const base::FilePath& mount_point,

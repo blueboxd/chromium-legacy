@@ -20,9 +20,14 @@ import {ClearBrowsingDataBrowserProxyImpl, UpdateSyncStateEvent} from '../../cle
 import {loadTimeData} from '../../i18n_setup.js';
 import {MetricsBrowserProxy, MetricsBrowserProxyImpl, PrivacyGuideInteractions} from '../../metrics_browser_proxy.js';
 import {OpenWindowProxyImpl} from '../../open_window_proxy.js';
-import {Router} from '../../router.js';
 
 import {getTemplate} from './privacy_guide_completion_fragment.html.js';
+
+export interface PrivacyGuideCompletionFragmentElement {
+  $: {
+    backButton: HTMLElement,
+  };
+}
 
 const PrivacyGuideCompletionFragmentElementBase =
     WebUiListenerMixin(I18nMixin(PolymerElement));
@@ -60,11 +65,6 @@ export class PrivacyGuideCompletionFragmentElement extends
         type: Boolean,
         value: false,
       },
-
-      enablePrivacyGuide2_: {
-        type: Boolean,
-        value: () => loadTimeData.getBoolean('privacyGuide2Enabled'),
-      },
     };
   }
 
@@ -97,9 +97,7 @@ export class PrivacyGuideCompletionFragmentElement extends
         this.i18n('privacyGuideCompletionCardSubHeader');
   }
 
-  /**
-   * Updates the completion card waa link depending on the signin state.
-   */
+  /** Updates the completion card waa link depending on the signin state. */
   private updateWaaLink_(isSignedIn: boolean) {
     this.shouldShowWaa_ = isSignedIn;
   }
@@ -115,14 +113,9 @@ export class PrivacyGuideCompletionFragmentElement extends
         PrivacyGuideInteractions.COMPLETION_NEXT_BUTTON);
     this.metricsBrowserProxy_.recordAction(
         'Settings.PrivacyGuide.NextClickCompletion');
-    if (loadTimeData.getBoolean('privacyGuide2Enabled')) {
-      // Send a |close| event to the privacy guide dialog to close itself.
-      this.dispatchEvent(
-          new CustomEvent('close', {bubbles: true, composed: true}));
-    } else {
-      // Navigate away from the privacy guide settings subpage.
-      Router.getInstance().navigateToPreviousRoute();
-    }
+    // Send a |close| event to the privacy guide dialog to close itself.
+    this.dispatchEvent(
+        new CustomEvent('close', {bubbles: true, composed: true}));
   }
 
   private onPrivacySandboxClick_() {

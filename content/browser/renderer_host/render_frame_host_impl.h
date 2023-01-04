@@ -2817,6 +2817,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       blink::mojom::ServiceWorkerContainerInfoForClientPtr container_info,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           prefetch_loader_factory,
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>
+          topics_loader_factory,
       const absl::optional<blink::ParsedPermissionsPolicy>& permissions_policy,
       blink::mojom::PolicyContainerPtr policy_container,
       const blink::DocumentToken& document_token,
@@ -3488,6 +3490,16 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // this frame's subtree.
   void PendingDeletionCheckCompletedOnSubtree();
 
+  // In this RenderFramehost, cancels every:
+  // - Non-pending commit NavigationRequest owned by the FrameTreeNode that
+  // intends to commit in this RFH
+  // - Pending commit NavigationRequest owned by the RenderFrameHost
+  // In this RenderFrameHost's children, calls
+  // `ResetAllNavigationsInSubtreeForFrameDetach()` to cancel all navigations
+  // that are ongoing in the descendant FrameTreeNodes.
+  // This function should only be called on swapped out RenderFrameHosts.
+  void ResetNavigationsUsingSwappedOutRFHAndAllNavigationsInSubtree();
+
   // In this RenderFrameHost and its children, removes every:
   // - Non-pending commit NavigationRequest owned by the FrameTreeNode
   // - Pending commit NavigationRequest owned by the RenderFrameHost
@@ -3739,7 +3751,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // crashed, since using
   // SiteInstance::GetProcess()/GetOrCreateAgentSchedulingGroupHost() has the
   // side effect of creating the process again if it is gone.
-  const raw_ref<AgentSchedulingGroupHost> agent_scheduling_group_;
+  //
+  // TODO(https://crbug.com/1382971): Change back to `raw_ref` after the ad-hoc
+  // debugging is no longer needed to investigate the bug.
+  const base::SafeRef<AgentSchedulingGroupHost> agent_scheduling_group_;
 
   // Reference to the whole frame tree that this RenderFrameHost belongs to.
   // Allows this RenderFrameHost to add and remove nodes in response to

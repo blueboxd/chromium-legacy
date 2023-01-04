@@ -44,6 +44,12 @@ BASE_FEATURE(kAppDeduplicationService,
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+BASE_FEATURE(kAppDeduplicationServiceFondue,
+             "AppDeduplicationServiceFondue",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 BASE_FEATURE(kAppPreloadService,
              "AppPreloadService",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -548,6 +554,11 @@ const base::FeatureParam<base::TimeDelta>
 BASE_FEATURE(kHappinessTrackingSystem,
              "HappinessTrackingSystem",
              base::FEATURE_DISABLED_BY_DEFAULT);
+// Enables or disables the Happiness Tracking System for Bluetooth revamp
+// survey.
+BASE_FEATURE(kHappinessTrackingSystemBluetoothRevamp,
+             "HappinessTrackingSystemBluetoothRevamp",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 // Enables or disables the Happiness Tracking System for the Ent survey.
 BASE_FEATURE(kHappinessTrackingSystemEnt,
              "HappinessTrackingSystemEnt",
@@ -912,8 +923,6 @@ BASE_FEATURE(kPrerenderFallbackToPreconnect,
              "PrerenderFallbackToPreconnect",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kPrivacyGuide2, "PrivacyGuide2", base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kPrivacyGuideAndroid,
              "PrivacyGuideAndroid",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1085,6 +1094,11 @@ BASE_FEATURE(kThirdPartyModulesBlocking,
 BASE_FEATURE(kTreatUnsafeDownloadsAsActive,
              "TreatUnsafeDownloadsAsActive",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Block downloads delivered over insecure transports (i.e. not over HTTPS).
+BASE_FEATURE(kBlockInsecureDownloads,
+             "BlockInsecureDownloads",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // TrustSafetySentimentSurvey
 #if !BUILDFLAG(IS_ANDROID)

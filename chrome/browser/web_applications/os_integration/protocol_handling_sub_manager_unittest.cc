@@ -57,9 +57,14 @@ class ProtocolHandlingSubManagerTest
           ShortcutOverrideForTesting::OverrideForTesting(base::GetHomeDir());
     }
 
-    if (EnableOsIntegrationSubManager()) {
+    if (GetParam() == OsIntegrationSubManagersState::kSaveStateToDB) {
       scoped_feature_list_.InitAndEnableFeatureWithParameters(
           features::kOsIntegrationSubManagers, {{"stage", "write_config"}});
+    } else if (GetParam() ==
+               OsIntegrationSubManagersState::kSaveStateAndExecute) {
+      scoped_feature_list_.InitAndEnableFeatureWithParameters(
+          features::kOsIntegrationSubManagers,
+          {{"stage", "execute_and_write_config"}});
     } else {
       scoped_feature_list_.InitWithFeatures(
           /*enabled_features=*/{},
@@ -84,10 +89,13 @@ class ProtocolHandlingSubManagerTest
   }
 
   void TearDown() override {
+    test::UninstallAllWebApps(profile());
     // Blocking required due to file operations in the shortcut override
     // destructor.
-    base::ScopedAllowBlockingForTesting allow_blocking;
-    shortcut_override_.reset();
+    {
+      base::ScopedAllowBlockingForTesting allow_blocking;
+      shortcut_override_.reset();
+    }
     WebAppTest::TearDown();
   }
 
@@ -97,7 +105,7 @@ class ProtocolHandlingSubManagerTest
         std::make_unique<WebAppInstallInfo>();
     info->start_url = kWebAppUrl;
     info->title = u"Test App";
-    info->user_display_mode = web_app::UserDisplayMode::kStandalone;
+    info->user_display_mode = web_app::mojom::UserDisplayMode::kStandalone;
     info->protocol_handlers = protocol_handlers;
     base::test::TestFuture<const AppId&, webapps::InstallResultCode> result;
     // InstallFromInfoWithParams is used instead of InstallFromInfo, because
@@ -113,19 +121,6 @@ class ProtocolHandlingSubManagerTest
     EXPECT_EQ(result.Get<webapps::InstallResultCode>(),
               webapps::InstallResultCode::kSuccessNewInstall);
     return result.Get<AppId>();
-  }
-
-  void UninstallWebApp(const AppId& app_id) {
-    base::test::TestFuture<webapps::UninstallResultCode> uninstall_future;
-    provider_->install_finalizer().UninstallWebApp(
-        app_id, webapps::WebappUninstallSource::kAppsPage,
-        uninstall_future.GetCallback());
-    EXPECT_THAT(uninstall_future.Get(),
-                testing::Eq(webapps::UninstallResultCode::kSuccess));
-  }
-
-  bool EnableOsIntegrationSubManager() {
-    return GetParam() == OsIntegrationSubManagersState::kEnabled;
   }
 
  protected:
@@ -149,10 +144,9 @@ TEST_P(ProtocolHandlingSubManagerTest, ConfigureOnlyProtocolHandler) {
 
   auto state =
       provider().registrar_unsafe().GetAppCurrentOsIntegrationState(app_id);
-  if (EnableOsIntegrationSubManager()) {
-    ASSERT_TRUE(state.has_value());
-    const proto::WebAppOsIntegrationState& os_integration_state = state.value();
-
+  ASSERT_TRUE(state.has_value());
+  const proto::WebAppOsIntegrationState& os_integration_state = state.value();
+  if (AreOsIntegrationSubManagersEnabled()) {
     ASSERT_THAT(os_integration_state.protocols_handled().protocols_size(),
                 testing::Eq(1));
 
@@ -163,10 +157,8 @@ TEST_P(ProtocolHandlingSubManagerTest, ConfigureOnlyProtocolHandler) {
                 testing::Eq(protocol_handler.protocol));
     ASSERT_THAT(protocol_handler_state.url(), testing::Eq(handler_url));
   } else {
-    ASSERT_FALSE(state.has_value());
+    ASSERT_FALSE(os_integration_state.has_protocols_handled());
   }
-
-  UninstallWebApp(app_id);
 }
 
 TEST_P(ProtocolHandlingSubManagerTest, UninstalledAppDoesNotConfigure) {
@@ -177,7 +169,7 @@ TEST_P(ProtocolHandlingSubManagerTest, UninstalledAppDoesNotConfigure) {
   protocol_handler.protocol = "web+test";
 
   const AppId app_id = InstallWebAppWithProtocolHandlers({protocol_handler});
-  UninstallWebApp(app_id);
+  test::UninstallAllWebApps(profile());
 
   auto state =
       provider().registrar_unsafe().GetAppCurrentOsIntegrationState(app_id);
@@ -209,10 +201,9 @@ TEST_P(ProtocolHandlingSubManagerTest, ConfigureProtocolHandlerDisallowed) {
 
   auto state =
       provider().registrar_unsafe().GetAppCurrentOsIntegrationState(app_id);
-  if (EnableOsIntegrationSubManager()) {
-    ASSERT_TRUE(state.has_value());
-    const proto::WebAppOsIntegrationState& os_integration_state = state.value();
-
+  ASSERT_TRUE(state.has_value());
+  const proto::WebAppOsIntegrationState& os_integration_state = state.value();
+  if (AreOsIntegrationSubManagersEnabled()) {
     ASSERT_THAT(os_integration_state.protocols_handled().protocols_size(),
                 testing::Eq(1));
 
@@ -223,16 +214,14 @@ TEST_P(ProtocolHandlingSubManagerTest, ConfigureProtocolHandlerDisallowed) {
                 testing::Eq(protocol_handler2.protocol));
     ASSERT_THAT(protocol_handler_state.url(), testing::Eq(handler_url2));
   } else {
-    ASSERT_FALSE(state.has_value());
+    ASSERT_FALSE(os_integration_state.has_protocols_handled());
   }
-
-  UninstallWebApp(app_id);
 }
 
 INSTANTIATE_TEST_SUITE_P(
     All,
     ProtocolHandlingSubManagerTest,
-    ::testing::Values(OsIntegrationSubManagersState::kEnabled,
+    ::testing::Values(OsIntegrationSubManagersState::kSaveStateToDB,
                       OsIntegrationSubManagersState::kDisabled),
     test::GetOsIntegrationSubManagersTestName);
 

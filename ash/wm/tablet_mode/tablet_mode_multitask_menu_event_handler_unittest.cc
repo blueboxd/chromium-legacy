@@ -14,8 +14,10 @@
 #include "ash/wm/tablet_mode/tablet_mode_multitask_menu.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
 #include "base/command_line.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
+#include "chromeos/ui/frame/multitask_menu/multitask_menu_metrics.h"
 #include "chromeos/ui/frame/multitask_menu/multitask_menu_view.h"
 #include "chromeos/ui/frame/multitask_menu/split_button_view.h"
 #include "chromeos/ui/wm/features.h"
@@ -157,12 +159,16 @@ class TabletModeMultitaskMenuEventHandlerTest : public AshTestBase {
 TEST_F(TabletModeMultitaskMenuEventHandlerTest, GestureEventGeneration) {
   TestEventHandler event_handler = TestEventHandler();
   auto window = CreateTestWindow();
+  base::HistogramTester histogram_tester;
 
   // Verify that scroll can open and close the menu.
   GenerateScroll(window->bounds().CenterPoint().x(), /*start_y=*/1,
                  /*end_y=*/kMenuDragPoint);
   ASSERT_TRUE(event_handler.is_scroll());
   ASSERT_TRUE(GetMultitaskMenu());
+  histogram_tester.ExpectBucketCount(
+      chromeos::GetEntryTypeHistogramName(),
+      chromeos::MultitaskMenuEntryType::kGestureScroll, 1);
 
   GenerateScroll(window->bounds().CenterPoint().x(),
                  /*start_y=*/kMenuDragPoint,
@@ -175,6 +181,9 @@ TEST_F(TabletModeMultitaskMenuEventHandlerTest, GestureEventGeneration) {
                 /*end_y=*/kMenuDragPoint);
   ASSERT_TRUE(event_handler.is_swipe());
   ASSERT_TRUE(GetMultitaskMenu());
+  histogram_tester.ExpectBucketCount(
+      chromeos::GetEntryTypeHistogramName(),
+      chromeos::MultitaskMenuEntryType::kGestureFling, 1);
 
   GenerateSwipe(window->bounds().CenterPoint().x(),
                 /*start_y=*/kMenuDragPoint,
@@ -187,11 +196,18 @@ TEST_F(TabletModeMultitaskMenuEventHandlerTest, GestureEventGeneration) {
                 /*end_y=*/kMenuDragPoint);
   ASSERT_TRUE(event_handler.is_fling());
   ASSERT_TRUE(GetMultitaskMenu());
+  histogram_tester.ExpectBucketCount(
+      chromeos::GetEntryTypeHistogramName(),
+      chromeos::MultitaskMenuEntryType::kGestureFling, 2);
 
   GenerateFling(window->bounds().CenterPoint().x(),
                 /*start_y=*/kMenuDragPoint,
                 /*end_y=*/8);
   ASSERT_FALSE(GetMultitaskMenu());
+
+  // Check total counts for each histogram to ensure calls aren't counted in
+  // multiple buckets and that scroll up events weren't counted.
+  histogram_tester.ExpectTotalCount(chromeos::GetEntryTypeHistogramName(), 3);
 }
 
 // Tests that a scroll down gesture from the top center activates the
@@ -347,6 +363,36 @@ TEST_F(TabletModeMultitaskMenuEventHandlerTest, ScrollDownGestures) {
   ASSERT_FALSE(GetMultitaskMenu());
 }
 
+// Tests that scroll up closes the menu as expected.
+TEST_F(TabletModeMultitaskMenuEventHandlerTest, ScrollUpGestures) {
+  auto window = CreateTestWindow();
+  const int center_x = window->bounds().CenterPoint().x();
+  const int center_y = window->bounds().CenterPoint().y();
+
+  // Scroll up with no menu open. Verify no change.
+  GenerateScroll(center_x, kMenuDragPoint, 8);
+  ASSERT_FALSE(GetMultitaskMenu());
+
+  ShowMultitaskMenu(*window);
+  ASSERT_TRUE(GetMultitaskMenu());
+
+  // Scroll down again. Verify that we still show the menu.
+  GenerateScroll(center_x, 1, kMenuDragPoint);
+  ASSERT_TRUE(GetMultitaskMenu());
+
+  // Scroll up at a point outside the menu and above the shelf. Verify that we
+  // close the menu.
+  GenerateScroll(center_x, center_y, center_y - kMenuDragPoint);
+  EXPECT_FALSE(GetMultitaskMenu());
+
+  ShowMultitaskMenu(*window);
+  ASSERT_TRUE(GetMultitaskMenu());
+
+  // Scroll up on the menu. Verify that we close the menu.
+  GenerateScroll(center_x, kMenuDragPoint, 8);
+  EXPECT_FALSE(GetMultitaskMenu());
+}
+
 // Tests that fast swipes/flings show the menu as expected.
 TEST_F(TabletModeMultitaskMenuEventHandlerTest, SwipeFlingGestures) {
   auto window = CreateTestWindow();
@@ -365,26 +411,6 @@ TEST_F(TabletModeMultitaskMenuEventHandlerTest, SwipeFlingGestures) {
   // open the menu.
   GenerateFling(window->bounds().CenterPoint().x(), 1, kMenuDragPoint);
   EXPECT_TRUE(GetMultitaskMenu());
-}
-
-// Tests that scroll up closes the menu as expected.
-TEST_F(TabletModeMultitaskMenuEventHandlerTest, ScrollUpGestures) {
-  auto window = CreateTestWindow();
-
-  // Scroll up with no menu open. Verify no change.
-  GenerateScroll(window->bounds().CenterPoint().x(), kMenuDragPoint, 8);
-  ASSERT_FALSE(GetMultitaskMenu());
-
-  ShowMultitaskMenu(*window);
-  ASSERT_TRUE(GetMultitaskMenu());
-
-  // Scroll down again. Verify that we still show the menu.
-  GenerateScroll(window->bounds().CenterPoint().x(), 1, kMenuDragPoint);
-  ASSERT_TRUE(GetMultitaskMenu());
-
-  // Scroll up on the menu. Verify that we close the menu.
-  GenerateScroll(window->bounds().CenterPoint().x(), kMenuDragPoint, 8);
-  EXPECT_FALSE(GetMultitaskMenu());
 }
 
 TEST_F(TabletModeMultitaskMenuEventHandlerTest, HideMultitaskMenuInOverview) {
@@ -412,35 +438,36 @@ TEST_F(TabletModeMultitaskMenuEventHandlerTest, HalfButtonFunctionality) {
   // half.
   UpdateDisplay("1600x1000");
   auto window = CreateTestWindow();
-
   ShowMultitaskMenu(*window);
+  base::HistogramTester histogram_tester;
 
   // Press the primary half split button.
   auto* half_button =
       GetMultitaskMenuView(GetMultitaskMenu())->half_button_for_testing();
   GetEventGenerator()->GestureTapAt(
       half_button->GetBoundsInScreen().left_center());
+  histogram_tester.ExpectBucketCount(
+      chromeos::GetActionTypeHistogramName(),
+      chromeos::MultitaskMenuActionType::kHalfSplitButton, 1);
 
   // Verify that the window has been snapped in half.
   ASSERT_EQ(chromeos::WindowStateType::kPrimarySnapped,
             WindowState::Get(window.get())->GetStateType());
-  const gfx::Rect work_area_bounds_in_screen =
+  const gfx::Rect work_area_bounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
-  auto* split_view_controller =
-      SplitViewController::Get(Shell::GetPrimaryRootWindow());
   const gfx::Rect divider_bounds =
-      split_view_controller->split_view_divider()->GetDividerBoundsInScreen(
-          /*is_dragging*/ false);
-  ASSERT_NEAR(work_area_bounds_in_screen.width() / 2,
+      SplitViewController::Get(Shell::GetPrimaryRootWindow())
+          ->split_view_divider()
+          ->GetDividerBoundsInScreen(
+              /*is_dragging*/ false);
+  ASSERT_NEAR(work_area_bounds.width() * 0.5f,
               window->GetBoundsInScreen().width(), divider_bounds.width());
 
   // Verify that the multitask menu has been closed.
   ASSERT_FALSE(GetMultitaskMenu());
 
-  // Scroll down again.
+  // Verify that the multitask menu is centered on the new window size.
   ShowMultitaskMenu(*window);
-
-  // Verify that the multitask menu has been centered on the new window size.
   auto* multitask_menu = GetMultitaskMenu();
   ASSERT_TRUE(multitask_menu);
   EXPECT_EQ(window->GetBoundsInScreen().CenterPoint().x(),
@@ -452,6 +479,7 @@ TEST_F(TabletModeMultitaskMenuEventHandlerTest, HalfButtonFunctionality) {
 
 TEST_F(TabletModeMultitaskMenuEventHandlerTest, PartialButtonFunctionality) {
   auto window = CreateTestWindow();
+  base::HistogramTester histogram_tester;
 
   // Test that primary button snaps to 0.67f screen ratio.
   ShowMultitaskMenu(*window);
@@ -461,18 +489,19 @@ TEST_F(TabletModeMultitaskMenuEventHandlerTest, PartialButtonFunctionality) {
                                         .left_center());
   ASSERT_EQ(chromeos::WindowStateType::kPrimarySnapped,
             WindowState::Get(window.get())->GetStateType());
-  const gfx::Rect work_area_bounds_in_screen =
+  const gfx::Rect work_area_bounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
-  auto* split_view_controller =
-      SplitViewController::Get(Shell::GetPrimaryRootWindow());
   const gfx::Rect divider_bounds =
-      split_view_controller->split_view_divider()->GetDividerBoundsInScreen(
-          /*is_dragging*/ false);
-  ASSERT_NEAR(work_area_bounds_in_screen.width() * 0.67,
-              window->bounds().width(), divider_bounds.width());
-
-  // Test that the multitask menu has been closed.
+      SplitViewController::Get(Shell::GetPrimaryRootWindow())
+          ->split_view_divider()
+          ->GetDividerBoundsInScreen(
+              /*is_dragging*/ false);
+  ASSERT_NEAR(work_area_bounds.width() * 0.67f, window->bounds().width(),
+              divider_bounds.width());
   ASSERT_FALSE(GetMultitaskMenu());
+  histogram_tester.ExpectBucketCount(
+      chromeos::GetActionTypeHistogramName(),
+      chromeos::MultitaskMenuActionType::kPartialSplitButton, 1);
 
   // Test that secondary button snaps to 0.33f screen ratio.
   ShowMultitaskMenu(*window);
@@ -481,12 +510,16 @@ TEST_F(TabletModeMultitaskMenuEventHandlerTest, PartialButtonFunctionality) {
                                ->GetBoundsInScreen());
   gfx::Point secondary_center(
       gfx::Point(partial_bounds.x() + partial_bounds.width() * 0.67f,
-                 partial_bounds.y() + partial_bounds.y() / 2));
+                 partial_bounds.y() + partial_bounds.y() * 0.5f));
   GetEventGenerator()->GestureTapAt(secondary_center);
   ASSERT_EQ(chromeos::WindowStateType::kSecondarySnapped,
             WindowState::Get(window.get())->GetStateType());
-  ASSERT_NEAR(work_area_bounds_in_screen.width() * 0.33,
-              window->bounds().width(), divider_bounds.width());
+  ASSERT_NEAR(work_area_bounds.width() * 0.33f, window->bounds().width(),
+              divider_bounds.width());
+  ASSERT_FALSE(GetMultitaskMenu());
+  histogram_tester.ExpectBucketCount(
+      chromeos::GetActionTypeHistogramName(),
+      chromeos::MultitaskMenuActionType::kPartialSplitButton, 2);
 }
 
 // Tests that tap outside the menu will close the menu.

@@ -10,6 +10,10 @@ ts_library("build_ts") {
   out_dir = "$target_gen_dir/tsc"
   tsconfig_base = "tsconfig_base.json"
   path_mappings = [
+    "chrome://bookmarks-side-panel.top-chrome/*|" +
+        rebase_path(
+            "$root_gen_dir/chrome/browser/resources/side_panel/bookmarks/tsc/*",
+            target_gen_dir),
     "chrome://read-later.top-chrome/*|" +
         rebase_path("$root_gen_dir/chrome/browser/resources/side_panel/tsc/*",
                     target_gen_dir),
@@ -29,7 +33,6 @@ ts_library("build_ts") {
     "reading_list/reading_list_app_test.ts",
     "reading_list/test_reading_list_api_proxy.ts",
     "read_anything/read_anything_app_test.ts",
-    "side_panel_app_test.ts",
   ]
   definitions = [
     "//chrome/browser/resources/side_panel/read_anything/read_anything.d.ts",
@@ -40,6 +43,7 @@ ts_library("build_ts") {
   deps = [
     "..:build_ts",
     "//chrome/browser/resources/side_panel:build_ts",
+    "//chrome/browser/resources/side_panel/bookmarks:build_ts",
   ]
 }
 

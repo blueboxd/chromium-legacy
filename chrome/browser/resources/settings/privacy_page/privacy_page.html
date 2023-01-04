@@ -20,12 +20,6 @@
       settings-collapse-radio-button:not(:first-of-type) {
         --settings-collapse-separator-line: var(--cr-separator-line);
       }
-
-      settings-privacy-guide-page {
-        background-color: var(--cr-card-background-color);
-        border-radius: var(--cr-card-border-radius);
-        box-shadow: var(--cr-card-shadow);
-      }
     </style>
     <template is="dom-if" if="[[showClearBrowsingDataDialog_]]" restamp>
       <settings-clear-browsing-data-dialog prefs="{{prefs}}"
@@ -54,11 +48,23 @@
               role-description="$i18n{subpageArrowRoleDescription}">
           </cr-link-row>
         </template>
-        <cr-link-row id="cookiesLinkRow" start-icon="settings:cookie"
-            class="hr" label="$i18n{cookiePageTitle}"
-            sub-label="[[cookieSettingDescription_]]"
-            on-click="onCookiesClick_"
-            role-description="$i18n{subpageArrowRoleDescription}"></cr-link-row>
+        <template is="dom-if" if="[[isPrivacySandboxSettings4_]]">
+          <cr-link-row id="thirdPartyCookiesLinkRow"
+              start-icon="settings:cookie"
+              class="hr" label="$i18n{thirdPartyCookiesLinkRowLabel}"
+              sub-label="[[cookieSettingDescription_]]"
+              on-click="onCookiesClick_"
+              role-description="$i18n{subpageArrowRoleDescription}">
+          </cr-link-row>
+        </template>
+        <template is="dom-if" if="[[!isPrivacySandboxSettings4_]]">
+          <cr-link-row id="cookiesLinkRow" start-icon="settings:cookie"
+              class="hr" label="$i18n{cookiePageTitle}"
+              sub-label="[[cookieSettingDescription_]]"
+              on-click="onCookiesClick_"
+              role-description="$i18n{subpageArrowRoleDescription}">
+          </cr-link-row>
+        </template>
         <template is="dom-if" if=
             "[[isPrivacySandboxSettings4Enabled_(isPrivacySandboxRestricted_, isPrivacySandboxSettings4_)]]">
           <cr-link-row id="privacySandboxLinkRow"
@@ -281,29 +287,34 @@
           </category-setting-exceptions>
         </settings-subpage>
       </template>
-      <template is="dom-if" if="[[enablePrivacyGuidePage_]]">
-        <template is="dom-if" route-path="/privacy/guide">
-          <settings-subpage id="privacy-guide"
-              class="multi-card"
-              page-title="$i18n{privacyGuideLabel}"
-              associated-control="[[$$('#privacyGuideLinkRow')]]">
-            <settings-privacy-guide-page id="privacyGuidePage" prefs="{{prefs}}"
-                focus-config="[[focusConfig_]]">
-            </settings-privacy-guide-page>
+      <template is="dom-if" if="[[isPrivacySandboxSettings4_]]">
+        <template is="dom-if" route-path="/cookies">
+          <settings-subpage id="cookies"
+              page-title="$i18n{thirdPartyCookiesLinkRowLabel}"
+              learn-more-url="$i18n{cookiesSettingsHelpCenterURL}"
+              search-label="$i18n{siteSettingsAllSitesSearch}"
+              search-term="{{searchFilter_}}"
+              associated-control="[[$$('#thirdPartyCookiesLinkRow')]]">
+            <settings-cookies-page prefs="{{prefs}}"
+                focus-config="[[focusConfig_]]"
+                search-term="[[searchFilter_]]">
+            </settings-cookies-page>
           </settings-subpage>
         </template>
       </template>
-      <template is="dom-if" route-path="/cookies">
-        <settings-subpage id="cookies" page-title="$i18n{cookiePageTitle}"
-            learn-more-url="$i18n{cookiesSettingsHelpCenterURL}"
-            search-label="$i18n{siteSettingsAllSitesSearch}"
-            search-term="{{searchFilter_}}"
-            associated-control="[[$$('#cookiesLinkRow')]]">
-          <settings-cookies-page prefs="{{prefs}}"
-              focus-config="[[focusConfig_]]"
-              search-term="[[searchFilter_]]">
-          </settings-cookies-page>
-        </settings-subpage>
+      <template is="dom-if" if="[[!isPrivacySandboxSettings4_]]">
+        <template is="dom-if" route-path="/cookies">
+          <settings-subpage id="cookies" page-title="$i18n{cookiePageTitle}"
+              learn-more-url="$i18n{cookiesSettingsHelpCenterURL}"
+              search-label="$i18n{siteSettingsAllSitesSearch}"
+              search-term="{{searchFilter_}}"
+              associated-control="[[$$('#cookiesLinkRow')]]">
+            <settings-cookies-page prefs="{{prefs}}"
+                focus-config="[[focusConfig_]]"
+                search-term="[[searchFilter_]]">
+            </settings-cookies-page>
+          </settings-subpage>
+        </template>
       </template>
       <template is="dom-if" route-path="/content/images" no-search>
         <settings-subpage page-title="$i18n{siteSettingsCategoryImages}"
@@ -944,17 +955,24 @@
           <settings-subpage page-title="$i18n{siteSettingsBluetoothScanning}"
               search-label="$i18n{siteSettingsAllSitesSearch}"
               search-term="{{searchFilter_}}">
-            <category-default-setting
-                toggle-off-label="$i18n{siteSettingsBluetoothScanningBlock}"
-                toggle-on-label=
-                    "$i18n{siteSettingsBluetoothScanningAskRecommended}"
-                category="[[contentSettingsTypesEnum_.BLUETOOTH_SCANNING]]">
-            </category-default-setting>
+            <div class="content-settings-header secondary">
+              $i18n{siteSettingsBluetoothScanningDescription}
+            </div>
+            <settings-category-default-radio-group
+                category="[[contentSettingsTypesEnum_.BLUETOOTH_SCANNING]]"
+                allow-option-label=
+                    "$i18n{siteSettingsBluetoothScanningAsk}"
+                allow-option-icon="settings:bluetooth-scanning"
+                block-option-label="$i18n{siteSettingsBluetoothScanningBlock}"
+                block-option-icon="settings:bluetooth-off">
+            </settings-category-default-radio-group>
             <category-setting-exceptions
                 category="[[contentSettingsTypesEnum_.BLUETOOTH_SCANNING]]"
                 read-only-list
-                block-header="$i18n{siteSettingsBlock}"
-                allow-header="$i18n{siteSettingsAllow}"
+                block-header=
+                    "$i18n{siteSettingsBluetoothScanningBlockedExceptions}"
+                allow-header=
+                    "$i18n{siteSettingsBluetoothScanningAllowedExceptions}"
                 search-filter="[[searchFilter_]]">
             </category-setting-exceptions>
           </settings-subpage>

@@ -53,9 +53,9 @@ ui::KeyboardCode CaptureModeDemoToolsTestApi::GetShownNonModifierKeyCode() {
   return key_combo_view->last_non_modifier_key_;
 }
 
-base::OneShotTimer* CaptureModeDemoToolsTestApi::GetKeyComboHideTimer() {
+base::OneShotTimer* CaptureModeDemoToolsTestApi::GetRefreshKeyComboTimer() {
   DCHECK(demo_tools_controller_);
-  return &(demo_tools_controller_->hide_timer_);
+  return &(demo_tools_controller_->key_up_refresh_timer_);
 }
 
 views::ImageView* CaptureModeDemoToolsTestApi::GetNonModifierKeyItemIcon() {
@@ -74,6 +74,18 @@ void CaptureModeDemoToolsTestApi::SetOnMouseHighlightAnimationEndedCallback(
   demo_tools_controller_
       ->on_mouse_highlight_animation_ended_callback_for_test_ =
       std::move(callback);
+}
+
+const MouseHighlightLayers&
+CaptureModeDemoToolsTestApi::GetMouseHighlightLayers() const {
+  DCHECK(demo_tools_controller_);
+  return demo_tools_controller_->mouse_highlight_layers_;
+}
+
+const TouchHighlightLayersMap&
+CaptureModeDemoToolsTestApi::GetTouchIdToHighlightLayerMap() const {
+  DCHECK(demo_tools_controller_);
+  return demo_tools_controller_->touch_pointer_id_to_highlight_layer_map_;
 }
 
 }  // namespace ash

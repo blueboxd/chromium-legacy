@@ -186,11 +186,11 @@ class ForceInstalledMetricsTest : public ForceInstalledTestBase {
         DictionaryBuilder()
             .Set("installation_mode", "allowed")
             .Set(ExternalProviderImpl::kExternalUpdateUrl, kExtensionUpdateUrl)
-            .BuildDict();
+            .Build();
     prefs()->SetManagedPref(pref_names::kExtensionManagement,
                             DictionaryBuilder()
                                 .Set(kExtensionId1, std::move(extension_entry))
-                                .BuildDict());
+                                .Build());
   }
 
   void CreateExtensionService(bool extensions_enabled) {
@@ -1362,7 +1362,7 @@ TEST_F(ForceInstalledMetricsTest,
   SetupForceList(ExtensionOrigin::kWebStore);
   // Set TYPE_EXTENSION and TYPE_THEME as the allowed extension types.
   base::Value::List list =
-      ListBuilder().Append("extension").Append("theme").BuildList();
+      ListBuilder().Append("extension").Append("theme").Build();
   prefs()->SetManagedPref(pref_names::kAllowedTypes, std::move(list));
 
   scoped_refptr<const Extension> ext1 = CreateNewExtension(
@@ -1392,7 +1392,7 @@ TEST_F(ForceInstalledMetricsTest,
 
   // Set TYPE_EXTENSION and TYPE_THEME as the allowed extension types.
   base::Value::List list =
-      ListBuilder().Append("extension").Append("theme").BuildList();
+      ListBuilder().Append("extension").Append("theme").Build();
   prefs()->SetManagedPref(pref_names::kAllowedTypes, std::move(list));
 
   scoped_refptr<const Extension> ext1 = CreateNewExtension(

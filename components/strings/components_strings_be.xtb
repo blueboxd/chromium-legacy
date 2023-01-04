@@ -808,7 +808,6 @@
 <translation id="299990983510665749">Аўтамабілі з кузавам "хэтчбэк"</translation>
 <translation id="3002501248619246229">Праверыць носьбіт уваходнага латка</translation>
 <translation id="3005723025932146533">Паказаць захаваную копію</translation>
-<translation id="3008447029300691911">Увядзіце CVC-код карткі <ph name="CREDIT_CARD" />. Пасля вашага пацвярджэння даныя вашай карткі будуць абагулены з гэтым сайтам.</translation>
 <translation id="3013291976881901233">Прылады MIDI</translation>
 <translation id="301521992641321250">Заблакіравана аўтаматычна</translation>
 <translation id="3016780570757425217">Ведаць ваша месцазнаходжанне</translation>
@@ -1165,6 +1164,7 @@
 <translation id="3927932062596804919">Адмовіць</translation>
 <translation id="393316646445601645">Інтэрнэт і тэлекамунікацыі</translation>
 <translation id="3939773374150895049">Выкарыстоўваць WebAuthn замест CVC?</translation>
+<translation id="3943857333388298514">Уставіць</translation>
 <translation id="3946209740501886391">Заўсёды пытацца на гэтым сайце</translation>
 <translation id="3947595700203588284">Сайт можа запытваць дазвол на падключэнне да прылад MIDI</translation>
 <translation id="3949571496842715403">Серверу не ўдалося даказаць, што гэта <ph name="DOMAIN" />: у сертыфікаце бяспекі не ўказаны альтэрнатыўныя назвы суб'екта. Прычынай могуць быць няправільныя налады або зламыснік, які спрабуе перахапіць падключэнне.</translation>
@@ -2312,6 +2312,7 @@
 <translation id="6890531741535756070">Для спраўджання купляў на сайтах, якія карыстаюцца паслугамі пастаўшчыка <ph name="PROVIDER_ORIGIN" />, вы выбралі наступную прыладу: <ph name="DEVICE_LABEL" />. Гэты пастаўшчык мог захаваць інфармацыю пра ваш спосаб аплаты. Вы можаце <ph name="BEGIN_LINK" />запытаць яе выдаленне<ph name="END_LINK" />.</translation>
 <translation id="6891596781022320156">Узровень палітыкі не падтрымліваецца.</translation>
 <translation id="6895330447102777224">Картка пацверджана</translation>
+<translation id="6896758677409633944">Капіраваць</translation>
 <translation id="6897140037006041989">Агент карыстальніка</translation>
 <translation id="6898699227549475383">Арганізацыя (А)</translation>
 <translation id="6899000063526916106">Увядзіце <ph name="NUMBER_OF_DIGITS" />-значны код</translation>
@@ -2457,7 +2458,6 @@
 <translation id="7243771829620208687">RA0</translation>
 <translation id="7244465398154211886">{NUM_MATCHES,plural, =1{# супадзенне}one{# супадзенне}few{# супадзенні}many{# супадзенняў}other{# супадзення}}</translation>
 <translation id="724691107663265825">Сайт, на які вы збіраецеся перайсці, змяшчае шкоднае ПЗ</translation>
-<translation id="724975217298816891">Каб абнавіць даныя карткі, увядзіце дату заканчэння тэрміну дзеяння і код CVC з карткі <ph name="CREDIT_CARD" />. Пасля вашага пацвярджэння даныя вашай карткі будуць абагулены з гэтым сайтам.</translation>
 <translation id="7251437084390964440">Канфігурацыя сеткі не адпавядае стандарту ONC. Магчыма, некаторыя часткі канфігурацыі не былі імпартаваны.
 Падрабязныя звесткі:
 <ph name="DEBUG_INFO" /></translation>
@@ -2587,7 +2587,6 @@
 <translation id="7534987659046836932">Канверт C7</translation>
 <translation id="7535087603100972091">Значэнне</translation>
 <translation id="7537536606612762813">Абавязкова</translation>
-<translation id="7542403920425041731">Пасля вашага пацвярджэння даныя вашай карткі будуць абагулены з гэтым сайтам.</translation>
 <translation id="7542995811387359312">Аўтаматычнае запаўненне даных крэдытных картак выключана, бо гэта форма не выкарыстоўвае бяспечнае падключэнне.</translation>
 <translation id="7543525346216957623">Папрасі дазволу ў бацькоў</translation>
 <translation id="7546409722674205727">Ідзе запуск праграмы "<ph name="APP_NAME" />"</translation>
@@ -2680,6 +2679,7 @@
 <translation id="7716375162095500223">Яшчэ не запампавана або праігнаравана</translation>
 <translation id="7716424297397655342">Не ўдалося загрузіць сайт з кэша</translation>
 <translation id="7723047071702270851">Рэдагаваць картку</translation>
+<translation id="7724603315864178912">Выразаць</translation>
 <translation id="7734285854693414638">Хутка стварыць новую форму ў Формах Google</translation>
 <translation id="773466115871691567">Заўсёды перакладаць старонкі на наступнай мове: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7736959720849233795">Скапіраваць адрас спасылкі</translation>
@@ -2716,6 +2716,7 @@
 <translation id="7815407501681723534"><ph name="SEARCH_RESULTS" />: знойдзена <ph name="NUMBER_OF_RESULTS" /> па запыце "<ph name="SEARCH_STRING" />"</translation>
 <translation id="7822320754433038727">Паляванне і стральба</translation>
 <translation id="782886543891417279">Сетка Wi-Fi, якую вы выкарыстоўваеце (<ph name="WIFI_NAME" />), можа запатрабаваць ад вас наведаць яе старонку ўваходу.</translation>
+<translation id="7840103971441592723">Здыманне экрана пачалося</translation>
 <translation id="7844689747373518809">{COUNT,plural, =0{Няма}=1{1 праграма (<ph name="EXAMPLE_APP_1" />)}=2{2 праграмы (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}one{# праграма (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}few{# праграмы (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}many{# праграм (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}other{# праграмы (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="7862185352068345852">Закрыць сайт?</translation>
@@ -2894,6 +2895,7 @@
 <translation id="8282947398454257691">Атрымаць доступ да ўнікальнага ідэнтыфікатара прылады</translation>
 <translation id="8284769179630993263">Кіруйце параметрамі Бяспечнага прагляду і выконвайце іншыя дзеянні праз налады Chrome</translation>
 <translation id="8286036467436129157">Увайсці</translation>
+<translation id="8286799286781881307">Праграмы, якія атрымалі адпаведны дазвол ад адміністратараў, могуць атрымліваць доступ да інфармацыі з усіх экранаў, падключаных да вашай прылады. Гэта інфармацыя можа апрацоўвацца лакальна на вашай прыладзе або запампоўвацца на серверы вашай арганізацыі.</translation>
 <translation id="8288807391153049143">Паказаць сертыфікат</translation>
 <translation id="8289355894181816810">Калі вы не ўпэўненыя, што гэта значыць, звярніцеся да адміністратара сеткі.</translation>
 <translation id="8293206222192510085">Дадаванне закладкі</translation>

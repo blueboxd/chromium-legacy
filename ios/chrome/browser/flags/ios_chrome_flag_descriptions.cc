@@ -270,12 +270,6 @@ const char kEnableDiscoverFeedDiscoFeedEndpointName[] =
 const char kEnableDiscoverFeedDiscoFeedEndpointDescription[] =
     "Enable using the discofeed endpoint for the discover feed.";
 
-const char kEnableFREDefaultBrowserPromoScreenName[] =
-    "Enable FRE default browser screen";
-const char kEnableFREDefaultBrowserPromoScreenDescription[] =
-    "Display the FRE default browser screen and other default browser promo "
-    "depending on experiment.";
-
 const char kEnableFeedAblationName[] = "Enables Feed Ablation";
 const char kEnableFeedAblationDescription[] =
     "If Enabled the Feed will be removed from the NTP";
@@ -325,11 +319,6 @@ const char kEnableRefineDataSourceReloadReportingName[] =
 const char kEnableRefineDataSourceReloadReportingDescription[] =
     "Enable refining data source reload reporting when having a very short "
     "attention log";
-
-const char kEnableUnicornAccountSupportName[] =
-    "Enable Unicorn account support";
-const char kEnableUnicornAccountSupportDescription[] =
-    "Allows users to sign-in with their Unicorn account.";
 
 const char kEnableWebPageAnnotationsName[] = "Enable Web Page Intent Detection";
 const char kEnableWebPageAnnotationsDescription[] =
@@ -517,13 +506,6 @@ const char kNewOverflowMenuAlternateIPHDescription[] =
 const char kNTPViewHierarchyRepairName[] = "NTP View Hierarchy Repair";
 const char kNTPViewHierarchyRepairDescription[] =
     "Checks if NTP view hierarchy is broken and fixes it if necessary.";
-
-const char kOmniboxCarouselDynamicSpacingName[] =
-    "Omnibox Carousel dynamic spacing";
-const char kOmniboxCarouselDynamicSpacingDescription[] =
-    "Enables dynamic spacing in omnibox carousel, this increases the spacing "
-    "between the tiles to have half of a tile visible, to indicate a "
-    "scrollable list";
 
 const char kOmniboxFuzzyUrlSuggestionsName[] = "Omnibox Fuzzy URL Suggestions";
 const char kOmniboxFuzzyUrlSuggestionsDescription[] =

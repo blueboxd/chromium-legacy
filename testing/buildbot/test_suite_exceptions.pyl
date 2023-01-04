@@ -1211,6 +1211,7 @@
         'args': [
           # This bot sets symbol_level=2, which doesn't fit inside a normal VM.
           '--strip-chrome',
+          '--tast-retries=1',
         ],
       },
       'chromeos-betty-pi-arc-chrome': {
@@ -1219,6 +1220,9 @@
         },
       },
       'chromeos-eve-chrome': {
+        'args':[
+          '--tast-retries=1',
+        ],
         'swarming': {
           # Increased timeout to 2 hours due to shard timeout.
           'hard_timeout': 7200,
@@ -2002,8 +2006,6 @@
       # Android.
       'Dawn Android arm DEPS Release (Pixel 4)',
       'Dawn Android arm Release (Pixel 4)',
-      'Dawn Win10 x86 DEPS Release (Intel HD 630)',
-      'Dawn Win10 x86 Release (Intel HD 630)',
     ],
   },
   'device_unittests': {
@@ -2116,6 +2118,12 @@
       'Linux Chromium OS ASan LSan Tests (1)',  # https://crbug.com/831667
     ],
     'modifications': {
+      'android-pie-arm64-coverage-experimental-rel': {
+        'args': [
+          # https://crbug.com/1404782
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.pie_arm64.gin_unittests_coverage.filter',
+        ],
+      },
       'fuchsia-fyi-x64-asan': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.lsan.gin_unittests.filter',
@@ -3124,11 +3132,6 @@
       },
     },
   },
-  'power_measurement_test': {
-    'remove_from': [
-      'Win10 FYI x64 Exp Release (Intel HD 630)',  # https://crbug.com/1376082
-    ],
-  },
   'sandbox_linux_unittests': {
     'modifications': {
       'android-nougat-x86-rel': {
@@ -3572,8 +3575,8 @@
   'video_decode_accelerator_gl_unittest': {
     'remove_from': [
       # Windows Intel doesn't have the GL extensions to support this test.
-      'Win10 FYI x64 Release (Intel HD 630)',
-      'Win10 FYI x64 Exp Release (Intel HD 630)',
+      'Win10 FYI x64 Release (Intel)',
+      'Win10 FYI x64 Experimental Release (Intel)',
     ],
   },
   'views_unittests': {
@@ -3664,6 +3667,21 @@
           '--git-revision': '${got_cr_revision}',
         },
       },
+      'Linux V8 FYI Release - pointer compression (NVIDIA)': {
+        'args': {
+          '--git-revision': '${got_cr_revision}',
+        },
+      },
+      'Mac V8 FYI Release (Intel)': {
+        'args': {
+          '--git-revision': '${got_cr_revision}',
+        },
+      },
+      'Win V8 FYI Release (NVIDIA)': {
+        'args': {
+          '--git-revision': '${got_cr_revision}',
+        },
+      },
     },
   },
   'wayland_client_perftests': {
@@ -3694,11 +3712,23 @@
       'Linux Tests',  # https://crbug.com/929689, https://crbug.com/936557
     ],
   },
+  'webgl2_conformance_d3d11_passthrough_tests': {
+    'remove_from': [
+      # Removed from V8 builder since WebGL 1 should provide reasonable
+      # upstream test coverage without the capacity hit from WebGL 2.
+      'Win V8 FYI Release (NVIDIA)',
+    ],
+  },
   'webgl2_conformance_gl_passthrough_tests': {
     'remove_from': [
+      # Removed from V8 builders since WebGL 1 should provide reasonable
+      # upstream test coverage without the capacity hit from WebGL 2.
+      'Linux V8 FYI Release (NVIDIA)',
+      'Linux V8 FYI Release - pointer compression (NVIDIA)',
       # Not enough capacity on Mac AMD https://crbug.com/1375306.
       'Mac FYI Retina ASAN (AMD)',
       'Mac FYI Retina Release (AMD)',
+      'Mac V8 FYI Release (Intel)',
       'mac-angle-chromium-amd',
     ],
   },
@@ -3731,6 +3761,9 @@
       'Mac FYI Retina ASAN (AMD)',
       # Not enough capacity.
       'Mac FYI Retina Release (NVIDIA)',
+      # Removed from V8 builders since WebGL 1 should provide reasonable
+      # upstream test coverage without the capacity hit from WebGL 2.
+      'Mac V8 FYI Release (Intel)',
     ],
     'modifications': {
       'Mac FYI ASAN (Intel)': {
@@ -3898,8 +3931,6 @@
       'Dawn Android arm Release (Pixel 4)',
       'Dawn Mac x64 DEPS Release (AMD)',
       'Dawn Mac x64 Release (AMD)',
-      'Dawn Win10 x64 DEPS Release (Intel HD 630)',
-      'Dawn Win10 x64 Release (Intel HD 630)',
     ],
   },
   'webgpu_cts_tests': {
@@ -3922,10 +3953,6 @@
       'Dawn Android arm Release (Pixel 4)',
       'Dawn Mac x64 DEPS Release (AMD)',
       'Dawn Mac x64 Release (AMD)',
-      'Dawn Win10 x64 DEPS Release (Intel HD 630)',
-      'Dawn Win10 x64 Release (Intel HD 630)',
-      'Dawn Win10 x86 DEPS Release (Intel HD 630)',
-      'Dawn Win10 x86 Release (Intel HD 630)',
     ],
     'modifications': {
       # ci_only for bots where capacity is constrained.
@@ -3942,10 +3969,6 @@
     'remove_from': [
       'Dawn Mac x64 DEPS Release (AMD)',
       'Dawn Mac x64 Release (AMD)',
-      'Dawn Win10 x64 DEPS Release (Intel HD 630)',
-      'Dawn Win10 x64 Release (Intel HD 630)',
-      'Dawn Win10 x86 DEPS Release (Intel HD 630)',
-      'Dawn Win10 x86 Release (Intel HD 630)',
     ],
     'modifications': {
       # ci_only for bots where capacity is constrained.

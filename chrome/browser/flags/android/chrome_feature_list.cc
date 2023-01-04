@@ -166,7 +166,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kAssistantConsentSimplifiedText,
     &kAssistantConsentV2,
     &kAssistantIntentExperimentId,
-    &kAssistantIntentPageUrl,
     &kAssistantIntentTranslateInfo,
     &kAssistantNonPersonalizedVoiceSearch,
     &kAppMenuMobileSiteOption,
@@ -183,6 +182,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCCTFeatureUsage,
     &kCCTIncognito,
     &kCCTIncognitoAvailableToThirdParty,
+    &kCCTIntentFeatureOverrides,
     &kCCTNewDownloadTab,
     &kCCTPackageNameRecording,
     &kCCTPostMessageAPI,
@@ -373,8 +373,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &syncer::kSyncEnableHistoryDataType,
     &syncer::kSyncAndroidLimitNTPPromoImpressions,
     &syncer::kSyncAndroidPromosWithAlternativeTitle,
-    &syncer::kSyncAndroidPromosWithIllustration,
-    &syncer::kSyncAndroidPromosWithSingleButton,
     &syncer::kSyncAndroidPromosWithTitle,
     &subresource_filter::kSafeBrowsingSubresourceFilter,
     &video_tutorials::features::kVideoTutorials,
@@ -450,10 +448,6 @@ BASE_FEATURE(kAssistantIntentExperimentId,
              "AssistantIntentExperimentId",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kAssistantIntentPageUrl,
-             "AssistantIntentPageUrl",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kAssistantIntentTranslateInfo,
              "AssistantIntentTranslateInfo",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -524,6 +518,10 @@ BASE_FEATURE(kCCTIncognito, "CCTIncognito", base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kCCTIncognitoAvailableToThirdParty,
              "CCTIncognitoAvailableToThirdParty",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kCCTIntentFeatureOverrides,
+             "CCTIntentFeatureOverrides",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kCCTPackageNameRecording,
              "CCTPackageNameRecording",

@@ -171,10 +171,14 @@ TabletModeMultitaskMenu::TabletModeMultitaskMenu(
   menu_view_->layer()->SetTransform(initial_transform);
   menu_view_->shadow()->SetContentBounds(gfx::Rect(menu_size));
 
-  widget_observation_.Observe(widget_.get());
+  // Showing the widget can change native focus (which would result in an
+  // immediate closing of the menu). Only start observing after shown.
+  views::WidgetFocusManager::GetInstance()->AddFocusChangeListener(this);
 }
 
-TabletModeMultitaskMenu::~TabletModeMultitaskMenu() = default;
+TabletModeMultitaskMenu::~TabletModeMultitaskMenu() {
+  views::WidgetFocusManager::GetInstance()->RemoveFocusChangeListener(this);
+}
 
 void TabletModeMultitaskMenu::Animate(bool show) {
   ui::Layer* view_layer = menu_view_->layer();
@@ -210,20 +214,31 @@ void TabletModeMultitaskMenu::AnimateFadeOut() {
       .SetOpacity(view_layer, 0.0f, gfx::Tween::LINEAR);
 }
 
-void TabletModeMultitaskMenu::BeginDrag(float initial_y) {
-  // Try to match the bottom of the menu with the drag location.
-  // TODO(sophiewen): The drag location may not always be at the bottom of the
-  // menu.
-  float delta_y = initial_y - menu_view_->bounds().bottom();
-  menu_view_->layer()->SetTransform(
-      gfx::Transform::MakeTranslation(0, delta_y));
+void TabletModeMultitaskMenu::BeginDrag(float initial_y, bool show) {
+  // Drag up can start from anywhere in the menu; simply save `initial_y` to
+  // update drag relative to it.
+  initial_y_ = initial_y;
+  if (show) {
+    // If we are dragging down, the menu hasn't been created yet, so match the
+    // bottom of the menu with `initial_y`.
+    const float transform_y = initial_y - menu_view_->bounds().bottom();
+    menu_view_->layer()->SetTransform(
+        gfx::Transform::MakeTranslation(0, transform_y));
+  }
 }
 
-void TabletModeMultitaskMenu::UpdateDrag(float current_y) {
-  float transform_y = current_y - menu_view_->bounds().bottom();
-  // Stop translating the menu if the drag moves out of bounds.
-  if (transform_y > 0)
-    return;
+void TabletModeMultitaskMenu::UpdateDrag(float current_y, bool show) {
+  float transform_y;
+  if (show) {
+    // Continue to match the menu bottom with `current_y`.
+    transform_y = current_y - menu_view_->bounds().bottom();
+    // Stop translating the menu if the drag moves out of bounds.
+    if (transform_y >= 0.f) {
+      return;
+    }
+  } else {
+    transform_y = current_y - initial_y_;
+  }
   menu_view_->layer()->SetTransform(
       gfx::Transform::MakeTranslation(0, transform_y));
 }
@@ -231,9 +246,9 @@ void TabletModeMultitaskMenu::UpdateDrag(float current_y) {
 void TabletModeMultitaskMenu::EndDrag() {
   // Calculate the `current_translation_y` relative to `max_translation_y`. Both
   // negative values and relative to the menu position.
-  float current_translation_y =
+  const float current_translation_y =
       menu_view_->layer()->transform().To2dTranslation().y();
-  float max_translation_y =
+  const float max_translation_y =
       -menu_view_->GetPreferredSize().height() - kVerticalPosition;
   const float translated_ratio =
       base::clamp(current_translation_y / max_translation_y, 0.f, 1.f);
@@ -254,12 +269,10 @@ void TabletModeMultitaskMenu::OnWindowDestroying(aura::Window* window) {
   Reset();
 }
 
-void TabletModeMultitaskMenu::OnWidgetActivationChanged(views::Widget* widget,
-                                                        bool active) {
-  // `widget` gets deactivated when the window state changes.
-  DCHECK(widget_observation_.IsObservingSource(widget));
-  if (!active) {
-    // Will destroy `this` at the end of animation.
+void TabletModeMultitaskMenu::OnNativeFocusChanged(
+    gfx::NativeView focused_now) {
+  if (widget_->GetNativeView() != focused_now) {
+    // Destroys `this` at the end of animation.
     AnimateFadeOut();
   }
 }
@@ -278,10 +291,9 @@ void TabletModeMultitaskMenu::OnDisplayMetricsChanged(
                           .id()) {
     return;
   }
-  // TODO(shidi): Will do the rotate transition on a separate cl. Close the
-  // menu at rotation for now.
-  if (changed_metrics & display::DisplayObserver::DISPLAY_METRIC_ROTATION)
-    event_handler_->ResetMultitaskMenu();
+  if (changed_metrics) {
+    AnimateFadeOut();
+  }
 }
 
 chromeos::MultitaskMenuView*

@@ -1237,6 +1237,7 @@
 <translation id="2104166991923847969">自動關閉無線基地台</translation>
 <translation id="2105809836724866556">已隱藏「<ph name="MODULE_TITLE" />」</translation>
 <translation id="2108349519800154983">{COUNT,plural, =1{電話號碼}other{# 組電話號碼}}</translation>
+<translation id="2110941575868943054">可以尋找藍牙裝置</translation>
 <translation id="211144231511833662">取消勾選類型</translation>
 <translation id="2111670510994270194">在右側新增分頁</translation>
 <translation id="2112554630428445878"><ph name="USERNAME" />，歡迎使用！</translation>
@@ -1429,7 +1430,6 @@
 <translation id="2285109769884538519">{COUNT,plural, =0{在新分頁群組中開啟所有網址(&amp;N)}=1{在新分頁群組中開啟網址(&amp;N)}other{在新分頁群組中開啟所有 ({COUNT} 個) 網址(&amp;N)}}</translation>
 <translation id="2285942871162473373">無法辨識你的指紋，請再試一次。</translation>
 <translation id="2287944065963043964">登入畫面</translation>
-<translation id="2289270750774289114">當網站要搜尋附近的藍牙裝置時，必須先詢問你 (建議)</translation>
 <translation id="2290615375132886363">平板電腦瀏覽按鈕</translation>
 <translation id="2291452790265535215">試著在側邊面板上使用書籤、瀏覽歷程和其他功能</translation>
 <translation id="229182044471402145">找不到相符的字型。</translation>
@@ -1961,7 +1961,7 @@
 <translation id="274318651891194348">正在搜尋鍵盤</translation>
 <translation id="2743301740238894839">開始</translation>
 <translation id="2743387203779672305">複製到剪貼簿</translation>
-<translation id="274362947316498129">一個應用程式正在嘗試存取<ph name="DEVICE_NAME" />。如要允許存取，請關閉<ph name="DEVICE_NAME" />隱私權切換按鈕。</translation>
+<translation id="274362947316498129">一個應用程式正在嘗試存取<ph name="DEVICE_NAME" />。如要允許存取，請關閉<ph name="DEVICE_NAME" />隱私權切換鈕。</translation>
 <translation id="2745080116229976798">Microsoft 合格分類</translation>
 <translation id="2749756011735116528">登入 <ph name="PRODUCT_NAME" /></translation>
 <translation id="2749836841884031656">SIM 卡</translation>
@@ -2773,7 +2773,7 @@
 <translation id="3507888235492474624">重新掃描藍牙裝置</translation>
 <translation id="3508492320654304609">無法刪除你的登入資料</translation>
 <translation id="3508920295779105875">選擇另一個資料夾...</translation>
-<translation id="3509379002674019679">建立、儲存及管理密碼，讓你輕鬆登入網站和應用程式。</translation>
+<translation id="3509379002674019679">建立、儲存及管理密碼，輕鬆登入網站和應用程式。</translation>
 <translation id="3511200754045804813">重新掃描</translation>
 <translation id="3511307672085573050">複製連結網址(&amp;E)</translation>
 <translation id="351152300840026870">固定寬度字型</translation>
@@ -2882,7 +2882,7 @@
 <translation id="3619115746895587757">卡布奇諾</translation>
 <translation id="3620136223548713675">地理位置</translation>
 <translation id="362023940451053340">更新 Google 帳戶 (<ph name="ACCOUNT" />) 的密碼</translation>
-<translation id="3621807901162200696">協助改善 Chrome OS 的功能與效能</translation>
+<translation id="3621807901162200696">協助改善 ChromeOS 的功能與效能</translation>
 <translation id="362266093274784978">{COUNT,plural, =1{1 個應用程式}other{# 個應用程式}}</translation>
 <translation id="362333465072914957">正在等待 CA 核發憑證</translation>
 <translation id="3624567683873126087">解鎖裝置並登入 Google 帳戶</translation>
@@ -3003,7 +3003,6 @@
 <translation id="3727473233247516571">往返快取子頁框：<ph name="BACK_FORWARD_CACHE_PAGE_URL" /></translation>
 <translation id="3728188878314831180">鏡向投射手機的通知</translation>
 <translation id="3728681439294129328">設定網路位址</translation>
-<translation id="3729303374699765035">當網站要搜尋附近的藍牙裝置時，必須先詢問你</translation>
 <translation id="3729506734996624908">允許的網站</translation>
 <translation id="3730076362938942381">觸控筆書寫應用程式</translation>
 <translation id="3732078975418297900">第 <ph name="ERROR_LINE" /> 行有錯誤</translation>
@@ -3030,6 +3029,7 @@
 <translation id="3756485814916578707">正在投放螢幕畫面</translation>
 <translation id="3756578970075173856">設定 PIN 碼</translation>
 <translation id="3756795331760037744">允許 Google 助理使用<ph name="SUPERVISED_USER_NAME" />畫面上的資訊來提供協助</translation>
+<translation id="3756806135608816820">網站可要求掃描藍牙裝置</translation>
 <translation id="3757733214359997190">找不到任何網站</translation>
 <translation id="375841316537350618">正在下載 Proxy 指令碼...</translation>
 <translation id="3758842566811519622">已設定 Cookie</translation>
@@ -3486,7 +3486,7 @@
 <translation id="4163560723127662357">未知的鍵盤</translation>
 <translation id="4165942112764990069"><ph name="USER_EMAIL" /> 不屬於有效機構，請與管理員聯絡。如果你是管理員，可以前往 g.co/ChromeEnterpriseAccount 進行機構設定</translation>
 <translation id="4165986682804962316">網站設定</translation>
-<translation id="4167212649627589331">「<ph name="APP_NAME" />」正在嘗試存取<ph name="DEVICE_NAME" />。如要允許存取，請關閉<ph name="DEVICE_NAME" />隱私權切換按鈕。</translation>
+<translation id="4167212649627589331">「<ph name="APP_NAME" />」正在嘗試存取<ph name="DEVICE_NAME" />。如要允許存取，請關閉<ph name="DEVICE_NAME" />隱私權切換鈕。</translation>
 <translation id="4167393659000039775">Google 不會對任何遺失的資料負責，而且 <ph name="DEVICE_OS" /> 可能不適用於未通過核准的型號。如要瞭解詳情，請前往 g.co/flex/InstallGuide。</translation>
 <translation id="4167686856635546851">網站通常會使用 JavaScript，以顯示電玩遊戲或網路表單等互動式功能</translation>
 <translation id="4168015872538332605"><ph name="PRIMARY_EMAIL" /> 的部分設定已與你共用。不過只有使用多重登入時，這些設定才會影響你的帳戶。</translation>
@@ -3799,6 +3799,7 @@
 <translation id="4469762931504673593"><ph name="ORIGIN" /> 可以編輯「<ph name="FOLDERNAME" />」中的檔案</translation>
 <translation id="4470957202018033307">外部儲存空間偏好設定</translation>
 <translation id="4471354919263203780">正在下載語音辨識檔案...<ph name="PERCENT" />%</translation>
+<translation id="4472298120638043495">你可以使用偏好的 Google 帳戶語言 (<ph name="NEW_LOCALE_FROM_GAIA" />)</translation>
 <translation id="447252321002412580">協助改善 Chrome 的功能與效能</translation>
 <translation id="4472575034687746823">開始使用</translation>
 <translation id="4474155171896946103">將所有分頁加入書籤...</translation>
@@ -4439,7 +4440,7 @@
 <translation id="5073956501367595100">{0,plural,offset:2 =1{<ph name="FILE1" />}=2{<ph name="FILE1" />、<ph name="FILE2" />}other{<ph name="FILE1" />、<ph name="FILE2" /> 和另外 # 個檔案}}</translation>
 <translation id="5074318175948309511">你可能需要重新載入這個網頁，新設定才會生效。</translation>
 <translation id="5074761966806028321">仍需要權限才能完成設定</translation>
-<translation id="5075563999073408211">透過一或多個切換按鈕控制自己的裝置。切換按鈕可能是鍵盤按鍵、遊戲手把按鈕或專用裝置。</translation>
+<translation id="5075563999073408211">透過一或多個切換鈕控制自己的裝置。切換鈕可能是鍵盤按鍵、遊戲手把按鈕或專用裝置。</translation>
 <translation id="5075910247684008552">系統預設會封鎖安全網站上的不安全內容</translation>
 <translation id="5078638979202084724">將所有分頁加入書籤</translation>
 <translation id="5078796286268621944">PIN 不正確</translation>
@@ -4528,7 +4529,6 @@
 <translation id="5158206172605340248">重音符號選單已關閉。</translation>
 <translation id="5159094275429367735">設定 Crostini</translation>
 <translation id="5159419673777902220">貴家長已停用擴充功能權限</translation>
-<translation id="5159643365935452998">檢查自動資料清除設定</translation>
 <translation id="5160634252433617617">實體鍵盤</translation>
 <translation id="5160857336552977725">登入您的 <ph name="DEVICE_TYPE" /></translation>
 <translation id="5161251470972801814">來自 <ph name="VENDOR_NAME" /> 的 USB 裝置</translation>
@@ -5003,6 +5003,7 @@
 <translation id="5600706100022181951">下載更新將使用 <ph name="UPDATE_SIZE_MB" /> MB 的行動數據。要繼續嗎？</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5601823921345337195">不得連接 MIDI 裝置</translation>
+<translation id="5601833336918638013">不允許網站掃描藍牙裝置</translation>
 <translation id="5602765853043467355">清除這個裝置的書籤、歷史記錄、密碼和其他設定</translation>
 <translation id="5605758115928394442">為了確認你的身分，系統已傳送通知到你的手機。</translation>
 <translation id="5606849116180480101">{NUM_EXTENSIONS,plural, =1{已封鎖這個擴充功能}other{已封鎖這些擴充功能}}</translation>
@@ -5246,7 +5247,6 @@
 <translation id="583673505367439042">網站可以要求編輯裝置上的檔案和資料夾</translation>
 <translation id="5836999627049108525">原文語言</translation>
 <translation id="583756221537636748">充電盒</translation>
-<translation id="5840658767386246331">透過 Google 搜尋</translation>
 <translation id="5840680448799937675">一律在離線時分享檔案</translation>
 <translation id="5841270259333717135">設定乙太網路</translation>
 <translation id="5842497610951477805">啟用藍牙</translation>
@@ -6458,6 +6458,7 @@
 <translation id="6960507406838246615">必須更新 Linux</translation>
 <translation id="6960648667961844909">無法下載<ph name="LANGUAGE" />語音檔案。系統稍後將再次嘗試下載。在下載作業完成前，系統會先將語音內容傳送給 Google 處理。</translation>
 <translation id="696103774840402661">系統已永久刪除這部「<ph name="DEVICE_TYPE" />」上所有使用者的所有檔案與本機資料。</translation>
+<translation id="6961327401577924850">一般來說，網站掃描藍牙裝置的原因是為了執行功能，例如設定或同步低功耗信標、健康/健身智慧手環或智慧型燈泡</translation>
 <translation id="6963872466817251924">文字游標醒目顯示工具</translation>
 <translation id="6964390816189577014">英雄</translation>
 <translation id="6964760285928603117">從群組中移除</translation>
@@ -6620,7 +6621,7 @@
 <translation id="7098447629416471489">你所儲存的其他搜尋引擎會顯示在這裡</translation>
 <translation id="7098936390718461001">{NUM_APPS,plural, =1{移除應用程式}other{移除應用程式}}</translation>
 <translation id="7099337801055912064">無法載入大型 PPD。大小上限為 250 KB。</translation>
-<translation id="7099739618316136113">{COUNT,plural, =0{沒有任何密碼遭外洩}=1{{COUNT} 個遭外洩的密碼}other{{COUNT} 個遭外洩的密碼}}</translation>
+<translation id="7099739618316136113">{COUNT,plural, =0{沒有任何密碼遭外洩}=1{{COUNT} 組遭外洩的密碼}other{{COUNT} 組遭外洩的密碼}}</translation>
 <translation id="7102832101143475489">要求逾時</translation>
 <translation id="710640343305609397">開啟網路設定</translation>
 <translation id="7107609441453408294">透過所有揚聲器播放相同的音訊</translation>
@@ -6734,6 +6735,7 @@
 <translation id="7227458944009118910">下列應用程式也可以處理通訊協定連結。其他應用程式則會要求授權。</translation>
 <translation id="7228056665272655255">如要設定指紋，請讓孩子輕觸鍵盤右上角的指紋感應器。孩子的指紋資料會安全地儲存在這部「<ph name="DEVICE_TYPE" />」上，絕不會外洩。</translation>
 <translation id="7228523857728654909">螢幕鎖定和登入</translation>
+<translation id="7228854227189381547">不切換</translation>
 <translation id="7230222852462421043">還原視窗 (&amp;R)</translation>
 <translation id="7231260028442989757">查看、關閉及回覆手機的通知</translation>
 <translation id="7232750842195536390">無法重新命名</translation>
@@ -7067,6 +7069,7 @@
 <translation id="7545466883021407599">無法連上伺服器。請檢查網路連線，然後再試一次。如果問題仍然無法解決，請嘗試重新啟動 Chromebook。錯誤代碼：<ph name="ERROR_CODE" />。</translation>
 <translation id="7547317915858803630">警告：你的 <ph name="PRODUCT_NAME" /> 設定均儲存在網路硬碟中。這麼做可能導致速度變慢、當機，甚至資料遺失。</translation>
 <translation id="7548856833046333824">檸檬汁</translation>
+<translation id="7549434883223124329">要切換裝置語言嗎？</translation>
 <translation id="7550830279652415241">bookmarks_<ph name="DATESTAMP" />.html</translation>
 <translation id="7551059576287086432"><ph name="FILE_NAME" /> 下載失敗</translation>
 <translation id="7551643184018910560">固定至檔案櫃</translation>
@@ -8093,6 +8096,7 @@
 <translation id="8465444703385715657">需要你的授權才能執行「<ph name="PLUGIN_NAME" />」</translation>
 <translation id="8466417995783206254">這個分頁正在使用子母畫面模式播放影片。</translation>
 <translation id="8467326454809944210">選擇其他語言</translation>
+<translation id="8468087214092422866">不得尋找藍牙裝置</translation>
 <translation id="8470513973197838199">已儲存 <ph name="ORIGIN" /> 的密碼</translation>
 <translation id="8471525937465764768">網站通常會連線至 USB 裝置，以提供列印文件或儲存至裝置等功能</translation>
 <translation id="8471959340398751476">折扣搜尋功能已關閉。你可以在自訂選單中開啟這項功能</translation>
@@ -8474,7 +8478,6 @@
 <translation id="8827125715368568315">已封鎖：<ph name="PERMISSION" />和另外 <ph name="COUNT" /> 項</translation>
 <translation id="8827289157496676362">固定擴充功能</translation>
 <translation id="8827752199525959199">更多動作，<ph name="USERNAME" /> 在 <ph name="DOMAIN" /> 上的密碼</translation>
-<translation id="882854468542856424">不允許任何網站搜尋附近的藍牙裝置</translation>
 <translation id="8828933418460119530">DNS 名稱</translation>
 <translation id="883062543841130884">替代項目</translation>
 <translation id="8830779999439981481">正在重新啟動以套用更新</translation>

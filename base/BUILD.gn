@@ -82,6 +82,11 @@ assert(!enable_mutex_priority_inheritance || is_castos || is_cast_android,
 assert(!is_nacl || is_nacl_saigo,
        "base must not be built in most nacl toolchains")
 
+# This is here instead of in //build because //build is DEPS'd in by a few
+# subprojects that still support MSVC.
+assert(!is_win || is_clang,
+       "only clang-cl is supported on Windows, see https://crbug.com/988071")
+
 # Determines whether libevent should be dep.
 dep_libevent = !is_fuchsia && !is_win && !is_mac && !is_nacl
 
@@ -2417,7 +2422,6 @@ component("base") {
       "trace_event/optional_trace_event.h",
       "trace_event/process_memory_dump.cc",
       "trace_event/process_memory_dump.h",
-      "trace_event/task_execution_macros.h",
       "trace_event/trace_arguments.cc",
       "trace_event/trace_arguments.h",
       "trace_event/trace_buffer.cc",

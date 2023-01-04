@@ -108,6 +108,7 @@
 #include "components/language/content/browser/geo_language_provider.h"
 #include "components/language/content/browser/ulp_language_code_locator/ulp_language_code_locator.h"
 #include "components/language/core/browser/language_prefs.h"
+#include "components/lens/buildflags.h"
 #include "components/lookalikes/core/lookalike_url_util.h"
 #include "components/metrics/demographics/user_demographics.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -804,6 +805,10 @@ const char kAutofillAssistantTriggerScriptsEnabled[] =
 const char kAutofillAssistantTriggerScriptsIsFirstTimeUser[] =
     "autofill_assistant.trigger_scripts.is_first_time_user";
 
+// Deprecated 12/2022.
+const char kAutofillWalletImportStorageCheckboxState[] =
+    "autofill.wallet_import_storage_checkbox_state";
+
 // Register local state used only for migration (clearing or moving to a new
 // key).
 void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
@@ -1066,6 +1071,10 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterBooleanPref(kAutofillAssistantConsent, false);
   registry->RegisterBooleanPref(kAutofillAssistantTriggerScriptsEnabled, true);
   registry->RegisterBooleanPref(kAutofillAssistantTriggerScriptsIsFirstTimeUser,
+                                true);
+
+  // Deprecated 12/2022.
+  registry->RegisterBooleanPref(kAutofillWalletImportStorageCheckboxState,
                                 true);
 }
 
@@ -1649,13 +1658,16 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   RegisterBrowserViewProfilePrefs(registry);
 #endif
 
-#if !BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(ENABLE_LENS_DESKTOP)
   registry->RegisterBooleanPref(
       prefs::kLensRegionSearchEnabled, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kLensDesktopNTPSearchEnabled, true);
+#endif
+
+#if !BUILDFLAG(IS_ANDROID)
   registry->RegisterBooleanPref(
       webauthn::pref_names::kRemoteProxiedRequestsAllowed, false);
-  registry->RegisterBooleanPref(prefs::kLensDesktopNTPSearchEnabled, true);
 
   // When in RTL mode, the side panel should default to the left of the screen.
   // Otherwise, the side panel should default to the right side of the screen.
@@ -2105,6 +2117,9 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   // Added 12/2022.
   profile_prefs->ClearPref(
       reading_list::prefs::kDeprecatedReadingListHasUnseenEntries);
+
+  // Added 12/2022.
+  profile_prefs->ClearPref(kAutofillWalletImportStorageCheckboxState);
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_PROFILE_PREFS

@@ -20,6 +20,10 @@ ChromeVoxPanelTest = class extends ChromeVoxPanelTestBase {
         'CommandHandlerInterface',
         '/chromevox/background/command_handler_interface.js');
     await importModule(
+        'EventSourceState', '/chromevox/background/event_source.js');
+    await importModule(
+        'EventSourceType', '/chromevox/common/event_source_type.js');
+    await importModule(
         'LocaleOutputHelper', '/chromevox/common/locale_output_helper.js');
     await importModule(
         ['PanelCommand', 'PanelCommandType'],
@@ -34,7 +38,7 @@ ChromeVoxPanelTest = class extends ChromeVoxPanelTestBase {
       obj.preventDefault = function() {};
       obj.stopPropagation = function() {};
       obj.key = key;
-      this.getPanel().onKeyDown(obj);
+      this.getPanel().instance_.onKeyDown_(obj);
     }.bind(this);
   }
 
@@ -43,7 +47,7 @@ ChromeVoxPanelTest = class extends ChromeVoxPanelTestBase {
       const evt = {};
       evt.target = {};
       evt.target.value = query;
-      this.getPanel().onSearchBarQuery(evt);
+      this.getPanel().instance_.onSearchBarQuery_(evt);
     }.bind(this);
   }
 
@@ -58,11 +62,11 @@ ChromeVoxPanelTest = class extends ChromeVoxPanelTestBase {
 
     return new Promise(resolve => {
       const Panel = this.getPanel();
-      const original = Panel.activateMenu;
-      Panel.activateMenu = (menu, activateFirstItem) => {
+      const original = Panel.instance_.activateMenu_.bind(Panel.instance_);
+      Panel.instance_.activateMenu_ = (menu, activateFirstItem) => {
         original(menu, activateFirstItem);
         makeAssertions();
-        Panel.activateMenu = original;
+        Panel.instance_.activateMenu_ = original;
         resolve();
       };
     });
@@ -83,6 +87,10 @@ ChromeVoxPanelTest = class extends ChromeVoxPanelTestBase {
     const activeIndex = searchMenu.activeIndex_;
     const activeItem = searchMenu.items_[activeIndex];
     assertEquals(menuItemTitle, activeItem.menuItemTitle);
+  }
+
+  enableTouchMode() {
+    EventSourceState.set(EventSourceType.TOUCH_GESTURE);
   }
 
   isMenuTitleMessage(menuTitleMessage) {
@@ -286,7 +294,7 @@ AX_TEST_F(
     'ChromeVoxPanelTest', 'TouchGesturesMenuAvailableWhenInTouchMode',
     async function() {
       await this.runWithLoadedTree(this.linksDoc);
-      this.getPanel().setTouchGestureSourceForTesting();
+      this.enableTouchMode();
       new PanelCommand(PanelCommandType.OPEN_MENUS).send();
       await this.waitForMenu('panel_search_menu');
 

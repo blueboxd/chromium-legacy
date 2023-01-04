@@ -74,6 +74,7 @@
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_access_result.h"
 #include "net/cookies/cookie_options.h"
+#include "net/cookies/cookie_setting_override.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_store_test_callbacks.h"
 #include "net/cookies/cookie_util.h"
@@ -4183,7 +4184,8 @@ TEST_F(NetworkContextTest, PrivacyModeDisabledByDefault) {
                 ->network_delegate()
                 ->ForcePrivacyMode(GURL("http://foo.com"),
                                    net::SiteForCookies::FromUrl(kOtherURL),
-                                   url::Origin::Create(kOtherURL)));
+                                   url::Origin::Create(kOtherURL),
+                                   net::CookieSettingOverrides()));
 }
 
 TEST_F(NetworkContextTest, PrivacyModeEnabledIfCookiesBlocked) {
@@ -4200,13 +4202,32 @@ TEST_F(NetworkContextTest, PrivacyModeEnabledIfCookiesBlocked) {
       network_context->url_request_context()
           ->network_delegate()
           ->ForcePrivacyMode(kURL, net::SiteForCookies::FromUrl(kOtherURL),
-                             url::Origin::Create(kOtherURL)));
-  EXPECT_EQ(
-      net::NetworkDelegate::PrivacySetting::kStateAllowed,
-      network_context->url_request_context()
-          ->network_delegate()
-          ->ForcePrivacyMode(kOtherURL, net::SiteForCookies::FromUrl(kURL),
-                             url::Origin::Create(kURL)));
+                             url::Origin::Create(kOtherURL),
+                             net::CookieSettingOverrides()));
+  EXPECT_EQ(net::NetworkDelegate::PrivacySetting::kStateAllowed,
+            network_context->url_request_context()
+                ->network_delegate()
+                ->ForcePrivacyMode(
+                    kOtherURL, net::SiteForCookies::FromUrl(kURL),
+                    url::Origin::Create(kURL), net::CookieSettingOverrides()));
+
+  // Even with the `kForceThirdPartyByUser` override, the results don't change.
+  EXPECT_EQ(net::NetworkDelegate::PrivacySetting::kStateDisallowed,
+            network_context->url_request_context()
+                ->network_delegate()
+                ->ForcePrivacyMode(
+                    kURL, net::SiteForCookies::FromUrl(kOtherURL),
+                    url::Origin::Create(kOtherURL),
+                    net::CookieSettingOverrides(
+                        net::CookieSettingOverride::kForceThirdPartyByUser)));
+  EXPECT_EQ(net::NetworkDelegate::PrivacySetting::kStateAllowed,
+            network_context->url_request_context()
+                ->network_delegate()
+                ->ForcePrivacyMode(
+                    kOtherURL, net::SiteForCookies::FromUrl(kURL),
+                    url::Origin::Create(kURL),
+                    net::CookieSettingOverrides(
+                        net::CookieSettingOverride::kForceThirdPartyByUser)));
 }
 
 TEST_F(NetworkContextTest, PrivacyModeDisabledIfCookiesAllowed) {
@@ -4223,7 +4244,8 @@ TEST_F(NetworkContextTest, PrivacyModeDisabledIfCookiesAllowed) {
       network_context->url_request_context()
           ->network_delegate()
           ->ForcePrivacyMode(kURL, net::SiteForCookies::FromUrl(kOtherURL),
-                             url::Origin::Create(kOtherURL)));
+                             url::Origin::Create(kOtherURL),
+                             net::CookieSettingOverrides()));
 }
 
 TEST_F(NetworkContextTest, PrivacyModeDisabledIfCookiesSettingForOtherURL) {
@@ -4241,7 +4263,8 @@ TEST_F(NetworkContextTest, PrivacyModeDisabledIfCookiesSettingForOtherURL) {
       network_context->url_request_context()
           ->network_delegate()
           ->ForcePrivacyMode(kURL, net::SiteForCookies::FromUrl(kOtherURL),
-                             url::Origin::Create(kOtherURL)));
+                             url::Origin::Create(kOtherURL),
+                             net::CookieSettingOverrides()));
 }
 
 TEST_F(NetworkContextTest, PrivacyModeEnabledIfThirdPartyCookiesBlocked) {
@@ -4256,20 +4279,34 @@ TEST_F(NetworkContextTest, PrivacyModeEnabledIfThirdPartyCookiesBlocked) {
       network_context->url_request_context()->network_delegate();
 
   network_context->cookie_manager()->BlockThirdPartyCookies(true);
-  EXPECT_EQ(net::NetworkDelegate::PrivacySetting::kPartitionedStateAllowedOnly,
-            delegate->ForcePrivacyMode(
-                kURL, net::SiteForCookies::FromUrl(kOtherURL), kOtherOrigin));
+  EXPECT_EQ(
+      net::NetworkDelegate::PrivacySetting::kPartitionedStateAllowedOnly,
+      delegate->ForcePrivacyMode(kURL, net::SiteForCookies::FromUrl(kOtherURL),
+                                 kOtherOrigin, net::CookieSettingOverrides()));
   EXPECT_EQ(net::NetworkDelegate::PrivacySetting::kStateAllowed,
             delegate->ForcePrivacyMode(kURL, net::SiteForCookies::FromUrl(kURL),
-                                       kOrigin));
+                                       kOrigin, net::CookieSettingOverrides()));
+
+  // `kForceThirdPartyByUser` unblocks access.
+  EXPECT_EQ(net::NetworkDelegate::PrivacySetting::kStateAllowed,
+            delegate->ForcePrivacyMode(
+                kURL, net::SiteForCookies::FromUrl(kOtherURL), kOtherOrigin,
+                net::CookieSettingOverrides(
+                    net::CookieSettingOverride::kForceThirdPartyByUser)));
+  EXPECT_EQ(net::NetworkDelegate::PrivacySetting::kStateAllowed,
+            delegate->ForcePrivacyMode(
+                kURL, net::SiteForCookies::FromUrl(kURL), kOrigin,
+                net::CookieSettingOverrides(
+                    net::CookieSettingOverride::kForceThirdPartyByUser)));
 
   network_context->cookie_manager()->BlockThirdPartyCookies(false);
-  EXPECT_EQ(net::NetworkDelegate::PrivacySetting::kStateAllowed,
-            delegate->ForcePrivacyMode(
-                kURL, net::SiteForCookies::FromUrl(kOtherURL), kOtherOrigin));
+  EXPECT_EQ(
+      net::NetworkDelegate::PrivacySetting::kStateAllowed,
+      delegate->ForcePrivacyMode(kURL, net::SiteForCookies::FromUrl(kOtherURL),
+                                 kOtherOrigin, net::CookieSettingOverrides()));
   EXPECT_EQ(net::NetworkDelegate::PrivacySetting::kStateAllowed,
             delegate->ForcePrivacyMode(kURL, net::SiteForCookies::FromUrl(kURL),
-                                       kOrigin));
+                                       kOrigin, net::CookieSettingOverrides()));
 }
 
 TEST_F(NetworkContextTest, CanSetCookieFalseIfCookiesBlocked) {
@@ -4331,7 +4368,7 @@ TEST_F(NetworkContextTest,
                               net::SamePartyContext::Type::kCrossParty),
                           /*frame_entry=*/nullptr,
                           /*top_frame_entry=*/nullptr),
-                      included, excluded));
+                      net::CookieSettingOverrides(), included, excluded));
   SetDefaultContentSetting(CONTENT_SETTING_BLOCK, network_context.get());
   EXPECT_FALSE(network_context->url_request_context()
                    ->network_delegate()
@@ -4342,7 +4379,7 @@ TEST_F(NetworkContextTest,
                                net::SamePartyContext::Type::kCrossParty),
                            /*frame_entry=*/nullptr,
                            /*top_frame_entry=*/nullptr),
-                       included, excluded));
+                       net::CookieSettingOverrides(), included, excluded));
 }
 
 TEST_F(NetworkContextTest,
@@ -4366,6 +4403,48 @@ TEST_F(NetworkContextTest,
                               net::SamePartyContext::Type::kCrossParty),
                           /*frame_entry=*/nullptr,
                           /*top_frame_entry=*/nullptr),
+                      net::CookieSettingOverrides(), included, excluded));
+}
+
+TEST_F(NetworkContextTest, AnnotateAndMoveUserBlockedCookies_3PCookiesBlocked) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateNetworkContextParamsForTesting());
+
+  network_context->cookie_manager()->BlockThirdPartyCookies(true);
+
+  auto context = CreateTestURLRequestContextBuilder()->Build();
+  std::unique_ptr<net::URLRequest> request =
+      context->CreateRequest(GURL("http://foo.com"), net::DEFAULT_PRIORITY,
+                             nullptr, TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  request->set_site_for_cookies(net::SiteForCookies());
+
+  net::CookieAccessResultList included;
+  net::CookieAccessResultList excluded;
+
+  EXPECT_FALSE(network_context->url_request_context()
+                   ->network_delegate()
+                   ->AnnotateAndMoveUserBlockedCookies(
+                       *request,
+                       net::FirstPartySetMetadata(
+                           net::SamePartyContext(
+                               net::SamePartyContext::Type::kCrossParty),
+                           /*frame_entry=*/nullptr,
+                           /*top_frame_entry=*/nullptr),
+                       net::CookieSettingOverrides(), included, excluded));
+
+  // `kForce unblocks access.
+  EXPECT_TRUE(network_context->url_request_context()
+                  ->network_delegate()
+                  ->AnnotateAndMoveUserBlockedCookies(
+                      *request,
+                      net::FirstPartySetMetadata(
+                          net::SamePartyContext(
+                              net::SamePartyContext::Type::kCrossParty),
+                          /*frame_entry=*/nullptr,
+                          /*top_frame_entry=*/nullptr),
+                      net::CookieSettingOverrides(
+                          net::CookieSettingOverride::kForceThirdPartyByUser),
                       included, excluded));
 }
 

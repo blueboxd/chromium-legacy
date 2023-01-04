@@ -91,6 +91,7 @@
 #include "net/net_buildflags.h"
 #include "services/device/public/cpp/device_features.h"
 #include "third_party/blink/public/common/features_generated.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -115,7 +116,6 @@
 #include "ui/chromeos/devicetype_utils.h"
 #else  // !BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ui/webui/settings/system_handler.h"
-#include "ui/accessibility/accessibility_features.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -247,6 +247,8 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
     {"accessibleImageLabelsTitle", IDS_SETTINGS_ACCESSIBLE_IMAGE_LABELS_TITLE},
     {"accessibleImageLabelsSubtitle",
      IDS_SETTINGS_ACCESSIBLE_IMAGE_LABELS_SUBTITLE},
+    {"pdfOcrTitle", IDS_SETTINGS_PDF_OCR_TITLE},
+    {"pdfOcrSubtitle", IDS_SETTINGS_PDF_OCR_SUBTITLE},
     {"settingsSliderRoleDescription",
      IDS_SETTINGS_SLIDER_MIN_MAX_ARIA_ROLE_DESCRIPTION},
     {"caretBrowsingTitle", IDS_SETTINGS_ENABLE_CARET_BROWSING_TITLE},
@@ -270,6 +272,8 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
       "showFocusHighlightOption",
       base::FeatureList::IsEnabled(features::kAccessibilityFocusHighlight));
 #endif
+  html_source->AddBoolean("pdfOcrEnabled",
+                          base::FeatureList::IsEnabled(features::kPdfOcr));
 
   AddCaptionSubpageStrings(html_source);
 }
@@ -405,9 +409,7 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source,
                          zoom::GetPresetZoomFactorsAsJSON());
   html_source->AddBoolean("showReaderModeOption",
                           dom_distiller::OfferReaderModeInSettings());
-  html_source->AddBoolean(
-      "showSidePanelOptions",
-      base::FeatureList::IsEnabled(features::kUnifiedSidePanel));
+  html_source->AddBoolean("showSidePanelOptions", true);
 
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
@@ -1792,6 +1794,9 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
   html_source->AddString("cookiesSettingsHelpCenterURL",
                          chrome::kCookiesSettingsHelpCenterURL);
 
+  html_source->AddString("firstPartySetsLearnMoreURL",
+                         chrome::kFirstPartySetsLearnMoreURL);
+
   html_source->AddString("safeBrowsingHelpCenterURL",
                          chrome::kSafeBrowsingHelpCenterURL);
 
@@ -2013,15 +2018,43 @@ void AddPrivacySandboxStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_TOPICS_PAGE_CURRENT_TOPICS_DESCRIPTION_DISABLED},
       {"topicsPageCurrentTopicsDescriptionEmpty",
        IDS_SETTINGS_TOPICS_PAGE_CURRENT_TOPICS_DESCRIPTION_EMPTY},
+      {"topicsPageBlockTopic", IDS_SETTINGS_TOPICS_PAGE_BLOCK_TOPIC},
       {"topicsPageBlockedTopicsHeading",
        IDS_SETTINGS_TOPICS_PAGE_BLOCKED_TOPICS_HEADING},
       {"topicsPageBlockedTopicsDescription",
        IDS_SETTINGS_TOPICS_PAGE_BLOCKED_TOPICS_DESCRIPTION},
       {"topicsPageBlockedTopicsDescriptionEmpty",
        IDS_SETTINGS_TOPICS_PAGE_BLOCKED_TOPICS_DESCRIPTION_EMPTY},
+      {"topicsPageAllowTopic", IDS_SETTINGS_TOPICS_PAGE_ALLOW_TOPIC},
       {"fledgePageTitle", IDS_SETTINGS_FLEDGE_PAGE_TITLE},
       {"fledgePageToggleLabel", IDS_SETTINGS_FLEDGE_PAGE_TOGGLE_LABEL},
       {"fledgePageToggleSubLabel", IDS_SETTINGS_FLEDGE_PAGE_TOGGLE_SUB_LABEL},
+      {"fledgePageCurrentSitesHeading",
+       IDS_SETTINGS_FLEDGE_PAGE_CURRENT_SITES_HEADING},
+      {"fledgePageCurrentSitesDescription",
+       IDS_SETTINGS_FLEDGE_PAGE_CURRENT_SITES_DESCRIPTION},
+      {"fledgePageCurrentSitesDescriptionLearnMore",
+       IDS_SETTINGS_FLEDGE_PAGE_CURRENT_SITES_DESCRIPTION_LEARN_MORE},
+      {"fledgePageCurrentSitesDescriptionDisabled",
+       IDS_SETTINGS_FLEDGE_PAGE_CURRENT_SITES_DESCRIPTION_DISABLED},
+      {"fledgePageCurrentSitesDescriptionEmpty",
+       IDS_SETTINGS_FLEDGE_PAGE_CURRENT_SITES_DESCRIPTION_EMPTY},
+      {"fledgePageBlockSite", IDS_SETTINGS_FLEDGE_PAGE_BLOCK_SITE},
+      {"fledgePageBlockedSitesHeading",
+       IDS_SETTINGS_FLEDGE_PAGE_BLOCKED_SITES_HEADING},
+      {"fledgePageBlockedSitesDescription",
+       IDS_SETTINGS_FLEDGE_PAGE_BLOCKED_SITES_DESCRIPTION},
+      {"fledgePageBlockedSitesDescriptionEmpty",
+       IDS_SETTINGS_FLEDGE_PAGE_BLOCKED_SITES_DESCRIPTION_EMPTY},
+      {"fledgePageAllowSite", IDS_SETTINGS_FLEDGE_PAGE_ALLOW_SITE},
+      {"fledgePageLearnMoreHeading",
+       IDS_SETTINGS_FLEDGE_PAGE_LEARN_MORE_HEADING},
+      {"fledgePageLearnMoreBullet1",
+       IDS_SETTINGS_FLEDGE_PAGE_LEARN_MORE_BULLET_1},
+      {"fledgePageLearnMoreBullet2",
+       IDS_SETTINGS_FLEDGE_PAGE_LEARN_MORE_BULLET_2},
+      {"fledgePageLearnMoreBullet3",
+       IDS_SETTINGS_FLEDGE_PAGE_LEARN_MORE_BULLET_3},
       {"adMeasurementPageTitle", IDS_SETTINGS_AD_MEASUREMENT_PAGE_TITLE},
       {"adMeasurementPageToggleLabel",
        IDS_SETTINGS_AD_MEASUREMENT_PAGE_TOGGLE_LABEL},
@@ -2046,6 +2079,20 @@ void AddPrivacySandboxStrings(content::WebUIDataSource* html_source,
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_PRIVACY_SANDBOX_AD_MEASUREMENT_DIALOG_CONTROL_MEASUREMENT,
           base::ASCIIToUTF16(chrome::kChromeUIHistoryURL)));
+  // Topics and fledge both link to the cookies setting page and cross-link
+  // each other in the footers.
+  html_source->AddString(
+      "topicsPageFooter",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_TOPICS_PAGE_FOOTER,
+          base::ASCIIToUTF16(chrome::kChromeUIPrivacySandboxFledgeURL),
+          base::ASCIIToUTF16(chrome::kChromeUICookieSettingsURL)));
+  html_source->AddString(
+      "fledgePageFooter",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_TOPICS_PAGE_FOOTER,
+          base::ASCIIToUTF16(chrome::kChromeUIPrivacySandboxTopicsURL),
+          base::ASCIIToUTF16(chrome::kChromeUICookieSettingsURL)));
   html_source->AddBoolean(
       "firstPartySetsUIEnabled",
       base::FeatureList::IsEnabled(
@@ -2101,14 +2148,6 @@ void AddPrivacyGuideStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_PRIVACY_GUIDE_MSBB_PRIVACY_DESCRIPTION1},
       {"privacyGuideMsbbPrivacyDescription2",
        IDS_SETTINGS_PRIVACY_GUIDE_MSBB_PRIVACY_DESCRIPTION2},
-      {"privacyGuideClearOnExitCardHeader",
-       IDS_SETTINGS_PRIVACY_GUIDE_CLEAR_ON_EXIT_CARD_HEADER},
-      {"privacyGuideClearOnExitFeatureDescription1",
-       IDS_SETTINGS_PRIVACY_GUIDE_CLEAR_ON_EXIT_FEATURE_DESCRIPTION1},
-      {"privacyGuideClearOnExitFeatureDescription2",
-       IDS_SETTINGS_PRIVACY_GUIDE_CLEAR_ON_EXIT_FEATURE_DESCRIPTION2},
-      {"privacyGuideClearOnExitFeatureDescription3",
-       IDS_SETTINGS_PRIVACY_GUIDE_CLEAR_ON_EXIT_FEATURE_DESCRIPTION3},
       {"privacyGuideHistorySyncCardHeader",
        IDS_SETTINGS_PRIVACY_GUIDE_HISTORY_SYNC_CARD_HEADER},
       {"privacyGuideHistorySyncSettingLabel",
@@ -2411,6 +2450,8 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_RECENT_ACTIVITY},
     {"siteSettingsCategoryCamera", IDS_SITE_SETTINGS_TYPE_CAMERA},
     {"siteSettingsCameraLabel", IDS_SITE_SETTINGS_TYPE_CAMERA},
+    {"thirdPartyCookiesLinkRowLabel",
+     IDS_SETTINGS_THIRD_PARTY_COOKIES_LINK_ROW_LABEL},
     {"cookiePageTitle", IDS_SETTINGS_COOKIES_PAGE},
     {"cookiePageGeneralControls", IDS_SETTINGS_COOKIES_CONTROLS},
     {"cookiePageAllowAll", IDS_SETTINGS_COOKIES_ALLOW_ALL},
@@ -3096,12 +3137,16 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SITE_SETTINGS_TYPE_BLUETOOTH_SCANNING},
     {"siteSettingsBluetoothScanningMidSentence",
      IDS_SITE_SETTINGS_TYPE_BLUETOOTH_SCANNING_MID_SENTENCE},
+    {"siteSettingsBluetoothScanningDescription",
+     IDS_SETTINGS_SITE_SETTINGS_BLUETOOTH_SCANNING_DESCRIPTION},
     {"siteSettingsBluetoothScanningAsk",
      IDS_SETTINGS_SITE_SETTINGS_BLUETOOTH_SCANNING_ASK},
-    {"siteSettingsBluetoothScanningAskRecommended",
-     IDS_SETTINGS_SITE_SETTINGS_BLUETOOTH_SCANNING_ASK_RECOMMENDED},
     {"siteSettingsBluetoothScanningBlock",
      IDS_SETTINGS_SITE_SETTINGS_BLUETOOTH_SCANNING_BLOCK},
+    {"siteSettingsBluetoothScanningAllowedExceptions",
+     IDS_SETTINGS_SITE_SETTINGS_BLUETOOTH_SCANNING_ALLOWED_EXCEPTIONS},
+    {"siteSettingsBluetoothScanningBlockedExceptions",
+     IDS_SETTINGS_SITE_SETTINGS_BLUETOOTH_SCANNING_BLOCKED_EXCEPTIONS},
     {"siteSettingsAr", IDS_SITE_SETTINGS_TYPE_AR},
     {"siteSettingsArMidSentence", IDS_SITE_SETTINGS_TYPE_AR_MID_SENTENCE},
     {"siteSettingsArAsk", IDS_SETTINGS_SITE_SETTINGS_AR_ASK},
@@ -3134,6 +3179,12 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_IDLE_DETECTION_BLOCK},
     {"siteSettingsExtensionIdDescription",
      IDS_SETTINGS_SITE_SETTINGS_EXTENSION_ID_DESCRIPTION},
+    {"siteSettingsSiteDataAllowedSubLabel",
+     IDS_SETTINGS_SITE_SETTINGS_SITE_DATA_ALLOWED_SUB_LABEL},
+    {"siteSettingsSiteDataBlockedSubLabel",
+     IDS_SETTINGS_SITE_SETTINGS_SITE_DATA_BLOCKED_SUB_LABEL},
+    {"siteSettingsSiteDataClearOnExitSubLabel",
+     IDS_SETTINGS_SITE_SETTINGS_SITE_DATA_CLEAR_ON_EXIT_SUB_LABEL},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 

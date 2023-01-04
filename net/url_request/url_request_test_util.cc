@@ -498,6 +498,7 @@ void TestNetworkDelegate::OnURLRequestDestroyed(URLRequest* request) {
 bool TestNetworkDelegate::OnAnnotateAndMoveUserBlockedCookies(
     const URLRequest& request,
     const net::FirstPartySetMetadata& first_party_set_metadata,
+    CookieSettingOverrides overrides,
     net::CookieAccessResultList& maybe_included_cookies,
     net::CookieAccessResultList& excluded_cookies) {
   bool allow = true;
@@ -516,7 +517,8 @@ bool TestNetworkDelegate::OnAnnotateAndMoveUserBlockedCookies(
 NetworkDelegate::PrivacySetting TestNetworkDelegate::OnForcePrivacyMode(
     const GURL& url,
     const SiteForCookies& site_for_cookies,
-    const absl::optional<url::Origin>& top_frame_origin) const {
+    const absl::optional<url::Origin>& top_frame_origin,
+    CookieSettingOverrides overrides) const {
   return NetworkDelegate::PrivacySetting::kStateAllowed;
 }
 
@@ -587,7 +589,8 @@ NetworkDelegate::PrivacySetting
 FilteringTestNetworkDelegate::OnForcePrivacyMode(
     const GURL& url,
     const SiteForCookies& site_for_cookies,
-    const absl::optional<url::Origin>& top_frame_origin) const {
+    const absl::optional<url::Origin>& top_frame_origin,
+    CookieSettingOverrides overrides) const {
   if (force_privacy_mode_) {
     return partitioned_state_allowed_
                ? NetworkDelegate::PrivacySetting::kPartitionedStateAllowedOnly
@@ -595,12 +598,13 @@ FilteringTestNetworkDelegate::OnForcePrivacyMode(
   }
 
   return TestNetworkDelegate::OnForcePrivacyMode(url, site_for_cookies,
-                                                 top_frame_origin);
+                                                 top_frame_origin, overrides);
 }
 
 bool FilteringTestNetworkDelegate::OnAnnotateAndMoveUserBlockedCookies(
     const URLRequest& request,
     const net::FirstPartySetMetadata& first_party_set_metadata,
+    CookieSettingOverrides overrides,
     net::CookieAccessResultList& maybe_included_cookies,
     net::CookieAccessResultList& excluded_cookies) {
   // Filter out cookies if |block_annotate_cookies_| is set and
@@ -634,8 +638,8 @@ bool FilteringTestNetworkDelegate::OnAnnotateAndMoveUserBlockedCookies(
 
   // Call the nested delegate's method first to avoid a short circuit.
   return TestNetworkDelegate::OnAnnotateAndMoveUserBlockedCookies(
-             request, first_party_set_metadata, maybe_included_cookies,
-             excluded_cookies) &&
+             request, first_party_set_metadata, overrides,
+             maybe_included_cookies, excluded_cookies) &&
          allowed;
 }
 

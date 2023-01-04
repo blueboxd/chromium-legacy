@@ -654,6 +654,7 @@
 <translation id="1595492813686795610">Обновление Linux…</translation>
 <translation id="1596286373007273895">Доступно</translation>
 <translation id="1596709061955594992">Bluetooth выключен. Включите его, чтобы увидеть доступные устройства.</translation>
+<translation id="1596780725094407793">и субдомены</translation>
 <translation id="1598233202702788831">Функция обновления отключена администратором.</translation>
 <translation id="1600857548979126453">Доступ к работе отладчика страниц</translation>
 <translation id="1601560923496285236">Применить</translation>
@@ -1238,6 +1239,7 @@
 <translation id="2104166991923847969">Автоматически отключать точку доступа</translation>
 <translation id="2105809836724866556"><ph name="MODULE_TITLE" /> скрыты.</translation>
 <translation id="2108349519800154983">{COUNT,plural, =1{Номер телефона}one{# номер телефона}few{# номера телефонов}many{# номеров телефонов}other{# номера телефона}}</translation>
+<translation id="2110941575868943054">Разрешено искать устройства Bluetooth</translation>
 <translation id="211144231511833662">Снять флажки типов</translation>
 <translation id="2111670510994270194">Новая вкладка справа</translation>
 <translation id="2112554630428445878">Здравствуйте, <ph name="USERNAME" />!</translation>
@@ -1430,7 +1432,6 @@
 <translation id="2285109769884538519">{COUNT,plural, =0{Открыть все URL в &amp;новой группе вкладок}=1{Открыть в &amp;новой группе вкладок}one{Открыть все URL ({COUNT}) в &amp;новой группе вкладок}few{Открыть все URL ({COUNT}) в &amp;новой группе вкладок}many{Открыть все URL ({COUNT}) в &amp;новой группе вкладок}other{Открыть все URL ({COUNT}) в &amp;новой группе вкладок}}</translation>
 <translation id="2285942871162473373">Не удалось распознать отпечаток пальца. Повторите попытку.</translation>
 <translation id="2287944065963043964">Экран входа</translation>
-<translation id="2289270750774289114">Запрашивать для сайтов разрешение на поиск Bluetooth-устройств поблизости (рекомендуется)</translation>
 <translation id="2290615375132886363">Кнопки навигации в режиме планшета</translation>
 <translation id="2291452790265535215">Попробуйте посмотреть закладки, выполнить поиск по теме или другое действие на боковой панели</translation>
 <translation id="229182044471402145">Подходящих шрифтов не найдено.</translation>
@@ -2882,6 +2883,7 @@
 <translation id="3617891479562106823">Фоновые изображения недоступны. Повторите попытку позже.</translation>
 <translation id="3619115746895587757">Капучино</translation>
 <translation id="3620136223548713675">Геопозиционирование</translation>
+<translation id="362023940451053340">Будет обновлен в вашем аккаунте Google для <ph name="ACCOUNT" />.</translation>
 <translation id="3621807901162200696">Помогать повышать производительность и улучшать функции Chrome OS</translation>
 <translation id="362266093274784978">{COUNT,plural, =1{приложение}one{# приложение}few{# приложения}many{# приложений}other{# приложения}}</translation>
 <translation id="362333465072914957">Ожидание выдачи сертификата центром сертификации</translation>
@@ -3003,7 +3005,6 @@
 <translation id="3727473233247516571">Субфрейм возвратного кеша: <ph name="BACK_FORWARD_CACHE_PAGE_URL" /></translation>
 <translation id="3728188878314831180">Дублировать уведомления с вашего телефона</translation>
 <translation id="3728681439294129328">Настроить сетевой адрес</translation>
-<translation id="3729303374699765035">Запрашивать для сайтов разрешение на поиск Bluetooth-устройств поблизости</translation>
 <translation id="3729506734996624908">Разрешенные сайты</translation>
 <translation id="3730076362938942381">Приложение для письма с помощью стилуса</translation>
 <translation id="3732078975418297900">Ошибка в строке <ph name="ERROR_LINE" /></translation>
@@ -3030,6 +3031,7 @@
 <translation id="3756485814916578707">Трансляция экрана…</translation>
 <translation id="3756578970075173856">Установка PIN-кода</translation>
 <translation id="3756795331760037744">Разрешите Google Ассистенту использовать содержимое экрана на устройстве ребенка (<ph name="SUPERVISED_USER_NAME" />)</translation>
+<translation id="3756806135608816820">Сайты могут запрашивать разрешение на поиск устройств Bluetooth</translation>
 <translation id="3757733214359997190">Ничего не найдено.</translation>
 <translation id="375841316537350618">Скрипт прокси-сервера скачивается…</translation>
 <translation id="3758842566811519622">Файлы cookie записаны</translation>
@@ -3800,6 +3802,7 @@
 <translation id="4469762931504673593"><ph name="ORIGIN" /> может изменять файлы в папке "<ph name="FOLDERNAME" />".</translation>
 <translation id="4470957202018033307">Настройки внешних накопителей</translation>
 <translation id="4471354919263203780">Скачивание файлов распознавания речи: <ph name="PERCENT" /> %…</translation>
+<translation id="4472298120638043495">Можно использовать предпочитаемый язык, установленный в вашем аккаунте Google (<ph name="NEW_LOCALE_FROM_GAIA" />).</translation>
 <translation id="447252321002412580">Помогать повышать производительность Chrome и улучшать функции</translation>
 <translation id="4472575034687746823">Начать</translation>
 <translation id="4474155171896946103">Добавить все вкладки в закладки…</translation>
@@ -4529,7 +4532,6 @@
 <translation id="5158206172605340248">Меню диакритических знаков закрыто.</translation>
 <translation id="5159094275429367735">Настроить Crostini</translation>
 <translation id="5159419673777902220">Кто-то из твоих родителей отключил разрешения для этого расширения</translation>
-<translation id="5159643365935452998">Автоматическое удаление данных</translation>
 <translation id="5160634252433617617">Физическая клавиатура</translation>
 <translation id="5160857336552977725">Войдите в аккаунт на устройстве <ph name="DEVICE_TYPE" /></translation>
 <translation id="5161251470972801814">USB-устройства от поставщика "<ph name="VENDOR_NAME" />"</translation>
@@ -5004,6 +5006,7 @@
 <translation id="5600706100022181951">Чтобы скачать обновление, потребуется <ph name="UPDATE_SIZE_MB" /> МБ мобильного трафика. Продолжить?</translation>
 <translation id="5601503069213153581">PIN-код</translation>
 <translation id="5601823921345337195">Запретить сайтам подключаться к MIDI-устройствам</translation>
+<translation id="5601833336918638013">Запретить сайтам поиск устройств Bluetooth</translation>
 <translation id="5602765853043467355">Удалить с устройства закладки, пароли, данные о работе в браузере и т. д.</translation>
 <translation id="5605758115928394442">На ваш телефон отправлено уведомление для подтверждения личности.</translation>
 <translation id="5606849116180480101">{NUM_EXTENSIONS,plural, =1{Это расширение заблокировано}one{Эти расширения заблокированы}few{Эти расширения заблокированы}many{Эти расширения заблокированы}other{Эти расширения заблокированы}}</translation>
@@ -5249,7 +5252,6 @@
 <translation id="583673505367439042">Разрешить сайтам отправлять запрос на редактирование файлов или папок на устройстве</translation>
 <translation id="5836999627049108525">Исходный язык</translation>
 <translation id="583756221537636748">Чехол</translation>
-<translation id="5840658767386246331">Найти в Google</translation>
 <translation id="5840680448799937675">Всегда передавать файлы в офлайн-режиме</translation>
 <translation id="5841270259333717135">Настроить Ethernet</translation>
 <translation id="5842497610951477805">Включение и отключение Bluetooth</translation>
@@ -5618,6 +5620,7 @@
 <translation id="6169967265765719844">Вы можете управлять разрешениями для игр и приложений, установленных через Steam, <ph name="LINK_BEGIN" />в настройках этой платформы<ph name="LINK_END" />.</translation>
 <translation id="6170470584681422115">Сэндвич</translation>
 <translation id="6170498031581934115">Не удалось включить отладку с ADB. Перейдите в настройки и повторите попытку.</translation>
+<translation id="6171779718418683144">Всегда спрашивать</translation>
 <translation id="617213288191670920">Языки не добавлены</translation>
 <translation id="6173623053897475761">Введите PIN-код ещё раз</translation>
 <translation id="6175314957787328458">Идентификатор GUID домена Microsoft</translation>
@@ -6467,6 +6470,7 @@
 <translation id="6960507406838246615">Требуется обновление Linux</translation>
 <translation id="6960648667961844909">Не удалось скачать файлы для распознавания речи на следующем языке: <ph name="LANGUAGE" />. Повторная попытка будет выполнена позже. Пока скачивание не завершится, записи с речью будут передаваться для обработки в Google.</translation>
 <translation id="696103774840402661">Файлы и локальные данные всех пользователей будут удалены с этого устройства <ph name="DEVICE_TYPE" />.</translation>
+<translation id="6961327401577924850">Обычно сайты ищут устройства Bluetooth, чтобы настроить маячок, фитнес-трекер или умную лампочку, синхронизировать данные и т. д.</translation>
 <translation id="6963872466817251924">Выделение текстового курсора</translation>
 <translation id="6964390816189577014">Герой</translation>
 <translation id="6964760285928603117">Удалить из группы</translation>
@@ -6743,6 +6747,7 @@
 <translation id="7227458944009118910">Указанные ниже приложения могут использоваться для обработки специальных ссылок. Другие приложения будут запрашивать разрешение.</translation>
 <translation id="7228056665272655255">Чтобы настроить разблокировку по отпечатку, попросите ребенка приложить палец к сканеру отпечатков в правом верхнем углу клавиатуры. Данные отпечатков пальцев ребенка надежно защищены и хранятся только на устройстве <ph name="DEVICE_TYPE" />.</translation>
 <translation id="7228523857728654909">Блокировка экрана и вход</translation>
+<translation id="7228854227189381547">Не менять</translation>
 <translation id="7230222852462421043">&amp;Восстановить окно</translation>
 <translation id="7231260028442989757">Возможность просматривать, скрывать уведомления с телефона и отвечать на них</translation>
 <translation id="7232750842195536390">Название не изменено</translation>
@@ -6752,6 +6757,7 @@
 <translation id="7235737137505019098">На электронном ключе не хватает места для нового аккаунта.</translation>
 <translation id="7235873936132740888">Когда вы нажимаете на определенные типы ссылок, сайты могут выполнять специальные задачи, например создавать новое сообщение в почтовом клиенте или добавлять мероприятие в календарь.</translation>
 <translation id="7238609589076576185">Диакритический знак вставлен.</translation>
+<translation id="7238665222668706269">Google Менеджер паролей <ph name="SEPARATOR" /> <ph name="ACCOUNT" />.</translation>
 <translation id="7239108166256782787">Передача данных с устройства "<ph name="DEVICE_NAME" />" остановлена</translation>
 <translation id="7240339475467890413">Подключиться к новой точке доступа?</translation>
 <translation id="7241389281993241388">Войдите в <ph name="TOKEN_NAME" />, чтобы импортировать сертификат клиента.</translation>
@@ -7075,6 +7081,7 @@
 <translation id="7545466883021407599">Не удалось установить связь с сервером. Проверьте подключение к сети и повторите попытку. Если решить проблему не удалось, перезапустите Chromebook. Код ошибки: <ph name="ERROR_CODE" />.</translation>
 <translation id="7547317915858803630">Внимание! Настройки <ph name="PRODUCT_NAME" /> хранятся на сетевом диске. Это может привести к замедлению работы, сбоям или даже потере данных.</translation>
 <translation id="7548856833046333824">Лимонад</translation>
+<translation id="7549434883223124329">Сменить язык на устройстве?</translation>
 <translation id="7550830279652415241">bookmarks_<ph name="DATESTAMP" />.html</translation>
 <translation id="7551059576287086432">Не удалось скачать файл <ph name="FILE_NAME" /></translation>
 <translation id="7551643184018910560">Закрепить на панели запуска</translation>
@@ -7494,6 +7501,7 @@
 <translation id="7920363873148656176"><ph name="ORIGIN" /> может просматривать файл "<ph name="FILENAME" />".</translation>
 <translation id="7920482456679570420">Добавьте ниже слова, правописание которых не нужно проверять.</translation>
 <translation id="7921347341284348270">Вы не можете просматривать уведомления с телефона в этом управляемом аккаунте. Повторите попытку, используя другой аккаунт. <ph name="LINK_BEGIN" />Подробнее…<ph name="LINK_END" /></translation>
+<translation id="7922606348470480702">1 расширение</translation>
 <translation id="7922935920104868876">Подробнее о блокировке сторонних файлов cookie в режиме инкогнито</translation>
 <translation id="7923564237306226146">Обновление Linux завершено</translation>
 <translation id="7924358170328001543">При переадресации порта произошла ошибка.</translation>
@@ -7881,6 +7889,7 @@
 <translation id="8263744495942430914">Сайт <ph name="FULLSCREEN_ORIGIN" /> скрыл курсор.</translation>
 <translation id="8264024885325823677">Этим параметром управляет администратор.</translation>
 <translation id="8264718194193514834">Расширение "<ph name="EXTENSION_NAME" />" запущено в режиме киоска.</translation>
+<translation id="8265018477030547118">Будет сохранен только на этом устройстве.</translation>
 <translation id="826511437356419340">Включен режим обзора. Для навигации проведите по экрану. Если вы используете клавиатуру, нажмите клавишу Tab.</translation>
 <translation id="8265671588726449108">{COUNT,plural, =1{Окно в режиме инкогнито не будет открыто после перезапуска.}one{{COUNT} окно в режиме инкогнито не будет открыто после перезапуска.}few{{COUNT} окна в режиме инкогнито не будут открыты после перезапуска.}many{{COUNT} окон в режиме инкогнито не будут открыты после перезапуска.}other{{COUNT} окна в режиме инкогнито не будут открыты после перезапуска.}}</translation>
 <translation id="8266947622852630193">Все способы ввода</translation>
@@ -8099,6 +8108,7 @@
 <translation id="8465444703385715657">Для работы плагина <ph name="PLUGIN_NAME" /> необходимо разрешение</translation>
 <translation id="8466417995783206254">На этой вкладке воспроизводится видео в режиме "Картинка в картинке".</translation>
 <translation id="8467326454809944210">Выбрать другой язык</translation>
+<translation id="8468087214092422866">Запрещено искать устройства Bluetooth</translation>
 <translation id="8470513973197838199">Сохраненные пароли для <ph name="ORIGIN" /></translation>
 <translation id="8471525937465764768">Обычно сайты подключаются к USB-устройствам, чтобы использовать некоторые функции, например печатать документы или сохранять данные на внешних накопителях.</translation>
 <translation id="8471959340398751476">Скидки отключены. Включить их можно в меню настройки.</translation>
@@ -8288,6 +8298,7 @@
 <translation id="8655295600908251630">Канал</translation>
 <translation id="8655972064210167941">Ошибка входа: не удалось подтвердить пароль. Обратитесь к администратору или повторите попытку.</translation>
 <translation id="8657393004602556571">Не отправлять отзыв?</translation>
+<translation id="8657762806752649049">Будет сохранен в вашем аккаунте Google для <ph name="ACCOUNT" />.</translation>
 <translation id="8661290697478713397">Открыть ссылку в режиме инкогнито</translation>
 <translation id="8662671328352114214">Присоединиться к сети <ph name="TYPE" /></translation>
 <translation id="8662733268723715832">Операция выполняется дольше, чем обычно. Вы можете подождать или пропустить этот этап.</translation>
@@ -8482,7 +8493,6 @@
 <translation id="8827125715368568315">Отключено разрешение "<ph name="PERMISSION" />" и ещё <ph name="COUNT" /></translation>
 <translation id="8827289157496676362">Закрепить расширение</translation>
 <translation id="8827752199525959199">Пароль для аккаунта <ph name="USERNAME" /> на сайте <ph name="DOMAIN" /></translation>
-<translation id="882854468542856424">Запретить сайтам искать Bluetooth-устройства поблизости</translation>
 <translation id="8828933418460119530">DNS-имя</translation>
 <translation id="883062543841130884">Замены</translation>
 <translation id="8830779999439981481">Перезагрузка…</translation>

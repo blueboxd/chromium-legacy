@@ -5,6 +5,7 @@
 #include "net/base/network_delegate_impl.h"
 
 #include "net/base/net_errors.h"
+#include "net/cookies/cookie_setting_override.h"
 
 namespace net {
 
@@ -50,6 +51,7 @@ void NetworkDelegateImpl::OnPACScriptError(int line_number,
 bool NetworkDelegateImpl::OnAnnotateAndMoveUserBlockedCookies(
     const URLRequest& request,
     const net::FirstPartySetMetadata& first_party_set_metadata,
+    CookieSettingOverrides overrides,
     net::CookieAccessResultList& maybe_included_cookies,
     net::CookieAccessResultList& excluded_cookies) {
   return true;
@@ -64,7 +66,8 @@ bool NetworkDelegateImpl::OnCanSetCookie(const URLRequest& request,
 NetworkDelegate::PrivacySetting NetworkDelegateImpl::OnForcePrivacyMode(
     const GURL& url,
     const SiteForCookies& site_for_cookies,
-    const absl::optional<url::Origin>& top_frame_origin) const {
+    const absl::optional<url::Origin>& top_frame_origin,
+    CookieSettingOverrides overrides) const {
   return NetworkDelegate::PrivacySetting::kStateAllowed;
 }
 

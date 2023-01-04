@@ -53,6 +53,7 @@
 #include "chrome/browser/ash/arc/enterprise/arc_data_snapshotd_delegate.h"
 #include "chrome/browser/ash/arc/session/arc_service_launcher.h"
 #include "chrome/browser/ash/audio/audio_survey_handler.h"
+#include "chrome/browser/ash/bluetooth/hats_bluetooth_revamp_trigger_impl.h"
 #include "chrome/browser/ash/boot_times_recorder.h"
 #include "chrome/browser/ash/camera/camera_general_survey_handler.h"
 #include "chrome/browser/ash/crosapi/browser_data_back_migrator.h"
@@ -937,6 +938,7 @@ void ChromeBrowserMainPartsAsh::PreProfileInit() {
                      chromeos::version_loader::VERSION_FULL),
       base::BindOnce(&ChromeOSVersionCallback));
 
+  kiosk_app_manager_ = std::make_unique<KioskAppManager>();
   arc_kiosk_app_manager_ = std::make_unique<ArcKioskAppManager>();
   web_kiosk_app_manager_ = std::make_unique<WebKioskAppManager>();
 
@@ -1170,6 +1172,12 @@ void ChromeBrowserMainPartsAsh::PostProfileInit(Profile* profile,
     // services.
     bluetooth_pref_state_observer_ =
         std::make_unique<BluetoothPrefStateObserver>();
+
+    if (base::FeatureList::IsEnabled(
+            ::features::kHappinessTrackingSystemBluetoothRevamp)) {
+      hats_bluetooth_revamp_trigger_ =
+          std::make_unique<ash::HatsBluetoothRevampTriggerImpl>();
+    }
 
     // Initialize the NetworkHealth aggregator.
     network_health::NetworkHealthManager::GetInstance();
@@ -1528,7 +1536,7 @@ void ChromeBrowserMainPartsAsh::PostMainMessageLoopRun() {
   g_browser_process->platform_part()->ShutdownAutomaticRebootManager();
 
   // Clean up dependency on CrosSettings and stop pending data fetches.
-  KioskAppManager::Shutdown();
+  kiosk_app_manager_.reset();
 
   // Make sure that there is no pending URLRequests.
   if (pre_profile_init_called_)

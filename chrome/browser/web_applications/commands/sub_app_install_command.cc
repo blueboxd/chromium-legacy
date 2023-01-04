@@ -28,6 +28,7 @@
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_url_loader.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
+#include "components/webapps/browser/installable/installable_logging.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-forward.h"
@@ -273,7 +274,7 @@ void SubAppInstallCommand::OnGetWebAppInstallInfo(
     install_info->start_url = install_url;
     install_info->install_url = install_url;
   }
-  install_info->user_display_mode = UserDisplayMode::kStandalone;
+  install_info->user_display_mode = mojom::UserDisplayMode::kStandalone;
 
   data_retriever_->CheckInstallabilityAndRetrieveManifest(
       &lock_->shared_web_contents(), /*bypass_service_worker_check=*/false,
@@ -288,7 +289,7 @@ void SubAppInstallCommand::OnDidPerformInstallableCheck(
     blink::mojom::ManifestPtr opt_manifest,
     const GURL& manifest_url,
     bool valid_manifest_for_web_app,
-    bool is_installable) {
+    webapps::InstallableStatusCode error_code) {
   DCHECK(web_app_info);
   if (!valid_manifest_for_web_app) {
     LOG(WARNING) << "Did not install " << web_app_info->start_url.spec()
@@ -365,7 +366,7 @@ void SubAppInstallCommand::OnDialogCompleted(
     return;
   }
 
-  web_app_info->user_display_mode = UserDisplayMode::kStandalone;
+  web_app_info->user_display_mode = mojom::UserDisplayMode::kStandalone;
 
   lock_->install_finalizer().FinalizeInstall(
       *web_app_info, GetFinalizerOptionsForSubApps(parent_app_id_),

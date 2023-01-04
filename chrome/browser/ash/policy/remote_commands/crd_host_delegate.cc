@@ -10,13 +10,13 @@
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/policy/remote_commands/crd_logging.h"
+#include "chrome/browser/ash/policy/remote_commands/crd_remote_command_utils.h"
 #include "remoting/host/chromeos/remote_support_host_ash.h"
 #include "remoting/host/chromeos/remoting_service.h"
 #include "remoting/host/mojom/remote_support.mojom.h"
 
 namespace policy {
 
-using ResultCode = DeviceCommandStartCrdSessionJob::ResultCode;
 using AccessCodeCallback = DeviceCommandStartCrdSessionJob::AccessCodeCallback;
 using ErrorCallback = DeviceCommandStartCrdSessionJob::ErrorCallback;
 
@@ -133,6 +133,10 @@ class CrdHostDelegate::CrdHostSession
     // Note the oauth token must be prefixed with 'oauth2:', or it will be
     // rejected by the CRD host.
     result->oauth_access_token = "oauth2:" + parameters_.oauth_token;
+
+    // TODO(joedow): Set the |authorized_helper| field once it is provided by
+    // the admin console and available in |parameters_|.
+
     return result;
   }
 

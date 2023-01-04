@@ -43,7 +43,7 @@ class MockCertProvisioningWorkerFactory : public CertProvisioningWorkerFactory {
               (CertScope cert_scope,
                Profile* profile,
                PrefService* pref_service,
-               const base::Value& saved_worker,
+               const base::Value::Dict& saved_worker,
                policy::CloudPolicyClient* cloud_policy_client,
                std::unique_ptr<CertProvisioningInvalidator> invalidator,
                base::RepeatingClosure state_change_callback,
@@ -75,7 +75,7 @@ class MockCertProvisioningWorker : public CertProvisioningWorker {
               (),
               (const override));
   MOCK_METHOD(const CertProfile&, GetCertProfile, (), (const override));
-  MOCK_METHOD(const std::string&, GetPublicKey, (), (const override));
+  MOCK_METHOD(const std::vector<uint8_t>&, GetPublicKey, (), (const override));
   MOCK_METHOD(CertProvisioningWorkerState, GetState, (), (const override));
   MOCK_METHOD(CertProvisioningWorkerState,
               GetPreviousState,

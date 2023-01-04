@@ -128,7 +128,6 @@ suite('NewTabPageRealboxTest', () => {
 
   suiteSetup(() => {
     loadTimeData.overrideValues({
-      realboxMatchOmniboxTheme: true,
       realboxSeparator: ' - ',
     });
   });
@@ -158,14 +157,6 @@ suite('NewTabPageRealboxTest', () => {
     assertStyle(
         iconElement.$.icon, 'background-image',
         getFaviconForPageURL(destinationUrl, false, '', 32, true));
-    assertStyle(iconElement.$.icon, '-webkit-mask-image', 'none');
-  }
-
-  function assertIconBackgroundImageUrl(
-      iconElement: RealboxIconElement, url: string) {
-    assertStyle(
-        iconElement.$.icon, 'background-image',
-        `url("chrome://new-tab-page/${url}")`);
     assertStyle(iconElement.$.icon, '-webkit-mask-image', 'none');
   }
 
@@ -217,14 +208,18 @@ suite('NewTabPageRealboxTest', () => {
   test('realbox default Google G icon', async () => {
     // Arrange.
     loadTimeData.overrideValues({
-      realboxDefaultIcon: 'realbox/icons/google_g.svg',
+      realboxDefaultIcon:
+          '//resources/cr_components/omnibox/icons/google_g.svg',
     });
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
     realbox = document.createElement('ntp-realbox');
     document.body.appendChild(realbox);
 
     // Assert.
-    assertIconBackgroundImageUrl(realbox.$.icon, 'realbox/icons/google_g.svg');
+    assertStyle(
+        realbox.$.icon.$.icon, 'background-image',
+        `url("chrome://resources/cr_components/omnibox/icons/google_g.svg")`);
+    assertStyle(realbox.$.icon.$.icon, '-webkit-mask-image', 'none');
 
     // Restore.
     loadTimeData.overrideValues({
@@ -2222,7 +2217,7 @@ suite('NewTabPageRealboxTest', () => {
 
         assertEquals(
             matchEls[1]!.$.icon.$.image.getAttribute('src'),
-            `chrome://image?${matches[1]!.imageUrl}`);
+            `//image?${matches[1]!.imageUrl}`);
 
         // Mock image finishing loading, which should remove the temporary
         // background color.
@@ -2663,97 +2658,6 @@ suite('NewTabPageRealboxTest', () => {
     await testProxy.handler.whenCalled('onNavigationLikely').then((args) => {
       assertEquals(0, args.line);
       assertEquals(NavigationPredictor.kMouseDown, args.navigationPredictor);
-    });
-  });
-
-  suite('Lens search', () => {
-    test('Lens search button does not show by default', () => {
-      // Assert
-      const lensButton =
-          realbox.shadowRoot!.querySelector('#lensSearchButton') as HTMLElement;
-      assertFalse(!!lensButton);
-    });
-
-    test('Lens search button is visible when feature is flipped', async () => {
-      // Arrange.
-      loadTimeData.overrideValues({
-        realboxLensSearch: true,
-      });
-      document.body.innerHTML = window.trustedTypes!.emptyHTML;
-      realbox = document.createElement('ntp-realbox');
-      document.body.appendChild(realbox);
-      await testProxy.callbackRouterRemote.$.flushForTesting();
-
-      // Assert
-      const lensButton =
-          realbox.shadowRoot!.querySelector('#lensSearchButton') as HTMLElement;
-      assertTrue(!!lensButton);
-    });
-
-    test('clicking Lens search button hides matches', async () => {
-      // Arrange.
-      loadTimeData.overrideValues({
-        realboxLensSearch: true,
-      });
-      document.body.innerHTML = window.trustedTypes!.emptyHTML;
-      realbox = document.createElement('ntp-realbox');
-      document.body.appendChild(realbox);
-
-      // Act.
-      realbox.$.input.value = 'hello';
-      realbox.$.input.dispatchEvent(new InputEvent('input'));
-
-      const matches = [
-        createSearchMatch({
-          allowedToBeDefaultMatch: true,
-        }),
-        createUrlMatch(),
-      ];
-      testProxy.callbackRouterRemote.autocompleteResultChanged({
-        input: mojoString16(realbox.$.input.value.trimStart()),
-        matches,
-        suggestionGroupsMap: {},
-      });
-      await testProxy.callbackRouterRemote.$.flushForTesting();
-      assertTrue(areMatchesShowing());
-
-      // Act.
-      const lensButton =
-          realbox.shadowRoot!.querySelector('#lensSearchButton') as HTMLElement;
-      lensButton.click();
-
-      // Assert.
-      assertFalse(areMatchesShowing());
-
-      // Restore.
-      loadTimeData.overrideValues({
-        realboxLensSearch: false,
-      });
-    });
-
-    test('clicking Lens search button sends Lens search event', async () => {
-      // Arrange.
-      loadTimeData.overrideValues({
-        realboxLensSearch: true,
-      });
-      document.body.innerHTML = window.trustedTypes!.emptyHTML;
-      realbox = document.createElement('ntp-realbox');
-      document.body.appendChild(realbox);
-      const whenOpenLensSearch = eventToPromise('open-lens-search', realbox);
-      await testProxy.callbackRouterRemote.$.flushForTesting();
-
-      // Act.
-      const lensButton =
-        realbox.shadowRoot!.querySelector('#lensSearchButton') as HTMLElement;
-      lensButton.click();
-
-      // Assert.
-      await whenOpenLensSearch;
-
-      // Restore.
-      loadTimeData.overrideValues({
-        realboxLensSearch: false,
-      });
     });
   });
 });

@@ -45,6 +45,18 @@ const char kAccountIdMigrationName[] = "Account ID migration";
 const char kAccountIdMigrationDescription[] =
     "Migrate to use Gaia ID instead of the email as the account identifer for "
     "the Identity Manager.";
+extern const char kAddEduAccountFromAccountSettingsForSupervisedUsersName[] =
+    "Add Edu Account From Account Settings For Supervised Users";
+extern const char
+    kAddEduAccountFromAccountSettingsForSupervisedUsersDescription[] =
+        "Enables supervised users to add additional Edu accounts and "
+        "simplifies settings UI";
+
+const char kAppDeduplicationServiceFondueName[] =
+    "Identify duplicate app groups.";
+const char kAppDeduplicationServiceFondueDescription[] =
+    "Enables pulling app duplicate data from a Google server to allow clients "
+    "to determine app duplicates.";
 
 const char kLauncherAppSortName[] = "Productivity experiment: Reorder Apps";
 const char kLauncherAppSortDescription[] =
@@ -84,6 +96,12 @@ const char kAttributionReportingDebugModeDescription[] =
     "Enables debug mode for the Attribution Reporting API. This removes all "
     "reporting delays and noise. Only works if the Attribution Reporting API "
     "is already enabled.";
+
+const char kBlockInsecureDownloadsName[] = "Block insecure downloads";
+const char kBlockInsecureDownloadsDescription[] =
+    "Enables insecure download blocking. This shows a 'blocked' message if the "
+    "user attempts to download a file over an insecure transport (e.g. HTTP) "
+    "either directly or via an insecure redirect.";
 
 const char kBrokerFileOperationsOnDiskCacheInNetworkServiceName[] =
     "Broker file operations on disk cache in the Network Service";
@@ -326,17 +344,6 @@ const char kAutofillAutoTriggerManualFallbackForCardsName[] =
 const char kAutofillAutoTriggerManualFallbackForCardsDescription[] =
     "When enabled, manual fallback will be auto-triggered on form interaction "
     "in the case where autofill failed to fill a credit card form accurately.";
-
-const char kAutofillEnableGetDetailsForEnrollParsingInUploadCardResponseName[] =
-    "Enable parsing of the GetDetailsForEnrollResponseDetails in the "
-    "UploadCardResponseDetails";
-const char
-    kAutofillEnableGetDetailsForEnrollParsingInUploadCardResponseDescription[] =
-        "When enabled, the GetDetailsForEnrollResponseDetails in the "
-        "UploadCardResponseDetails will be parsed, which will allow the "
-        "Virtual Card Enrollment flow to skip making a new GetDetailsForEnroll "
-        "request. This is an optimization to improve the latency of the "
-        "Virtual Card Enrollment flow.";
 
 const char kAutofillEnableFIDOProgressDialogName[] =
     "Show FIDO progress dialog on Android";
@@ -1470,11 +1477,6 @@ const char kFedCmWithoutThirdPartyCookiesName[] =
 const char kFedCmWithoutThirdPartyCookiesDescription[] =
     "Allows the FedCM API to be enabled when third party cookies are disabled.";
 
-const char kFileHandlingAPIName[] = "File Handling API";
-const char kFileHandlingAPIDescription[] =
-    "Enables the file handling API, allowing websites to register as file "
-    "handlers.";
-
 const char kFileHandlingIconsName[] = "File Handling Icons";
 const char kFileHandlingIconsDescription[] =
     "Allows websites using the file handling API to also register file type "
@@ -2439,10 +2441,6 @@ const char kEnableOmniboxClientSearchPrefetchDescription[] =
     "Search Engine that the client thinks are likely to be navigated. Requires "
     "chrome://flags/#omnibox-search-prefetch";
 
-const char kPrivacyGuide2Name[] = "Privacy Guide V2";
-const char kPrivacyGuide2Description[] =
-    "Enables UI updates for Privacy Guide.";
-
 const char kPrivacyGuideAndroidName[] = "Privacy Guide on Android";
 const char kPrivacyGuideAndroidDescription[] =
     "Shows a new subpage in Settings that helps the user to review various "
@@ -2453,6 +2451,10 @@ const char kPrivacySandboxAdsAPIsOverrideDescription[] =
     "Enables Privacy Sandbox APIs: Attribution Reporting, Fledge, Topics, "
     "Fenced Frames, Shared Storage, Private Aggregation, and their associated "
     "features.";
+
+const char kPrivacySandboxSettings4Name[] = "Privacy Sandbox Settings V4";
+const char kPrivacySandboxSettings4Description[] =
+    "Enables updated Privacy Sandbox UI";
 
 const char kPrivateAggregationDeveloperModeName[] =
     "Private Aggregation developer mode";
@@ -2998,10 +3000,6 @@ const char kTurnOffStreamingMediaCachingAlwaysDescription[] =
     "Reduces disk activity during media playback, which can result in "
     "power savings.";
 
-const char kUnifiedSidePanelFlagId[] = "unified-side-panel";
-const char kUnifiedSidePanelName[] = "Unified side panel";
-const char kUnifiedSidePanelDescription[] = "Revamp the side panel experience.";
-
 const char kUnifiedPasswordManagerAndroidName[] =
     "Google Mobile Services for passwords";
 const char kUnifiedPasswordManagerAndroidDescription[] =
@@ -3176,11 +3174,11 @@ const char kWebPaymentsExperimentalFeaturesName[] =
 const char kWebPaymentsExperimentalFeaturesDescription[] =
     "Enable experimental Web Payments API features";
 
-const char kWebPaymentAPICSPName[] = "CSP policy for Web Payment API";
-const char kWebPaymentAPICSPDescription[] =
-    "Enforce Content Security Policy connect-src directive for Web Payment API "
-    "when fetching manifest files, app icons, and service worker JavaScript "
-    "files.";
+const char kIgnoreCSPInWebPaymentAPIName[] = "Ignore CSP in Web Payment API";
+const char kIgnoreCSPInWebPaymentAPIDescription[] =
+    "Temporarily disable enforcing Content Security Policy connect-src "
+    "directive for Web Payment API when fetching manifest files, app icons, "
+    "and service worker JavaScript files.";
 
 const char kClearIdentityInCanMakePaymentEventName[] =
     "Remove identity from canmakepayment event";
@@ -3194,10 +3192,6 @@ const char kAppStoreBillingDebugDescription[] =
     "App-store purchases (e.g., Google Play Store) within a TWA can be "
     "requested using the Payment Request API. This flag removes the "
     "restriction that the TWA has to be installed from the app-store.";
-
-const char kWebAuthnConditionalUIName[] = "Web Authentication Conditional UI";
-const char kWebAuthnConditionalUIDescription[] =
-    "Enable support for Conditional UI WebAuthn requests.";
 
 const char kWebAuthnNewDesktopUIName[] = "Web Authentication new desktop UI";
 const char kWebAuthnNewDesktopUIDescription[] =
@@ -3406,12 +3400,6 @@ const char kAndroidSurfaceControlDescription[] =
     " Enables SurfaceControl to manage the buffer queue for the "
     " DisplayCompositor on Android. This feature is only available on "
     " android Q+ devices";
-
-const char kAssistantIntentPageUrlName[] =
-    "Include page URL in Assistant intent";
-const char kAssistantIntentPageUrlDescription[] =
-    "Include the current page's URL in the Assistant voice transcription "
-    "intent.";
 
 const char kAssistantIntentTranslateInfoName[] =
     "Translate info in Assistant intent";
@@ -3745,10 +3733,6 @@ const char kPageInfoStoreInfoDescription[] =
 const char kPersistShareHubOnAppSwitchName[] = "Persist sharing hub";
 const char kPersistShareHubOnAppSwitchDescription[] =
     "Persist the sharing hub across app pauses/resumes.";
-
-const char kPhotoPickerVideoSupportName[] = "Photo Picker Video Support";
-const char kPhotoPickerVideoSupportDescription[] =
-    "Enables video files to be shown in the Photo Picker dialog";
 
 const char kQueryTilesName[] = "Show query tiles";
 const char kQueryTilesDescription[] = "Shows query tiles in Chrome";
@@ -4686,6 +4670,11 @@ const char kAshEnableUnifiedDesktopDescription[] =
     "Enable unified desktop mode which allows a window to span multiple "
     "displays.";
 
+const char kAudioFlexibleLoopbackName[] =
+    "ChromeOS flexible loopback API support";
+const char kAudioFlexibleLoopbackDescription[] =
+    "Enable flexible loopback API support in ChromeOS.";
+
 const char kAudioHFPMicSRName[] =
     "Audio super-resolution Bluetooth HFP microphone";
 const char kAudioHFPMicSRDescription[] =
@@ -4779,6 +4768,12 @@ const char kCalendarViewName[] =
 const char kCalendarViewDescription[] =
     "Show Monthly Calendar View with Google Calendar events to increase "
     "productivity by helping users view their schedules more quickly.";
+
+const char kCaptureModeDemoToolsName[] =
+    "Enable demo tools feature in screen capture";
+const char kCaptureModeDemoToolsDescription[] =
+    "Enables the ability to show clicks and keys during video recordings to "
+    "enhance demo experience.";
 
 const char kCalendarModelDebugModeName[] = "Monthly Calendar Model Debug Mode";
 const char kCalendarModelDebugModeDescription[] =
@@ -5985,6 +5980,12 @@ const char kLauncherFuzzyMatchForOmniboxName[] =
 const char kLauncherFuzzyMatchForOmniboxDescription[] =
     "To evaluate the viability of a Fuzzy match on Omnibox results to "
     "downweight search sugestions";
+
+const char kLauncherSystemInfoAnswerCardsName[] =
+    "System Info Answer Cards in launcher";
+const char kLauncherSystemInfoAnswerCardsDescription[] =
+    "Enables System info answer cards in the launcher to provide system "
+    "performance metrics";
 
 const char kMacAddressRandomizationName[] = "MAC address randomization";
 const char kMacAddressRandomizationDescription[] =

@@ -9,11 +9,14 @@ import 'chrome://resources/cr_elements/cr_shared_style.css.js';
 import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
 import '../../controls/settings_toggle_button.js';
 import '../../prefs/prefs.js';
+import './privacy_sandbox_interest_item.js';
 
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {afterNextRender, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {SettingsToggleButtonElement} from '../../controls/settings_toggle_button.js';
+import {MetricsBrowserProxy, MetricsBrowserProxyImpl} from '../../metrics_browser_proxy.js';
 import {PrefsMixin} from '../../prefs/prefs_mixin.js';
 
 import {PrivacySandboxBrowserProxy, PrivacySandboxBrowserProxyImpl, PrivacySandboxInterest, TopicsState} from './privacy_sandbox_browser_proxy.js';
@@ -82,6 +85,7 @@ export class SettingsPrivacySandboxTopicsSubpageElement extends
       blockedTopicsExpanded_: {
         type: Boolean,
         value: false,
+        observer: 'onBlockedTopicsExpanded_',
       },
     };
   }
@@ -93,12 +97,24 @@ export class SettingsPrivacySandboxTopicsSubpageElement extends
   private blockedTopicsExpanded_: boolean;
   private privacySandboxBrowserProxy_: PrivacySandboxBrowserProxy =
       PrivacySandboxBrowserProxyImpl.getInstance();
+  private metricsBrowserProxy_: MetricsBrowserProxy =
+      MetricsBrowserProxyImpl.getInstance();
 
   override ready() {
     super.ready();
 
     this.privacySandboxBrowserProxy_.getTopicsState().then(
         state => this.onTopicsStateChanged_(state));
+  }
+
+  private isTopicsPrefManaged_(): boolean {
+    const topicsEnabledPref = this.getPref('privacy_sandbox.m1.topics_enabled');
+    if (topicsEnabledPref.enforcement ===
+        chrome.settingsPrivate.Enforcement.ENFORCED) {
+      assert(!topicsEnabledPref.value);
+      return true;
+    }
+    return false;
   }
 
   private onTopicsStateChanged_(state: TopicsState) {
@@ -127,7 +143,16 @@ export class SettingsPrivacySandboxTopicsSubpageElement extends
             'topicsPageBlockedTopicsDescription');
   }
 
+  private onToggleChange_(e: Event) {
+    const target = e.target as SettingsToggleButtonElement;
+    this.metricsBrowserProxy_.recordAction(
+        target.checked ? 'Settings.PrivacySandbox.Topics.Enabled' :
+                         'Settings.PrivacySandbox.Topics.Disabled');
+  }
+
   private onLearnMoreClick_() {
+    this.metricsBrowserProxy_.recordAction(
+        'Settings.PrivacySandbox.Topics.LearnMoreClicked');
     this.isLearnMoreDialogOpen_ = true;
   }
 
@@ -138,6 +163,42 @@ export class SettingsPrivacySandboxTopicsSubpageElement extends
       // dialog was opened.
       this.shadowRoot!.querySelector<HTMLElement>('#learnMoreLink')?.focus();
     });
+  }
+
+  private onInterestChanged_(e: CustomEvent<PrivacySandboxInterest>) {
+    const interest = e.detail;
+    assert(!interest.site);
+    if (interest.removed) {
+      this.blockedTopicsList_.splice(
+          this.blockedTopicsList_.indexOf(interest), 1);
+    } else {
+      this.topicsList_.splice(this.topicsList_.indexOf(interest), 1);
+      // Move the blocked topic to the blocked section.
+      this.blockedTopicsList_.push({topic: interest.topic, removed: true});
+      this.blockedTopicsList_.sort(
+          (first, second) =>
+              first.topic!.displayString < second.topic!.displayString ? -1 :
+                                                                         1);
+    }
+    // This causes the lists to be fully re-rendered, in order to reflect the
+    /// interest changes.
+    this.topicsList_ = this.topicsList_.slice();
+    this.blockedTopicsList_ = this.blockedTopicsList_.slice();
+    // If the interest was previously removed, set it to allowed, and vice
+    // versa.
+    this.privacySandboxBrowserProxy_.setTopicAllowed(
+        interest.topic!, /*allowed=*/ interest.removed);
+
+    this.metricsBrowserProxy_.recordAction(
+        interest.removed ? 'Settings.PrivacySandbox.Topics.TopicAdded' :
+                           'Settings.PrivacySandbox.Topics.TopicRemoved');
+  }
+
+  private onBlockedTopicsExpanded_() {
+    if (this.blockedTopicsExpanded_) {
+      this.metricsBrowserProxy_.recordAction(
+          'Settings.PrivacySandbox.Topics.BlockedTopicsOpened');
+    }
   }
 }
 

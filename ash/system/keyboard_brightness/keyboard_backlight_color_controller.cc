@@ -18,6 +18,7 @@
 #include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "chromeos/dbus/power/power_manager_client.h"
+#include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/session_manager/session_manager_types.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -99,8 +100,9 @@ personalization_app::mojom::BacklightColor
 KeyboardBacklightColorController::GetBacklightColor(
     const AccountId& account_id) {
   // |account_id| may be empty in tests.
-  if (account_id.empty())
+  if (account_id.empty()) {
     return personalization_app::mojom::BacklightColor::kWallpaper;
+  }
   auto* pref_service = GetUserPrefService(account_id);
   DCHECK(pref_service);
   return static_cast<personalization_app::mojom::BacklightColor>(
@@ -155,8 +157,9 @@ void KeyboardBacklightColorController::OnRgbKeyboardSupportedChanged(
 void KeyboardBacklightColorController::OnSessionStateChanged(
     session_manager::SessionState state) {
   // If we are in OOBE, we should set the backlight to a default of white.
-  if (state != session_manager::SessionState::OOBE)
+  if (state != session_manager::SessionState::OOBE) {
     return;
+  }
   DisplayBacklightColor(personalization_app::mojom::BacklightColor::kWhite);
 }
 
@@ -174,8 +177,10 @@ void KeyboardBacklightColorController::OnActiveUserPrefServiceChanged(
 
 void KeyboardBacklightColorController::OnWallpaperColorsChanged() {
   const auto backlight_color = GetBacklightColor(GetActiveAccountId());
-  if (backlight_color != personalization_app::mojom::BacklightColor::kWallpaper)
+  if (backlight_color !=
+      personalization_app::mojom::BacklightColor::kWallpaper) {
     return;
+  }
   DisplayBacklightColor(personalization_app::mojom::BacklightColor::kWallpaper);
 }
 
@@ -240,8 +245,14 @@ void KeyboardBacklightColorController::KeyboardBrightnessPercentReceived(
     absl::optional<double> percentage) {
   if (!percentage.has_value() || percentage.value() == 0.0) {
     DVLOG(1) << __func__ << " Toggling on the keyboard brightness.";
-    // TODO(b/244139677): Calls API to turn on the keyboard brightness.
-    keyboard_brightness_on_for_testing_ = true;
+    power_manager::SetBacklightBrightnessRequest request;
+    request.set_percent(kDefaultBacklightBrightness);
+    request.set_transition(
+        power_manager::SetBacklightBrightnessRequest_Transition_FAST);
+    request.set_cause(
+        power_manager::SetBacklightBrightnessRequest_Cause_USER_REQUEST);
+    chromeos::PowerManagerClient::Get()->SetKeyboardBrightness(
+        std::move(request));
   }
 }
 

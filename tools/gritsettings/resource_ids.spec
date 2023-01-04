@@ -287,6 +287,10 @@
     "META": {"sizes": {"includes": [10]}},
     "includes": [1925],
   },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/side_panel/bookmarks/resources.grd": {
+    "META": {"sizes": {"includes": [45],}},
+    "includes": [1926],
+  },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/side_panel/customize_chrome/resources.grd": {
     "META": {"sizes": {"includes": [35],}},
     "includes": [1930],
@@ -343,7 +347,7 @@
     "includes": [2150],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/omnibox_popup/resources.grd": {
-    "META": {"sizes": {"includes": [10]}},
+    "META": {"sizes": {"includes": [50]}},
     "includes": [2160],
   },
   # END chrome/browser section.
@@ -961,6 +965,10 @@
   },
   "extensions/strings/extensions_strings.grd": {
     "messages": [4380],
+  },
+
+  "headless/app/headless_command.grd": {
+    "includes": [4410],
   },
 
   "mojo/public/js/mojo_bindings_resources.grd": {

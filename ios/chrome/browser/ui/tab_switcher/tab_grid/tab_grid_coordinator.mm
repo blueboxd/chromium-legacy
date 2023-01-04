@@ -23,6 +23,7 @@
 #import "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #import "ios/chrome/browser/ui/activity_services/activity_params.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
+#import "ios/chrome/browser/ui/bookmarks/editor/bookmarks_editor_coordinator.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/bookmarks_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -52,11 +53,11 @@
 #import "ios/chrome/browser/ui/recent_tabs/synced_sessions.h"
 #import "ios/chrome/browser/ui/sharing/sharing_coordinator.h"
 #import "ios/chrome/browser/ui/snackbar/snackbar_coordinator.h"
-#import "ios/chrome/browser/ui/tab_switcher/pinned_tabs/features.h"
-#import "ios/chrome/browser/ui/tab_switcher/pinned_tabs/pinned_tabs_mediator.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_commands.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_context_menu_helper.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_item.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/features.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/pinned_tabs_mediator.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_context_menu/tab_context_menu_helper.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_context_menu/tab_item.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_coordinator+private.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_mediator.h"
@@ -80,14 +81,15 @@
 #error "This file requires ARC support."
 #endif
 
-@interface TabGridCoordinator () <HistoryPresentationDelegate,
-                                  TabContextMenuDelegate,
+@interface TabGridCoordinator () <BookmarksEditorCoordinatorDelegate,
                                   RecentTabsPresentationDelegate,
+                                  HistoryPresentationDelegate,
+                                  SceneStateObserver,
                                   SnackbarCoordinatorDelegate,
+                                  TabContextMenuDelegate,
                                   TabGridMediatorDelegate,
                                   TabPresentationDelegate,
                                   TabGridViewControllerDelegate,
-                                  SceneStateObserver,
                                   ViewControllerTraitCollectionObserver> {
   // Use an explicit ivar instead of synthesizing as the setter isn't using the
   // ivar.
@@ -96,6 +98,9 @@
   // The controller that shows the bookmarking UI after the user taps the Add
   // to Bookmarks button.
   BookmarkInteractionController* _bookmarkInteractionController;
+  // Coordinator to edit a bookmark. Used only if
+  // kEnableNewBookmarksImplementation enabled.
+  BookmarksEditorCoordinator* _bookmarksEditorCoordinator;
 }
 
 @property(nonatomic, assign, readonly) Browser* regularBrowser;
@@ -145,10 +150,9 @@
 
 // Helper objects to be provided to the TabGridViewController to create
 // the context menu configuration.
+@property(nonatomic, strong) TabContextMenuHelper* regularTabContextMenuHelper;
 @property(nonatomic, strong)
-    GridContextMenuHelper* regularTabsGridContextMenuHelper;
-@property(nonatomic, strong)
-    GridContextMenuHelper* incognitoTabsGridContextMenuHelper;
+    TabContextMenuHelper* incognitoTabContextMenuHelper;
 
 @property(weak, nonatomic, readonly) UIWindow* window;
 
@@ -685,18 +689,18 @@
   self.baseViewController.remoteTabsViewController.menuProvider =
       self.recentTabsContextMenuHelper;
 
-  self.regularTabsGridContextMenuHelper =
-      [[GridContextMenuHelper alloc] initWithBrowser:self.regularBrowser
-                                   actionsDataSource:self.regularTabsMediator
-                              tabContextMenuDelegate:self];
+  self.regularTabContextMenuHelper =
+      [[TabContextMenuHelper alloc] initWithBrowser:self.regularBrowser
+                                  actionsDataSource:self.regularTabsMediator
+                             tabContextMenuDelegate:self];
   self.baseViewController.regularTabsContextMenuProvider =
-      self.regularTabsGridContextMenuHelper;
-  self.incognitoTabsGridContextMenuHelper =
-      [[GridContextMenuHelper alloc] initWithBrowser:self.incognitoBrowser
-                                   actionsDataSource:self.incognitoTabsMediator
-                              tabContextMenuDelegate:self];
+      self.regularTabContextMenuHelper;
+  self.incognitoTabContextMenuHelper =
+      [[TabContextMenuHelper alloc] initWithBrowser:self.incognitoBrowser
+                                  actionsDataSource:self.incognitoTabsMediator
+                             tabContextMenuDelegate:self];
   self.baseViewController.incognitoTabsContextMenuProvider =
-      self.incognitoTabsGridContextMenuHelper;
+      self.incognitoTabContextMenuHelper;
 
   // TODO(crbug.com/845192) : Remove RecentTabsTableViewController dependency on
   // ChromeBrowserState so that we don't need to expose the view controller.
@@ -777,8 +781,10 @@
   // setting the handler to nil.
   self.baseViewController.handler = nil;
   self.recentTabsContextMenuHelper = nil;
-  self.regularTabsGridContextMenuHelper = nil;
-  self.incognitoTabsGridContextMenuHelper = nil;
+  self.regularTabContextMenuHelper = nil;
+  self.incognitoTabContextMenuHelper = nil;
+  [_bookmarksEditorCoordinator stop];
+  _bookmarksEditorCoordinator = nil;
   [self.sharingCoordinator stop];
   self.sharingCoordinator = nil;
   [self.dispatcher stopDispatchingForProtocol:@protocol(ApplicationCommands)];
@@ -803,6 +809,15 @@
   self.snackbarCoordinator = nil;
   [self.incognitoSnackbarCoordinator stop];
   self.incognitoSnackbarCoordinator = nil;
+}
+
+#pragma mark - BookmarksEditorCoordinatorDelegate
+
+- (void)bookmarksEditorCoordinatorShouldStop:
+    (BookmarksEditorCoordinator*)coordinator {
+  DCHECK(_bookmarksEditorCoordinator);
+  [_bookmarksEditorCoordinator stop];
+  _bookmarksEditorCoordinator = nil;
 }
 
 #pragma mark - TabPresentationDelegate
@@ -1125,14 +1140,23 @@
       bookmarkModel && bookmarkModel->GetMostRecentlyAddedUserNodeForURL(URL);
 
   if (currentlyBookmarked) {
-    [self.bookmarkInteractionController presentBookmarkEditorForURL:URL];
+    [self editBookmarkWithURL:URL];
   } else {
     [self.bookmarkInteractionController bookmarkURL:URL title:title];
   }
 }
 
 - (void)editBookmarkWithURL:(const GURL&)URL {
-  [self.bookmarkInteractionController presentBookmarkEditorForURL:URL];
+  if (base::FeatureList::IsEnabled(kEnableNewBookmarksImplementation)) {
+    _bookmarksEditorCoordinator = [[BookmarksEditorCoordinator alloc]
+        initWithBaseViewController:self.baseViewController
+                           browser:self.browser
+                               URL:URL];
+    _bookmarksEditorCoordinator.delegate = self;
+    [_bookmarksEditorCoordinator start];
+  } else {
+    [self.bookmarkInteractionController presentBookmarkEditorForURL:URL];
+  }
 }
 
 - (void)pinTabWithIdentifier:(NSString*)identifier incognito:(BOOL)incognito {

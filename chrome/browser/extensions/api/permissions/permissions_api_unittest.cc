@@ -52,7 +52,7 @@ scoped_refptr<const Extension> CreateExtensionWithPermissions(
                        .Set("manifest_version", 2)
                        .Set("version", "0.1.2.3")
                        .Set("permissions", std::move(permissions))
-                       .BuildDict())
+                       .Build())
       .AddFlags(creation_flags)
       .SetID(crx_file::id_util::GenerateId(name))
       .Build();
@@ -60,7 +60,7 @@ scoped_refptr<const Extension> CreateExtensionWithPermissions(
 
 // Helper function to create a base::Value from a list of strings.
 base::Value::List StringVectorToValue(const std::vector<std::string>& strings) {
-  return ListBuilder().Append(strings.begin(), strings.end()).BuildList();
+  return ListBuilder().Append(strings.begin(), strings.end()).Build();
 }
 
 // Runs permissions.request() with the provided |args|, and returns the result

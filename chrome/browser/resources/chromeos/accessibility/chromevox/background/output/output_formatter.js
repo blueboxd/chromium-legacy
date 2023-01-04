@@ -11,6 +11,7 @@ import {constants} from '../../../common/constants.js';
 import {Cursor, CURSOR_NODE_INDEX} from '../../../common/cursors/cursor.js';
 import {CursorRange} from '../../../common/cursors/range.js';
 import {LocalStorage} from '../../../common/local_storage.js';
+import {AutomationTreeWalker} from '../../../common/tree_walker.js';
 import {Msgs} from '../../common/msgs.js';
 
 import {OutputFormatParserObserver} from './output_format_parser.js';
@@ -101,11 +102,11 @@ export class OutputFormatter {
     } else if (token === 'node') {
       this.formatNode_(this.params_, token, tree, options);
     } else if (token === 'nameOrTextContent' || token === 'textContent') {
-      this.output_.formatTextContent_(this.params_, token, options);
+      this.formatTextContent_(this.params_, token, options);
     } else if (this.params_.node[token] !== undefined) {
-      this.output_.formatAsFieldAccessor_(this.params_, token, options);
+      this.formatAsFieldAccessor_(this.params_, token, options);
     } else if (outputTypes.OUTPUT_STATE_INFO[token]) {
-      this.output_.formatAsStateValue_(this.params_, token, options);
+      this.formatAsStateValue_(this.params_, token, options);
     } else if (token === 'phoneticReading') {
       this.output_.formatPhoneticReading_(this.params_);
     } else if (token === 'listNestedLevel') {
@@ -179,6 +180,57 @@ export class OutputFormatter {
       roles.add(currentNode.value);
     }
     return roles;
+  }
+
+  /**
+   * @param {!outputTypes.OutputFormattingData} data
+   * @param {string} token
+   * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
+   * @private
+   */
+  formatAsFieldAccessor_(data, token, options) {
+    const buff = data.outputBuffer;
+    const node = data.node;
+    const formatLog = data.outputFormatLogger;
+
+    options.annotation.push(token);
+    let value = node[token];
+    if (typeof value === 'number') {
+      value = String(value);
+    }
+    this.output_.append_(buff, value, options);
+    formatLog.writeTokenWithValue(token, value);
+  }
+
+  /**
+   * @param {!outputTypes.OutputFormattingData} data
+   * @param {string} token
+   * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
+   * @private
+   */
+  formatAsStateValue_(data, token, options) {
+    const buff = data.outputBuffer;
+    const node = data.node;
+    const formatLog = data.outputFormatLogger;
+
+    options.annotation.push('state');
+    const stateInfo = outputTypes.OUTPUT_STATE_INFO[token];
+    let resolvedInfo = {};
+    resolvedInfo = node.state[/** @type {StateType} */ (token)] ? stateInfo.on :
+                                                                  stateInfo.off;
+    if (!resolvedInfo) {
+      return;
+    }
+    if (this.output_.formatAsSpeech && resolvedInfo.earcon) {
+      options.annotation.push(
+          new outputTypes.OutputEarconAction(resolvedInfo.earcon),
+          node.location || undefined);
+    }
+    const msgId = this.output_.formatAsBraille ? resolvedInfo.msgId + '_brl' :
+                                                 resolvedInfo.msgId;
+    const msg = Msgs.getMsg(msgId);
+    this.output_.append_(buff, msg, options);
+    formatLog.writeTokenWithValue(token, msg);
   }
 
   /**
@@ -681,6 +733,53 @@ export class OutputFormatter {
     options.annotation.push(token);
     this.output_.append_(buff, value, options);
     formatLog.writeTokenWithValue(token, value);
+  }
+
+  /**
+   * @param {!outputTypes.OutputFormattingData} data
+   * @param {string} token
+   * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
+   * @private
+   */
+  formatTextContent_(data, token, options) {
+    const buff = data.outputBuffer;
+    const node = data.node;
+    const formatLog = data.outputFormatLogger;
+
+    if (node.name && token === 'nameOrTextContent') {
+      formatLog.writeToken(token);
+      this.output_.format_({
+        node,
+        outputFormat: '$name',
+        outputBuffer: buff,
+        outputFormatLogger: formatLog,
+      });
+      return;
+    }
+
+    if (!node.firstChild) {
+      return;
+    }
+
+    const root = node;
+    const walker = new AutomationTreeWalker(node, Dir.FORWARD, {
+      visit: AutomationPredicate.leafOrStaticText,
+      leaf: n => {
+        // The root might be a leaf itself, but we still want to descend
+        // into it.
+        return n !== root && AutomationPredicate.leafOrStaticText(n);
+      },
+      root: r => r === root,
+    });
+    const outputStrings = [];
+    while (walker.next().node) {
+      if (walker.node.name) {
+        outputStrings.push(walker.node.name.trim());
+      }
+    }
+    const finalOutput = outputStrings.join(' ');
+    this.output_.append_(buff, finalOutput, options);
+    formatLog.writeTokenWithValue(token, finalOutput);
   }
 
   /**

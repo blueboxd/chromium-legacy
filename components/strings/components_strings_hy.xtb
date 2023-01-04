@@ -808,7 +808,6 @@
 <translation id="299990983510665749">Հեչբեք ավտոմեքենաներ</translation>
 <translation id="3002501248619246229">Ստուգել մուտքային դարակի տվյալները</translation>
 <translation id="3005723025932146533">Ցուցադրել պահված պատճենը</translation>
-<translation id="3008447029300691911">Մուտքագրեք <ph name="CREDIT_CARD" /> քարտի CVC կոդը: Հենց որ հաստատեք, ձեր քարտի տվյալները կտրամադրվեն այս կայքին:</translation>
 <translation id="3013291976881901233">MIDI սարքեր</translation>
 <translation id="301521992641321250">Ավտոմատ արգելափակված է</translation>
 <translation id="3016780570757425217">Իմանալ ձեր տեղադրությունը</translation>
@@ -1166,6 +1165,7 @@
 <translation id="3927932062596804919">Մերժել</translation>
 <translation id="393316646445601645">Ինտերնետ և հեռահաղորդակցություն</translation>
 <translation id="3939773374150895049">Օգտագործե՞լ WebAuthn՝ CVC-ի փոխարեն</translation>
+<translation id="3943857333388298514">Տեղադրել</translation>
 <translation id="3946209740501886391">Միշտ հարցնել այս կայքում</translation>
 <translation id="3947595700203588284">Կարող է հայցել MIDI սարքերին միանալու թույլտվություն</translation>
 <translation id="3949571496842715403">Այս սերվերը չկարողացավ ապացուցել, որ այն իրոք ներկայացնում է <ph name="DOMAIN" /> տիրույթը: Դրա անվտանգության վկայագիրը չի ներառում թեմայի այլընտրանքային անուններ։ Պատճառը կարող է լինել ինչպես սերվերի սխալ կազմաձևումը, այնպես էլ ձեր և սերվերի միջև կապուղու վրա հաքերային հարձակումն և գաղտնալսումը:</translation>
@@ -2314,6 +2314,7 @@
 <translation id="6890531741535756070">Դուք ընտրել եք, որ կայքերում, որոնք օգտագործում են <ph name="DEVICE_LABEL" />, հաստատումը կատարվի <ph name="PROVIDER_ORIGIN" />-ի միջոցով։ Հնարավոր է՝ այս մատակարարը տեղեկություններ է պահել ձեր վճարման եղանակի մասին։ Դուք կարող եք այդ տեղեկությունների <ph name="BEGIN_LINK" />ջնջման հայտ ուղարկել<ph name="END_LINK" />։</translation>
 <translation id="6891596781022320156">Կանոնի մակարդակը չի աջակցվում:</translation>
 <translation id="6895330447102777224">Ձեր քարտը հաստատված է</translation>
+<translation id="6896758677409633944">Պատճենել</translation>
 <translation id="6897140037006041989">Օգտատիրոջ գործակալ</translation>
 <translation id="6898699227549475383">Կազմակերպություն (O)</translation>
 <translation id="6899000063526916106">Մուտքագրեք <ph name="NUMBER_OF_DIGITS" /> թվանշանից բաղկացած կոդը</translation>
@@ -2459,7 +2460,6 @@
 <translation id="7243771829620208687">RA0</translation>
 <translation id="7244465398154211886">{NUM_MATCHES,plural, =1{# համընկնում}one{# համընկնում}other{# համընկնում}}</translation>
 <translation id="724691107663265825">Կայքը, որը պատրաստվում եք այցելել, պարունակում է վնասագիր</translation>
-<translation id="724975217298816891">Մուտքագրեք <ph name="CREDIT_CARD" /> քարտի վավերականության ժամկետը և CVC կոդը՝ ձեր քարտի տվյալները թարմացնելու համար: Հենց որ հաստատեք, ձեր քարտի տվյալները կտրամադրվեն այս կայքին:</translation>
 <translation id="7251437084390964440">Ցանցի կազմաձևումը չի համապատասխանում ONC ստանդարտին: Կազմաձևման որոշ մասեր չեն ներմուծվի:
 Լրացուցիչ տեղեկություններ՝
 <ph name="DEBUG_INFO" /></translation>
@@ -2588,7 +2588,6 @@
 <translation id="7534987659046836932">Envelope C7</translation>
 <translation id="7535087603100972091">Արժեք</translation>
 <translation id="7537536606612762813">Պարտադիր</translation>
-<translation id="7542403920425041731">Հաստատելուց հետո ձեր քարտի տվյալները կտրամադրվեն այս կայքին։</translation>
 <translation id="7542995811387359312">Վարկային քարտի ինքնալրացումն անջատված է, քանի որ այս ձևն ապահով կապակցում չի օգտագործում:</translation>
 <translation id="7543525346216957623">Հարցրեք ձեր ծնողին</translation>
 <translation id="7546409722674205727">«<ph name="APP_NAME" />» հավելվածը գործարկվում է</translation>
@@ -2681,6 +2680,7 @@
 <translation id="7716375162095500223">Անտեսվել է կամ դեռ չի վերբեռնվել</translation>
 <translation id="7716424297397655342">Այս կայքը չի կարող բեռնվել հիշապահեստից</translation>
 <translation id="7723047071702270851">Փոփոխեք քարտի տվյալները</translation>
+<translation id="7724603315864178912">Կտրել</translation>
 <translation id="7734285854693414638">Արագ ստեղծել ձև Google Ձևաթղթերում</translation>
 <translation id="773466115871691567">Միշտ թարգմանել <ph name="SOURCE_LANGUAGE" /> էջերը</translation>
 <translation id="7736959720849233795">Պատճենել հղման հասցեն</translation>
@@ -2717,6 +2717,7 @@
 <translation id="7815407501681723534">«<ph name="SEARCH_STRING" />» հարցումով որոնման արդյունքում գտնվել է <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /></translation>
 <translation id="7822320754433038727">Որս և հրաձգություն</translation>
 <translation id="782886543891417279">Անլար կապը (<ph name="WIFI_NAME" />), որից օգտվում եք, կարող է պահանջել, որպեսզի դուք այցելեք նրա մուտքի էջը:</translation>
+<translation id="7840103971441592723">Էկրանի տեսագրումը սկսվել է</translation>
 <translation id="7844689747373518809">{COUNT,plural, =0{Չկա}=1{1 հավելված (<ph name="EXAMPLE_APP_1" />)}=2{2 հավելված (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}one{# հավելված (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}other{# հավելված (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">Փակե՞լ կայքը</translation>
@@ -2895,6 +2896,7 @@
 <translation id="8282947398454257691">Իմանալ ձեր հատուկ սարքի նույնացուցիչը</translation>
 <translation id="8284769179630993263">Կառավարեք Ապահով դիտարկումը և այլ պարամետրեր Chrome-ի կարգավորումներում</translation>
 <translation id="8286036467436129157">Մուտք գործել</translation>
+<translation id="8286799286781881307">Ադմինիստրատորի կողմից հաստատված հավելվածները կարող են տեսագրել ձեր սարքին միացված բոլոր էկրանները։ Այս տեղեկությունները կարող են մշակվել լոկալ եղանակով և վերբեռնվել ձեր կազմակերպության սերվերներ։</translation>
 <translation id="8288807391153049143">Ցուցադրել հավաստագիրը</translation>
 <translation id="8289355894181816810">Ճշտեք տեղեկությունները ցանցի ադմինիստրատորի հետ:</translation>
 <translation id="8293206222192510085">Էջանիշի հավելում</translation>

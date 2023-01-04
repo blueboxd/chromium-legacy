@@ -51,7 +51,6 @@ ReadingListUI::ReadingListUI(content::WebUI* web_ui)
       profile, chrome::kChromeUIReadLaterHost);
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"addCurrentTab", IDS_READ_LATER_ADD_CURRENT_TAB},
-      {"bookmarksTabTitle", IDS_BOOKMARK_MANAGER_TITLE},
       {"bookmarkCopied", IDS_BOOKMARK_MANAGER_TOAST_ITEM_COPIED},
       {"bookmarkDeleted", IDS_BOOKMARK_MANAGER_TOAST_ITEM_DELETED},
       {"bookmarkCreated", IDS_BOOKMARK_SCREEN_READER_CREATED},
@@ -65,9 +64,8 @@ ReadingListUI::ReadingListUI(content::WebUI* web_ui)
       {"readAnythingTabTitle", IDS_READ_ANYTHING_TITLE},
       {"readHeader", IDS_READ_LATER_MENU_READ_HEADER},
       {"title", IDS_READ_LATER_TITLE},
-      {"sidePanelTitle", IDS_SIDE_PANEL_TITLE},
-      {"tooltipClose", IDS_CLOSE},
       {"tooltipDelete", IDS_DELETE},
+      {"tooltipMore", IDS_BOOKMARKS_EDIT_MORE},
       {"tooltipMarkAsRead", IDS_READ_LATER_MENU_TOOLTIP_MARK_AS_READ},
       {"tooltipMarkAsUnread", IDS_READ_LATER_MENU_TOOLTIP_MARK_AS_UNREAD},
       {"unreadHeader", IDS_READ_LATER_MENU_UNREAD_HEADER},
@@ -99,8 +97,14 @@ ReadingListUI::ReadingListUI(content::WebUI* web_ui)
       {"clearSearch", IDS_BOOKMARK_MANAGER_CLEAR_SEARCH},
       {"selectedBookmarkCount", IDS_BOOKMARK_MANAGER_ITEMS_SELECTED},
       {"menuOpenNewTab", IDS_BOOKMARK_MANAGER_MENU_OPEN_IN_NEW_TAB},
+      {"menuOpenNewTabWithCount",
+       IDS_BOOKMARK_MANAGER_MENU_OPEN_ALL_WITH_COUNT},
       {"menuOpenNewWindow", IDS_BOOKMARK_MANAGER_MENU_OPEN_IN_NEW_WINDOW},
+      {"menuOpenNewWindowWithCount",
+       IDS_BOOKMARK_MANAGER_MENU_OPEN_ALL_NEW_WINDOW_WITH_COUNT},
       {"menuOpenIncognito", IDS_BOOKMARK_MANAGER_MENU_OPEN_INCOGNITO},
+      {"menuOpenIncognitoWithCount",
+       IDS_BOOKMARK_MANAGER_MENU_OPEN_ALL_INCOGNITO_WITH_COUNT},
       {"newFolderTitle", IDS_BOOKMARK_EDITOR_NEW_FOLDER_NAME},
   };
   for (const auto& str : kLocalizedStrings)
@@ -116,6 +120,10 @@ ReadingListUI::ReadingListUI(content::WebUI* web_ui)
   bookmarks::BookmarkModel* bookmark_model =
       BookmarkModelFactory::GetForBrowserContext(profile);
   source->AddString(
+      "bookmarksBarId",
+      base::NumberToString(
+          bookmark_model ? bookmark_model->bookmark_bar_node()->id() : -1));
+  source->AddString(
       "otherBookmarksId",
       base::NumberToString(bookmark_model ? bookmark_model->other_node()->id()
                                           : -1));
@@ -127,8 +135,6 @@ ReadingListUI::ReadingListUI(content::WebUI* web_ui)
       reading_list_model->loaded() ? reading_list_model->unseen_size() : false);
 
   source->AddBoolean("readAnythingEnabled", features::IsReadAnythingEnabled());
-  source->AddBoolean("unifiedSidePanel",
-                     base::FeatureList::IsEnabled(features::kUnifiedSidePanel));
 
   source->AddBoolean("guestMode", profile->IsGuestSession());
   source->AddBoolean("incognitoMode", profile->IsIncognitoProfile());
@@ -147,13 +153,9 @@ ReadingListUI::ReadingListUI(content::WebUI* web_ui)
   content::URLDataSource::Add(
       profile, std::make_unique<FaviconSource>(
                    profile, chrome::FaviconUrlFormat::kFavicon2));
-  const int resource =
-      !base::FeatureList::IsEnabled(features::kUnifiedSidePanel)
-          ? IDR_SIDE_PANEL_SIDE_PANEL_HTML
-          : IDR_SIDE_PANEL_READING_LIST_READING_LIST_HTML;
   webui::SetupWebUIDataSource(
       source, base::make_span(kSidePanelResources, kSidePanelResourcesSize),
-      resource);
+      IDR_SIDE_PANEL_READING_LIST_READING_LIST_HTML);
   content::URLDataSource::Add(profile,
                               std::make_unique<SanitizedImageSource>(profile));
 }

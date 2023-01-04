@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 import 'chrome://webui-test/mojo_webui_test_support.js';
-import 'chrome://read-later.top-chrome/bookmarks/power_bookmarks_list.js';
+import 'chrome://bookmarks-side-panel.top-chrome/power_bookmarks_list.js';
 
-import {BookmarksApiProxyImpl} from 'chrome://read-later.top-chrome/bookmarks/bookmarks_api_proxy.js';
-import {ShoppingListApiProxyImpl} from 'chrome://read-later.top-chrome/bookmarks/commerce/shopping_list_api_proxy.js';
-import {PowerBookmarkRowElement} from 'chrome://read-later.top-chrome/bookmarks/power_bookmark_row.js';
-import {PowerBookmarksListElement} from 'chrome://read-later.top-chrome/bookmarks/power_bookmarks_list.js';
+import {BookmarksApiProxyImpl} from 'chrome://bookmarks-side-panel.top-chrome/bookmarks_api_proxy.js';
+import {ShoppingListApiProxyImpl} from 'chrome://bookmarks-side-panel.top-chrome/commerce/shopping_list_api_proxy.js';
+import {PowerBookmarkRowElement} from 'chrome://bookmarks-side-panel.top-chrome/power_bookmark_row.js';
+import {PowerBookmarksListElement} from 'chrome://bookmarks-side-panel.top-chrome/power_bookmarks_list.js';
 import {PluralStringProxyImpl} from 'chrome://resources/js/plural_string_proxy.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {assertEquals, assertNotEquals} from 'chrome://webui-test/chai_assert.js';
@@ -25,33 +25,33 @@ suite('SidePanelPowerBookmarksListTest', () => {
 
   const folders: chrome.bookmarks.BookmarkTreeNode[] = [
     {
-      id: '1',
+      id: '2',
       parentId: '0',
-      title: 'Bookmarks bar',
+      title: 'Other Bookmarks',
       children: [
         {
-          id: '2',
-          parentId: '1',
+          id: '3',
+          parentId: '2',
           title: 'First child bookmark',
           url: 'http://child/bookmark/1/',
           dateAdded: 1,
         },
         {
-          id: '3',
-          parentId: '1',
+          id: '4',
+          parentId: '2',
           title: 'Second child bookmark',
           url: 'http://child/bookmark/2/',
           dateAdded: 3,
         },
         {
-          id: '4',
-          parentId: '1',
+          id: '5',
+          parentId: '2',
           title: 'Child folder',
           dateAdded: 2,
           children: [
             {
-              id: '5',
-              parentId: '4',
+              id: '6',
+              parentId: '5',
               title: 'Nested bookmark',
               url: 'http://nested/bookmark/',
               dateAdded: 4,
@@ -95,11 +95,11 @@ suite('SidePanelPowerBookmarksListTest', () => {
   test('DefaultsToSortByNewest', () => {
     const bookmarkElements = getBookmarkElements(powerBookmarksList);
     // All folders should come first
-    assertEquals(bookmarkElements[0]!.id, 'bookmark-4');
+    assertEquals(bookmarkElements[0]!.id, 'bookmark-5');
     // Newest URL should come next
-    assertEquals(bookmarkElements[1]!.id, 'bookmark-3');
+    assertEquals(bookmarkElements[1]!.id, 'bookmark-4');
     // Older URL should be last
-    assertEquals(bookmarkElements[2]!.id, 'bookmark-2');
+    assertEquals(bookmarkElements[2]!.id, 'bookmark-3');
   });
 
   test('UpdatesChangedBookmarks', () => {
@@ -165,7 +165,7 @@ suite('SidePanelPowerBookmarksListTest', () => {
     const movedBookmark = folders[0]!.children![2]!.children![0]!;
     bookmarksApi.callbackRouter.onMoved.callListeners(movedBookmark.id, {
       index: 0,
-      parentId: folders[0]!.id,                   // Moving to bookmarks bar.
+      parentId: folders[0]!.id,                   // Moving to other bookmarks.
       oldParentId: folders[0]!.children![2]!.id,  // Moving from child folder.
       oldIndex: 0,
     });
@@ -174,7 +174,7 @@ suite('SidePanelPowerBookmarksListTest', () => {
     const bookmarkElements = getBookmarkElements(powerBookmarksList);
     assertEquals(4, bookmarkElements.length);
     const childFolder = bookmarkElements[0]!;
-    assertEquals('4', (childFolder as PowerBookmarkRowElement).bookmark.id);
+    assertEquals('5', (childFolder as PowerBookmarkRowElement).bookmark.id);
     assertEquals(
         0, (childFolder as PowerBookmarkRowElement).bookmark.children!.length);
   });

@@ -7,15 +7,14 @@ import './search_query.js';
 import './history_clusters_shared_style.css.js';
 import './shared_vars.css.js';
 import './url_visit.js';
-import '../../cr_elements/cr_icons.css.js';
+import 'chrome://resources/cr_elements/cr_icons.css.js';
 import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
 import 'chrome://resources/cr_elements/cr_auto_img/cr_auto_img.js';
 
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-
-import {assert} from '../../js/assert_ts.js';
-import {loadTimeData} from '../../js/load_time_data.js';
 
 import {BrowserProxyImpl} from './browser_proxy.js';
 import {getTemplate} from './cluster.html.js';
@@ -186,6 +185,16 @@ class HistoryClusterElement extends HistoryClusterElementBase {
         ClusterAction.kRelatedSearchClicked, this.index);
   }
 
+  /* Clears selection on non alt mouse clicks. Need to wait for browser to
+   *  update the DOM fully. */
+  private clearSelection_(event: MouseEvent) {
+    this.onBrowserIdle_().then(() => {
+      if (window.getSelection() && !event.altKey) {
+        window.getSelection()?.empty();
+      }
+    });
+  }
+
   private onVisitClicked_(event: CustomEvent<URLVisit>) {
     MetricsProxyImpl.getInstance().recordClusterAction(
         ClusterAction.kVisitClicked, this.index);
@@ -264,6 +273,17 @@ class HistoryClusterElement extends HistoryClusterElementBase {
   //============================================================================
   // Helper methods
   //============================================================================
+
+  /**
+   * Returns a promise that resolves when the browser is idle.
+   */
+  private onBrowserIdle_(): Promise<void> {
+    return new Promise(resolve => {
+      window.requestIdleCallback(() => {
+        resolve();
+      });
+    });
+  }
 
   /**
    * Called with the original remove params when the last accepted request to

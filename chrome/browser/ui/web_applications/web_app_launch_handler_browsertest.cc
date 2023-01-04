@@ -92,6 +92,18 @@ class WebAppLaunchHandlerBrowserTest : public InProcessBrowserTest {
     return GetWebApp(app_id)->launch_handler();
   }
 
+  void ExpectNavigateNewBehavior(const AppId& app_id) {
+    std::string start_url = GetWebApp(app_id)->start_url().spec();
+
+    Browser* browser_1 = LaunchWebAppBrowserAndWait(profile(), app_id);
+    EXPECT_EQ(AwaitNextLaunchParamsTargetUrl(browser_1), start_url);
+
+    Browser* browser_2 = LaunchWebAppBrowserAndWait(profile(), app_id);
+    EXPECT_EQ(AwaitNextLaunchParamsTargetUrl(browser_2), start_url);
+
+    EXPECT_NE(browser_1, browser_2);
+  }
+
   std::string AwaitNextLaunchParamsTargetUrl(Browser* browser) {
     const char* script = R"(
       new Promise(resolve => {
@@ -131,9 +143,7 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest, ClientModeEmpty) {
       InstallTestWebApp("/web_apps/basic.html", /*await_metric=*/false);
   EXPECT_EQ(GetLaunchHandler(app_id), absl::nullopt);
 
-  Browser* browser_1 = LaunchWebAppBrowser(profile(), app_id);
-  Browser* browser_2 = LaunchWebAppBrowser(profile(), app_id);
-  EXPECT_NE(browser_1, browser_2);
+  ExpectNavigateNewBehavior(app_id);
 
   histogram_tester.ExpectUniqueSample(kLaunchHandlerHistogram,
                                       ClientMode::kAuto, 2);
@@ -145,15 +155,7 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest, ClientModeAuto) {
       "/web_apps/get_manifest.html?launch_handler_client_mode_auto.json");
   EXPECT_EQ(GetLaunchHandler(app_id), (LaunchHandler{ClientMode::kAuto}));
 
-  std::string start_url = GetWebApp(app_id)->start_url().spec();
-
-  Browser* browser_1 = LaunchWebAppBrowserAndWait(profile(), app_id);
-  EXPECT_EQ(AwaitNextLaunchParamsTargetUrl(browser_1), start_url);
-
-  Browser* browser_2 = LaunchWebAppBrowserAndWait(profile(), app_id);
-  EXPECT_EQ(AwaitNextLaunchParamsTargetUrl(browser_2), start_url);
-
-  EXPECT_NE(browser_1, browser_2);
+  ExpectNavigateNewBehavior(app_id);
 
   histogram_tester.ExpectUniqueSample(kLaunchHandlerHistogram,
                                       ClientMode::kAuto, 2);
@@ -167,15 +169,7 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest, ClientModeNavigateNew) {
   EXPECT_EQ(GetLaunchHandler(app_id),
             (LaunchHandler{ClientMode::kNavigateNew}));
 
-  std::string start_url = GetWebApp(app_id)->start_url().spec();
-
-  Browser* browser_1 = LaunchWebAppBrowserAndWait(profile(), app_id);
-  EXPECT_EQ(AwaitNextLaunchParamsTargetUrl(browser_1), start_url);
-
-  Browser* browser_2 = LaunchWebAppBrowserAndWait(profile(), app_id);
-  EXPECT_EQ(AwaitNextLaunchParamsTargetUrl(browser_2), start_url);
-
-  EXPECT_NE(browser_1, browser_2);
+  ExpectNavigateNewBehavior(app_id);
 
   histogram_tester.ExpectUniqueSample(kLaunchHandlerHistogram,
                                       ClientMode::kNavigateNew, 2);
@@ -470,9 +464,8 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest, SelectActiveBrowser) {
 class WebAppLaunchHandlerDisabledBrowserTest : public InProcessBrowserTest {
  public:
   WebAppLaunchHandlerDisabledBrowserTest() {
-    feature_list_.InitWithFeatures({},
-                                   {blink::features::kWebAppEnableLaunchHandler,
-                                    blink::features::kFileHandlingAPI});
+    feature_list_.InitWithFeatures(
+        {}, {blink::features::kWebAppEnableLaunchHandler});
   }
   ~WebAppLaunchHandlerDisabledBrowserTest() override = default;
 
@@ -491,7 +484,8 @@ class WebAppLaunchHandlerDisabledBrowserTest : public InProcessBrowserTest {
   OsIntegrationManager::ScopedSuppressForTesting os_hooks_suppress_;
 };
 
-IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerDisabledBrowserTest, NoLaunchQueue) {
+IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerDisabledBrowserTest,
+                       LaunchQueueNoLaunchHandlers) {
   base::HistogramTester histogram_tester;
   AppId app_id = InstallWebAppFromPage(
       browser(), embedded_test_server()->GetURL("/web_apps/basic.html"));
@@ -500,9 +494,9 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerDisabledBrowserTest, NoLaunchQueue) {
   content::WebContents* web_contents =
       app_browser->tab_strip_model()->GetActiveWebContents();
 
-  EXPECT_FALSE(EvalJs(web_contents, "!!window.LaunchQueue").ExtractBool());
-  EXPECT_FALSE(EvalJs(web_contents, "!!window.launchQueue").ExtractBool());
-  EXPECT_FALSE(EvalJs(web_contents, "!!window.LaunchParams").ExtractBool());
+  EXPECT_TRUE(EvalJs(web_contents, "!!window.LaunchQueue").ExtractBool());
+  EXPECT_TRUE(EvalJs(web_contents, "!!window.launchQueue").ExtractBool());
+  EXPECT_TRUE(EvalJs(web_contents, "!!window.LaunchParams").ExtractBool());
 
   histogram_tester.ExpectTotalCount(kLaunchHandlerHistogram, 0);
 }

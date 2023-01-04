@@ -26,10 +26,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/commands/web_app_uninstall_command.h"
 #include "chrome/browser/web_applications/isolation_prefs_utils.h"
+#include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/os_integration/web_app_shortcuts_menu.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
-#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
@@ -291,8 +291,10 @@ bool WebAppInstallFinalizer::CanReparentTab(const AppId& app_id,
   // Reparent the web contents into its own window only if that is the
   // app's launch type.
   DCHECK(registrar_);
-  if (registrar_->GetAppUserDisplayMode(app_id) == UserDisplayMode::kBrowser)
+  if (registrar_->GetAppUserDisplayMode(app_id) ==
+      mojom::UserDisplayMode::kBrowser) {
     return false;
+  }
 
   return ui_manager_->CanReparentAppTabToWindow(app_id, shortcut_created);
 }
@@ -553,8 +555,15 @@ void WebAppInstallFinalizer::OnDatabaseCommitCompletedForInstall(
   // sub managers have been implemented.
   os_integration_manager_->InstallOsHooks(
       app_id, os_hooks_barrier, /*web_app_info=*/nullptr, hooks_options);
+
+  SynchronizeOsOptions synchronize_options;
+  synchronize_options.add_shortcut_to_desktop = hooks_options.add_to_desktop;
+  synchronize_options.add_to_quick_launch_bar =
+      hooks_options.add_to_quick_launch_bar;
+  synchronize_options.reason = hooks_options.reason;
   os_integration_manager_->Synchronize(
-      app_id, base::BindOnce(os_hooks_barrier, OsHooksErrors()));
+      app_id, base::BindOnce(os_hooks_barrier, OsHooksErrors()),
+      synchronize_options);
 }
 
 void WebAppInstallFinalizer::OnInstallHooksFinished(
@@ -672,9 +681,6 @@ void WebAppInstallFinalizer::ScheduleUninstallCommand(
 FileHandlerUpdateAction WebAppInstallFinalizer::GetFileHandlerUpdateAction(
     const AppId& app_id,
     const WebAppInstallInfo& new_web_app_info) {
-  if (!os_integration_manager_->IsFileHandlingAPIAvailable(app_id))
-    return FileHandlerUpdateAction::kNoUpdate;
-
   if (GetWebAppRegistrar().GetAppFileHandlerApprovalState(app_id) ==
       ApiApprovalState::kDisallowed) {
     return FileHandlerUpdateAction::kNoUpdate;

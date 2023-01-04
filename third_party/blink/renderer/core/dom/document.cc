@@ -6206,13 +6206,13 @@ ScriptPromise Document::requestStorageAccessForOrigin(
   }
 
   auto descriptor = mojom::blink::PermissionDescriptor::New();
-  descriptor->name = mojom::blink::PermissionName::STORAGE_ACCESS;
-  auto storage_access_extension =
-      mojom::blink::StorageAccessPermissionDescriptor::New();
-  storage_access_extension->siteOverride = supplied_origin;
+  descriptor->name = mojom::blink::PermissionName::TOP_LEVEL_STORAGE_ACCESS;
+  auto top_level_storage_access_extension =
+      mojom::blink::TopLevelStorageAccessPermissionDescriptor::New();
+  top_level_storage_access_extension->requestedOrigin = supplied_origin;
   descriptor->extension =
-      mojom::blink::PermissionDescriptorExtension::NewStorageAccess(
-          std::move(storage_access_extension));
+      mojom::blink::PermissionDescriptorExtension::NewTopLevelStorageAccess(
+          std::move(top_level_storage_access_extension));
 
   GetPermissionService(ExecutionContext::From(script_state))
       ->RequestPermission(
@@ -6492,17 +6492,38 @@ ScriptPromise Document::hasPrivateToken(ScriptState* script_state,
               return;
             }
 
-            if (result->status ==
-                network::mojom::blink::TrustTokenOperationStatus::kOk) {
-              resolver->Resolve(result->has_trust_tokens);
-            } else {
-              ScriptState* state = resolver->GetScriptState();
-              ScriptState::Scope scope(state);
-              resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
-                  state->GetIsolate(), DOMExceptionCode::kOperationError,
-                  "Failed to retrieve hasPrivateToken response. (Would "
-                  "associating the given issuer with this top-level origin "
-                  "have exceeded its number-of-issuers limit?)"));
+            switch (result->status) {
+              case network::mojom::blink::TrustTokenOperationStatus::kOk: {
+                resolver->Resolve(result->has_trust_tokens);
+                break;
+              }
+              case network::mojom::blink::TrustTokenOperationStatus::
+                  kInvalidArgument: {
+                ScriptState* state = resolver->GetScriptState();
+                ScriptState::Scope scope(state);
+                resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+                    state->GetIsolate(), DOMExceptionCode::kOperationError,
+                    "Failed to retrieve hasPrivateToken response. Issuer "
+                    "configuration is missing or unsuitable."));
+                break;
+              }
+              case network::mojom::blink::TrustTokenOperationStatus::
+                  kResourceExhausted: {
+                ScriptState* state = resolver->GetScriptState();
+                ScriptState::Scope scope(state);
+                resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+                    state->GetIsolate(), DOMExceptionCode::kOperationError,
+                    "Failed to retrieve hasPrivateToken response. Exceeded the "
+                    "number-of-issuers limit."));
+                break;
+              }
+              default: {
+                ScriptState* state = resolver->GetScriptState();
+                ScriptState::Scope scope(state);
+                resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+                    state->GetIsolate(), DOMExceptionCode::kOperationError,
+                    "Failed to retrieve hasPrivateToken response."));
+              }
             }
 
             document->data_->pending_trust_token_query_resolvers_.erase(
@@ -6595,17 +6616,28 @@ ScriptPromise Document::hasRedemptionRecord(ScriptState* script_state,
               return;
             }
 
-            if (result->status ==
-                network::mojom::blink::TrustTokenOperationStatus::kOk) {
-              resolver->Resolve(result->has_redemption_record);
-            } else {
-              ScriptState* state = resolver->GetScriptState();
-              ScriptState::Scope scope(state);
-              resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
-                  state->GetIsolate(), DOMExceptionCode::kOperationError,
-                  "Failed to retrieve hasRedemptionRecord response. (Would "
-                  "associating the given issuer with this top-level origin "
-                  "have exceeded its number-of-issuers limit?)"));
+            switch (result->status) {
+              case network::mojom::blink::TrustTokenOperationStatus::kOk: {
+                resolver->Resolve(result->has_redemption_record);
+                break;
+              }
+              case network::mojom::blink::TrustTokenOperationStatus::
+                  kInvalidArgument: {
+                ScriptState* state = resolver->GetScriptState();
+                ScriptState::Scope scope(state);
+                resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+                    state->GetIsolate(), DOMExceptionCode::kOperationError,
+                    "Failed to retrieve hasRedemptionRecord response. Issuer "
+                    "configuration is missing or unsuitable."));
+                break;
+              }
+              default: {
+                ScriptState* state = resolver->GetScriptState();
+                ScriptState::Scope scope(state);
+                resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+                    state->GetIsolate(), DOMExceptionCode::kOperationError,
+                    "Failed to retrieve hasRedemptionRecord response."));
+              }
             }
 
             document->data_->pending_trust_token_query_resolvers_.erase(
@@ -8575,6 +8607,8 @@ void Document::Trace(Visitor* visitor) const {
   visitor->Trace(pending_link_header_preloads_);
   visitor->Trace(event_node_path_cache_);
   visitor->Trace(event_node_path_cache_key_list_);
+  visitor->Trace(latest_cached_event_node_);
+  visitor->Trace(latest_cached_event_node_path_);
   Supplementable<Document>::Trace(visitor);
   TreeScope::Trace(visitor);
   ContainerNode::Trace(visitor);
@@ -8971,6 +9005,21 @@ static bool EventNodePathCachingEnabled() {
 
 const EventPath::NodePath& Document::GetOrCalculateEventNodePath(Node& node) {
   DCHECK(EventNodePathCachingEnabled());
+  wtf_size_t max_entries = MaxEventNodePathCachedEntriesValue();
+  if (max_entries == 1) {
+    if (event_node_path_dom_tree_version_ == dom_tree_version_ &&
+        latest_cached_event_node_ == &node) {
+      return *latest_cached_event_node_path_;
+    } else {
+      EventPath::NodePath node_path = EventPath::CalculateNodePath(node);
+      event_node_path_dom_tree_version_ = dom_tree_version_;
+      latest_cached_event_node_ = &node;
+      latest_cached_event_node_path_ =
+          MakeGarbageCollected<EventPath::NodePath>(std::move(node_path));
+      return *latest_cached_event_node_path_;
+    }
+  }
+
   if (event_node_path_dom_tree_version_ != dom_tree_version_) {
     if (!event_node_path_cache_.empty()) {
       event_node_path_cache_.clear();
@@ -8996,7 +9045,6 @@ const EventPath::NodePath& Document::GetOrCalculateEventNodePath(Node& node) {
   event_node_path_cache_key_list_.PrependOrMoveToFirst(&node);
 
   // Prune oldest cached node if size is bigger than max.
-  wtf_size_t max_entries = MaxEventNodePathCachedEntriesValue();
   if (event_node_path_cache_key_list_.size() > max_entries) {
     DCHECK_EQ(event_node_path_cache_key_list_.size(), max_entries + 1);
     event_node_path_cache_.erase(event_node_path_cache_key_list_.back());

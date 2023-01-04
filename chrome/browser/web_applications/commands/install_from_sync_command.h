@@ -14,11 +14,12 @@
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/web_applications/commands/web_app_command.h"
+#include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
-#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_install_params.h"
 #include "chrome/browser/web_applications/web_app_logging.h"
+#include "components/webapps/browser/installable/installable_logging.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
 
@@ -46,7 +47,7 @@ class InstallFromSyncCommand
            const std::string& title,
            const GURL& scope,
            const absl::optional<SkColor>& theme_color,
-           const absl::optional<UserDisplayMode>& user_display_mode,
+           const absl::optional<mojom::UserDisplayMode>& user_display_mode,
            const std::vector<apps::IconInfo>& icons);
     const AppId app_id;
     const absl::optional<std::string> manifest_id;
@@ -54,7 +55,7 @@ class InstallFromSyncCommand
     const std::string title;
     const GURL scope;
     const absl::optional<SkColor> theme_color;
-    const absl::optional<UserDisplayMode> user_display_mode;
+    const absl::optional<mojom::UserDisplayMode> user_display_mode;
     const std::vector<apps::IconInfo> icons;
   };
   using DataRetrieverFactory =
@@ -90,7 +91,7 @@ class InstallFromSyncCommand
   void OnDidPerformInstallableCheck(blink::mojom::ManifestPtr opt_manifest,
                                     const GURL& manifest_url,
                                     bool valid_manifest_for_web_app,
-                                    bool is_installable);
+                                    webapps::InstallableStatusCode error_code);
 
   enum class FinalizeMode { kNormalWebAppInfo, kFallbackWebAppInfo };
 

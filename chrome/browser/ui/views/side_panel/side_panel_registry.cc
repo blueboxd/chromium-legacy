@@ -74,11 +74,11 @@ bool SidePanelRegistry::Deregister(const SidePanelEntry::Key& key) {
 
   entry->RemoveObserver(this);
   if (active_entry_.has_value() &&
-      entry->key().id() == active_entry_.value()->key().id()) {
+      entry->key() == active_entry_.value()->key()) {
     active_entry_.reset();
   }
   for (SidePanelRegistryObserver& observer : observers_) {
-    observer.OnEntryWillDeregister(entry);
+    observer.OnEntryWillDeregister(this, entry);
   }
   RemoveEntry(entry);
   return true;

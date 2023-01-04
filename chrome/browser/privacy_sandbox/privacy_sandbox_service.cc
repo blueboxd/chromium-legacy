@@ -334,8 +334,8 @@ void PrivacySandboxService::GetFledgeJoiningEtldPlusOneForDisplay(
     return;
   }
 
-  interest_group_manager_->GetAllInterestGroupJoiningOrigins(base::BindOnce(
-      &PrivacySandboxService::ConvertFledgeJoiningTopFramesForDisplay,
+  interest_group_manager_->GetAllInterestGroupDataKeys(base::BindOnce(
+      &PrivacySandboxService::ConvertInterestGroupDataKeysForDisplay,
       weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
@@ -546,11 +546,16 @@ void PrivacySandboxService::LogPrivacySandboxState() {
   }
 }
 
-void PrivacySandboxService::ConvertFledgeJoiningTopFramesForDisplay(
+void PrivacySandboxService::ConvertInterestGroupDataKeysForDisplay(
     base::OnceCallback<void(std::vector<std::string>)> callback,
-    std::vector<url::Origin> top_frames) {
+    std::vector<content::InterestGroupManager::InterestGroupDataKey>
+        data_keys) {
   std::set<std::string> display_entries;
-  for (const auto& origin : top_frames) {
+  for (const auto& data_key : data_keys) {
+    // When displaying interest group information in settings, the joining
+    // origin is the relevant origin.
+    const auto& origin = data_key.joining_origin;
+
     // Prefer to display the associated eTLD+1, if there is one.
     auto etld_plus_one = net::registry_controlled_domains::GetDomainAndRegistry(
         origin, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
@@ -578,8 +583,10 @@ void PrivacySandboxService::ConvertFledgeJoiningTopFramesForDisplay(
 
 std::vector<privacy_sandbox::CanonicalTopic>
 PrivacySandboxService::GetCurrentTopTopics() const {
-  if (privacy_sandbox::kPrivacySandboxSettings3ShowSampleDataForTesting.Get())
+  if (privacy_sandbox::kPrivacySandboxSettings3ShowSampleDataForTesting.Get() ||
+      privacy_sandbox::kPrivacySandboxSettings4ShowSampleDataForTesting.Get()) {
     return {fake_current_topics_.begin(), fake_current_topics_.end()};
+  }
 
   if (!browsing_topics_service_)
     return {};
@@ -596,8 +603,10 @@ PrivacySandboxService::GetCurrentTopTopics() const {
 
 std::vector<privacy_sandbox::CanonicalTopic>
 PrivacySandboxService::GetBlockedTopics() const {
-  if (privacy_sandbox::kPrivacySandboxSettings3ShowSampleDataForTesting.Get())
+  if (privacy_sandbox::kPrivacySandboxSettings3ShowSampleDataForTesting.Get() ||
+      privacy_sandbox::kPrivacySandboxSettings4ShowSampleDataForTesting.Get()) {
     return {fake_blocked_topics_.begin(), fake_blocked_topics_.end()};
+  }
 
   const base::Value::List& pref_value =
       pref_service_->GetList(prefs::kPrivacySandboxBlockedTopics);
@@ -617,7 +626,8 @@ PrivacySandboxService::GetBlockedTopics() const {
 void PrivacySandboxService::SetTopicAllowed(
     privacy_sandbox::CanonicalTopic topic,
     bool allowed) {
-  if (privacy_sandbox::kPrivacySandboxSettings3ShowSampleDataForTesting.Get()) {
+  if (privacy_sandbox::kPrivacySandboxSettings3ShowSampleDataForTesting.Get() ||
+      privacy_sandbox::kPrivacySandboxSettings4ShowSampleDataForTesting.Get()) {
     if (allowed) {
       fake_current_topics_.insert(topic);
       fake_blocked_topics_.erase(topic);

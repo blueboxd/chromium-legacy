@@ -877,8 +877,9 @@
     },
     {
       // https://drafts.csswg.org/css-contain-3/#style-container
+      // This flag is for querying custom properties only.
       name: "CSSStyleQueries",
-      status: "experimental"
+      status: "stable"
     },
     // Support for CSS Toggles, https://tabatkins.github.io/css-toggle/
     {
@@ -1514,6 +1515,14 @@
     },
     {
       name: "IdleDetection",
+      public: true,
+      status: "stable",
+    },
+    {
+      name: "IgnoreCSPInWebPaymentAPI",
+      base_feature: "IgnoreCSPInWebPaymentAPI",
+      origin_trial_feature_name: "IgnoreCSPInWebPaymentAPI",
+      origin_trial_allows_third_party: true,
       public: true,
       status: "stable",
     },
@@ -2171,18 +2180,8 @@
       settable_from_internals: true,
     },
     {
-      name: "PrefersColorSchemeClientHintHeader",
-      status: "stable",
-      base_feature: "PrefersColorSchemeClientHintHeader",
-    },
-    {
       name: "PrefersReducedData",
       status: "experimental",
-    },
-    {
-      name: "PrefersReducedMotionClientHintHeader",
-      status: "stable",
-      base_feature: "PrefersReducedMotionClientHintHeader",
     },
     // TODO(crbug/695586): This flag is being used to deprecate support for
     // legacy quota API window.webkitStorageInfo.
@@ -2563,7 +2562,6 @@
     {
       name: "SkipAd",
       depends_on: ["MediaSession"],
-      origin_trial_feature_name: "SkipAd",
       status: "experimental",
     },
     {
@@ -3211,12 +3209,6 @@
       public: true,
       status: "stable",
     },
-    {
-      name: "WebPaymentAPICSP",
-      origin_trial_feature_name: "WebPaymentAPICSP",
-      origin_trial_allows_third_party: true,
-      public: true,
-    },
     // WebShare is enabled by default on Android.
     {
       name: "WebShare",
@@ -3264,6 +3256,12 @@
       name: "WebXR",
       public: true,
       status: "stable",
+    },
+    {
+      name: "WebXREnabledFeatures",
+      depends_on: ["WebXR"],
+      status: "stable",
+      base_feature: "WebXREnabledFeatures",
     },
     {
       name: "WebXRHandInput",

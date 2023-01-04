@@ -60,6 +60,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/guest_view/browser/guest_view_manager_delegate.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
+#include "components/lens/buildflags.h"
 #include "components/lens/lens_features.h"
 #include "components/lens/lens_metadata.mojom.h"
 #include "components/lens/lens_testing_utils.h"
@@ -139,7 +140,7 @@
 #include "ui/aura/window.h"
 #endif
 
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(ENABLE_LENS_DESKTOP_GOOGLE_BRANDED_FEATURES)
 #include "chrome/browser/ui/lens/lens_side_panel_helper.h"
 #include "ui/events/test/event_generator.h"
 #endif
@@ -265,8 +266,8 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
     web_app_info->title = u"Test app 🐐";
     web_app_info->description = u"Test description 🐐";
     web_app_info->user_display_mode =
-        open_as_window ? web_app::UserDisplayMode::kStandalone
-                       : web_app::UserDisplayMode::kBrowser;
+        open_as_window ? web_app::mojom::UserDisplayMode::kStandalone
+                       : web_app::mojom::UserDisplayMode::kBrowser;
 
     return web_app::test::InstallWebApp(browser()->profile(),
                                         std::move(web_app_info));
@@ -1694,7 +1695,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuFencedFrameTest,
                              IDC_CONTENT_CONTEXT_INSPECTELEMENT}));
 }
 
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(ENABLE_LENS_DESKTOP_GOOGLE_BRANDED_FEATURES)
 // Maintains region search test state. In particular, note that |menu_observer_|
 // must live until the right-click completes asynchronously. Used as a base
 // class for common logic shared by the side panel and unified side panel tests
@@ -1825,7 +1826,7 @@ class SearchByRegionBrowserBaseTest : public InProcessBrowserTest {
     EXPECT_THAT(content,
                 testing::MatchesRegex(
                     expected_content.substr(0, query_start_pos) +
-                    ".*ep=crs&re=dcsp&s=csp&st=\\d+&lm.+=&sideimagesearch=1"));
+                    ".*ep=crs&re=dcsp&s=csp&st=\\d+&lm=.+&sideimagesearch=1"));
     if (quit_closure_)
       quit_closure_.Run();
   }
@@ -2056,7 +2057,7 @@ IN_PROC_BROWSER_TEST_F(SearchByRegionWithUnifiedSidePanelBrowserTest,
   // Match the query parameters, without the value of start_time.
   EXPECT_THAT(new_tab_content, testing::MatchesRegex(
                                    expected_content.substr(0, query_start_pos) +
-                                   ".*ep=crs&re=df&s=&st=\\d+&lm.+="));
+                                   ".*ep=crs&re=df&s=&st=\\d+&lm=.+"));
 }
 
 IN_PROC_BROWSER_TEST_F(SearchByRegionWithUnifiedSidePanelBrowserTest,
@@ -2103,7 +2104,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(new_tab_content, expected_content);
 }
 
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#endif  // BUILDFLAG(ENABLE_LENS_DESKTOP_GOOGLE_BRANDED_FEATURES)
 
 #if BUILDFLAG(ENABLE_PDF)
 IN_PROC_BROWSER_TEST_F(PdfPluginContextMenuBrowserTest,

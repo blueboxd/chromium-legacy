@@ -31,8 +31,11 @@ class CSSContainerValues : public MediaValuesDynamic {
   float ExFontSize(float zoom) const override;
   float RexFontSize(float zoom) const override;
   float ChFontSize(float zoom) const override;
+  float RchFontSize(float zoom) const override;
   float IcFontSize(float zoom) const override;
+  float RicFontSize(float zoom) const override;
   float LineHeight(float zoom) const override;
+  float RootLineHeight(float zoom) const override;
   // Note that ContainerWidth/ContainerHeight are used to resolve
   // container *units*. See `container_sizes_`.
   Element* ContainerElement() const override { return element_; }

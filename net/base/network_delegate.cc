@@ -12,6 +12,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/trace_constants.h"
+#include "net/cookies/cookie_setting_override.h"
 #include "net/cookies/cookie_util.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/url_request/url_request.h"
@@ -104,11 +105,12 @@ void NetworkDelegate::NotifyPACScriptError(int line_number,
 bool NetworkDelegate::AnnotateAndMoveUserBlockedCookies(
     const URLRequest& request,
     const net::FirstPartySetMetadata& first_party_set_metadata,
+    CookieSettingOverrides overrides,
     net::CookieAccessResultList& maybe_included_cookies,
     net::CookieAccessResultList& excluded_cookies) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   bool allowed = OnAnnotateAndMoveUserBlockedCookies(
-      request, first_party_set_metadata, maybe_included_cookies,
+      request, first_party_set_metadata, overrides, maybe_included_cookies,
       excluded_cookies);
   cookie_util::DCheckIncludedAndExcludedCookieLists(maybe_included_cookies,
                                                     excluded_cookies);
@@ -126,10 +128,11 @@ bool NetworkDelegate::CanSetCookie(const URLRequest& request,
 NetworkDelegate::PrivacySetting NetworkDelegate::ForcePrivacyMode(
     const GURL& url,
     const SiteForCookies& site_for_cookies,
-    const absl::optional<url::Origin>& top_frame_origin) const {
+    const absl::optional<url::Origin>& top_frame_origin,
+    CookieSettingOverrides overrides) const {
   TRACE_EVENT0(NetTracingCategory(), "NetworkDelegate::ForcePrivacyMode");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return OnForcePrivacyMode(url, site_for_cookies, top_frame_origin);
+  return OnForcePrivacyMode(url, site_for_cookies, top_frame_origin, overrides);
 }
 
 bool NetworkDelegate::CancelURLRequestWithPolicyViolatingReferrerHeader(

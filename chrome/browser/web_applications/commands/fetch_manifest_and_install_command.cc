@@ -25,6 +25,7 @@
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "components/webapps/browser/features.h"
+#include "components/webapps/browser/installable/installable_logging.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -257,7 +258,7 @@ void FetchManifestAndInstallCommand::OnDidPerformInstallableCheck(
     blink::mojom::ManifestPtr opt_manifest,
     const GURL& manifest_url,
     bool valid_manifest_for_web_app,
-    bool is_installable) {
+    webapps::InstallableStatusCode error_code) {
   if (IsWebContentsDestroyed()) {
     Abort(webapps::InstallResultCode::kWebContentsDestroyed);
     return;
@@ -510,7 +511,7 @@ void FetchManifestAndInstallCommand::OnInstallFinalizedMaybeReparentTab(
       app_lock_->install_finalizer().CanReparentTab(app_id, !error);
 
   if (can_reparent_tab &&
-      (web_app_info_->user_display_mode != UserDisplayMode::kBrowser)) {
+      (web_app_info_->user_display_mode != mojom::UserDisplayMode::kBrowser)) {
     app_lock_->install_finalizer().ReparentTab(app_id, !error,
                                                web_contents_.get());
   }

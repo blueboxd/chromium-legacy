@@ -832,6 +832,7 @@ static_library("ui") {
       "android/tab_model/tab_model_observer.h",
       "android/tab_model/tab_model_observer_jni_bridge.cc",
       "android/tab_model/tab_model_observer_jni_bridge.h",
+      "android/toolbar/adaptive_toolbar_bridge.cc",
       "android/toolbar/location_bar_model_android.cc",
       "android/toolbar/location_bar_model_android.h",
       "android/webid/account_selection_view_android.cc",
@@ -897,7 +898,9 @@ static_library("ui") {
       "//chrome/browser/notifications/scheduler/public",
       "//chrome/browser/resources/webapks:resources",
       "//chrome/browser/touch_to_fill/payments/android",
+      "//chrome/browser/ui:adaptive_toolbar_enums_java",
       "//chrome/browser/ui/android/autofill/internal:jni_headers",
+      "//chrome/browser/ui/android/toolbar:jni_headers",
       "//chrome/browser/ui/webui/explore_sites_internals:mojo_bindings",
       "//chrome/browser/ui/webui/feed_internals:mojo_bindings",
       "//components/browser_ui/accessibility/android",
@@ -1741,12 +1744,6 @@ static_library("ui") {
     ]
     if (is_chrome_branded) {
       sources += [
-        "webui/lens/lens_ui.cc",
-        "webui/lens/lens_ui.h",
-        "webui/lens/lens_untrusted_ui.cc",
-        "webui/lens/lens_untrusted_ui.h",
-        "webui/lens/lens_untrusted_ui_config.cc",
-        "webui/lens/lens_untrusted_ui_config.h",
         "webui/media_router/cast_feedback_ui.cc",
         "webui/media_router/cast_feedback_ui.h",
       ]
@@ -2070,6 +2067,8 @@ static_library("ui") {
       "../ash/app_list/search/chrome_search_result.h",
       "../ash/app_list/search/common/icon_constants.cc",
       "../ash/app_list/search/common/icon_constants.h",
+      "../ash/app_list/search/common/keyword_util.cc",
+      "../ash/app_list/search/common/keyword_util.h",
       "../ash/app_list/search/common/search_result_util.cc",
       "../ash/app_list/search/common/search_result_util.h",
       "../ash/app_list/search/common/string_util.cc",
@@ -2122,6 +2121,12 @@ static_library("ui") {
       "../ash/app_list/search/keyboard_shortcut_provider.h",
       "../ash/app_list/search/keyboard_shortcut_result.cc",
       "../ash/app_list/search/keyboard_shortcut_result.h",
+      "../ash/app_list/search/local_images/annotation_storage.cc",
+      "../ash/app_list/search/local_images/annotation_storage.h",
+      "../ash/app_list/search/local_images/image_annotation_worker.cc",
+      "../ash/app_list/search/local_images/image_annotation_worker.h",
+      "../ash/app_list/search/local_images/local_image_search_provider.cc",
+      "../ash/app_list/search/local_images/local_image_search_provider.h",
       "../ash/app_list/search/omnibox/omnibox_answer_result.cc",
       "../ash/app_list/search/omnibox/omnibox_answer_result.h",
       "../ash/app_list/search/omnibox/omnibox_lacros_provider.cc",
@@ -2518,6 +2523,8 @@ static_library("ui") {
       "views/borealis/borealis_installer_view.h",
       "views/borealis/borealis_splash_screen_view.cc",
       "views/borealis/borealis_splash_screen_view.h",
+      "views/bruschetta/bruschetta_installer_view.cc",
+      "views/bruschetta/bruschetta_installer_view.h",
       "views/chrome_views_delegate_chromeos.cc",
       "views/crostini/crostini_ansible_software_config_view.cc",
       "views/crostini/crostini_ansible_software_config_view.h",
@@ -2643,6 +2650,8 @@ static_library("ui") {
       "webui/ash/emoji/emoji_page_handler.h",
       "webui/ash/emoji/emoji_ui.cc",
       "webui/ash/emoji/emoji_ui.h",
+      "webui/ash/emoji/gif_tenor_api_fetcher.cc",
+      "webui/ash/emoji/gif_tenor_api_fetcher.h",
       "webui/ash/guest_os_installer/guest_os_installer_dialog.cc",
       "webui/ash/guest_os_installer/guest_os_installer_dialog.h",
       "webui/ash/human_presence_internals_ui.cc",
@@ -3150,7 +3159,6 @@ static_library("ui") {
       "//chrome/browser/ash/login/oobe_quick_start",
       "//chrome/browser/ash/system_web_apps",
       "//chrome/browser/ash/video_conference",
-      "//chrome/browser/chromeos",
       "//chrome/browser/chromeos/extensions/vpn_provider",
       "//chrome/browser/chromeos/extensions/wm",
       "//chrome/browser/chromeos/launcher_search:search_util",
@@ -3281,6 +3289,7 @@ static_library("ui") {
       "//components/consent_auditor:consent_auditor",
       "//components/desks_storage",
       "//components/digital_asset_links",
+      "//components/endpoint_fetcher",
       "//components/exo",
       "//components/login",
       "//components/metrics/structured:structured_events",
@@ -3301,15 +3310,19 @@ static_library("ui") {
       "//google_apis/drive",
       "//media/capture:capture_lib",
       "//mojo/public/js:resources_grit",
+      "//net:extras",
       "//services/audio/public/mojom",
       "//services/data_decoder/public/cpp",
       "//services/device/public/cpp:device_features",
       "//services/device/public/mojom",
       "//services/media_session/public/mojom",
       "//services/preferences/public/mojom",
+      "//sql:sql",
       "//ui/base/ime/ash",
       "//ui/chromeos",
       "//ui/chromeos/events",
+      "//ui/chromeos/resources",
+      "//ui/chromeos/strings",
       "//ui/chromeos/strings:strings_provider",
       "//ui/compositor_extra",
       "//ui/display/manager",
@@ -3326,7 +3339,6 @@ static_library("ui") {
     allow_circular_includes_from += [
       "//chrome/browser/ash",
       "//chrome/browser/ash/crosapi",
-      "//chrome/browser/chromeos",
       "//chrome/browser/chromeos/extensions/wm",
     ]
 
@@ -3355,6 +3367,7 @@ static_library("ui") {
   }
 
   if (is_chromeos) {
+    allow_circular_includes_from += [ "//chrome/browser/chromeos" ]
     sources += [
       "platform_keys_certificate_selector_chromeos.h",
       "tabs/existing_window_sub_menu_model_chromeos.cc",
@@ -3390,6 +3403,7 @@ static_library("ui") {
     ]
     deps += [
       "//chrome/app:generated_resources",
+      "//chrome/browser/chromeos",
       "//chromeos/components/security_token_pin",
       "//chromeos/constants",
       "//chromeos/dbus/power",
@@ -4704,6 +4718,8 @@ static_library("ui") {
       "views/omnibox/remove_suggestion_bubble.h",
       "views/omnibox/rounded_omnibox_results_frame.cc",
       "views/omnibox/rounded_omnibox_results_frame.h",
+      "views/omnibox/webui_omnibox_popup_view.cc",
+      "views/omnibox/webui_omnibox_popup_view.h",
       "views/overlay/back_to_tab_label_button.cc",
       "views/overlay/back_to_tab_label_button.h",
       "views/overlay/close_image_button.cc",
@@ -5300,8 +5316,8 @@ static_library("ui") {
       "//components/payments/content",
       "//components/payments/content:utils",
       "//components/payments/core",
+      "//components/power_bookmarks/common",
       "//components/power_bookmarks/core:core",
-      "//components/power_bookmarks/core:powers",
       "//components/power_bookmarks/storage",
       "//components/qr_code_generator",
       "//components/reading_list/features:flags",
@@ -5480,27 +5496,31 @@ static_library("ui") {
         "//components/metrics/structured:neutrino_logging_util",
       ]
     }
-
-    if (is_chrome_branded) {
-      sources += [
-        "lens/lens_side_panel_navigation_helper.h",
-        "views/lens/lens_region_search_instructions_view.cc",
-        "views/lens/lens_region_search_instructions_view.h",
-        "views/lens/lens_side_panel_helper.cc",
-        "views/lens/lens_side_panel_navigation_helper.cc",
-        "views/lens/lens_static_page_controller.cc",
-        "views/lens/lens_static_page_controller.h",
-        "views/side_panel/lens/lens_side_panel_coordinator.cc",
-        "views/side_panel/lens/lens_side_panel_coordinator.h",
-        "views/side_panel/lens/lens_unified_side_panel_view.cc",
-        "views/side_panel/lens/lens_unified_side_panel_view.h",
-      ]
-      deps += [ "//chrome/browser/ui/media_router/internal/vector_icons" ]
-    }
   }
 
   if (enable_lens_desktop_google_branded_features) {
-    sources += [ "lens/lens_side_panel_helper.h" ]
+    sources += [
+      "lens/lens_side_panel_helper.h",
+      "lens/lens_side_panel_navigation_helper.h",
+      "views/lens/lens_region_search_instructions_view.cc",
+      "views/lens/lens_region_search_instructions_view.h",
+      "views/lens/lens_side_panel_helper.cc",
+      "views/lens/lens_side_panel_navigation_helper.cc",
+      "views/lens/lens_static_page_controller.cc",
+      "views/lens/lens_static_page_controller.h",
+      "views/side_panel/lens/lens_side_panel_coordinator.cc",
+      "views/side_panel/lens/lens_side_panel_coordinator.h",
+      "views/side_panel/lens/lens_unified_side_panel_view.cc",
+      "views/side_panel/lens/lens_unified_side_panel_view.h",
+      "webui/lens/lens_ui.cc",
+      "webui/lens/lens_ui.h",
+      "webui/lens/lens_untrusted_ui.cc",
+      "webui/lens/lens_untrusted_ui.h",
+      "webui/lens/lens_untrusted_ui_config.cc",
+      "webui/lens/lens_untrusted_ui_config.h",
+    ]
+
+    deps += [ "//chrome/browser/ui/media_router/internal/vector_icons" ]
   }
 
   if (use_aura) {

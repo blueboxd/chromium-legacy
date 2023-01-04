@@ -21,16 +21,16 @@ import {DeviceStateType, NetworkType, OncSource} from 'chrome://resources/mojo/c
 import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {castExists} from '../assert_extras.js';
+import {Constructor} from '../common/types.js';
 
 import {getTemplate} from './network_summary.html.js';
 import {NetworkSummaryItemElement} from './network_summary_item.js';
 
 const NetworkSummaryElementBase =
-    mixinBehaviors([NetworkListenerBehavior], PolymerElement) as {
-      new (): PolymerElement & NetworkListenerBehaviorInterface,
-    };
+    mixinBehaviors([NetworkListenerBehavior], PolymerElement) as
+    Constructor<PolymerElement&NetworkListenerBehaviorInterface>;
 
-class NetworkSummaryElement extends NetworkSummaryElementBase {
+export class NetworkSummaryElement extends NetworkSummaryElementBase {
   static get is() {
     return 'network-summary' as const;
   }

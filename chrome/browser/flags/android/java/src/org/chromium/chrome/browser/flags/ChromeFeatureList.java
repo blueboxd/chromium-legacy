@@ -197,7 +197,6 @@ public abstract class ChromeFeatureList {
     public static final String ASSISTANT_CONSENT_SIMPLIFIED_TEXT = "AssistantConsentSimplifiedText";
     public static final String ASSISTANT_CONSENT_V2 = "AssistantConsentV2";
     public static final String ASSISTANT_INTENT_EXPERIMENT_ID = "AssistantIntentExperimentId";
-    public static final String ASSISTANT_INTENT_PAGE_URL = "AssistantIntentPageUrl";
     public static final String ASSISTANT_INTENT_TRANSLATE_INFO = "AssistantIntentTranslateInfo";
     public static final String ASSISTANT_NON_PERSONALIZED_VOICE_SEARCH =
             "AssistantNonPersonalizedVoiceSearch";
@@ -221,6 +220,7 @@ public abstract class ChromeFeatureList {
     public static final String CCT_INCOGNITO = "CCTIncognito";
     public static final String CCT_INCOGNITO_AVAILABLE_TO_THIRD_PARTY =
             "CCTIncognitoAvailableToThirdParty";
+    public static final String CCT_INTENT_FEATURE_OVERRIDES = "CCTIntentFeatureOverrides";
     public static final String CCT_NEW_DOWNLOAD_TAB = "CCTNewDownloadTab";
     public static final String CCT_PACKAGE_NAME_RECORDING = "CCTPackageNameRecording";
     public static final String CCT_POST_MESSAGE_API = "CCTPostMessageAPI";
@@ -286,10 +286,6 @@ public abstract class ChromeFeatureList {
             "SyncAndroidLimitNTPPromoImpressions";
     public static final String SYNC_ANDROID_PROMOS_WITH_ALTERNATIVE_TITLE =
             "SyncAndroidPromosWithAlternativeTitle";
-    public static final String SYNC_ANDROID_PROMOS_WITH_ILLUSTRATION =
-            "SyncAndroidPromosWithIllustration";
-    public static final String SYNC_ANDROID_PROMOS_WITH_SINGLE_BUTTON =
-            "SyncAndroidPromosWithSingleButton";
     public static final String SYNC_ANDROID_PROMOS_WITH_TITLE = "SyncAndroidPromosWithTitle";
     public static final String CRITICAL_PERSISTED_TAB_DATA = "CriticalPersistedTabData";
     public static final String DARKEN_WEBSITES_CHECKBOX_IN_THEMES_SETTING =
@@ -569,6 +565,8 @@ public abstract class ChromeFeatureList {
     public static final CachedFlag sCctIncognito = new CachedFlag(CCT_INCOGNITO, true);
     public static final CachedFlag sCctIncognitoAvailableToThirdParty =
             new CachedFlag(CCT_INCOGNITO_AVAILABLE_TO_THIRD_PARTY, false);
+    public static final CachedFlag sCctIntentFeatureOverrides =
+            new CachedFlag(CCT_INTENT_FEATURE_OVERRIDES, true);
     public static final CachedFlag sCctRemoveRemoteViewIds =
             new CachedFlag(CCT_REMOVE_REMOTE_VIEW_IDS, true);
     public static final CachedFlag sCctResizable90MaximumHeight =

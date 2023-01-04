@@ -7,7 +7,6 @@
 #import "base/cancelable_callback.h"
 #import "base/task/single_thread_task_runner.h"
 #import "components/prefs/pref_service.h"
-#import "components/signin/ios/browser/features.h"
 #import "components/signin/public/base/signin_metrics.h"
 #import "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
@@ -202,10 +201,11 @@ constexpr NSInteger kSigninTimeoutDurationSeconds = 10;
       break;
   }
   __weak __typeof(self) weakSelf = self;
-  self.authenticationService->SignOut(signin_metrics::ABORT_SIGNIN, false, ^() {
-    [weakSelf.delegate consistencyPromoSigninMediator:weakSelf
-                                       errorDidHappen:error];
-  });
+  self.authenticationService->SignOut(
+      signin_metrics::ProfileSignout::kAbortSignin, false, ^() {
+        [weakSelf.delegate consistencyPromoSigninMediator:weakSelf
+                                           errorDidHappen:error];
+      });
 }
 
 #pragma mark - IdentityManagerObserverBridgeDelegate
@@ -236,8 +236,7 @@ constexpr NSInteger kSigninTimeoutDurationSeconds = 10;
 - (void)onAccountsInCookieUpdated:
             (const signin::AccountsInCookieJarInfo&)accountsInCookieJarInfo
                             error:(const GoogleServiceAuthError&)error {
-  if (base::FeatureList::IsEnabled(signin::kEnableUnicornAccountSupport) &&
-      _authenticationFlow) {
+  if (_authenticationFlow) {
     // Ignore if `_authenticationFlow` is in progress since
     // `onAccountsInCookieUpdated` may be called when data is cleared on
     // sign-in.

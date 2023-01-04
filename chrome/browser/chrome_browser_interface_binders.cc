@@ -166,6 +166,7 @@
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page.mojom.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_ui.h"
 #include "chrome/browser/ui/webui/new_tab_page_third_party/new_tab_page_third_party_ui.h"
+#include "chrome/browser/ui/webui/omnibox_popup/omnibox_popup_ui.h"
 #include "chrome/browser/ui/webui/settings/settings_ui.h"
 #include "chrome/browser/ui/webui/side_panel/bookmarks/bookmarks_side_panel_ui.h"
 #include "chrome/browser/ui/webui/side_panel/customize_chrome/customize_chrome.mojom.h"
@@ -302,7 +303,7 @@
 #include "chromeos/ash/services/hotspot_config/public/mojom/cros_hotspot_config.mojom.h"
 #include "chromeos/ash/services/multidevice_setup/multidevice_setup_service.h"
 #include "chromeos/ash/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
-#include "chromeos/components/print_management/mojom/printing_manager.mojom.h"
+#include "chromeos/components/print_management/mojom/printing_manager.mojom.h"  // nogncheck
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"  // nogncheck
 #include "chromeos/services/network_health/public/mojom/network_diagnostics.mojom.h"  // nogncheck
 #include "chromeos/services/network_health/public/mojom/network_health.mojom.h"  // nogncheck
@@ -915,8 +916,9 @@ void PopulateChromeWebUIFrameBinders(
 #endif
 #if BUILDFLAG(IS_CHROMEOS_ASH)
       ash::personalization_app::PersonalizationAppUI,
+      ash::settings::OSSettingsUI,
 #endif
-      NewTabPageUI>(map);
+      NewTabPageUI, OmniboxPopupUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
       new_tab_page::mojom::PageHandlerFactory, NewTabPageUI>(map);
@@ -930,8 +932,7 @@ void PopulateChromeWebUIFrameBinders(
           render_frame_host->GetProcess()->GetBrowserContext());
   if (history_clusters_service &&
       history_clusters_service->IsJourneysEnabled()) {
-    if (base::FeatureList::IsEnabled(history_clusters::kSidePanelJourneys) &&
-        base::FeatureList::IsEnabled(features::kUnifiedSidePanel)) {
+    if (base::FeatureList::IsEnabled(history_clusters::kSidePanelJourneys)) {
       RegisterWebUIControllerInterfaceBinder<
           history_clusters::mojom::PageHandler, HistoryUI,
           HistoryClustersSidePanelUI>(map);
@@ -946,7 +947,7 @@ void PopulateChromeWebUIFrameBinders(
       map);
 
   RegisterWebUIControllerInterfaceBinder<omnibox::mojom::PageHandler,
-                                         NewTabPageUI>(map);
+                                         NewTabPageUI, OmniboxPopupUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
       customize_themes::mojom::CustomizeThemesHandlerFactory, NewTabPageUI
@@ -965,7 +966,11 @@ void PopulateChromeWebUIFrameBinders(
       map);
 #endif  // !defined(OFFICIAL_BUILD)
 
-  if (IsCartModuleEnabled()) {
+  if (IsCartModuleEnabled() && customize_chrome::IsSidePanelEnabled()) {
+    RegisterWebUIControllerInterfaceBinder<chrome_cart::mojom::CartHandler,
+                                           NewTabPageUI, CustomizeChromeUI>(
+        map);
+  } else if (IsCartModuleEnabled()) {
     RegisterWebUIControllerInterfaceBinder<chrome_cart::mojom::CartHandler,
                                            NewTabPageUI>(map);
   }
@@ -992,20 +997,12 @@ void PopulateChromeWebUIFrameBinders(
 
   RegisterWebUIControllerInterfaceBinder<
       reading_list::mojom::PageHandlerFactory, ReadingListUI>(map);
-
-  if (base::FeatureList::IsEnabled(features::kUnifiedSidePanel)) {
-    RegisterWebUIControllerInterfaceBinder<
-        side_panel::mojom::BookmarksPageHandlerFactory, BookmarksSidePanelUI>(
-        map);
-    RegisterWebUIControllerInterfaceBinder<
-        shopping_list::mojom::ShoppingListHandlerFactory, BookmarksSidePanelUI>(
-        map);
-  } else {
-    RegisterWebUIControllerInterfaceBinder<
-        side_panel::mojom::BookmarksPageHandlerFactory, ReadingListUI>(map);
-    RegisterWebUIControllerInterfaceBinder<
-        shopping_list::mojom::ShoppingListHandlerFactory, ReadingListUI>(map);
-  }
+  RegisterWebUIControllerInterfaceBinder<
+      side_panel::mojom::BookmarksPageHandlerFactory, BookmarksSidePanelUI>(
+      map);
+  RegisterWebUIControllerInterfaceBinder<
+      shopping_list::mojom::ShoppingListHandlerFactory, BookmarksSidePanelUI>(
+      map);
 
   if (customize_chrome::IsSidePanelEnabled()) {
     RegisterWebUIControllerInterfaceBinder<
@@ -1015,28 +1012,25 @@ void PopulateChromeWebUIFrameBinders(
 
   if (user_notes::IsUserNotesEnabled()) {
     RegisterWebUIControllerInterfaceBinder<
-        side_panel::mojom::UserNotesPageHandler, UserNotesSidePanelUI>(map);
+        side_panel::mojom::UserNotesPageHandlerFactory, UserNotesSidePanelUI>(
+        map);
   }
 
   if (features::IsReadAnythingEnabled()) {
-    if (base::FeatureList::IsEnabled(features::kUnifiedSidePanel)) {
-      RegisterWebUIControllerInterfaceBinder<
-          read_anything::mojom::PageHandlerFactory, ReadAnythingUI>(map);
-    } else {
-      RegisterWebUIControllerInterfaceBinder<
-          read_anything::mojom::PageHandlerFactory, ReadingListUI>(map);
-    }
+    RegisterWebUIControllerInterfaceBinder<
+        read_anything::mojom::PageHandlerFactory, ReadAnythingUI>(map);
   }
 
   RegisterWebUIControllerInterfaceBinder<tab_search::mojom::PageHandlerFactory,
                                          TabSearchUI>(map);
   if (base::FeatureList::IsEnabled(features::kTabSearchUseMetricsReporter)) {
     RegisterWebUIControllerInterfaceBinder<
-        metrics_reporter::mojom::PageMetricsHost, TabSearchUI, NewTabPageUI>(
-        map);
+        metrics_reporter::mojom::PageMetricsHost, TabSearchUI, NewTabPageUI,
+        OmniboxPopupUI>(map);
   } else {
     RegisterWebUIControllerInterfaceBinder<
-        metrics_reporter::mojom::PageMetricsHost, NewTabPageUI>(map);
+        metrics_reporter::mojom::PageMetricsHost, NewTabPageUI, OmniboxPopupUI>(
+        map);
   }
 
   RegisterWebUIControllerInterfaceBinder<

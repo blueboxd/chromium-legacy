@@ -57,9 +57,11 @@
 #include "chrome/common/webui_url_constants.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
+#include "components/lens/buildflags.h"
 #include "components/lens/lens_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/services/screen_ai/buildflags/buildflags.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/base/signin_pref_names.h"
@@ -120,7 +122,7 @@ namespace {
 
 // Ensures that - if we have not popped up an infobar to prompt the user to e.g.
 // reload the current page - that the content pane of the browser is refocused.
-void AppInfoDialogClosedCallback(content::WebContents* web_contents,
+void AppInfoDialogClosedCallback(SessionID session_id,
                                  views::Widget::ClosedReason closed_reason,
                                  bool reload_prompt) {
   if (reload_prompt)
@@ -133,10 +135,10 @@ void AppInfoDialogClosedCallback(content::WebContents* web_contents,
     return;
   }
 
-  // Ensure that the web contents handle we have is still valid. It's possible
-  // (though unlikely) that either the browser or web contents has been pulled
+  // Ensure that the session id we have is still valid. It's possible
+  // (though unlikely) that either the browser or session has been pulled
   // out from underneath us.
-  Browser* const browser = chrome::FindBrowserWithWebContents(web_contents);
+  Browser* const browser = chrome::FindBrowserWithID(session_id);
   if (!browser)
     return;
 
@@ -763,7 +765,7 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       break;
 
     case IDC_SHOW_BOOKMARK_MANAGER:
-      ShowBookmarkManager(browser_);
+      ShowBookmarkManager(browser_->GetBrowserForOpeningWebUi());
       break;
     case IDC_SHOW_APP_MENU:
       base::RecordAction(base::UserMetricsAction("Accel_Show_App_Menu"));
@@ -773,31 +775,33 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       ShowAvatarMenu(browser_);
       break;
     case IDC_SHOW_HISTORY:
-      ShowHistory(browser_);
+      ShowHistory(browser_->GetBrowserForOpeningWebUi());
       break;
     case IDC_SHOW_DOWNLOADS:
-      ShowDownloads(browser_);
+      ShowDownloads(browser_->GetBrowserForOpeningWebUi());
       break;
     case IDC_MANAGE_EXTENSIONS:
-      ShowExtensions(browser_, std::string());
+      ShowExtensions(browser_->GetBrowserForOpeningWebUi(), std::string());
       break;
     case IDC_PERFORMANCE:
-      ShowSettingsSubPage(browser_, chrome::kPerformanceSubPage);
+      ShowSettingsSubPage(browser_->GetBrowserForOpeningWebUi(),
+                          chrome::kPerformanceSubPage);
       break;
     case IDC_OPTIONS:
-      ShowSettings(browser_);
+      ShowSettings(browser_->GetBrowserForOpeningWebUi());
       break;
     case IDC_EDIT_SEARCH_ENGINES:
-      ShowSearchEngineSettings(browser_);
+      ShowSearchEngineSettings(browser_->GetBrowserForOpeningWebUi());
       break;
     case IDC_VIEW_PASSWORDS:
-      ShowPasswordManager(browser_);
+      ShowPasswordManager(browser_->GetBrowserForOpeningWebUi());
       break;
     case IDC_CLEAR_BROWSING_DATA: {
       if (profile()->IsIncognitoProfile()) {
-        ShowIncognitoClearBrowsingDataDialog(browser_);
+        ShowIncognitoClearBrowsingDataDialog(
+            browser_->GetBrowserForOpeningWebUi());
       } else {
-        ShowClearBrowsingDataDialog(browser_);
+        ShowClearBrowsingDataDialog(browser_->GetBrowserForOpeningWebUi());
       }
       break;
     }
@@ -808,7 +812,7 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       ToggleRequestTabletSite(browser_);
       break;
     case IDC_ABOUT:
-      ShowAboutChrome(browser_);
+      ShowAboutChrome(browser_->GetBrowserForOpeningWebUi());
       break;
     case IDC_UPGRADE_DIALOG:
       OpenUpdateChromeDialog(browser_);
@@ -925,7 +929,8 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
         ShowPageInfoDialog(
             web_contents,
             base::BindOnce(&AppInfoDialogClosedCallback,
-                           base::UnsafeDanglingUntriaged(web_contents)),
+                           sessions::SessionTabHelper::IdForWindowContainingTab(
+                               web_contents)),
             bubble_anchor_util::kAppMenuButton);
       }
       break;
@@ -944,11 +949,11 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       break;
 #endif
 
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(ENABLE_LENS_DESKTOP_GOOGLE_BRANDED_FEATURES)
     case IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH:
       ExecLensRegionSearch(browser_);
       break;
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#endif  // BUILDFLAG(ENABLE_LENS_DESKTOP_GOOGLE_BRANDED_FEATURES)
 
     default:
       LOG(WARNING) << "Received Unimplemented Command: " << id;
@@ -1056,7 +1061,8 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_CLOSE_WINDOW, true);
   command_updater_.UpdateCommandEnabled(IDC_NEW_TAB, true);
   command_updater_.UpdateCommandEnabled(IDC_CLOSE_TAB, true);
-  command_updater_.UpdateCommandEnabled(IDC_DUPLICATE_TAB, true);
+  command_updater_.UpdateCommandEnabled(
+      IDC_DUPLICATE_TAB, !browser_->is_type_picture_in_picture());
   UpdateTabRestoreCommandState();
   command_updater_.UpdateCommandEnabled(IDC_EXIT, true);
   command_updater_.UpdateCommandEnabled(IDC_DEBUG_FRAME_TOGGLE, true);
@@ -1218,7 +1224,7 @@ void BrowserCommandController::InitCommandState() {
                                           true);
   }
 
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(ENABLE_LENS_DESKTOP_GOOGLE_BRANDED_FEATURES)
   if (base::FeatureList::IsEnabled(
           lens::features::kEnableRegionSearchKeyboardShortcut)) {
     command_updater_.UpdateCommandEnabled(
@@ -1460,7 +1466,8 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
   // Window management commands
   command_updater_.UpdateCommandEnabled(
       IDC_SHOW_AS_TAB, !browser_->is_type_normal() && !is_fullscreen &&
-                           !browser_->is_type_devtools());
+                           !browser_->is_type_devtools() &&
+                           !browser_->is_type_picture_in_picture());
 
   // Focus various bits of UI
   command_updater_.UpdateCommandEnabled(IDC_FOCUS_TOOLBAR, show_main_ui);

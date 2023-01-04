@@ -95,7 +95,7 @@
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/feature_flags.h"
 #import "ios/chrome/browser/ui/post_restore_signin/features.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
-#import "ios/chrome/browser/ui/tab_switcher/pinned_tabs/features.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/features.h"
 #import "ios/chrome/browser/ui/toolbar_container/toolbar_container_features.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/whats_new/feature_flags.h"
@@ -401,23 +401,6 @@ const FeatureEntry::FeatureVariation kFeedBackgroundRefreshVariations[] = {
      std::size(kServerDrivenSixHourMaxAgeRecurring), nullptr},
 };
 #endif  // BUILDFLAG(IOS_BACKGROUND_MODE_ENABLED)
-
-const FeatureEntry::FeatureParam kFREDefaultBrowserPromoDefaultDelay[] = {
-    {kFREDefaultBrowserPromoParam, kFREDefaultBrowserPromoDefaultDelayParam}};
-const FeatureEntry::FeatureParam kFREDefaultBrowserPromoFirstRunOnly[] = {
-    {kFREDefaultBrowserPromoParam, kFREDefaultBrowserPromoFirstRunOnlyParam}};
-const FeatureEntry::FeatureParam kFREDefaultBrowserPromoShortDelay[] = {
-    {kFREDefaultBrowserPromoParam, kFREDefaultBrowserPromoShortDelayParam}};
-const FeatureEntry::FeatureVariation kFREDefaultBrowserPromoVariations[] = {
-    {"Wait 14 days after FRE default browser promo",
-     kFREDefaultBrowserPromoDefaultDelay,
-     std::size(kFREDefaultBrowserPromoDefaultDelay), nullptr},
-    {"FRE default browser promo only", kFREDefaultBrowserPromoFirstRunOnly,
-     std::size(kFREDefaultBrowserPromoFirstRunOnly), nullptr},
-    {"Wait 3 days after FRE default browser promo",
-     kFREDefaultBrowserPromoShortDelay,
-     std::size(kFREDefaultBrowserPromoShortDelay), nullptr},
-};
 
 const FeatureEntry::FeatureParam kTrendingQueriesEnableAllUsers[] = {
     {kTrendingQueriesHideShortcutsParam, "false"}};
@@ -852,13 +835,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(kEnableDiscoverFeedTopSyncPromo,
                                     kDiscoverFeedTopSyncPromoVariations,
                                     "EnableDiscoverFeedTopSyncPromo")},
-    {"enable-fre-default-browser-screen-testing",
-     flag_descriptions::kEnableFREDefaultBrowserPromoScreenName,
-     flag_descriptions::kEnableFREDefaultBrowserPromoScreenDescription,
-     flags_ui::kOsIos,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(kEnableFREDefaultBrowserPromoScreen,
-                                    kFREDefaultBrowserPromoVariations,
-                                    kIOSMICeAndDefaultBrowserTrialName)},
     {"shared-highlighting-amp",
      flag_descriptions::kIOSSharedHighlightingAmpName,
      flag_descriptions::kIOSSharedHighlightingAmpDescription, flags_ui::kOsIos,
@@ -899,11 +875,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"use-sf-symbols", flag_descriptions::kUseSFSymbolsName,
      flag_descriptions::kUseSFSymbolsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kUseSFSymbols)},
-    {"enable-unicorn-account-support",
-     flag_descriptions::kEnableUnicornAccountSupportName,
-     flag_descriptions::kEnableUnicornAccountSupportDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(signin::kEnableUnicornAccountSupport)},
     {"ios-webpage-intent-annotations",
      flag_descriptions::kEnableWebPageAnnotationsName,
      flag_descriptions::kEnableWebPageAnnotationsDescription, flags_ui::kOsIos,
@@ -1239,10 +1210,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(kEnableFollowingFeedDefaultSortType,
                                     kFollowingFeedDefaultSortTypeVariations,
                                     "EnableFollowingFeedDefaultSortType")},
-    {"omnibox-carousel-dynamic-spacing",
-     flag_descriptions::kOmniboxCarouselDynamicSpacingName,
-     flag_descriptions::kOmniboxCarouselDynamicSpacingDescription,
-     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kOmniboxCarouselDynamicSpacing)},
     {"use-sf-symbols-omnibox", flag_descriptions::kUseSFSymbolsInOmniboxName,
      flag_descriptions::kUseSFSymbolsInOmniboxDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kUseSFSymbolsInOmnibox)},
@@ -1339,6 +1306,8 @@ NSMutableDictionary* CreateExperimentalTestingPolicies() {
       base::SysUTF8ToNSString(policy::key::kSafeBrowsingProtectionLevel) : @2,
 
       base::SysUTF8ToNSString(policy::key::kSearchSuggestEnabled) : @YES,
+
+      base::SysUTF8ToNSString(policy::key::kAppStoreRatingEnabled) : @NO,
     }];
   }
 

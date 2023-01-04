@@ -198,6 +198,14 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     public static final String EXPERIMENT_IDS =
             "org.chromium.chrome.browser.customtabs.AGA_EXPERIMENT_IDS";
 
+    // These Extra Intent parameters allow an Intent to enable or disable a set of Features.
+    // The set of Features that may be enabled or disabled is restricted by the code,
+    // and initially only two Features may be enabled together, or disabled together.
+    public static final String EXPERIMENTS_ENABLE =
+            "org.chromium.chrome.browser.customtabs.EXPERIMENTS_ENABLE";
+    public static final String EXPERIMENTS_DISABLE =
+            "org.chromium.chrome.browser.customtabs.EXPERIMENTS_DISABLE";
+
     /**
      * Extra that, if set, makes the Custom Tab Activity's height to be x pixels, the Custom Tab
      * will behave as a bottom sheet. x will be clamped between 50% and 100% of screen height.
@@ -488,6 +496,8 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
                 ScreenOrientation.DEFAULT));
 
         mGsaExperimentIds = IntentUtils.safeGetIntArrayExtra(intent, EXPERIMENT_IDS);
+        boolean usingDynamicFeatures =
+                CustomTabsConnection.getInstance().setupDynamicFeatures(intent);
 
         mInitialActivityHeight = getInitialActivityHeightFromIntent(intent);
         mPartialTabToolbarCornerRadius = getToolbarCornerRadiusFromIntent(context, intent);
@@ -504,7 +514,7 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
                 intent, EXTRA_ENABLE_BACKGROUND_INTERACTION, BACKGROUND_INTERACT_DEFAULT);
         mInteractWithBackground = backgroundInteractBehavior != BACKGROUND_INTERACT_OFF;
 
-        logCustomTabFeatures(intent, colorScheme);
+        logCustomTabFeatures(intent, colorScheme, usingDynamicFeatures);
     }
 
     /** Returns the toolbar corner radius in px. */
@@ -730,8 +740,11 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
      * usage by apps.
      * @param intent The intent used to launch the CCT.
      * @param colorScheme The requested color scheme to use with the CCT.
+     * @param isUsingDynamicFeatures Whether the intent specified Features to dynamically enable or
+     *                               disable.
      */
-    private void logCustomTabFeatures(Intent intent, int colorScheme) {
+    private void logCustomTabFeatures(
+            Intent intent, int colorScheme, boolean isUsingDynamicFeatures) {
         if (!CustomTabsFeatureUsage.isEnabled()) return;
         CustomTabsFeatureUsage featureUsage = new CustomTabsFeatureUsage();
 
@@ -835,6 +848,9 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
             featureUsage.log(CustomTabsFeature.EXTRA_ADDITIONAL_TRUSTED_ORIGINS);
         }
         if (mEnableUrlBarHiding) featureUsage.log(CustomTabsFeature.EXTRA_ENABLE_URLBAR_HIDING);
+        if (isUsingDynamicFeatures) {
+            featureUsage.log(CustomTabsFeature.EXTRA_INTENT_FEATURE_OVERRIDES);
+        }
     }
 
     @Override

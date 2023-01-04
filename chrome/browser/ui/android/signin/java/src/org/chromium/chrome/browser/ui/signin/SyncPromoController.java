@@ -476,8 +476,6 @@ public class SyncPromoController {
         view.getImage().setImageResource(R.drawable.chrome_sync_logo);
         setImageSize(context, view, R.dimen.signin_promo_cold_state_image_size);
 
-        view.getIllustration().setVisibility(View.GONE);
-
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_TITLE)) {
             // TODO(crbug.com/1323197): set the title visible by default in the XML.
             view.getTitle().setVisibility(View.VISIBLE);
@@ -485,11 +483,7 @@ public class SyncPromoController {
         }
         view.getDescription().setText(mDescriptionStringIdNoAccount);
 
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_SINGLE_BUTTON)) {
-            view.getPrimaryButton().setText(R.string.sync_promo_continue);
-        } else {
-            view.getPrimaryButton().setText(R.string.sync_promo_turn_on_sync);
-        }
+        view.getPrimaryButton().setText(R.string.sync_promo_turn_on_sync);
         view.getPrimaryButton().setOnClickListener(v -> signinWithNewAccount(context));
 
         view.getSecondaryButton().setVisibility(View.GONE);
@@ -501,10 +495,6 @@ public class SyncPromoController {
         view.getImage().setImageDrawable(accountImage);
         setImageSize(context, view, R.dimen.sync_promo_account_image_size);
 
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_ILLUSTRATION)) {
-            view.getIllustration().setVisibility(View.GONE);
-        }
-
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_TITLE)) {
             view.getTitle().setVisibility(View.VISIBLE);
             view.getTitle().setText(mTitleStringId);
@@ -512,11 +502,6 @@ public class SyncPromoController {
         view.getDescription().setText(mDescriptionStringId);
 
         view.getPrimaryButton().setOnClickListener(v -> signinWithDefaultAccount(context));
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_SINGLE_BUTTON)) {
-            view.getPrimaryButton().setText(R.string.sync_promo_continue);
-            view.getSecondaryButton().setVisibility(View.GONE);
-            return;
-        }
         if (IdentityServicesProvider.get()
                         .getIdentityManager(Profile.getLastUsedRegularProfile())
                         .hasPrimaryAccount(ConsentLevel.SIGNIN)) {

@@ -69,13 +69,15 @@ class TaskSchedulerTests : public ::testing::Test {
   void SetUp() override {
     task_scheduler_ = TaskScheduler::CreateInstance(GetTestScope());
     EXPECT_TRUE(IsServiceRunning(SERVICE_SCHEDULE));
-    ASSERT_FALSE(test::IsProcessRunning(kTestProcessExecutableName));
+    ASSERT_FALSE(test::IsProcessRunning(kTestProcessExecutableName))
+        << test::PrintProcesses(kTestProcessExecutableName);
   }
 
   void TearDown() override {
     EXPECT_TRUE(task_scheduler_->DeleteTask(kTaskName1));
     EXPECT_TRUE(task_scheduler_->DeleteTask(kTaskName2));
-    EXPECT_FALSE(test::IsProcessRunning(kTestProcessExecutableName));
+    EXPECT_FALSE(test::IsProcessRunning(kTestProcessExecutableName))
+        << test::PrintProcesses(kTestProcessExecutableName);
   }
 
   // Converts a base::Time that is in UTC and returns the corresponding local
@@ -99,7 +101,8 @@ class TaskSchedulerTests : public ::testing::Test {
   }
 
   void RunTaskTest(TaskScheduler::TriggerType trigger_type) {
-    base::CommandLine command_line = GetTestProcessCommandLine(GetTestScope());
+    base::CommandLine command_line =
+        GetTestProcessCommandLine(GetTestScope(), test::GetTestName());
 
     // Create a unique name for a shared event to be waited for in this process
     // and signaled in the test process to confirm it was scheduled and ran.
@@ -149,7 +152,8 @@ TEST_F(TaskSchedulerTests, DeleteAndIsRegistered) {
   EXPECT_FALSE(task_scheduler_->IsTaskRegistered(kTaskName1));
 
   // Construct the full-path of the test executable.
-  base::CommandLine command_line = GetTestProcessCommandLine(GetTestScope());
+  base::CommandLine command_line =
+      GetTestProcessCommandLine(GetTestScope(), test::GetTestName());
 
   // Validate that the task is properly seen as registered when it is.
   EXPECT_TRUE(
@@ -177,7 +181,8 @@ TEST_F(TaskSchedulerTests, StartTask) {
 }
 
 TEST_F(TaskSchedulerTests, Hourly) {
-  base::CommandLine command_line = GetTestProcessCommandLine(GetTestScope());
+  base::CommandLine command_line =
+      GetTestProcessCommandLine(GetTestScope(), test::GetTestName());
 
   base::Time now(base::Time::NowFromSystemTime());
   EXPECT_TRUE(
@@ -199,7 +204,8 @@ TEST_F(TaskSchedulerTests, Hourly) {
 }
 
 TEST_F(TaskSchedulerTests, EveryFiveHours) {
-  base::CommandLine command_line = GetTestProcessCommandLine(GetTestScope());
+  base::CommandLine command_line =
+      GetTestProcessCommandLine(GetTestScope(), test::GetTestName());
 
   base::Time now(base::Time::NowFromSystemTime());
   EXPECT_TRUE(task_scheduler_->RegisterTask(
@@ -221,7 +227,8 @@ TEST_F(TaskSchedulerTests, EveryFiveHours) {
 }
 
 TEST_F(TaskSchedulerTests, SetTaskEnabled) {
-  base::CommandLine command_line = GetTestProcessCommandLine(GetTestScope());
+  base::CommandLine command_line =
+      GetTestProcessCommandLine(GetTestScope(), test::GetTestName());
 
   EXPECT_TRUE(
       task_scheduler_->RegisterTask(kTaskName1, kTaskDescription1, command_line,
@@ -238,7 +245,8 @@ TEST_F(TaskSchedulerTests, SetTaskEnabled) {
 }
 
 TEST_F(TaskSchedulerTests, IsTaskRunning) {
-  base::CommandLine command_line = GetTestProcessCommandLine(GetTestScope());
+  base::CommandLine command_line =
+      GetTestProcessCommandLine(GetTestScope(), test::GetTestName());
 
   // Create a unique name for a shared event to be waited for in the task and
   // signaled in this test.
@@ -259,15 +267,18 @@ TEST_F(TaskSchedulerTests, IsTaskRunning) {
 
   EXPECT_TRUE(test::WaitFor(base::BindLambdaForTesting(
       [&]() { return task_scheduler_->IsTaskRunning(kTaskName1); })));
+  EXPECT_EQ(test::FindProcesses(kTestProcessExecutableName).size(), 1U);
 
   event.Signal();
 
   EXPECT_TRUE(test::WaitFor(base::BindLambdaForTesting(
       [&]() { return !task_scheduler_->IsTaskRunning(kTaskName1); })));
+  EXPECT_TRUE(test::FindProcesses(kTestProcessExecutableName).empty());
 }
 
 TEST_F(TaskSchedulerTests, GetTaskNameList) {
-  base::CommandLine command_line = GetTestProcessCommandLine(GetTestScope());
+  base::CommandLine command_line =
+      GetTestProcessCommandLine(GetTestScope(), test::GetTestName());
 
   EXPECT_TRUE(
       task_scheduler_->RegisterTask(kTaskName1, kTaskDescription1, command_line,
@@ -285,7 +296,8 @@ TEST_F(TaskSchedulerTests, GetTaskNameList) {
 }
 
 TEST_F(TaskSchedulerTests, FindFirstTaskName) {
-  base::CommandLine command_line = GetTestProcessCommandLine(GetTestScope());
+  base::CommandLine command_line =
+      GetTestProcessCommandLine(GetTestScope(), test::GetTestName());
 
   EXPECT_TRUE(
       task_scheduler_->RegisterTask(kTaskName1, kTaskDescription1, command_line,
@@ -303,7 +315,8 @@ TEST_F(TaskSchedulerTests, FindFirstTaskName) {
 }
 
 TEST_F(TaskSchedulerTests, GetTasksIncludesHidden) {
-  base::CommandLine command_line = GetTestProcessCommandLine(GetTestScope());
+  base::CommandLine command_line =
+      GetTestProcessCommandLine(GetTestScope(), test::GetTestName());
 
   EXPECT_TRUE(
       task_scheduler_->RegisterTask(kTaskName1, kTaskDescription1, command_line,
@@ -352,7 +365,8 @@ TEST_F(TaskSchedulerTests, GetTaskInfoExecActions) {
 }
 
 TEST_F(TaskSchedulerTests, GetTaskInfoNameAndDescription) {
-  base::CommandLine command_line1 = GetTestProcessCommandLine(GetTestScope());
+  base::CommandLine command_line1 =
+      GetTestProcessCommandLine(GetTestScope(), test::GetTestName());
 
   EXPECT_TRUE(task_scheduler_->RegisterTask(
       kTaskName1, kTaskDescription1, command_line1,
@@ -379,7 +393,8 @@ TEST_F(TaskSchedulerTests, GetTaskInfoNameAndDescription) {
 TEST_F(TaskSchedulerTests, GetTaskInfoLogonType) {
   const bool is_system = IsSystemInstall(GetTestScope());
 
-  base::CommandLine command_line1 = GetTestProcessCommandLine(GetTestScope());
+  base::CommandLine command_line1 =
+      GetTestProcessCommandLine(GetTestScope(), test::GetTestName());
 
   EXPECT_TRUE(task_scheduler_->RegisterTask(
       kTaskName1, kTaskDescription1, command_line1,
@@ -398,7 +413,8 @@ TEST_F(TaskSchedulerTests, GetTaskInfoLogonType) {
 TEST_F(TaskSchedulerTests, GetTaskInfoUserId) {
   const bool is_system = IsSystemInstall(GetTestScope());
 
-  base::CommandLine command_line1 = GetTestProcessCommandLine(GetTestScope());
+  base::CommandLine command_line1 =
+      GetTestProcessCommandLine(GetTestScope(), test::GetTestName());
 
   EXPECT_TRUE(task_scheduler_->RegisterTask(
       kTaskName1, kTaskDescription1, command_line1,

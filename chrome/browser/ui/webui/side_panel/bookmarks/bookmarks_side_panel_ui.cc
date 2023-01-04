@@ -21,8 +21,8 @@
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/side_panel_resources.h"
-#include "chrome/grit/side_panel_resources_map.h"
+#include "chrome/grit/side_panel_bookmarks_resources.h"
+#include "chrome/grit/side_panel_bookmarks_resources_map.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/commerce/core/shopping_service.h"
@@ -49,9 +49,9 @@ BookmarksSidePanelUI::BookmarksSidePanelUI(content::WebUI* web_ui)
       {"bookmarkCreated", IDS_BOOKMARK_SCREEN_READER_CREATED},
       {"bookmarkReordered", IDS_BOOKMARK_SCREEN_READER_REORDERED},
       {"bookmarkMoved", IDS_BOOKMARK_SCREEN_READER_MOVED},
-      {"sidePanelTitle", IDS_SIDE_PANEL_TITLE},
       {"tooltipClose", IDS_CLOSE},
       {"tooltipDelete", IDS_DELETE},
+      {"tooltipMore", IDS_BOOKMARKS_EDIT_MORE},
       {"shoppingListFolderTitle", IDS_SIDE_PANEL_TRACKED_PRODUCTS},
       {"shoppingListTrackPriceButtonDescription",
        IDS_PRICE_TRACKING_TRACK_PRODUCT_ACCESSIBILITY},
@@ -81,8 +81,14 @@ BookmarksSidePanelUI::BookmarksSidePanelUI(content::WebUI* web_ui)
       {"clearSearch", IDS_BOOKMARK_MANAGER_CLEAR_SEARCH},
       {"selectedBookmarkCount", IDS_BOOKMARK_MANAGER_ITEMS_SELECTED},
       {"menuOpenNewTab", IDS_BOOKMARK_MANAGER_MENU_OPEN_IN_NEW_TAB},
+      {"menuOpenNewTabWithCount",
+       IDS_BOOKMARK_MANAGER_MENU_OPEN_ALL_WITH_COUNT},
       {"menuOpenNewWindow", IDS_BOOKMARK_MANAGER_MENU_OPEN_IN_NEW_WINDOW},
+      {"menuOpenNewWindowWithCount",
+       IDS_BOOKMARK_MANAGER_MENU_OPEN_ALL_NEW_WINDOW_WITH_COUNT},
       {"menuOpenIncognito", IDS_BOOKMARK_MANAGER_MENU_OPEN_INCOGNITO},
+      {"menuOpenIncognitoWithCount",
+       IDS_BOOKMARK_MANAGER_MENU_OPEN_ALL_INCOGNITO_WITH_COUNT},
       {"newFolderTitle", IDS_BOOKMARK_EDITOR_NEW_FOLDER_NAME},
   };
   for (const auto& str : kLocalizedStrings)
@@ -95,14 +101,15 @@ BookmarksSidePanelUI::BookmarksSidePanelUI(content::WebUI* web_ui)
       "bookmarksDragAndDropEnabled",
       prefs->GetBoolean(bookmarks::prefs::kEditBookmarksEnabled));
 
-  source->AddBoolean("unifiedSidePanel",
-                     base::FeatureList::IsEnabled(features::kUnifiedSidePanel));
-
   source->AddBoolean("guestMode", profile->IsGuestSession());
   source->AddBoolean("incognitoMode", profile->IsIncognitoProfile());
 
   bookmarks::BookmarkModel* bookmark_model =
       BookmarkModelFactory::GetForBrowserContext(profile);
+  source->AddString(
+      "bookmarksBarId",
+      base::NumberToString(
+          bookmark_model ? bookmark_model->bookmark_bar_node()->id() : -1));
   source->AddString(
       "otherBookmarksId",
       base::NumberToString(bookmark_model ? bookmark_model->other_node()->id()
@@ -115,9 +122,10 @@ BookmarksSidePanelUI::BookmarksSidePanelUI(content::WebUI* web_ui)
       base::FeatureList::IsEnabled(features::kPowerBookmarksSidePanel)
           ? IDR_SIDE_PANEL_BOOKMARKS_POWER_BOOKMARKS_HTML
           : IDR_SIDE_PANEL_BOOKMARKS_BOOKMARKS_HTML;
-  webui::SetupWebUIDataSource(
-      source, base::make_span(kSidePanelResources, kSidePanelResourcesSize),
-      resource);
+  webui::SetupWebUIDataSource(source,
+                              base::make_span(kSidePanelBookmarksResources,
+                                              kSidePanelBookmarksResourcesSize),
+                              resource);
 
   // Add a handler to provide pluralized strings.
   auto plural_string_handler = std::make_unique<PluralStringHandler>();

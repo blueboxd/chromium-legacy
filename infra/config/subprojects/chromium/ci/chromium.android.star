@@ -70,7 +70,8 @@ ci.builder(
     ),
     # Higher build timeout since dbg ASAN builds can take a while on a clobber
     # build.
-    execution_timeout = 5 * time.hour,
+    # TODO(crbug.com/1395760): Check why the compile takes longer time.
+    execution_timeout = 8 * time.hour,
 )
 
 ci.thin_tester(
@@ -1376,4 +1377,7 @@ ci.builder(
         short_name = "12",
     ),
     execution_timeout = 4 * time.hour,
+
+    # TODO(crbug.com/1366956): remove this after confirm py3 works on this builder.
+    omit_python2 = True,
 )

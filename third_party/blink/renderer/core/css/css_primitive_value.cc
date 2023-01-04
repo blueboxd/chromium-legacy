@@ -545,6 +545,12 @@ bool CSSPrimitiveValue::UnitTypeToLengthUnitType(UnitType unit_type,
     case CSSPrimitiveValue::UnitType::kRexs:
       length_type = kUnitTypeRootFontXSize;
       return true;
+    case CSSPrimitiveValue::UnitType::kRchs:
+      length_type = kUnitTypeRootFontZeroCharacterWidth;
+      return true;
+    case CSSPrimitiveValue::UnitType::kRics:
+      length_type = kUnitTypeRootFontIdeographicFullWidth;
+      return true;
     case CSSPrimitiveValue::UnitType::kChs:
       length_type = kUnitTypeZeroCharacterWidth;
       return true;
@@ -553,6 +559,9 @@ bool CSSPrimitiveValue::UnitTypeToLengthUnitType(UnitType unit_type,
       return true;
     case CSSPrimitiveValue::UnitType::kLhs:
       length_type = kUnitTypeLineHeight;
+      return true;
+    case CSSPrimitiveValue::UnitType::kRlhs:
+      length_type = kUnitTypeRootLineHeight;
       return true;
     case CSSPrimitiveValue::UnitType::kPercentage:
       length_type = kUnitTypePercentage;
@@ -665,12 +674,18 @@ CSSPrimitiveValue::UnitType CSSPrimitiveValue::LengthUnitTypeToUnitType(
       return CSSPrimitiveValue::UnitType::kRems;
     case kUnitTypeRootFontXSize:
       return CSSPrimitiveValue::UnitType::kRexs;
+    case kUnitTypeRootFontZeroCharacterWidth:
+      return CSSPrimitiveValue::UnitType::kRchs;
+    case kUnitTypeRootFontIdeographicFullWidth:
+      return CSSPrimitiveValue::UnitType::kRics;
     case kUnitTypeZeroCharacterWidth:
       return CSSPrimitiveValue::UnitType::kChs;
     case kUnitTypeIdeographicFullWidth:
       return CSSPrimitiveValue::UnitType::kIcs;
     case kUnitTypeLineHeight:
       return CSSPrimitiveValue::UnitType::kLhs;
+    case kUnitTypeRootLineHeight:
+      return CSSPrimitiveValue::UnitType::kRlhs;
     case kUnitTypePercentage:
       return CSSPrimitiveValue::UnitType::kPercentage;
     case kUnitTypeViewportWidth:
@@ -759,10 +774,16 @@ const char* CSSPrimitiveValue::UnitTypeToString(UnitType type) {
       return "rem";
     case UnitType::kChs:
       return "ch";
+    case UnitType::kRchs:
+      return "rch";
     case UnitType::kIcs:
       return "ic";
+    case UnitType::kRics:
+      return "ric";
     case UnitType::kLhs:
       return "lh";
+    case UnitType::kRlhs:
+      return "rlh";
     case UnitType::kPixels:
       return "px";
     case UnitType::kCentimeters:

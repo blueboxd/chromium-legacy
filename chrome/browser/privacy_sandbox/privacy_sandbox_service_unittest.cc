@@ -78,27 +78,28 @@ const base::Version kFirstPartySetsVersion("1.2.3");
 
 class TestInterestGroupManager : public content::InterestGroupManager {
  public:
-  void SetInterestGroupJoiningOrigins(const std::vector<url::Origin>& origins) {
-    origins_ = origins;
+  void SetInterestGroupDataKeys(
+      const std::vector<InterestGroupDataKey>& data_keys) {
+    data_keys_ = data_keys;
   }
 
   // content::InterestGroupManager:
   void GetAllInterestGroupJoiningOrigins(
       base::OnceCallback<void(std::vector<url::Origin>)> callback) override {
-    std::move(callback).Run(origins_);
+    NOTREACHED();
   }
   void GetAllInterestGroupDataKeys(
       base::OnceCallback<void(std::vector<InterestGroupDataKey>)> callback)
       override {
-    std::move(callback).Run({});
+    std::move(callback).Run(data_keys_);
   }
   void RemoveInterestGroupsByDataKey(InterestGroupDataKey data_key,
                                      base::OnceClosure callback) override {
-    std::move(callback).Run();
+    NOTREACHED();
   }
 
  private:
-  std::vector<url::Origin> origins_;
+  std::vector<InterestGroupDataKey> data_keys_;
 };
 
 class MockPrivacySandboxSettings
@@ -852,8 +853,14 @@ TEST_F(PrivacySandboxServiceTest, GetFledgeJoiningEtldPlusOne) {
                                       test_case_4};
 
   for (const auto& origins_to_expected : test_cases) {
-    test_interest_group_manager()->SetInterestGroupJoiningOrigins(
-        {origins_to_expected.first});
+    std::vector<content::InterestGroupManager::InterestGroupDataKey> data_keys;
+    base::ranges::transform(
+        origins_to_expected.first, std::back_inserter(data_keys),
+        [](const auto& origin) {
+          return content::InterestGroupManager::InterestGroupDataKey{
+              url::Origin::Create(GURL("https://embedded.com")), origin};
+        });
+    test_interest_group_manager()->SetInterestGroupDataKeys(data_keys);
 
     bool callback_called = false;
     auto callback = base::BindLambdaForTesting(
@@ -1471,27 +1478,40 @@ TEST_F(PrivacySandboxServiceTest, TestNoFakeTopics) {
 }
 
 TEST_F(PrivacySandboxServiceTest, TestFakeTopics) {
-  feature_list()->Reset();
-  feature_list()->InitAndEnableFeatureWithParameters(
-      privacy_sandbox::kPrivacySandboxSettings3,
-      {{privacy_sandbox::kPrivacySandboxSettings3ShowSampleDataForTesting.name,
-        "true"}});
-  CanonicalTopic topic1(Topic(1), CanonicalTopic::AVAILABLE_TAXONOMY);
-  CanonicalTopic topic2(Topic(2), CanonicalTopic::AVAILABLE_TAXONOMY);
-  CanonicalTopic topic3(Topic(3), CanonicalTopic::AVAILABLE_TAXONOMY);
-  CanonicalTopic topic4(Topic(4), CanonicalTopic::AVAILABLE_TAXONOMY);
+  std::vector<base::test::FeatureRefAndParams> test_features = {
+      {privacy_sandbox::kPrivacySandboxSettings3,
+       {{privacy_sandbox::kPrivacySandboxSettings3ShowSampleDataForTesting.name,
+         "true"}}},
+      {privacy_sandbox::kPrivacySandboxSettings4,
+       {{privacy_sandbox::kPrivacySandboxSettings4ShowSampleDataForTesting.name,
+         "true"}}}};
 
-  auto* service = privacy_sandbox_service();
-  EXPECT_THAT(service->GetCurrentTopTopics(), ElementsAre(topic1, topic2));
-  EXPECT_THAT(service->GetBlockedTopics(), ElementsAre(topic3, topic4));
+  for (const auto& feature : test_features) {
+    feature_list()->Reset();
+    feature_list()->InitWithFeaturesAndParameters({feature}, {});
+    CanonicalTopic topic1(Topic(1), CanonicalTopic::AVAILABLE_TAXONOMY);
+    CanonicalTopic topic2(Topic(2), CanonicalTopic::AVAILABLE_TAXONOMY);
+    CanonicalTopic topic3(Topic(3), CanonicalTopic::AVAILABLE_TAXONOMY);
+    CanonicalTopic topic4(Topic(4), CanonicalTopic::AVAILABLE_TAXONOMY);
 
-  service->SetTopicAllowed(topic1, false);
-  EXPECT_THAT(service->GetCurrentTopTopics(), ElementsAre(topic2));
-  EXPECT_THAT(service->GetBlockedTopics(), ElementsAre(topic1, topic3, topic4));
+    auto* service = privacy_sandbox_service();
+    EXPECT_THAT(service->GetCurrentTopTopics(), ElementsAre(topic1, topic2));
+    EXPECT_THAT(service->GetBlockedTopics(), ElementsAre(topic3, topic4));
 
-  service->SetTopicAllowed(topic4, true);
-  EXPECT_THAT(service->GetCurrentTopTopics(), ElementsAre(topic2, topic4));
-  EXPECT_THAT(service->GetBlockedTopics(), ElementsAre(topic1, topic3));
+    service->SetTopicAllowed(topic1, false);
+    EXPECT_THAT(service->GetCurrentTopTopics(), ElementsAre(topic2));
+    EXPECT_THAT(service->GetBlockedTopics(),
+                ElementsAre(topic1, topic3, topic4));
+
+    service->SetTopicAllowed(topic4, true);
+    EXPECT_THAT(service->GetCurrentTopTopics(), ElementsAre(topic2, topic4));
+    EXPECT_THAT(service->GetBlockedTopics(), ElementsAre(topic1, topic3));
+
+    service->SetTopicAllowed(topic1, true);
+    service->SetTopicAllowed(topic4, false);
+    EXPECT_THAT(service->GetCurrentTopTopics(), ElementsAre(topic1, topic2));
+    EXPECT_THAT(service->GetBlockedTopics(), ElementsAre(topic3, topic4));
+  }
 }
 
 TEST_F(PrivacySandboxServiceTest, PrivacySandboxPromptNoticeWaiting) {

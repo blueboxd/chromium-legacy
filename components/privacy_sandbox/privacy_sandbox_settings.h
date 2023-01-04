@@ -176,10 +176,21 @@ class PrivacySandboxSettings : public KeyedService {
   // true must be followed up with the appropriate IsXAllowed() call.
   bool IsPrivacySandboxEnabled() const;
 
+  // Allows all Privacy Sandbox prefs for testing. This should be used if tests
+  // don't depend on specific access control and just would like to have Privacy
+  // Sandbox allowed. Doesn't affect other non-default settings which might
+  // disallow APIs e.g. site data exceptions.
+  void SetAllPrivacySandboxAllowedForTesting();
+
+  // Blocks Topics pref for testing.
+  void SetTopicsBlockedForTesting();
+
   // Disables the Privacy Sandbox completely if |enabled| is false, if |enabled|
   // is true, more granular checks will still be performed, and the delegate
   // consulted, to determine if specific APIs are available in specific
   // contexts.
+  // DEPRECATED: Use `SetAllPrivacySandboxAllowedForTesting()` to allow all
+  // Privacy Sandbox prefs or per-API block-for-testing functions.
   void SetPrivacySandboxEnabled(bool enabled);
 
   // Returns whether Trust Tokens are "generally" available. A return value of

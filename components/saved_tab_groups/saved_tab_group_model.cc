@@ -234,6 +234,17 @@ void SavedTabGroupModel::AddTabToGroup(const base::GUID& group_id,
     observer.SavedTabGroupUpdatedLocally(group_id, tab_id);
 }
 
+void SavedTabGroupModel::UpdateTabInGroup(const base::GUID& group_id,
+                                          SavedTabGroupTab tab) {
+  absl::optional<int> group_index = GetIndexOf(group_id);
+  CHECK(group_index.has_value());
+  saved_tab_groups_[group_index.value()].UpdateTab(tab);
+
+  for (auto& observer : observers_) {
+    observer.SavedTabGroupUpdatedLocally(group_id);
+  }
+}
+
 void SavedTabGroupModel::RemoveTabFromGroup(const base::GUID& group_id,
                                             const base::GUID& tab_id) {
   if (!Contains(group_id))
@@ -252,10 +263,12 @@ void SavedTabGroupModel::RemoveTabFromGroup(const base::GUID& group_id,
     return;
   }
 
+  // Copy `tab_id` to prevent uaf when ungrouping a saved tab: crbug/1401965.
+  base::GUID copy_tab_id = tab_id;
   saved_tab_groups_[index.value()].RemoveTab(tab_id);
 
   for (auto& observer : observers_)
-    observer.SavedTabGroupUpdatedLocally(group_id, tab_id);
+    observer.SavedTabGroupUpdatedLocally(group_id, copy_tab_id);
 }
 
 void SavedTabGroupModel::ReplaceTabInGroupAt(const base::GUID& group_id,
@@ -266,10 +279,12 @@ void SavedTabGroupModel::ReplaceTabInGroupAt(const base::GUID& group_id,
 
   const base::GUID guid = new_tab.saved_tab_guid();
   absl::optional<int> index = GetIndexOf(group_id);
+  // Copy `tab_id` to prevent uaf when ungrouping a saved tab: crbug/1401965.
+  base::GUID copy_tab_id = tab_id;
   saved_tab_groups_[index.value()].ReplaceTabAt(tab_id, new_tab);
 
   for (auto& observer : observers_) {
-    observer.SavedTabGroupUpdatedLocally(group_id, tab_id);
+    observer.SavedTabGroupUpdatedLocally(group_id, copy_tab_id);
     observer.SavedTabGroupUpdatedLocally(group_id, guid);
   }
 }
@@ -281,10 +296,12 @@ void SavedTabGroupModel::MoveTabInGroupTo(const base::GUID& group_id,
     return;
 
   absl::optional<int> index = GetIndexOf(group_id);
+  // Copy `tab_id` to prevent uaf when ungrouping a saved tab: crbug/1401965.
+  base::GUID copy_tab_id = tab_id;
   saved_tab_groups_[index.value()].MoveTab(tab_id, new_index);
 
   for (auto& observer : observers_)
-    observer.SavedTabGroupUpdatedLocally(group_id, tab_id);
+    observer.SavedTabGroupUpdatedLocally(group_id, copy_tab_id);
 }
 
 std::unique_ptr<sync_pb::SavedTabGroupSpecifics> SavedTabGroupModel::MergeGroup(

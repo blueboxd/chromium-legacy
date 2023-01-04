@@ -25,10 +25,10 @@ import {DomRepeatEvent, PolymerElement} from '//resources/polymer/v3_0/polymer/p
 
 import {ActionSource} from './bookmarks.mojom-webui.js';
 import {BookmarksApiProxy, BookmarksApiProxyImpl} from './bookmarks_api_proxy.js';
-import {BookmarkProductInfo} from './commerce/shopping_list.mojom-webui.js';
 import {ShoppingListApiProxy, ShoppingListApiProxyImpl} from './commerce/shopping_list_api_proxy.js';
 import {PowerBookmarksContextMenuElement} from './power_bookmarks_context_menu.js';
 import {getTemplate} from './power_bookmarks_list.html.js';
+import {BookmarkProductInfo} from './shopping_list.mojom-webui.js';
 
 function getBookmarkName(bookmark: chrome.bookmarks.BookmarkTreeNode): string {
   return bookmark.title || bookmark.url || '';
@@ -488,8 +488,10 @@ export class PowerBookmarksListElement extends PolymerElement {
     } else {
       let topLevelBookmarks: chrome.bookmarks.BookmarkTreeNode[] = [];
       this.folders_.forEach(
-          folder => topLevelBookmarks =
-              topLevelBookmarks.concat(folder.children!));
+          folder => topLevelBookmarks = topLevelBookmarks.concat(
+              (folder.id === loadTimeData.getString('bookmarksBarId')) ?
+                  [folder] :
+                  folder.children!));
       shownBookmarks = topLevelBookmarks;
     }
     shownBookmarks = shownBookmarks.filter(
@@ -516,6 +518,10 @@ export class PowerBookmarksListElement extends PolymerElement {
     }
     return unfilteredShownBookmarks.findIndex(
                b => b.url === this.currentUrl_) === -1;
+  }
+
+  private canEdit_(bookmark: chrome.bookmarks.BookmarkTreeNode): boolean {
+    return bookmark.id !== loadTimeData.getString('bookmarksBarId');
   }
 
   private nodeMatchesContentFilters_(
@@ -678,12 +684,10 @@ export class PowerBookmarksListElement extends PolymerElement {
     event.stopPropagation();
     if (event.detail.event.button === 0) {
       this.$.contextMenu.get().showAt(
-          event.detail.event, event.detail.bookmark,
-          this.activeFolderPath_.length);
+          event.detail.event, [event.detail.bookmark]);
     } else {
       this.$.contextMenu.get().showAtPosition(
-          event.detail.event, event.detail.bookmark,
-          this.activeFolderPath_.length);
+          event.detail.event, [event.detail.bookmark]);
     }
   }
 
@@ -727,6 +731,12 @@ export class PowerBookmarksListElement extends PolymerElement {
           this.selectedBookmarks_ = [];
           this.editing_ = false;
         });
+  }
+
+  private onEditMenuClicked_(event: MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.$.contextMenu.get().showAt(event, this.selectedBookmarks_.slice());
   }
 
   private onSortTypeClicked_(event: DomRepeatEvent<string>) {

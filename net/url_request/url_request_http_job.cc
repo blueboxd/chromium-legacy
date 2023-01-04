@@ -265,6 +265,7 @@ void URLRequestHttpJob::Start() {
       request_->isolation_info().request_type() ==
       net::IsolationInfo::RequestType::kSubFrame;
   request_info_.load_flags = request_->load_flags();
+  request_info_.priority_incremental = request_->priority_incremental();
   request_info_.secure_dns_policy = request_->secure_dns_policy();
   request_info_.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(request_->traffic_annotation());
@@ -414,7 +415,8 @@ PrivacyMode URLRequestHttpJob::DeterminePrivacyMode() const {
   if (request_->network_delegate()) {
     privacy_setting = request()->network_delegate()->ForcePrivacyMode(
         request_->url(), request_->site_for_cookies(),
-        request_->isolation_info().top_frame_origin());
+        request_->isolation_info().top_frame_origin(),
+        GetCookieSettingOverrides());
   }
   switch (privacy_setting) {
     case NetworkDelegate::PrivacySetting::kStateAllowed:
@@ -804,8 +806,8 @@ void URLRequestHttpJob::AnnotateAndMoveUserBlockedCookies(
   if (request()->network_delegate()) {
     can_get_cookies =
         request()->network_delegate()->AnnotateAndMoveUserBlockedCookies(
-            *request(), first_party_set_metadata_, maybe_included_cookies,
-            excluded_cookies);
+            *request(), first_party_set_metadata_, GetCookieSettingOverrides(),
+            maybe_included_cookies, excluded_cookies);
   }
 
   if (!can_get_cookies) {
@@ -1712,6 +1714,10 @@ bool URLRequestHttpJob::IsPartitionedCookiesEnabled() const {
   // Only valid to call this after we've computed the key.
   DCHECK(cookie_partition_key_.has_value());
   return cookie_partition_key_.value().has_value();
+}
+
+CookieSettingOverrides URLRequestHttpJob::GetCookieSettingOverrides() const {
+  return CookieSettingOverrides();
 }
 
 }  // namespace net

@@ -109,23 +109,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieSettings
   // It may be set to kPartitionedStateAllowedOnly if the request allows
   // partitioned state to be sent over the connection, but unpartitioned
   // state should be blocked.
-  // DEPRECATED: Use IsPrivacyModeEnabled(GURL, SiteForCookies, Origin,
-  // bool).
-  // TODO(crbug.com/1386190): Update callers and remove.
-  net::NetworkDelegate::PrivacySetting IsPrivacyModeEnabled(
-      const GURL& url,
-      const net::SiteForCookies& site_for_cookies,
-      const absl::optional<url::Origin>& top_frame_origin) const {
-    return IsPrivacyModeEnabled(url, site_for_cookies, top_frame_origin,
-                                net::CookieSettingOverrides());
-  }
-
-  // Returns kStateDisallowed iff the given |url| has to be requested over
-  // connection that is not tracked by the server. Usually is kStateAllowed,
-  // unless user privacy settings block cookies from being get or set.
-  // It may be set to kPartitionedStateAllowedOnly if the request allows
-  // partitioned state to be sent over the connection, but unpartitioned
-  // state should be blocked.
   net::NetworkDelegate::PrivacySetting IsPrivacyModeEnabled(
       const GURL& url,
       const net::SiteForCookies& site_for_cookies,
@@ -155,30 +138,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieSettings
                           const net::SiteForCookies& site_for_cookies,
                           const absl::optional<url::Origin>& top_frame_origin,
                           net::CookieSettingOverrides overrides) const;
-
-  // Annotates `maybe_included_cookies` and `excluded_cookies` with
-  // ExclusionReasons if needed, per user's cookie blocking settings, and
-  // ensures that all excluded cookies from `maybe_included_cookies` are moved
-  // to `excluded_cookies`.  Returns false if the CookieSettings blocks access
-  // to all cookies; true otherwise. Does not change the relative ordering of
-  // the cookies in `maybe_included_cookies`, since this order is important when
-  // building the cookie line.
-  // DEPRECATED: Use AnnotateAndMoveUserBlockedCookies(GURL, SiteForCookies,
-  // Origin, FirstPartySetMetadata, bool, CookieAccessResultList,
-  // CookieAccessResultList).
-  // TODO(crbug.com/1386190): Update callers and remove.
-  bool AnnotateAndMoveUserBlockedCookies(
-      const GURL& url,
-      const net::SiteForCookies& site_for_cookies,
-      const url::Origin* top_frame_origin,
-      const net::FirstPartySetMetadata& first_party_set_metadata,
-      net::CookieAccessResultList& maybe_included_cookies,
-      net::CookieAccessResultList& excluded_cookies) const {
-    return AnnotateAndMoveUserBlockedCookies(
-        url, site_for_cookies, top_frame_origin, first_party_set_metadata,
-        net::CookieSettingOverrides(), maybe_included_cookies,
-        excluded_cookies);
-  }
 
   // Annotates `maybe_included_cookies` and `excluded_cookies` with
   // ExclusionReasons if needed, per user's cookie blocking settings, and

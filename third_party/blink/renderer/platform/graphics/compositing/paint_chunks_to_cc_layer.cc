@@ -161,7 +161,7 @@ class ConversionContext {
     if (&target_transform == current_transform_)
       return;
     gfx::Transform projection = TargetToCurrentProjection(target_transform);
-    if (projection.IsIdentityOr2DTranslation()) {
+    if (projection.IsIdentityOr2dTranslation()) {
       gfx::Vector2dF translation = projection.To2dTranslation();
       if (!translation.IsZero())
         push<cc::TranslateOp>(translation.x(), translation.y());
@@ -743,7 +743,7 @@ void ConversionContext<Result>::SwitchToTransform(
 
   result_.StartPaint();
   push<cc::SaveOp>();
-  if (projection.IsIdentityOr2DTranslation()) {
+  if (projection.IsIdentityOr2dTranslation()) {
     gfx::Vector2dF translation = projection.To2dTranslation();
     push<cc::TranslateOp>(translation.x(), translation.y());
   } else {
@@ -851,11 +851,11 @@ void PaintChunksToCcLayer::ConvertInto(
   }
 }
 
-PaintRecord PaintChunksToCcLayer::Convert(const PaintChunkSubset& chunks,
-                                          const PropertyTreeState& layer_state,
-                                          const gfx::Vector2dF& layer_offset) {
+PaintRecord PaintChunksToCcLayer::Convert(
+    const PaintChunkSubset& chunks,
+    const PropertyTreeState& layer_state) {
   PaintOpBufferExt buffer;
-  ConversionContext(layer_state, layer_offset, buffer).Convert(chunks);
+  ConversionContext(layer_state, gfx::Vector2dF(), buffer).Convert(chunks);
   return buffer.ReleaseAsRecord();
 }
 

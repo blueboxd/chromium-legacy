@@ -56,6 +56,9 @@ static bool IsRootFontUnitToken(CSSParserToken token) {
   switch (token.GetUnitType()) {
     case CSSPrimitiveValue::UnitType::kRems:
     case CSSPrimitiveValue::UnitType::kRexs:
+    case CSSPrimitiveValue::UnitType::kRchs:
+    case CSSPrimitiveValue::UnitType::kRics:
+    case CSSPrimitiveValue::UnitType::kRlhs:
       return true;
     default:
       return false;

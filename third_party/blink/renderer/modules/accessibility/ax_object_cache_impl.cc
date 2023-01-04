@@ -2242,13 +2242,12 @@ void AXObjectCacheImpl::UpdateCacheAfterNodeIsAttachedWithCleanLayout(
       << "Unclean document at lifecycle " << document->Lifecycle().ToString();
 #endif  // DCHECK_IS_ON()
 
-  // Process any relation attributes that can affect ax objects already created.
-
   // Force computation of aria-owns, so that original parents that already
   // computed their children get the aria-owned children removed.
   if (AXObject::HasARIAOwns(element))
     HandleAttributeChangedWithCleanLayout(html_names::kAriaOwnsAttr, element);
 
+  // Process any relation attributes that can affect ax objects already created.
   MaybeNewRelationTarget(*node, Get(node));
 
   // Even if the node or parent are ignored, an ancestor may need to include
@@ -2256,7 +2255,7 @@ void AXObjectCacheImpl::UpdateCacheAfterNodeIsAttachedWithCleanLayout(
   // must be called. It handles ignored logic, ensuring that the first ancestor
   // that should have this as a child will be updated.
   ChildrenChangedWithCleanLayout(
-      Get(LayoutTreeBuilderTraversal::Parent(*node)));
+      GetOrCreate(LayoutTreeBuilderTraversal::Parent(*node)));
 
   // If an image map area is added, we need to update children on the image.
   if (IsA<HTMLAreaElement>(node))
@@ -2436,23 +2435,6 @@ void AXObjectCacheImpl::ChildrenChanged(AccessibleNode* accessible_node) {
 }
 
 void AXObjectCacheImpl::ChildrenChangedWithCleanLayout(Node* node) {
-  if (!node)
-    return;
-
-  LayoutObject* layout_object = node->GetLayoutObject();
-  AXID layout_id = 0;
-  if (layout_object) {
-    auto it = layout_object_mapping_.find(layout_object);
-    if (it != layout_object_mapping_.end())
-      layout_id = it->value;
-  }
-  DCHECK(!HashTraits<AXID>::IsDeletedValue(layout_id));
-
-  auto it = node_object_mapping_.find(node);
-  AXID node_id = it != node_object_mapping_.end() ? it->value : 0;
-  DCHECK(!HashTraits<AXID>::IsDeletedValue(node_id));
-  DCHECK(!node->GetDocument().NeedsLayoutTreeUpdateForNode(*node));
-
   ChildrenChangedWithCleanLayout(node, Get(node));
 }
 

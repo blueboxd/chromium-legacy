@@ -299,7 +299,7 @@ void PersistExtensionWithPaths(
                                    .Set(keys::kName, "Test extension")
                                    .Set(keys::kVersion, "1.0")
                                    .Set(keys::kManifestVersion, 2)
-                                   .BuildDict();
+                                   .Build();
 
   // Persist manifest file.
   base::FilePath manifest_path = extension_dir.Append(kManifestFilename);
@@ -7624,7 +7624,7 @@ TEST_F(ExtensionServiceTest, CannotDisableSharedModules) {
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("Shared Module")
           .SetManifestPath("export.resources",
-                           ListBuilder().Append("foo.js").BuildList())
+                           ListBuilder().Append("foo.js").Build())
           .AddFlags(Extension::FROM_WEBSTORE)
           .Build();
 

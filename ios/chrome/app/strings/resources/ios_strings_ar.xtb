@@ -4,6 +4,7 @@
 <translation id="1005230401424685968">سنة</translation>
 <translation id="1013952917065545813">يمكنك الرجوع إلى هذه الصفحة لإعادة فتح علامات التبويب التي أغلقتها مؤخرًا.</translation>
 <translation id="1016495303386450659">تم تحديث العنصر</translation>
+<translation id="1035980983510608210">سيؤدي إغلاق جميع علامات التبويب إلى إغلاق علامات التبويب المثبّتة أيضًا.</translation>
 <translation id="1044891598689252897">ستعمل المواقع الإلكترونية بشكلٍ طبيعي.</translation>
 <translation id="1049743911850919806">التصفح المتخفي</translation>
 <translation id="105093091697134113">تستخدِم الحسابات التالية كلمات مرور مكشوفة من خلال عملية اختراق لبيانات جهة خارجية أو تمّ إدخالها على موقع إلكتروني مريب. يجب تغيير كلمات المرور هذه فورًا للحفاظ على أمان حساباتك.</translation>
@@ -210,6 +211,7 @@
 <translation id="2578571896248130439">إرسال صفحة الويب</translation>
 <translation id="2584132361465095047">إضافة حساب...</translation>
 <translation id="2600682495497606169">محو ملفات تعريف الارتباط على هذا الموقع الإلكتروني</translation>
+<translation id="2609008503159898744">هل تريد إغلاق جميع علامات التبويب؟</translation>
 <translation id="2625189173221582860">تم نسخ كلمة المرور</translation>
 <translation id="2626236249646841566">تحقّق من اتصالك بالإنترنت وحاوِل تسجيل الدخول مرة أخرى.</translation>
 <translation id="2637313651144986786">البحث في محتوى علامات التبويب...</translation>
@@ -301,6 +303,7 @@
 <translation id="3174662312949010067">يمكنك أيضًا استخدام كلمات المرور المحفوظة على أجهزتك الأخرى.</translation>
 <translation id="3175081911749765310">خدمات الويب</translation>
 <translation id="3178650076442119961">نشط اليوم</translation>
+<translation id="3181261441371833039">إغلاق علامات التبويب العادية فقط</translation>
 <translation id="3181825792072797598">تفعيل المزامنة</translation>
 <translation id="3181954750937456830">التصفُّح الآمن (يحميك ويحمي جهازك من المواقع الإلكترونية الضارة)</translation>
 <translation id="3184767182050912705">الفتح باستخدام <ph name="BIOMETRIC_AUTHENITCATION_TYPE" /></translation>
@@ -754,6 +757,7 @@
 <translation id="6476800141292307438">ترجمة صفحة إلى <ph name="LANGUAGE" />. وتتوفّر الخيارات بالقرب من أسفل الشاشة.</translation>
 <translation id="648164694371393720">خطأ في المصادقة</translation>
 <translation id="6482629121755362506">تم حذف <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> من العناصر</translation>
+<translation id="6495429111159337775">‏استخدام كلمات المرور من حسابك على Google وحفظها</translation>
 <translation id="6497772452874122664">إذا كنت تثِق بالنطاق <ph name="TIME" />، يمكنك استخدام كلمة المرور نفسها المحفوظة من موقع إلكتروني آخر.
 
 حاوِل استخدام كلمة مرور فريدة لكل موقع إلكتروني.</translation>
@@ -1043,7 +1047,7 @@
 <translation id="8737620822084008350">{count,plural, =1{يتوفّر ملف شخصي واحد ({count}) محفوظ أعلى لوحة المفاتيح.}zero{يتوفّر {count} ملف شخصي محفوظ أعلى لوحة المفاتيح.}two{يتوفّر ملفّان شخصيَان ({count}) محفوظان أعلى لوحة المفاتيح.}few{تتوفّر {count} ملفات شخصية محفوظة أعلى لوحة المفاتيح.}many{يتوفّر {count} ملفًا شخصيًا محفوظًا أعلى لوحة المفاتيح.}other{يتوفّر {count} ملف شخصي محفوظ أعلى لوحة المفاتيح.}}</translation>
 <translation id="8741995161408053644">‏قد يتضمّن حسابك على Google نماذج أخرى من سجلّ التصفّح في <ph name="BEGIN_LINK" /> history.google.com <ph name="END_LINK" />.</translation>
 <translation id="8750037785291841318">ستظهر لك علامات التبويب هنا</translation>
-<translation id="8756969031206844760">هل تريد تحديث كلمة المرور؟</translation>
+<translation id="8756969031206844760">هل تريد تعديل كلمة المرور؟</translation>
 <translation id="8763613688786959833">الانتقال إلى علامة التبويب الأخيرة</translation>
 <translation id="8764015330924122850">إلغاء متابعة <ph name="DOMAIN_NAME" /></translation>
 <translation id="8775144690796719618">‏عنوان URL غير صالح</translation>

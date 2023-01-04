@@ -17,6 +17,7 @@
 #include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ash/system_web_apps/types/system_web_app_type.h"
+#include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/os_integration/web_app_file_handler_manager.h"
 #include "chrome/browser/web_applications/proto/web_app.pb.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
@@ -755,9 +756,8 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
     }
   }
 
-  if (web_app.current_os_integration_states().has_value()) {
-    local_data->mutable_current_os_integration_states();
-  }
+  *local_data->mutable_current_os_integration_states() =
+      web_app.current_os_integration_states();
 
   if (web_app.app_size_in_bytes().has_value())
     local_data->set_app_size_in_bytes(web_app.app_size_in_bytes().value());

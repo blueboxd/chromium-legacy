@@ -21,12 +21,12 @@
 
 class ChromeOmniboxEditController;
 class GURL;
-class OmniboxEditController;
 class Profile;
 
 class ChromeOmniboxClient : public OmniboxClient {
  public:
-  ChromeOmniboxClient(OmniboxEditController* controller, Profile* profile);
+  ChromeOmniboxClient(ChromeOmniboxEditController* controller,
+                      Profile* profile);
 
   ChromeOmniboxClient(const ChromeOmniboxClient&) = delete;
   ChromeOmniboxClient& operator=(const ChromeOmniboxClient&) = delete;
@@ -45,7 +45,7 @@ class ChromeOmniboxClient : public OmniboxClient {
   bool IsDefaultSearchProviderEnabled() const override;
   const SessionID& GetSessionID() const override;
   bookmarks::BookmarkModel* GetBookmarkModel() override;
-  OmniboxControllerEmitter* GetOmniboxControllerEmitter() override;
+  AutocompleteControllerEmitter* GetAutocompleteControllerEmitter() override;
   TemplateURLService* GetTemplateURLService() override;
   const AutocompleteSchemeClassifier& GetSchemeClassifier() const override;
   AutocompleteClassifier* GetAutocompleteClassifier() override;

@@ -35,6 +35,17 @@ chromium-metrics-reviews@google.com.
   <variant name="PrintJobs" summary="Handler for print jobs"/>
 </variants>
 
+<variants name="Enterprise_CrdSessionType">
+  <variant name="RemoteAccess"
+      summary="A CRD session where the admin has exclusive control of the
+               ChromeOs device."/>
+  <variant name="RemoteSupport"
+      summary="A CRD session where the admin and the local user share control
+               of the ChromeOs device."/>
+  <variant name="Unknown"
+      summary="When the CRD session type couldn't be determined."/>
+</variants>
+
 <variants name="Enterprise_RemoteCommandType">
   <variant name=".BrowserClearBrowsingData" summary="Clear Browsing Data"/>
   <variant name=".BrowserRotateAttestationCredential"
@@ -58,6 +69,23 @@ chromium-metrics-reviews@google.com.
   <variant name=".FetchCrdAvailabilityInfo"
       summary="Fetch CRD availability info"/>
   <variant name=".UserArcCommand" summary="ARC command"/>
+</variants>
+
+<variants name="Enterprise_UserSessionType">
+  <variant name="AffiliatedUserSession"
+      summary="The local user is affiliated to the organisation."/>
+  <variant name="AutoLaunchedKioskSession"
+      summary="The local session is auto launched kiosk."/>
+  <variant name="GuestSession"
+      summary="The local guest session is not managed by an organisation."/>
+  <variant name="ManagedGuestSession"
+      summary="The local guest session is managed by an organisation."/>
+  <variant name="ManuallyLaunchedKioskSession"
+      summary="The local session is manually launched kiosk"/>
+  <variant name="NoUserSession" summary="There is no user."/>
+  <variant name="UnaffiliatedUserSession"
+      summary="The local user is not affiliated to the organisation."/>
+  <variant name="UnknownUserSession" summary="user session is unknown."/>
 </variants>
 
 <variants name="EnterpriseAutoEnrollmentType">
@@ -416,7 +444,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.CloudReportingBasicRequestSize" units="KB"
-    expires_after="2023-04-30">
+    expires_after="2023-07-02">
   <owner>zmin@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
@@ -447,7 +475,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.CloudReportingResponse"
-    enum="EnterpriseCloudReportingResponse" expires_after="2023-04-30">
+    enum="EnterpriseCloudReportingResponse" expires_after="2023-07-02">
   <owner>zmin@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
@@ -516,7 +544,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.DevicePolicyRefresh3"
-    enum="EnterprisePolicyRefresh" expires_after="2023-04-30">
+    enum="EnterprisePolicyRefresh" expires_after="2023-07-02">
   <owner>asumaneev@google.com</owner>
   <owner>managed-platforms@google.com</owner>
   <summary>
@@ -564,20 +592,34 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.DeviceRemoteCommand.Crd.Result"
-    enum="EnterpriseCrdSessionResultCode" expires_after="2023-01-01">
+    enum="EnterpriseCrdSessionResultCode" expires_after="2023-06-01">
   <owner>macinashutosh@google.com</owner>
   <owner>chromeos-commercial-crd@google.com</owner>
   <summary>Reports success/failure when a session is attempted.</summary>
 </histogram>
 
 <histogram name="Enterprise.DeviceRemoteCommand.Crd.SessionType"
-    enum="EnterpriseCrdUserType" expires_after="2023-01-01">
+    enum="EnterpriseCrdUserType" expires_after="2023-06-01">
   <owner>macinashutosh@google.com</owner>
   <owner>chromeos-commercial-crd@google.com</owner>
   <summary>
     Reports the user type for the attempted session only when the result is
     EnterpriseCrdSessionResultCode::SUCCESS.
   </summary>
+</histogram>
+
+<histogram
+    name="Enterprise.DeviceRemoteCommand.Crd.{Enterprise_CrdSessionType}.{Enterprise_UserSessionType}.Result"
+    enum="EnterpriseCrdSessionResultCode" expires_after="2023-06-01">
+  <owner>macinashutosh@google.com</owner>
+  <owner>chromeos-commercial-crd@google.com</owner>
+  <summary>
+    Reports success/failure when a session is attempted for the
+    {Enterprise_CrdSessionType} and {Enterprise_UserSessionType}
+  </summary>
+  <token key="Enterprise_CrdSessionType" variants="Enterprise_CrdSessionType"/>
+  <token key="Enterprise_UserSessionType"
+      variants="Enterprise_UserSessionType"/>
 </histogram>
 
 <histogram
@@ -598,7 +640,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.DeviceRemoteCommand.Received"
-    enum="RemoteCommandReceivedStatus" expires_after="2023-04-30">
+    enum="RemoteCommandReceivedStatus" expires_after="2023-07-02">
   <owner>asumaneev@google.com</owner>
   <owner>managed-platforms@google.com</owner>
   <summary>
@@ -1622,7 +1664,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Enterprise.EnrollmentAttestationBased.EnrollmentCertificateStatus.InitialAttempt"
     enum="EnrollmentAttestationBasedCertificateStatus"
-    expires_after="2023-04-30">
+    expires_after="2023-07-02">
   <owner>asumaneev@google.com</owner>
   <owner>chromeos-commercial-remote-management@google.com</owner>
   <summary>
@@ -1718,7 +1760,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.EnrollmentRecovery" enum="EnterpriseEnrollmentType"
-    expires_after="2023-04-01">
+    expires_after="2023-06-25">
   <owner>dkuzmin@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <owner>chromeos-commercial-remote-management@google.com</owner>
@@ -1951,7 +1993,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Enterprise.FCMInvalidationService.PolicyInvalidationsRegistrationResult"
-    enum="BooleanSuccess" expires_after="2023-04-30">
+    enum="BooleanSuccess" expires_after="2023-07-02">
   <owner>asumaneev@google.com</owner>
   <owner>managed-platforms@google.com</owner>
   <summary>
@@ -2291,7 +2333,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.PolicyInvalidations"
-    enum="EnterprisePolicyInvalidations" expires_after="2023-04-30">
+    enum="EnterprisePolicyInvalidations" expires_after="2023-07-02">
   <owner>asumaneev@google.com</owner>
   <owner>managed-platforms@google.com</owner>
   <summary>
@@ -2400,7 +2442,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.ProfileSeparation.DasherPolicyFetch.HttpResponse"
-    enum="HttpResponseCode" expires_after="2023-05-01">
+    enum="HttpResponseCode" expires_after="2023-07-02">
   <owner>ydago@chromium.org</owner>
   <owner>zmin@chromium.org</owner>
   <summary>
@@ -2700,7 +2742,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.UserSession.Logins"
-    enum="EnterpriseUserSessionLogins" expires_after="2023-04-24">
+    enum="EnterpriseUserSessionLogins" expires_after="2023-06-25">
   <owner>xiyuan@chromium.org</owner>
   <owner>sduraisamy@chromium.org</owner>
   <summary>Tracks the sign-in events on an enrolled device.</summary>
@@ -2826,7 +2868,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="EnterpriseCheck.IsFullyManaged2" enum="IsFullyManagedBoolean"
-    expires_after="2023-04-30">
+    expires_after="2023-07-02">
   <owner>twellington@google.com</owner>
   <owner>tedchcoc@chromium.org</owner>
   <summary>

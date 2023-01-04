@@ -45,6 +45,7 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/custom_handlers/protocol_handler_registry.h"
 #include "components/feed/feed_feature_list.h"
+#include "components/lens/buildflags.h"
 #include "components/lens/lens_features.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -582,22 +583,22 @@ class RenderViewContextMenuDlpPrefsTest
       const RenderViewContextMenuDlpPrefsTest&) = delete;
 
   void SetDlpClipboardRestriction() {
-    base::Value rules(base::Value::Type::LIST);
-    base::Value src_urls(base::Value::Type::LIST);
+    base::Value::List rules;
+    base::Value::List src_urls;
     src_urls.Append(PAGE_URL);
 
-    base::Value dst_urls(base::Value::Type::LIST);
+    base::Value::List dst_urls;
     dst_urls.Append(RESTRICTED_URL);
 
-    base::Value restrictions(base::Value::Type::LIST);
+    base::Value::List restrictions;
     restrictions.Append(policy::dlp_test_util::CreateRestrictionWithLevel(
         policy::dlp::kClipboardRestriction, policy::dlp::kBlockLevel));
 
     rules.Append(policy::dlp_test_util::CreateRule(
         "Rule #1", "Block", std::move(src_urls), std::move(dst_urls),
-        /*dst_components=*/base::Value(base::Value::Type::LIST),
-        std::move(restrictions)));
-    local_state()->Set(policy::policy_prefs::kDlpRulesList, std::move(rules));
+        /*dst_components=*/base::Value::List(), std::move(restrictions)));
+    local_state()->SetList(policy::policy_prefs::kDlpRulesList,
+                           std::move(rules));
   }
 
   static constexpr char PAGE_URL[] = "http://www.foo.com/";
@@ -1175,7 +1176,7 @@ TEST_F(RenderViewContextMenuPrefsTest, LensImageSearchDisabledFor3pDse) {
   EXPECT_FALSE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_SEARCHLENSFORIMAGE));
 }
 
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(ENABLE_LENS_DESKTOP_GOOGLE_BRANDED_FEATURES)
 // Verify that the Lens Region Search menu item is displayed when the feature
 // is enabled.
 TEST_F(RenderViewContextMenuPrefsTest, LensRegionSearch) {
@@ -1363,7 +1364,7 @@ TEST_F(RenderViewContextMenuPrefsTest,
   EXPECT_TRUE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH));
 }
 
-#endif
+#endif  // BUILDFLAG(ENABLE_LENS_DESKTOP_GOOGLE_BRANDED_FEATURES)
 
 // Test FormatUrlForClipboard behavior
 // -------------------------------------------

@@ -4217,13 +4217,13 @@ AutotestPrivateShowVirtualKeyboardIfEnabledFunction::
 
 ExtensionFunction::ResponseAction
 AutotestPrivateShowVirtualKeyboardIfEnabledFunction::Run() {
-  if (!ui::IMEBridge::Get() ||
-      !ui::IMEBridge::Get()->GetInputContextHandler() ||
-      !ui::IMEBridge::Get()->GetInputContextHandler()->GetInputMethod()) {
+  if (!ash::IMEBridge::Get() ||
+      !ash::IMEBridge::Get()->GetInputContextHandler() ||
+      !ash::IMEBridge::Get()->GetInputContextHandler()->GetInputMethod()) {
     return RespondNow(NoArguments());
   }
 
-  ui::IMEBridge::Get()
+  ash::IMEBridge::Get()
       ->GetInputContextHandler()
       ->GetInputMethod()
       ->SetVirtualKeyboardVisibilityIfEnabled(true);
@@ -6233,7 +6233,8 @@ AutotestPrivateIsInputMethodReadyForTestingFunction::
 
 ExtensionFunction::ResponseAction
 AutotestPrivateIsInputMethodReadyForTestingFunction::Run() {
-  ui::TextInputMethod* engine = ui::IMEBridge::Get()->GetCurrentEngineHandler();
+  ash::TextInputMethod* engine =
+      ash::IMEBridge::Get()->GetCurrentEngineHandler();
   return RespondNow(
       WithArguments(engine && engine->IsReadyForTesting()));  // IN-TEST
 }
@@ -6373,6 +6374,11 @@ AutotestPrivateStopFrameCountingFunction::Run() {
 
 void AutotestPrivateStopFrameCountingFunction::OnDataReceived(
     viz::mojom::FrameCountingDataPtr data_ptr) {
+  if (!data_ptr || data_ptr->per_sink_data.empty()) {
+    Respond(Error("No frame counting data"));
+    return;
+  }
+
   std::vector<api::autotest_private::FrameCountingPerSinkData> result;
   for (const auto& per_sink_data : data_ptr->per_sink_data) {
     api::autotest_private::FrameCountingPerSinkData result_per_sink_data;

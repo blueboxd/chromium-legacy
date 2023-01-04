@@ -105,6 +105,7 @@
 <translation id="1087965115100412394">사이트에서 MIDI 기기에 연결하도록 허용하지 않음</translation>
 <translation id="1088654056000736875">Chrome이 컴퓨터에서 유해 소프트웨어를 삭제하는 중입니다...</translation>
 <translation id="1088659085457112967">읽기 모드 시작</translation>
+<translation id="1089407731410758060">테마 변경</translation>
 <translation id="1090126737595388931">실행 중인 백그라운드 앱 없음</translation>
 <translation id="1090541560108055381">페어링하기 전에 두 기기의 코드가 동일한지 확인하세요.</translation>
 <translation id="1091767800771861448">건너뛰려면 Esc 키를 누르세요(비공식 빌드만 해당).</translation>
@@ -654,6 +655,7 @@
 <translation id="1595492813686795610">Linux 업그레이드 중</translation>
 <translation id="1596286373007273895">사용 가능</translation>
 <translation id="1596709061955594992">블루투스가 사용 중지되어 있습니다. 사용 가능한 기기를 보려면 블루투스를 사용 설정하세요</translation>
+<translation id="1596780725094407793">- 하위 도메인 포함</translation>
 <translation id="1598233202702788831">관리자가 업데이트를 사용 중지했습니다.</translation>
 <translation id="1600857548979126453">페이지 디버거 백엔드에 액세스</translation>
 <translation id="1601560923496285236">적용</translation>
@@ -933,6 +935,7 @@
 <translation id="18260074040409954">어느 기기에서든 저장된 비밀번호를 사용할 수 있습니다. <ph name="EMAIL" />의 <ph name="GOOGLE_PASSWORD_MANAGER" />에 저장됩니다.</translation>
 <translation id="1826192255355608658">Chrome 브라우저 북마크, 비밀번호, 방문 기록 등을 동기화</translation>
 <translation id="1826516787628120939">확인 중</translation>
+<translation id="1827504459960247692">핫스팟 이름</translation>
 <translation id="1828378091493947763">이 기기에서 지원되지 않는 플러그인입니다.</translation>
 <translation id="1828879788654007962">{COUNT,plural, =0{모두 열기(&amp;O)}=1{북마크 열기(&amp;O)}other{{COUNT}개 모두 열기(&amp;O)}}</translation>
 <translation id="1828901632669367785">시스템 대화상자를 사용하여 인쇄...</translation>
@@ -1174,7 +1177,7 @@
 <translation id="2048182445208425546">네트워크 트래픽에 액세스</translation>
 <translation id="2048554637254265991">컨테이너 관리자 시작 중에 오류가 발생했습니다. 다시 시도해 주세요.</translation>
 <translation id="2048653237708779538">실행할 수 없는 작업</translation>
-<translation id="2050339315714019657">세로 방향</translation>
+<translation id="2050339315714019657">인물</translation>
 <translation id="2052572566310583903">다른 기기에서 설치됨</translation>
 <translation id="2053105195397337973">Google은 추적을 제한하고 사이트에서 광고 스팸과 사기를 방지하도록 돕는 방안을 모색하고 있습니다.</translation>
 <translation id="2053312383184521053">유휴 상태 데이터</translation>
@@ -1243,8 +1246,10 @@
 <translation id="2101225219012730419">버전:</translation>
 <translation id="2102396546234652240">사이트에서 마이크를 사용하도록 허용하지 않음</translation>
 <translation id="2102495993840063010">Android 앱</translation>
+<translation id="2104166991923847969">자동으로 핫스팟 사용 중지</translation>
 <translation id="2105809836724866556"><ph name="MODULE_TITLE" /> 숨겨짐</translation>
 <translation id="2108349519800154983">{COUNT,plural, =1{전화번호}other{전화번호 #개}}</translation>
+<translation id="2110941575868943054">블루투스 기기 검색 허용됨</translation>
 <translation id="211144231511833662">유형 지우기</translation>
 <translation id="2111670510994270194">오른쪽에 새 탭 열기</translation>
 <translation id="2112554630428445878"><ph name="USERNAME" />님, 환영합니다</translation>
@@ -1440,7 +1445,6 @@
 <translation id="2285109769884538519">{COUNT,plural, =0{새 탭 그룹에서 모두 열기(&amp;N)}=1{새 탭 그룹에서 열기(&amp;N)}other{새 탭 그룹에서 {COUNT}개 모두 열기(&amp;N)}}</translation>
 <translation id="2285942871162473373">지문을 인식할 수 없습니다. 다시 시도해 보세요.</translation>
 <translation id="2287944065963043964">로그인 화면</translation>
-<translation id="2289270750774289114">사이트가 주변 블루투스 기기를 조회하려고 할 때 확인(권장)</translation>
 <translation id="2290615375132886363">태블릿 탐색 버튼</translation>
 <translation id="2291452790265535215">북마크, 탐색 여정 등에 측면 패널을 사용해 보세요.</translation>
 <translation id="229182044471402145">일치하는 글꼴이 없습니다.</translation>
@@ -1725,7 +1729,7 @@
 <translation id="2514326558286966059">지문으로 신속하게 잠금 해제</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="251722524540674480">사용자 이름 확인</translation>
-<translation id="2517472476991765520">검색</translation>
+<translation id="2517472476991765520">스캔</translation>
 <translation id="2518024842978892609">클라이언트 인증서 사용</translation>
 <translation id="2519517390894391510">인증서 프로필 이름</translation>
 <translation id="2520644704042891903">사용 가능한 소켓 대기 중...</translation>
@@ -1827,6 +1831,7 @@
 <translation id="2616366145935564096"><ph name="WEBSITE_1" />의 데이터를 읽고 변경</translation>
 <translation id="2618797463720777311">Nearby Share 설정</translation>
 <translation id="2620215283731032047"><ph name="FILE_NAME" /> 파일은 안전하게 다운로드할 수 없습니다.</translation>
+<translation id="2620245777360407679">현재 핫스팟에 연결된 기기</translation>
 <translation id="2620436844016719705">시스템</translation>
 <translation id="262154978979441594">Google 어시스턴트 음성 모델 학습시키기</translation>
 <translation id="26224892172169984">모든 사이트에서 프로토콜 처리 허용 안함</translation>
@@ -2892,6 +2897,7 @@
 <translation id="3617891479562106823">배경을 사용할 수 없습니다. 나중에 다시 시도하세요.</translation>
 <translation id="3619115746895587757">카푸치노</translation>
 <translation id="3620136223548713675">위치정보</translation>
+<translation id="362023940451053340">내 Google 계정(<ph name="ACCOUNT" />)에 업데이트</translation>
 <translation id="3621807901162200696">ChromeOS의 기능 및 성능 개선에 참여</translation>
 <translation id="362266093274784978">{COUNT,plural, =1{앱 1개}other{앱 #개}}</translation>
 <translation id="362333465072914957">CA에서 인증서를 발급할 때까지 기다리는 중</translation>
@@ -3013,7 +3019,6 @@
 <translation id="3727473233247516571">뒤로-앞으로 캐시 서브프레임: <ph name="BACK_FORWARD_CACHE_PAGE_URL" /></translation>
 <translation id="3728188878314831180">휴대전화 알림 미러링</translation>
 <translation id="3728681439294129328">네트워크 주소 구성</translation>
-<translation id="3729303374699765035">사이트가 주변 블루투스 기기를 조회하려고 할 때 확인</translation>
 <translation id="3729506734996624908">허용된 사이트</translation>
 <translation id="3730076362938942381">스타일러스 필기 앱</translation>
 <translation id="3732078975418297900"><ph name="ERROR_LINE" />행에 오류가 있음</translation>
@@ -3040,6 +3045,7 @@
 <translation id="3756485814916578707">화면 전송 중</translation>
 <translation id="3756578970075173856">PIN 설정</translation>
 <translation id="3756795331760037744">Google 어시스턴트가 <ph name="SUPERVISED_USER_NAME" />님의 화면에 표시된 정보를 사용하여 질문에 답하도록 허용</translation>
+<translation id="3756806135608816820">사이트의 블루투스 기기 검색 요청 허용</translation>
 <translation id="3757733214359997190">사이트를 찾을 수 없습니다.</translation>
 <translation id="375841316537350618">프록시 스크립트 다운로드 중...</translation>
 <translation id="3758842566811519622">쿠키가 설정됨</translation>
@@ -3808,6 +3814,7 @@
 <translation id="4469762931504673593"><ph name="ORIGIN" />에서 <ph name="FOLDERNAME" />의 파일을 수정할 수 있습니다.</translation>
 <translation id="4470957202018033307">외부 저장소 환경설정</translation>
 <translation id="4471354919263203780">음성 인식 파일 다운로드 중... <ph name="PERCENT" />%</translation>
+<translation id="4472298120638043495">원하는 Google 계정 언어(<ph name="NEW_LOCALE_FROM_GAIA" />)를 사용할 수 있습니다.</translation>
 <translation id="447252321002412580">Chrome의 기능 및 성능 개선에 참여</translation>
 <translation id="4472575034687746823">시작하기</translation>
 <translation id="4474155171896946103">모든 탭 북마크...</translation>
@@ -4538,7 +4545,6 @@ https://support.google.com/chromebook/?p=tpm</translation>
 <translation id="5158206172605340248">발음 구별 부호 메뉴를 닫았습니다.</translation>
 <translation id="5159094275429367735">Crostini 설정</translation>
 <translation id="5159419673777902220">부모님이 확장 프로그램 권한을 사용 중지했습니다.</translation>
-<translation id="5159643365935452998">자동 데이터 삭제 검토</translation>
 <translation id="5160634252433617617">물리적 키보드</translation>
 <translation id="5160857336552977725"><ph name="DEVICE_TYPE" />에 로그인</translation>
 <translation id="5161251470972801814">USB 기기(업체: <ph name="VENDOR_NAME" />)</translation>
@@ -5013,6 +5019,7 @@ https://support.google.com/chromebook/?p=tpm</translation>
 <translation id="5600706100022181951"><ph name="UPDATE_SIZE_MB" />MB의 모바일 데이터를 사용하여 업데이트를 다운로드합니다. 계속하시겠습니까?</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5601823921345337195">MIDI 기기 연결이 허용되지 않음</translation>
+<translation id="5601833336918638013">사이트의 블루투스 기기 검색 허용 안함</translation>
 <translation id="5602765853043467355">기기에서 북마크, 방문 기록, 비밀번호 등을 삭제합니다.</translation>
 <translation id="5605758115928394442">휴대전화로 본인 인증을 위한 알림이 전송되었습니다.</translation>
 <translation id="5606849116180480101">{NUM_EXTENSIONS,plural, =1{확장 프로그램이 차단됨}other{확장 프로그램이 차단됨}}</translation>
@@ -5258,7 +5265,6 @@ https://support.google.com/chromebook/?p=tpm</translation>
 <translation id="583673505367439042">사이트에서 기기의 파일 및 폴더 수정을 요청할 수 있음</translation>
 <translation id="5836999627049108525">출발 언어</translation>
 <translation id="583756221537636748">케이스</translation>
-<translation id="5840658767386246331">Google로 검색</translation>
 <translation id="5840680448799937675">항상 오프라인으로 파일 공유</translation>
 <translation id="5841270259333717135">이더넷 구성</translation>
 <translation id="5842497610951477805">블루투스 사용</translation>
@@ -5627,6 +5633,7 @@ https://support.google.com/chromebook/?p=tpm</translation>
 <translation id="6169967265765719844">Steam을 통해 설치된 게임 및 앱에 대한 권한은 <ph name="LINK_BEGIN" />Steam 앱 설정<ph name="LINK_END" />에서 관리할 수 있습니다.</translation>
 <translation id="6170470584681422115">샌드위치</translation>
 <translation id="6170498031581934115">ADB 디버깅을 사용 설정할 수 없습니다. 설정으로 이동하여 다시 시도해 보세요.</translation>
+<translation id="6171779718418683144">방문할 때마다 확인</translation>
 <translation id="617213288191670920">추가된 언어 없음</translation>
 <translation id="6173623053897475761">PIN을 다시 입력하세요</translation>
 <translation id="6175314957787328458">Microsoft Domain GUID</translation>
@@ -6470,6 +6477,7 @@ https://support.google.com/chromebook/?p=tpm</translation>
 <translation id="6960507406838246615">Linux 업데이트 필요</translation>
 <translation id="6960648667961844909"><ph name="LANGUAGE" /> 음성 파일을 다운로드할 수 없습니다. 다운로드가 나중에 시도됩니다. 다운로드가 완료될 때까지는 음성이 Google로 전송되어 처리됩니다.</translation>
 <translation id="696103774840402661">이 <ph name="DEVICE_TYPE" /> 기기 내 모든 사용자의 파일 및 로컬 데이터가 영구적으로 삭제되었습니다.</translation>
+<translation id="6961327401577924850">사이트에서는 주로 저전력 비콘, 건강 또는 피트니스 트래커, 스마트 조명 전구를 설정 또는 동기화하는 기능을 지원하기 위해 블루투스 기기를 검색합니다.</translation>
 <translation id="6963872466817251924">텍스트 커서 형광펜</translation>
 <translation id="6964390816189577014">영웅</translation>
 <translation id="6964760285928603117">그룹에서 삭제</translation>
@@ -6746,6 +6754,7 @@ https://support.google.com/chromebook/?p=tpm</translation>
 <translation id="7227458944009118910">아래에 나열된 앱은 프로토콜 링크도 처리할 수 있습니다. 목록에 없는 앱은 권한을 요청합니다.</translation>
 <translation id="7228056665272655255">지문을 설정하려면 자녀가 키보드 오른쪽 상단에 있는 지문 센서를 터치하게 하세요. 자녀의 지문 데이터는 안전하게 저장되며 절대 <ph name="DEVICE_TYPE" /> 외부로 유출되지 않습니다.</translation>
 <translation id="7228523857728654909">화면 잠금 및 로그인</translation>
+<translation id="7228854227189381547">전환 안함</translation>
 <translation id="7230222852462421043">창 복원(&amp;R)</translation>
 <translation id="7231260028442989757">휴대전화의 알림을 보고 닫거나 답장합니다.</translation>
 <translation id="7232750842195536390">이름 변경 실패</translation>
@@ -6755,6 +6764,7 @@ https://support.google.com/chromebook/?p=tpm</translation>
 <translation id="7235737137505019098">보안 키에 계정을 추가할 공간이 충분하지 않습니다.</translation>
 <translation id="7235873936132740888">사이트는 사용자가 특정 유형의 링크를 클릭할 때 이메일 클라이언트에서 새 메일을 작성하거나 온라인 캘린더에 새 일정을 추가하는 등 특정 작업을 처리할 수 있습니다.</translation>
 <translation id="7238609589076576185">발음 구별 부호가 삽입되었습니다.</translation>
+<translation id="7238665222668706269">Google 비밀번호 관리자 <ph name="SEPARATOR" /> <ph name="ACCOUNT" /></translation>
 <translation id="7239108166256782787"><ph name="DEVICE_NAME" />에서 전송을 취소함</translation>
 <translation id="7240339475467890413">새 핫스팟에 연결하시겠습니까?</translation>
 <translation id="7241389281993241388"><ph name="TOKEN_NAME" />에 로그인하여 클라이언트 인증서를 가져오세요.</translation>
@@ -7078,6 +7088,7 @@ https://support.google.com/chromebook/?p=tpm</translation>
 <translation id="7545466883021407599">서버에 연결할 수 없습니다. 네트워크 연결을 확인한 후 다시 시도해 보세요. 문제가 해결되지 않는 경우 Chromebook을 다시 시작해 보세요. 오류 코드: <ph name="ERROR_CODE" /></translation>
 <translation id="7547317915858803630">경고: <ph name="PRODUCT_NAME" /> 설정이 네트워크 드라이브에 저장되었습니다. 이로 인해 속도 저하, 비정상 종료 그리고 데이터 손실까지 발생할 수 있습니다.</translation>
 <translation id="7548856833046333824">레모네이드</translation>
+<translation id="7549434883223124329">기기 언어를 전환하시겠습니까?</translation>
 <translation id="7550830279652415241">bookmarks_<ph name="DATESTAMP" />.html</translation>
 <translation id="7551059576287086432"><ph name="FILE_NAME" />을(를) 다운로드하지 못함</translation>
 <translation id="7551643184018910560">실행기에 고정</translation>
@@ -7145,6 +7156,7 @@ https://support.google.com/chromebook/?p=tpm</translation>
 <translation id="7614260613810441905">사이트에서 기기의 파일 또는 폴더를 수정하려는 경우 확인 메시지 표시(권장)</translation>
 <translation id="761530003705945209">Google Drive에 백업합니다. 언제든지 간편하게 데이터를 복원하거나 다른 기기로 전환할 수 있습니다. 앱 데이터도 백업에 포함됩니다. 백업 항목은 Google에 업로드되며 내 Google 계정 비밀번호를 사용하여 암호화됩니다.</translation>
 <translation id="7615365294369022248">계정 추가 중 오류 발생</translation>
+<translation id="7615807797520072741">기존 Chrome으로 재설정</translation>
 <translation id="7616214729753637086">기기 등록 중...</translation>
 <translation id="7617263010641145920">Play 스토어 사용 설정</translation>
 <translation id="7617648809369507487">눈에 띄지 않는 메시지 사용</translation>
@@ -7497,6 +7509,7 @@ https://support.google.com/chromebook/?p=sm</translation>
 <translation id="7920363873148656176"><ph name="ORIGIN" />에서 <ph name="FILENAME" /> 파일을 볼 수 있습니다.</translation>
 <translation id="7920482456679570420">맞춤법 검사를 건너뛸 단어를 추가합니다.</translation>
 <translation id="7921347341284348270">이 관리 계정에서는 휴대전화의 알림을 볼 수 없습니다. 다른 계정에서 다시 시도해 보세요. <ph name="LINK_BEGIN" />자세히 알아보기<ph name="LINK_END" /></translation>
+<translation id="7922606348470480702">확장 프로그램 1개</translation>
 <translation id="7922935920104868876">시크릿 모드에서 서드 파티 쿠키 차단에 관한 세부정보 표시</translation>
 <translation id="7923564237306226146">Linux 업그레이드 완료</translation>
 <translation id="7924358170328001543">포트 전달 중 오류 발생</translation>
@@ -7884,6 +7897,7 @@ https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8263744495942430914"><ph name="FULLSCREEN_ORIGIN" />에서 마우스 커서를 사용 중지했습니다.</translation>
 <translation id="8264024885325823677">관리자가 관리하는 설정입니다.</translation>
 <translation id="8264718194193514834"><ph name="EXTENSION_NAME" />에서 전체 화면을 실행합니다.</translation>
+<translation id="8265018477030547118">이 기기에서만</translation>
 <translation id="826511437356419340">창 개요 모드를 시작했습니다. 이동하려면 스와이프하거나 키보드를 사용하는 경우에는 Tab 키를 누르세요.</translation>
 <translation id="8265671588726449108">{COUNT,plural, =1{다시 실행한 후 시크릿 창이 열리지 않습니다.}other{다시 실행한 후 시크릿 창 {COUNT}개가 다시 열리지 않습니다.}}</translation>
 <translation id="8266947622852630193">모든 입력 방법</translation>
@@ -8102,6 +8116,7 @@ https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8465444703385715657"><ph name="PLUGIN_NAME" />에 실행 권한이 필요합니다.</translation>
 <translation id="8466417995783206254">이 탭에서는 PIP 모드로 동영상이 재생되고 있습니다.</translation>
 <translation id="8467326454809944210">다른 언어 선택</translation>
+<translation id="8468087214092422866">블루투스 기기 검색 허용 안됨</translation>
 <translation id="8470513973197838199"><ph name="ORIGIN" />의 저장된 비밀번호</translation>
 <translation id="8471525937465764768">사이트에서는 일반적으로 문서 인쇄 또는 스토리지 기기에 저장과 같은 기능을 사용하기 위해 USB 기기에 연결합니다.</translation>
 <translation id="8471959340398751476">할인 기능이 사용 중지되었습니다. 맞춤설정 메뉴에서 사용 설정할 수 있습니다.</translation>
@@ -8291,6 +8306,7 @@ https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8655295600908251630">채널</translation>
 <translation id="8655972064210167941">비밀번호를 확인할 수 없어 로그인할 수 없습니다. 관리자에게 문의하거나 다시 시도해 주세요.</translation>
 <translation id="8657393004602556571">의견을 삭제하시겠습니까?</translation>
+<translation id="8657762806752649049">내 Google 계정(<ph name="ACCOUNT" />)에 저장</translation>
 <translation id="8661290697478713397">시크릿 창에서 링크 열기(&amp;G)</translation>
 <translation id="8662671328352114214"><ph name="TYPE" /> 네트워크에 연결</translation>
 <translation id="8662733268723715832">예상보다 많은 시간이 걸리고 있습니다. 계속 기다리거나 건너뛸 수 있습니다.</translation>
@@ -8453,6 +8469,7 @@ https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{탭을 다른 창으로 이동}other{탭을 다른 창으로 이동}}</translation>
 <translation id="8805140816472474147">동기화를 시작하려면 동기화 설정을 확인하세요.</translation>
 <translation id="8806680466228877631"><ph name="SHORTCUT" /> 키를 눌러 실수로 닫은 탭 다시 열기</translation>
+<translation id="8807588541160250261">연결된 기기가 없을 때</translation>
 <translation id="8807632654848257479">안정</translation>
 <translation id="8808478386290700967">웹 스토어</translation>
 <translation id="8808686172382650546">고양이</translation>
@@ -8481,7 +8498,6 @@ https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8827125715368568315"><ph name="PERMISSION" /> 외 <ph name="COUNT" />개 차단함</translation>
 <translation id="8827289157496676362">확장 프로그램 고정</translation>
 <translation id="8827752199525959199">추가 작업입니다. <ph name="DOMAIN" /> <ph name="USERNAME" />의 비밀번호입니다.</translation>
-<translation id="882854468542856424">모든 사이트에서 주변 블루투스 기기 조회 허용 안함</translation>
 <translation id="8828933418460119530">DNS 이름</translation>
 <translation id="883062543841130884">대체 항목</translation>
 <translation id="8830779999439981481">업데이트 적용을 위해 다시 시작하는 중</translation>

@@ -96,7 +96,6 @@ class StyleResolver;
 class StyleResolverStats;
 class StyleRuleFontFace;
 class StyleRuleFontPaletteValues;
-class FontFeatureValuesStorage;
 class StyleRuleKeyframes;
 class StyleRuleUsageTracker;
 class StyleSheet;
@@ -308,6 +307,11 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   bool SkippedContainerRecalc() const { return skipped_container_recalc_ != 0; }
   void IncrementSkippedContainerRecalc() { ++skipped_container_recalc_; }
   void DecrementSkippedContainerRecalc() { --skipped_container_recalc_; }
+
+  bool UsesLineHeightUnits() const { return uses_line_height_units_; }
+  void SetUsesLineHeightUnits(bool uses_line_height_units) {
+    uses_line_height_units_ = uses_line_height_units;
+  }
 
   bool UsesGlyphRelativeUnits() const { return uses_glyph_relative_units_; }
   void SetUsesGlyphRelativeUnits(bool uses_glyph_relative_units) {
@@ -540,9 +544,6 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
       AtomicString palette_name,
       AtomicString font_family);
 
-  const FontFeatureValuesStorage* FontFeatureValuesForFamily(
-      AtomicString font_family);
-
   CounterStyleMap* GetUserCounterStyleMap() { return user_counter_style_map_; }
   const CounterStyle& FindCounterStyleAcrossScopes(const AtomicString&,
                                                    const TreeScope*) const;
@@ -758,8 +759,6 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
                                   bool is_user_style);
   void AddFontPaletteValuesRulesFromSheets(
       const ActiveStyleSheetVector& sheets);
-  void AddFontFeatureValuesRulesFromSheets(
-      const ActiveStyleSheetVector& sheets);
 
   // Returns true if any @font-face rules are added.
   bool AddUserFontFaceRules(const RuleSet&);
@@ -851,6 +850,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
 
   bool uses_root_font_relative_units_{false};
   bool uses_glyph_relative_units_{false};
+  bool uses_line_height_units_{false};
   // True if we have performed style recalc for at least one element that
   // depends on container queries.
   bool style_affected_by_layout_{false};
@@ -939,18 +939,6 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
       HeapHashMap<std::pair<AtomicString, String>,
                   Member<StyleRuleFontPaletteValues>>;
   FontPaletteValuesRuleMap font_palette_values_rule_map_;
-
-  // Multiple entries are created pointing to the same
-  // StyleRuleFontFeatureValues for each mentioned family name in the
-  // comma-separated list of font families in the @font-feature-values at-rule
-  // prelude.
-  // TODO(https://crbug.com/716567): Needs ability to store multiple entries per
-  // family https://drafts.csswg.org/css-fonts-4/#font-feature-values-syntax: If
-  // multiple @font-feature-values rules are defined for a given family, the
-  // resulting values definitions are the union of the definitions contained
-  // within these rules.
-  using FontFeatureValuesRuleMap = HashMap<String, FontFeatureValuesStorage>;
-  FontFeatureValuesRuleMap font_feature_values_storage_map_;
 
   Member<CounterStyleMap> user_counter_style_map_;
 

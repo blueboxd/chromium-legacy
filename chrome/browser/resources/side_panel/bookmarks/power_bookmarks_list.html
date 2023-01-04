@@ -4,7 +4,7 @@
     --border-color: var(--google-grey-300);
     --disabled-text-color: var(--google-grey-600);
     --edit-footer-background: var(--google-grey-50);
-    --empty-state-image: url(../images/bookmarks_empty.svg);
+    --empty-state-image: url(./images/bookmarks_empty.svg);
     --label-selected-color: var(--google-blue-50);
     --price-tracking-chip-background: var(--google-green-50);
     --price-tracking-discount-color: var(--google-green-800);
@@ -16,7 +16,7 @@
       --border-color: var(--google-grey-700);
       --disabled-text-color: var(--google-grey-500);
       --edit-footer-background: var(--google-grey-900-white-4-percent);
-      --empty-state-image: url(../images/bookmarks_empty_dark.svg);
+      --empty-state-image: url(./images/bookmarks_empty_dark.svg);
       --price-tracking-chip-background: var(--google-green-900);
       --price-tracking-discount-color: white;
       --price-tracking-original-color: var(--google-green-200);
@@ -90,6 +90,11 @@
     display: flex;
     justify-content: space-between;
     padding: 14px;
+  }
+
+  .edit-icons {
+    display: flex;
+    gap: 16px;
   }
 
   .empty {
@@ -263,6 +268,7 @@
         <iron-icon icon="bookmarks:filter-list"></iron-icon>
       </cr-button>
       <cr-icon-button iron-icon="bookmarks:create-new-folder"
+          disabled="[[editing_]]"
           aria-label="$i18n{createNewFolderA11yLabel}"
           on-click="onAddNewFolderClicked_"></cr-icon-button>
       <cr-icon-button class="icon-edit" disabled="[[!shownBookmarks_.length]]"
@@ -282,6 +288,7 @@
           compact="[[compact_]]" trailing-icon="cr:more-vert"
           trailing-icon-aria-label="TODO"
           has-checkbox="[[editing_]]"
+          checkbox-disabled="[[!canEdit_(item)]]"
           has-input="[[renamingItem_(item.id, renamingId_)]]"
           on-row-clicked="onRowClicked_"
           on-context-menu="onShowContextMenuClicked_"
@@ -334,7 +341,13 @@
       <div class="edit-icons">
         <cr-icon-button iron-icon="bookmarks:delete"
             disabled="[[!selectedBookmarks_.length]]"
-            aria-label="$i18n{tooltipDelete}" on-click="onDeleteClicked_">
+            title="$i18n{tooltipDelete}" aria-label="$i18n{tooltipDelete}"
+            on-click="onDeleteClicked_">
+        </cr-icon-button>
+        <cr-icon-button iron-icon="cr:more-vert"
+            disabled="[[!selectedBookmarks_.length]]"
+            title="$i18n{tooltipMore}" aria-label="$i18n{tooltipMore}"
+            on-click="onEditMenuClicked_">
         </cr-icon-button>
       </div>
     </div>

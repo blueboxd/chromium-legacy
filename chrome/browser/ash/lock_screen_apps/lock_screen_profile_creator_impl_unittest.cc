@@ -297,15 +297,15 @@ class LockScreenProfileCreatorImplTest : public testing::Test {
   scoped_refptr<const extensions::Extension> CreateTestNoteTakingApp() {
     base::Value::Dict background =
         DictionaryBuilder()
-            .Set("scripts", ListBuilder().Append("background.js").BuildList())
-            .BuildDict();
+            .Set("scripts", ListBuilder().Append("background.js").Build())
+            .Build();
     base::Value::List action_handlers =
         ListBuilder()
             .Append(DictionaryBuilder()
                         .Set("action", "new_note")
                         .Set("enabled_on_lock_screen", true)
-                        .BuildDict())
-            .BuildList();
+                        .Build())
+            .Build();
 
     DictionaryBuilder manifest_builder;
     manifest_builder.Set("name", "Note taking app")
@@ -313,12 +313,12 @@ class LockScreenProfileCreatorImplTest : public testing::Test {
         .Set("version", "1.1")
         .Set("app", DictionaryBuilder()
                         .Set("background", std::move(background))
-                        .BuildDict())
-        .Set("permissions", ListBuilder().Append("lockScreen").BuildList())
+                        .Build())
+        .Set("permissions", ListBuilder().Append("lockScreen").Build())
         .Set("action_handlers", std::move(action_handlers));
 
     return extensions::ExtensionBuilder()
-        .SetManifest(manifest_builder.BuildDict())
+        .SetManifest(manifest_builder.Build())
         .SetID(crx_file::id_util::GenerateId("test_app"))
         .Build();
   }

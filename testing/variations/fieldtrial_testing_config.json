@@ -215,24 +215,6 @@
             ]
         }
     ],
-    "AndroidMediaPickerVideoSupport": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "animate_thumbnails": "false"
-                    },
-                    "enable_features": [
-                        "PhotoPickerVideoSupport"
-                    ]
-                }
-            ]
-        }
-    ],
     "AndroidMessagesPWAInstall": [
         {
             "platforms": [
@@ -2188,6 +2170,21 @@
             ]
         }
     ],
+    "CacheIsNavigationSameSite": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "CacheIsNavigationSameSite"
+                    ]
+                }
+            ]
+        }
+    ],
     "CacheTransparency": [
         {
             "platforms": [
@@ -2630,17 +2627,17 @@
             ],
             "experiments": [
                 {
-                    "name": "EnabledGroupA_20221003",
+                    "name": "EnabledGroupC_20230103",
                     "params": {
-                        "CrOSZramWritebackWritebackBackoffTimeSec": "900",
-                        "ZramWritebackHuge": "true",
+                        "CrOSZramWritebackWritebackBackoffTimeSec": "1800",
+                        "ZramWritebackHuge": "false",
                         "ZramWritebackHugeIdle": "true",
-                        "ZramWritebackIdle": "false",
-                        "ZramWritebackIdleMaxTimeSec": "10800",
-                        "ZramWritebackIdleMinTimeSec": "1800",
-                        "ZramWritebackMaxPages": "25600",
-                        "ZramWritebackMinPages": "2560",
-                        "ZramWritebackPeriodicTimeSec": "180"
+                        "ZramWritebackIdle": "true",
+                        "ZramWritebackIdleMaxTimeSec": "86400",
+                        "ZramWritebackIdleMinTimeSec": "43200",
+                        "ZramWritebackMaxPages": "51200",
+                        "ZramWritebackMinPages": "1280",
+                        "ZramWritebackPeriodicTimeSec": "600"
                     },
                     "enable_features": [
                         "ChromeOSZramWriteback"
@@ -7552,6 +7549,21 @@
             ]
         }
     ],
+    "OmniboxRemoveExcessiveRecycledViewClearCalls": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "OmniboxRemoveExcessiveRecycledViewClearCalls"
+                    ]
+                }
+            ]
+        }
+    ],
     "OmniboxZeroSuggestPrefetchingWithInMemoryCaching": [
         {
             "platforms": [
@@ -7841,6 +7853,35 @@
                     "name": "Enabled",
                     "enable_features": [
                         "EnableOverlayPrioritization"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PWARemoveServiceWorkerRequirement": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_Promotability",
+                    "enable_features": [
+                        "SkipServiceWorkerCheckInstallOnly",
+                        "SkipServiceWorkerForInstallPromot"
+                    ]
+                },
+                {
+                    "name": "Enabled_Installability",
+                    "enable_features": [
+                        "SkipServiceWorkerCheckInstallOnly"
+                    ],
+                    "disable_features": [
+                        "SkipServiceWorkerForInstallPromot"
                     ]
                 }
             ]
@@ -12952,21 +12993,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "WebViewThreadSafeMedia"
-                    ]
-                }
-            ]
-        }
-    ],
-    "WebViewThrottleBackgroundBeginFrame": [
-        {
-            "platforms": [
-                "android_webview"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "WebViewThrottleBackgroundBeginFrame"
                     ]
                 }
             ]

@@ -3943,6 +3943,24 @@
       }
     ]
   },
+  "DeviceLoginScreenExtensionManifestV2Availability": {
+    "os": [
+      "chromeos_ash"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "DeviceLoginScreenExtensionManifestV2Availability": 1
+        },
+        "prefs": {
+          "extensions.manifest_v2": {
+            "location": "signin_profile",
+            "value": 1
+          }
+        }
+      }
+    ]
+  },
   "BlockExternalExtensions": {
     "os": [
       "win",
@@ -15928,7 +15946,7 @@
     ]
   },
   "DeviceBorealisAllowed": {
-    "reason_for_missing_test": "Policy was removed"
+    "reason_for_missing_test": "Maps into CrosSettings"
   },
   "DeviceAllowedBluetoothServices": {
     "reason_for_missing_test": "Maps into CrosSettings"

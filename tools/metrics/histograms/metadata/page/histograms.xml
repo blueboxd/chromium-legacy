@@ -266,7 +266,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PageLoad.Clients.Ads.AllPages.NonAdNetworkBytes" units="KB"
-    expires_after="2023-04-30">
+    expires_after="2023-07-02">
   <owner>alexmt@chromium.org</owner>
   <owner>johnidel@chromium.org</owner>
   <summary>
@@ -866,7 +866,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PageLoad.Clients.GoogleSearch.PaintTiming.NavigationToFirstContentfulPaint"
-    units="ms" expires_after="2023-04-30">
+    units="ms" expires_after="2023-07-02">
   <owner>spelchat@chromium.org</owner>
   <owner>chrome-brapp-loading@google.com</owner>
   <summary>
@@ -880,7 +880,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PageLoad.Clients.GoogleSearch.PaintTiming.NavigationToLargestContentfulPaint"
-    units="ms" expires_after="2023-04-30">
+    units="ms" expires_after="2023-07-02">
   <owner>spelchat@chromium.org</owner>
   <owner>chrome-brapp-loading@google.com</owner>
   <summary>
@@ -1220,7 +1220,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PageLoad.Clients.ThirdParty.Frames.NavigationToFirstContentfulPaint3"
-    units="ms" expires_after="2023-04-30">
+    units="ms" expires_after="2023-07-02">
   <owner>jkarlin@chromium.org</owner>
   <owner>johnidel@chromium.org</owner>
   <summary>
@@ -1316,7 +1316,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="PageLoad.Cpu.TotalUsage" units="ms" expires_after="2023-04-23">
+<histogram name="PageLoad.Cpu.TotalUsage" units="ms" expires_after="2023-06-25">
   <owner>alexmt@chromium.org</owner>
   <owner>johnidel@chromium.org</owner>
   <summary>
@@ -1340,7 +1340,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PageLoad.DocumentTiming.NavigationToDOMContentLoadedEventFired"
-    units="ms" expires_after="2023-04-30">
+    units="ms" expires_after="2023-07-02">
   <owner>bmcquade@chromium.org</owner>
   <owner>csharrison@chromium.org</owner>
   <summary>
@@ -1350,7 +1350,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PageLoad.DocumentTiming.NavigationToLoadEventFired" units="ms"
-    expires_after="2023-04-30">
+    expires_after="2023-07-02">
   <owner>bmcquade@chromium.org</owner>
   <owner>csharrison@chromium.org</owner>
   <summary>
@@ -1762,7 +1762,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PageLoad.Experimental.NavigationTiming.NavigationStartToFirstRequestStart"
-    units="ms" expires_after="2023-04-23">
+    units="ms" expires_after="2023-06-25">
   <owner>nhiroki@chromium.org</owner>
   <owner>chrome-loading@google.com</owner>
   <summary>
@@ -1773,7 +1773,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PageLoad.Experimental.NavigationTiming.NavigationStartToFirstResponseStart"
-    units="ms" expires_after="2023-04-30">
+    units="ms" expires_after="2023-07-02">
   <owner>nhiroki@chromium.org</owner>
   <owner>chrome-loading@google.com</owner>
   <summary>
@@ -1784,7 +1784,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PageLoad.Experimental.NavigationTiming.NavigationStartToNavigationCommitSent"
-    units="ms" expires_after="2023-04-30">
+    units="ms" expires_after="2023-07-02">
   <owner>nhiroki@chromium.org</owner>
   <owner>chrome-loading@google.com</owner>
   <summary>
@@ -2067,23 +2067,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="PageLoad.InputTiming.NavigationToFirstNonScroll.AfterPaint"
-    units="ms" expires_after="M77">
-  <owner>sullivan@chromium.org</owner>
-  <summary>
-    Measures the time to first non-scroll input after the first paint.
-  </summary>
-</histogram>
-
-<histogram name="PageLoad.InputTiming.NavigationToFirstScroll.AfterPaint"
-    units="ms" expires_after="2021-08-22">
-  <owner>flackr@chromium.org</owner>
-  <owner>input-dev@chromium.org</owner>
-  <summary>
-    Measures the time to first scroll input after the first paint.
-  </summary>
-</histogram>
-
 <histogram
     name="PageLoad.InteractiveTiming.FirstInputDelay.AfterBackForwardCacheRestore"
     units="ms" expires_after="never">
@@ -2174,28 +2157,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     The duration between navigation start and the hardware timestamp of a
     meaningful input. Excludes scrolls.
-  </summary>
-</histogram>
-
-<histogram name="PageLoad.InteractiveTiming.LongestInputDelay4" units="ms"
-    expires_after="M97">
-  <owner>sullivan@chromium.org</owner>
-  <owner>speed-metrics-dev@chromium.org</owner>
-  <summary>
-    Measures longest Input Delay, the longest duration between the hardware
-    timestamp and the start of event processing on the main thread for the
-    meaningful input per navigation. Excludes scrolls.
-  </summary>
-</histogram>
-
-<histogram name="PageLoad.InteractiveTiming.LongestInputTimestamp4" units="ms"
-    expires_after="M97">
-  <owner>sullivan@chromium.org</owner>
-  <owner>speed-metrics-dev@chromium.org</owner>
-  <summary>
-    The duration between navigation start and the hardware timestamp of the
-    meaningful input with longest queuing delay per navigation. Excludes
-    scrolls.
   </summary>
 </histogram>
 
@@ -2637,15 +2598,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="PageLoad.Navigation.RedirectChainLength" units="urls"
-    expires_after="M77">
-  <owner>csharrison@chromium.org</owner>
-  <summary>
-    The number of URLs in the redirect chain for this navigation. This excludes
-    the first URL.
-  </summary>
-</histogram>
-
 <histogram name="PageLoad.PageTiming.ForegroundDuration" units="ms"
     expires_after="2023-05-07">
   <owner>bmcquade@chromium.org</owner>
@@ -2684,22 +2636,12 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PageLoad.PaintTiming.ForegroundToFirstContentfulPaint"
-    units="ms" expires_after="2023-04-30">
+    units="ms" expires_after="2023-07-02">
   <owner>sullivan@chromium.org</owner>
   <owner>speed-metrics-dev@chromium.org</owner>
   <summary>
     Measures the time from a background tab being switched to the foreground to
     the time the first contentful paint is performed, for main frame documents.
-  </summary>
-</histogram>
-
-<histogram name="PageLoad.PaintTiming.ForegroundToFirstPaint" units="ms"
-    expires_after="2020-08-14">
-  <owner>sullivan@chromium.org</owner>
-  <owner>speed-metrics-dev@chromium.org</owner>
-  <summary>
-    Measures the time from a background tab being switched to the foreground to
-    the time the first paint is performed, for main frame documents.
   </summary>
 </histogram>
 
@@ -2739,7 +2681,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PageLoad.PaintTiming.NavigationToFirstPaint" units="ms"
-    expires_after="2023-04-30">
+    expires_after="2023-07-02">
   <owner>ksakamoto@chromium.org</owner>
   <owner>speed-metrics-dev@chromium.org</owner>
   <summary>
@@ -2880,7 +2822,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PageLoad.ParseTiming.NavigationToParseStart" units="ms"
-    expires_after="2023-04-30">
+    expires_after="2023-07-02">
   <owner>bmcquade@chromium.org</owner>
   <owner>csharrison@chromium.org</owner>
   <summary>
@@ -2924,31 +2866,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Measures the time that the HTML parser spent blocked on the load of scripts,
     for main frame documents that finished parsing.
-  </summary>
-</histogram>
-
-<histogram
-    name="PageLoad.ParseTiming.ParseBlockedOnScriptLoadFromDocumentWrite"
-    units="ms" expires_after="M81">
-  <owner>bmcquade@chromium.org</owner>
-  <owner>csharrison@chromium.org</owner>
-  <summary>
-    Measures the time that the HTML parser spent blocked on the load of scripts
-    inserted from document.write, for main frame documents that finished
-    parsing.
-  </summary>
-</histogram>
-
-<histogram name="PageLoad.ParseTiming.ParseDuration" units="ms"
-    expires_after="2021-10-09">
-  <owner>bmcquade@chromium.org</owner>
-  <owner>csharrison@chromium.org</owner>
-  <summary>
-    Measures the time that the HTML parser was active, for main frame documents
-    that finished parsing.
-
-    Warning: this histogram was expired after M81 and brought back 2021-04-13;
-    data may be missing.
   </summary>
 </histogram>
 

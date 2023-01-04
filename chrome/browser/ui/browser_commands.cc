@@ -111,6 +111,7 @@
 #include "components/find_in_page/find_tab_helper.h"
 #include "components/find_in_page/find_types.h"
 #include "components/google/core/common/google_util.h"
+#include "components/lens/buildflags.h"
 #include "components/media_router/browser/media_router_dialog_controller.h"  // nogncheck
 #include "components/media_router/browser/media_router_metrics.h"
 #include "components/omnibox/browser/omnibox_prefs.h"
@@ -185,7 +186,7 @@
 #include "chrome/browser/apps/intent_helper/supported_links_infobar_delegate.h"
 #endif
 
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(ENABLE_LENS_DESKTOP_GOOGLE_BRANDED_FEATURES)
 #include "chrome/browser/lens/region_search/lens_region_search_controller.h"
 #include "chrome/browser/lens/region_search/lens_region_search_helper.h"
 #include "components/lens/lens_features.h"
@@ -491,9 +492,8 @@ void NewEmptyWindow(Profile* profile, bool should_trigger_session_restore) {
       off_the_record = false;
     }
   } else if (profile->IsGuestSession() ||
-             (browser_defaults::kAlwaysOpenIncognitoWindow &&
-              IncognitoModePrefs::ShouldLaunchIncognito(
-                  *base::CommandLine::ForCurrentProcess(), prefs))) {
+             IncognitoModePrefs::ShouldOpenSubsequentBrowsersInIncognito(
+                 *base::CommandLine::ForCurrentProcess(), prefs)) {
     off_the_record = true;
   }
 
@@ -880,7 +880,8 @@ void DuplicateTab(Browser* browser) {
 }
 
 bool CanDuplicateTab(const Browser* browser) {
-  return CanDuplicateTabAt(browser, browser->tab_strip_model()->active_index());
+  return !browser->is_type_picture_in_picture() &&
+         CanDuplicateTabAt(browser, browser->tab_strip_model()->active_index());
 }
 
 bool CanDuplicateKeyboardFocusedTab(const Browser* browser) {
@@ -1891,7 +1892,7 @@ void RunScreenAIVisualAnnotation(Browser* browser) {
 #endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
 void ExecLensRegionSearch(Browser* browser) {
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(ENABLE_LENS_DESKTOP_GOOGLE_BRANDED_FEATURES)
   Profile* profile = browser->profile();
   TemplateURLService* service =
       TemplateURLServiceFactory::GetForProfile(profile);
@@ -1909,7 +1910,7 @@ void ExecLensRegionSearch(Browser* browser) {
     browser->SetUserData(lens::LensRegionSearchControllerData::kDataKey,
                          std::move(lens_region_search_controller_data));
   }
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#endif  // BUILDFLAG(ENABLE_LENS_DESKTOP_GOOGLE_BRANDED_FEATURES)
 }
 
 }  // namespace chrome

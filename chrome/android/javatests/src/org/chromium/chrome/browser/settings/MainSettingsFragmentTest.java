@@ -184,8 +184,6 @@ public class MainSettingsFragmentTest {
     @DisableFeatures({
             ChromeFeatureList.UNIFIED_PASSWORD_MANAGER_ANDROID,
             ChromeFeatureList.UNIFIED_PASSWORD_MANAGER_ANDROID_BRANDING,
-            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_ILLUSTRATION,
-            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_SINGLE_BUTTON,
             ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_TITLE,
             ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_ALTERNATIVE_TITLE,
     })
@@ -217,13 +215,8 @@ public class MainSettingsFragmentTest {
      */
     @Test
     @SmallTest
-    @DisableFeatures({
-            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_ILLUSTRATION,
-            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_SINGLE_BUTTON,
-            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_TITLE,
-    })
-    public void
-    testStartupWithSyncPromoFeaturesDisabled() {
+    @DisableFeatures(ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_TITLE)
+    public void testStartupWithSyncPromoFeaturesDisabled() {
         launchSettingsActivity();
 
         // For non-signed-in users, the section contains the generic header.
@@ -276,13 +269,8 @@ public class MainSettingsFragmentTest {
 
     @Test
     @SmallTest
-    @EnableFeatures({
-            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_ILLUSTRATION,
-            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_SINGLE_BUTTON,
-            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_TITLE,
-    })
-    public void
-    testStartupWithSyncPromoFeaturesEnabled() {
+    @EnableFeatures(ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_TITLE)
+    public void testStartupWithSyncPromoFeaturesEnabled() {
         launchSettingsActivity();
 
         // For non-signed-in users, the section contains the generic header.
@@ -335,7 +323,7 @@ public class MainSettingsFragmentTest {
 
     @Test
     @MediumTest
-    @EnableFeatures(ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_SINGLE_BUTTON)
+    @EnableFeatures(ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_TITLE)
     public void testSigninRowLaunchesSignInFlowForSignedOutAccounts() {
         // When there are no accounts, sync promo and the signin preference shows the same text.
         mSyncTestRule.addTestAccount();
@@ -350,8 +338,8 @@ public class MainSettingsFragmentTest {
 
     @Test
     @MediumTest
-    @EnableFeatures({ChromeFeatureList.TANGIBLE_SYNC,
-            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_SINGLE_BUTTON})
+    @EnableFeatures(
+            {ChromeFeatureList.TANGIBLE_SYNC, ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_TITLE})
     public void
     testSigninRowLaunchesTangibleSignInFlowForSignedOutAccounts() {
         // When there are no accounts, sync promo and the signin preference shows the same text.
@@ -453,13 +441,8 @@ public class MainSettingsFragmentTest {
 
     @Test
     @SmallTest
-    @EnableFeatures({
-            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_ILLUSTRATION,
-            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_SINGLE_BUTTON,
-            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_TITLE,
-    })
-    public void
-    testAccountSignInWithNewPromo() throws InterruptedException {
+    @EnableFeatures(ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_TITLE)
+    public void testAccountSignInWithNewPromo() throws InterruptedException {
         launchSettingsActivity();
 
         SyncPromoPreference syncPromoPreference =
@@ -492,13 +475,8 @@ public class MainSettingsFragmentTest {
      */
     @Test
     @SmallTest
-    @DisableFeatures({
-            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_ILLUSTRATION,
-            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_SINGLE_BUTTON,
-            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_TITLE,
-    })
-    public void
-    testAccountSignIn() throws InterruptedException {
+    @DisableFeatures(ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_TITLE)
+    public void testAccountSignIn() throws InterruptedException {
         launchSettingsActivity();
 
         SyncPromoPreference syncPromoPreference =

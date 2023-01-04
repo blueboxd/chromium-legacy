@@ -2,8 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from .verifyContent import VerifyContent
+from .verifyable import Verifyable
+from .chrome_reporting_connector_test_case import ChromeReportingConnectorTestCase
 from .realtime_reporting_bce.realtime_reporting_bce_test import *
 from .reporting_connector_chronicle.reporting_connector_chronicle_test import *
 from .reporting_connector_crowdstrike.reporting_connector_crowdstrike_test import *
+from .reporting_connector_pan.reporting_connector_pan_test import *
 from .reporting_connector_pubsub.reporting_connector_pubsub_test import *
 from .reporting_connector_splunk.reporting_connector_splunk_test import *

@@ -16,6 +16,7 @@
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/network/fake_cros_network_config.h"
+#include "ash/system/network/network_detailed_network_view_impl.h"
 #include "ash/system/network/network_utils.h"
 #include "ash/system/network/tray_network_state_model.h"
 #include "ash/system/tray/detailed_view_delegate.h"
@@ -471,8 +472,8 @@ class NetworkListViewControllerTest : public AshTestBase,
  private:
   template <class T>
   T FindViewById(int id) {
-    return static_cast<T>(
-        network_list(NetworkType::kAll)->GetViewByID(static_cast<int>(id)));
+    return static_cast<T>(network_detailed_network_view_.get()->GetViewByID(
+        static_cast<int>(id)));
   }
 
   ScopedBluetoothConfigTestHelper* bluetooth_config_test_helper() {
@@ -1165,6 +1166,46 @@ TEST_P(NetworkListViewControllerTest, ConnectionWarningManagedIconProxy) {
   // Clear all devices and make sure warning is no longer being shown.
   cros_network()->ClearNetworksAndDevices();
   EXPECT_THAT(GetConnectionWarning(), IsNull());
+}
+
+// Disconnect and re-connect a network that shows a warning.
+// Regression test for b/263803248.
+TEST_P(NetworkListViewControllerTest, ConnectionWarningDisconnectReconnect) {
+  EXPECT_THAT(GetConnectionWarning(), IsNull());
+
+  cros_network()->AddManagedProperties(
+      kWifiName, CreateManagedPropertiesWithProxy(/*is_managed=*/true));
+  auto network = CrosNetworkConfigTestHelper::CreateStandaloneNetworkProperties(
+      kWifiName, NetworkType::kWiFi, ConnectionStateType::kConnected);
+  network->proxy_mode = chromeos::network_config::mojom::ProxyMode::kAutoDetect;
+  cros_network()->AddNetworkAndDevice(std::move(network));
+
+  ASSERT_THAT(GetConnectionWarning(), NotNull());
+  ASSERT_THAT(GetConnectionLabelView(), NotNull());
+  EXPECT_EQ(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_MANAGED_WARNING),
+      GetConnectionLabelView()->GetText());
+
+  {
+    views::ImageView* icon = GetConnectionWarningIcon();
+    ASSERT_THAT(icon, NotNull());
+    EXPECT_TRUE(IsManagedIcon(icon));
+  }
+
+  // Disconnect the network and check that no warning is shown.
+  cros_network()->SetNetworkState(kWifiName,
+                                  ConnectionStateType::kNotConnected);
+  EXPECT_THAT(GetConnectionWarning(), IsNull());
+
+  // Reconnect the network. This should not crash (regression test for
+  // b/263803248). Afterwards, the warning should be shown again.
+  cros_network()->SetNetworkState(kWifiName, ConnectionStateType::kOnline);
+  ASSERT_THAT(GetConnectionWarning(), NotNull());
+  {
+    views::ImageView* icon = GetConnectionWarningIcon();
+    ASSERT_THAT(icon, NotNull());
+    EXPECT_TRUE(IsManagedIcon(icon));
+  }
 }
 
 TEST_P(NetworkListViewControllerTest,

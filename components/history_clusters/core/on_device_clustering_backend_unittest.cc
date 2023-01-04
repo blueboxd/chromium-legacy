@@ -194,6 +194,26 @@ class OnDeviceClusteringWithoutContentBackendTest : public ::testing::Test {
     return clusters;
   }
 
+  std::vector<history::Cluster> GetClusterTriggerability(
+      const std::vector<history::Cluster>& in_clusters) {
+    std::vector<history::Cluster> clusters;
+
+    base::RunLoop run_loop;
+    clustering_backend_->GetClusterTriggerability(
+        base::BindOnce(
+            [](base::RunLoop* run_loop,
+               std::vector<history::Cluster>* out_clusters,
+               std::vector<history::Cluster> clusters) {
+              *out_clusters = std::move(clusters);
+              run_loop->Quit();
+            },
+            &run_loop, &clusters),
+        in_clusters);
+    run_loop.Run();
+
+    return clusters;
+  }
+
   size_t GetSiteEngagementGetScoreInvocationCount() const {
     return test_site_engagement_provider_.count_get_score_invocations();
   }
@@ -323,6 +343,46 @@ TEST_F(OnDeviceClusteringWithoutContentBackendTest,
               ElementsAre(ElementsAre(testing::VisitResult(
                   2, 1.0, {history::DuplicateClusterVisit{1}}))));
   EXPECT_FALSE(result_clusters[0].label->empty());
+}
+
+TEST_F(OnDeviceClusteringWithoutContentBackendTest,
+       GetClusterTriggerabilitySimpleCase) {
+  std::vector<history::Cluster> clusters;
+
+  // Cluster finalizers should be run.
+
+  history::Cluster cluster1;
+  cluster1.cluster_id = 1;
+  cluster1.should_show_on_prominent_ui_surfaces = false;
+  cluster1.visits.emplace_back(
+      testing::CreateClusterVisit(testing::CreateDefaultAnnotatedVisit(
+          1, GURL("https://google.com/"), base::Time::FromTimeT(1))));
+  clusters.push_back(cluster1);
+
+  history::Cluster cluster2;
+  cluster2.cluster_id = 2;
+  cluster2.should_show_on_prominent_ui_surfaces = false;
+  cluster2.visits.emplace_back(
+      testing::CreateClusterVisit(testing::CreateDefaultAnnotatedVisit(
+          3, GURL("https://google.com/2"), base::Time::FromTimeT(3))));
+  cluster2.visits.emplace_back(
+      testing::CreateClusterVisit(testing::CreateDefaultAnnotatedVisit(
+          4, GURL("https://google.com/3"), base::Time::FromTimeT(4))));
+  clusters.push_back(cluster2);
+
+  std::vector<history::Cluster> result_clusters =
+      GetClusterTriggerability(clusters);
+  EXPECT_EQ(result_clusters.size(), 2u);
+  history::Cluster out_cluster1 = result_clusters[0];
+  EXPECT_EQ(out_cluster1.cluster_id, 1);
+  EXPECT_TRUE(out_cluster1.triggerability_calculated);
+  // Single visit cluster.
+  EXPECT_FALSE(out_cluster1.should_show_on_prominent_ui_surfaces);
+
+  history::Cluster out_cluster2 = result_clusters[1];
+  EXPECT_EQ(out_cluster2.cluster_id, 2);
+  EXPECT_TRUE(out_cluster2.triggerability_calculated);
+  EXPECT_TRUE(out_cluster2.should_show_on_prominent_ui_surfaces);
 }
 
 TEST_F(OnDeviceClusteringWithoutContentBackendTest, DedupeClusters) {
@@ -522,6 +582,86 @@ TEST_F(OnDeviceClusteringWithContentBackendTest, ClusterOnContent) {
       ElementsAre(ElementsAre(
           testing::VisitResult(4, 1.0, {history::DuplicateClusterVisit{1}}),
           testing::VisitResult(2, 1.0), testing::VisitResult(10, 0.5))));
+}
+
+TEST_F(OnDeviceClusteringWithContentBackendTest, GetClustersForUIWithContent) {
+  std::vector<history::Cluster> clusters;
+
+  history::Cluster cluster1;
+  history::AnnotatedVisit visit = testing::CreateDefaultAnnotatedVisit(
+      1, GURL("https://github.com/"), base::Time::FromTimeT(1));
+  visit.content_annotations.model_annotations.entities = {{"github", 100}};
+  cluster1.visits.push_back(testing::CreateClusterVisit(visit));
+
+  history::AnnotatedVisit visit2 = testing::CreateDefaultAnnotatedVisit(
+      2, GURL("https://google.com/"), base::Time::FromTimeT(2));
+  visit2.content_annotations.model_annotations.entities = {{"github", 100}};
+  visit2.referring_visit_of_redirect_chain_start = 1;
+  // Set the visit duration to be 2x the default so it has the same duration
+  // after |visit| and |visit4| are deduped.
+  visit2.visit_row.visit_duration = base::Seconds(20);
+  cluster1.visits.push_back(testing::CreateClusterVisit(visit2));
+
+  history::AnnotatedVisit visit4 = testing::CreateDefaultAnnotatedVisit(
+      4, GURL("https://github.com/"), base::Time::FromTimeT(4));
+  visit4.content_annotations.model_annotations.entities = {{"github", 100}};
+  cluster1.visits.push_back(testing::CreateClusterVisit(visit4));
+  clusters.push_back(cluster1);
+
+  // After the context clustering, visit5 will not be in the same cluster as
+  // visit, visit2, and visit4 but all of the visits have the same entities
+  // so they will be clustered in the content pass.
+  history::Cluster cluster2;
+  history::AnnotatedVisit visit5 = testing::CreateDefaultAnnotatedVisit(
+      10,
+      GURL("https://shouldskip.com/butnotsincehostcheckingisfalse/"
+           "andhasnonexistentreferrer"),
+      base::Time::FromTimeT(10));
+  visit5.content_annotations.model_annotations.entities = {{"github", 100}};
+  visit5.referring_visit_of_redirect_chain_start = 6;
+  cluster2.visits.push_back(testing::CreateClusterVisit(visit5));
+  clusters.push_back(cluster2);
+
+  std::vector<history::Cluster> result_clusters = GetClustersForUI(clusters);
+  EXPECT_THAT(
+      testing::ToVisitResults(result_clusters),
+      ElementsAre(ElementsAre(
+          testing::VisitResult(4, 1.0, {history::DuplicateClusterVisit{1}}),
+          testing::VisitResult(2, 1.0), testing::VisitResult(10, 0.5))));
+}
+
+TEST_F(OnDeviceClusteringWithContentBackendTest,
+       GetClusterTriggerabilityWithContent) {
+  std::vector<history::Cluster> clusters;
+
+  history::Cluster cluster1;
+  history::AnnotatedVisit visit = testing::CreateDefaultAnnotatedVisit(
+      1, GURL("https://github.com/"), base::Time::FromTimeT(1));
+  visit.content_annotations.model_annotations.entities = {{"github", 100},
+                                                          {"scoretoolow", 10}};
+  cluster1.visits.push_back(testing::CreateClusterVisit(visit));
+
+  history::AnnotatedVisit visit2 = testing::CreateDefaultAnnotatedVisit(
+      2, GURL("https://google.com/"), base::Time::FromTimeT(2));
+  visit2.content_annotations.model_annotations.entities = {{"github", 100}};
+  visit2.referring_visit_of_redirect_chain_start = 1;
+  // Set the visit duration to be 2x the default so it has the same duration
+  // after |visit| and |visit4| are deduped.
+  visit2.visit_row.visit_duration = base::Seconds(20);
+  cluster1.visits.push_back(testing::CreateClusterVisit(visit2));
+
+  history::AnnotatedVisit visit4 = testing::CreateDefaultAnnotatedVisit(
+      4, GURL("https://github.com/"), base::Time::FromTimeT(4));
+  visit4.content_annotations.model_annotations.entities = {{"github", 100},
+                                                           {"nometadata", 100}};
+  cluster1.visits.push_back(testing::CreateClusterVisit(visit4));
+  clusters.push_back(cluster1);
+
+  std::vector<history::Cluster> result_clusters =
+      GetClusterTriggerability(clusters);
+  EXPECT_THAT(result_clusters.size(), 1u);
+  EXPECT_THAT(result_clusters[0].GetKeywords(),
+              UnorderedElementsAre(u"alias-github", u"rewritten-github"));
 }
 
 TEST_F(OnDeviceClusteringWithContentBackendTest,

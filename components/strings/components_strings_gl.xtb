@@ -808,7 +808,6 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="299990983510665749">Vehículos compactos</translation>
 <translation id="3002501248619246229">Comproba o soporte da bandexa de entrada</translation>
 <translation id="3005723025932146533">Mostrar copia gardada</translation>
-<translation id="3008447029300691911">Introduce o código CVC da tarxeta <ph name="CREDIT_CARD" />. Unha vez que confirmes os datos, os detalles da tarxeta compartiranse con este sitio.</translation>
 <translation id="3013291976881901233">Dispositivos MIDI</translation>
 <translation id="301521992641321250">Bloqueado automaticamente</translation>
 <translation id="3016780570757425217">Coñecer a túa localización</translation>
@@ -1166,6 +1165,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="3927932062596804919">Denegar</translation>
 <translation id="393316646445601645">Internet e telecomunicacións</translation>
 <translation id="3939773374150895049">Queres usar a autenticación web en lugar do CVC?</translation>
+<translation id="3943857333388298514">Pegar</translation>
 <translation id="3946209740501886391">Preguntar sempre sobre este sitio</translation>
 <translation id="3947595700203588284">Pode pedirche permiso para conectarse aos dispositivos MIDI</translation>
 <translation id="3949571496842715403">Este servidor non puido demostrar que é <ph name="DOMAIN" /> porque o seu certificado de seguranza non especifica nomes de asunto alternativos. É posible que isto se deba a un erro de configuración ou a que un pirata informático interceptase a túa conexión.</translation>
@@ -2313,6 +2313,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="6890531741535756070">Escolliches verificar as compras con <ph name="DEVICE_LABEL" /> nos sitios web que usan <ph name="PROVIDER_ORIGIN" />. É posible que este provedor almacenase información sobre o teu método de pago, pero podes <ph name="BEGIN_LINK" />solicitar a súa eliminación<ph name="END_LINK" />.</translation>
 <translation id="6891596781022320156">O nivel da política non é compatible.</translation>
 <translation id="6895330447102777224">Confirmouse a túa tarxeta</translation>
+<translation id="6896758677409633944">Copiar</translation>
 <translation id="6897140037006041989">Axente de usuario</translation>
 <translation id="6898699227549475383">Organización (O)</translation>
 <translation id="6899000063526916106">Mete un código de <ph name="NUMBER_OF_DIGITS" /> díxitos</translation>
@@ -2458,7 +2459,6 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="7243771829620208687">RA0</translation>
 <translation id="7244465398154211886">{NUM_MATCHES,plural, =1{# coincidencia}other{# coincidencias}}</translation>
 <translation id="724691107663265825">O sitio ao que te dirixes contén software malicioso</translation>
-<translation id="724975217298816891">Introduce a data de caducidade e o código CVC da tarxeta <ph name="CREDIT_CARD" /> para actualizar os datos. Unha vez confirmados, os detalles da tarxeta compartiranse con este sitio.</translation>
 <translation id="7251437084390964440">A configuración da rede non cumpre co estándar ONC. É posible que non se importen partes da configuración.
 Detalles adicionais:
 <ph name="DEBUG_INFO" /></translation>
@@ -2587,7 +2587,6 @@ Detalles adicionais:
 <translation id="7534987659046836932">Sobre C7</translation>
 <translation id="7535087603100972091">Valor</translation>
 <translation id="7537536606612762813">Obrigatoria</translation>
-<translation id="7542403920425041731">Unha vez que confirmes a información, os datos da tarxeta compartiranse con este sitio.</translation>
 <translation id="7542995811387359312">A opción de autocompletado da tarxeta de crédito está desactivada porque este formulario non utiliza unha conexión segura.</translation>
 <translation id="7543525346216957623">Pregunta ao teu pai ou nai</translation>
 <translation id="7546409722674205727">Iniciando <ph name="APP_NAME" /></translation>
@@ -2680,6 +2679,7 @@ Detalles adicionais:
 <translation id="7716375162095500223">Ignorouse ou aínda non se cargou</translation>
 <translation id="7716424297397655342">Este sitio non se pode cargar desde a memoria caché</translation>
 <translation id="7723047071702270851">Edita a tarxeta</translation>
+<translation id="7724603315864178912">Cortar</translation>
 <translation id="7734285854693414638">Crear rapidamente un novo formulario en Formularios de Google</translation>
 <translation id="773466115871691567">Traducir sempre páxinas en <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7736959720849233795">Copiar enderezo da ligazón</translation>
@@ -2716,6 +2716,7 @@ Detalles adicionais:
 <translation id="7815407501681723534">Encontráronse <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> para "<ph name="SEARCH_STRING" />"</translation>
 <translation id="7822320754433038727">Caza e tiro</translation>
 <translation id="782886543891417279">É posible que a rede wifi que utilizas (<ph name="WIFI_NAME" />) requira o acceso á súa páxina de inicio de sesión.</translation>
+<translation id="7840103971441592723">Comezou a captura de pantalla</translation>
 <translation id="7844689747373518809">{COUNT,plural, =0{Ningunha}=1{1 aplicación (<ph name="EXAMPLE_APP_1" />)}=2{2 aplicacións (<ph name="EXAMPLE_APP_1" /> e <ph name="EXAMPLE_APP_2" />)}other{# aplicacións (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" /> e <ph name="AND_MORE" />)}}</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" />: <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="7862185352068345852">Queres saír do sitio?</translation>
@@ -2894,6 +2895,7 @@ Detalles adicionais:
 <translation id="8282947398454257691">Coñece o teu identificador de dispositivo único</translation>
 <translation id="8284769179630993263">Xestiona na configuración de Chrome a Navegación segura e outras opcións</translation>
 <translation id="8286036467436129157">Iniciar sesión</translation>
+<translation id="8286799286781881307">As aplicacións que o teu administrador autorice poden facer capturas de todas as pantallas que estean conectadas ao dispositivo. Esta información pode procesarse de forma local ou cargarse nos servidores da túa organización.</translation>
 <translation id="8288807391153049143">Mostrar certificado</translation>
 <translation id="8289355894181816810">Ponte en contacto co administrador da túa rede se non estás seguro de que quere dicir isto.</translation>
 <translation id="8293206222192510085">Engadir marcador</translation>

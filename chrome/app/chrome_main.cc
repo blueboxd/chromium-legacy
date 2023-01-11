@@ -23,6 +23,7 @@
 #if BUILDFLAG(IS_MAC)
 #include "chrome/app/chrome_main_mac.h"
 #include "chrome/app/notification_metrics.h"
+#include "ui/gl/gl_switches.h"
 #endif
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
@@ -130,6 +131,11 @@ int ChromeMain(int argc, const char** argv) {
 #if defined(OS_MAC)
   if(!__builtin_available(macOS 10.10,*)) {
     command_line->AppendSwitch(switches::kDisableGpuCompositing);
+  }
+
+  if(!__builtin_available(macOS 10.8,*)) {
+    command_line->AppendSwitchASCII(switches::kUseGL, gl::kGLImplementationANGLEName);
+    command_line->AppendSwitchASCII(switches::kUseANGLE, gl::kANGLEImplementationSwiftShaderForWebGLName);
   }
 #endif
 

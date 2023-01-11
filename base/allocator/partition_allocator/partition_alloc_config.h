@@ -137,7 +137,7 @@ static_assert(sizeof(void*) != 8, "");
 // assume that pthread_mutex_trylock() is suitable.
 //
 // Otherwise, a userspace spinlock implementation is used.
-#if PA_CONFIG(HAS_LINUX_KERNEL) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || \
+#if PA_CONFIG(HAS_LINUX_KERNEL) || BUILDFLAG(IS_WIN) || !BUILDFLAG(IS_APPLE) && \
     BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
 #define PA_CONFIG_HAS_FAST_MUTEX() 1
 #else

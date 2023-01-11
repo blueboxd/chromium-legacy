@@ -188,7 +188,7 @@
     }
   } else {
     if([(NSWindow*)[notification object] isSheet]) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE, base::BindOnce(base::RetainBlock(^{
             [NSApp endSheet:window];
           })));

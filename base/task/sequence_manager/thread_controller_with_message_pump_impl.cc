@@ -313,6 +313,9 @@ ThreadControllerWithMessagePumpImpl::DoWork() {
   // to true to have a similar behavior on Android as on the desktop platforms
   // for this experiment.
   bool yield_after_every_batch_of_8_ms =
+#if BUILDFLAG(IS_MAC)
+      __builtin_available(macOS 10.13, *) && 
+#endif
       g_run_tasks_by_batches.load(std::memory_order_relaxed);
   // if the periodic delta isn't max(), this means a valid value is in place and
   // the controller should start alternating. Make sure we didn't terminate the
@@ -710,6 +713,9 @@ base::TimeDelta ThreadControllerWithMessagePumpImpl::GetAlternationInterval() {
              : periodic_yielding_to_native_interval_;
 #else
   return g_run_tasks_by_batches.load(std::memory_order_relaxed)
+#if BUILDFLAG(IS_MAC)
+            && __builtin_available(macOS 10.13, *) 
+#endif
              ? base::Milliseconds(8)
              : base::Milliseconds(0);
 #endif
